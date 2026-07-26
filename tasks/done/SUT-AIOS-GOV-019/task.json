@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-019",
   "title": "Plan P1-003 append-only audit verification",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "engineering-governance",
   "workflowId": "p1-003-audit-verification-planning",
@@ -95,7 +95,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-019/task.json",
+      "tasks/done/SUT-AIOS-GOV-019/task.json",
       "tasks/backlog/SUT-AIOS-P1-003/task.json",
       "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md"
     ]
@@ -103,7 +103,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T19:04:35.995Z",
-  "updatedDate": "2026-07-26T19:12:10.155Z",
+  "updatedDate": "2026-07-26T19:13:48.997Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-019/verification-20260726191148738.json"
   ],
@@ -142,6 +142,13 @@
       "at": "2026-07-26T19:12:10.155Z",
       "actor": "qa-verification",
       "reason": "Independent QA passed the bounded static audit-contract design, P1-003 packet amendment, protected-path inspection, and machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T19:13:48.997Z",
+      "actor": "qa-verification",
+      "reason": "PR #26 merged to main at d2ce980da670c77fd2d39bb913ea8394f425455e after passing Governance / validate; completion reconciliation records terminal delivery."
     }
   ]
 }
