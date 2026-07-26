@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-018",
   "title": "Admit exact P1-002 control-plane schema validator safely",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "verification-governance",
   "workflowId": "p1-002-verifier-admission",
@@ -92,7 +92,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-018/task.json",
+      "tasks/done/SUT-AIOS-GOV-018/task.json",
       "tasks/backlog/SUT-AIOS-P1-002/task.json",
       "scripts/verify/verify-cli.mjs",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -101,7 +101,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T18:38:37.570Z",
-  "updatedDate": "2026-07-26T18:45:32.763Z",
+  "updatedDate": "2026-07-26T18:51:23.135Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184458346.json"
   ],
@@ -140,6 +140,13 @@
       "at": "2026-07-26T18:45:32.763Z",
       "actor": "qa-verification",
       "reason": "Independent QA passed the exact-command mapping, fail-closed rejection coverage, deterministic checks, and machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T18:51:23.135Z",
+      "actor": "qa-verification",
+      "reason": "PR #20 merged to main at d26e7841b31079d79fc70fdc061fc0fa5bc8c3fb after passing Governance / validate; completion reconciliation records terminal delivery."
     }
   ]
 }
