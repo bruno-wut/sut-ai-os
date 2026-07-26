@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-016",
   "title": "Admit exact P1-001 event-contract validator safely",
-  "status": "ready",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "verification-governance",
   "workflowId": "p1-001-verifier-admission",
@@ -19,7 +19,8 @@
   "dependencies": [],
   "evidence": [
     "evidence/tasks/SUT-AIOS-GOV-016/verification.md",
-    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726173513611.json"
+    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726173513611.json",
+    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726173920161.json"
   ],
   "assumptions": [
     "No production, staging, database, event delivery, credential, or external-service access is authorized.",
@@ -88,7 +89,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-GOV-016/task.json",
+      "tasks/done/SUT-AIOS-GOV-016/task.json",
       "tasks/ready/SUT-AIOS-P1-001/task.json",
       "scripts/verify/verify-cli.mjs",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -97,8 +98,11 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T17:31:48.389Z",
-  "updatedDate": "2026-07-26T17:32:45.573Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T17:39:52.723Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726174004908.json",
+    "evidence/tasks/SUT-AIOS-GOV-016/verification.md"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -113,6 +117,34 @@
       "at": "2026-07-26T17:32:45.573Z",
       "actor": "engineering-planner",
       "reason": "Exact P1-001 validator admission is bounded, fail-closed, independently verifiable, and required before P1-001 implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T17:36:57.967Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #13 merged with passing governance CI; begin the bounded fail-closed verifier-admission implementation in this isolated worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T17:39:50.157Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact P1-001 validator admission and rejection coverage implemented; deterministic checks passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T17:39:52.681Z",
+      "actor": "qa-verification",
+      "reason": "Independent verification passed for the bounded parser admission."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T17:39:52.723Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implementation, deterministic checks, independent verification, risk record, and durable evidence are complete."
     }
   ]
 }
