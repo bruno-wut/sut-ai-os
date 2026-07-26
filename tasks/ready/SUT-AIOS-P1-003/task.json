@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-003",
   "title": "Define static append-only audit contract",
-  "status": "backlog",
+  "status": "ready",
   "phase": "phase-1",
   "workstream": "audit",
   "workflowId": "implementation-p1-003",
@@ -91,7 +91,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P1-003/task.json",
+      "tasks/ready/SUT-AIOS-P1-003/task.json",
       "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
@@ -99,7 +99,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-26T19:29:41.348Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -108,6 +108,13 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T19:29:41.348Z",
+      "actor": "engineering-planner",
+      "reason": "P1-002, GOV-019 static audit-contract planning, and GOV-020 exact shell-free validator admission are done with durable evidence."
     }
   ]
 }
