@@ -1,0 +1,142 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-014",
+  "title": "Safely admit the P0-003 contract validator to task verification",
+  "status": "verified",
+  "phase": "phase-0",
+  "workstream": "engineering-governance",
+  "workflowId": "p0-003-verifier-remediation",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Restore independent machine verification for the approved P0-003 compatibility contract without broadening command execution.",
+  "technicalObjective": "Admit only the literal node tests/compatibility/validate-finalized-platform-contracts.mjs command to verify:task and prove representative near-miss forms remain blocked.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/compatibility/P0-003_VERIFICATION_DESIGN.md"
+  ],
+  "dependencies": [],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-014/verification.md"
+  ],
+  "assumptions": [
+    "The P0-003 validator is deterministic, Node-only, and reads but never writes the immutable compatibility snapshot.",
+    "Generic node tests execution remains prohibited."
+  ],
+  "acceptanceCriteria": [
+    "verify:task admits exactly node tests/compatibility/validate-finalized-platform-contracts.mjs with shell disabled.",
+    "Near-miss, extra-argument, shell-operator, and other node tests commands remain blocked by self-test coverage.",
+    "Independent machine verification records a passing result without changing application code or the immutable snapshot."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-014/**",
+    "evidence/verification/SUT-AIOS-GOV-014/**",
+    "tasks/**/SUT-AIOS-GOV-014/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "packages/**",
+    "tests/**",
+    "package.json",
+    "package-lock.json",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-014 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact-command allowlist",
+    "fail-closed rejection coverage",
+    "verifier self-test",
+    "independent machine verification",
+    "changed-path and secret-boundary inspection"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic tests/** admission, shell use, argument expansion, or change outside the exact P0-003 validator command."
+  ],
+  "rollbackExpectations": "Revert only the exact verifier mapping, self-test, policy, evidence, and task packet; restore prior fail-closed behavior.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-014/task.json",
+      "scripts/verify/verify-cli.mjs",
+      "docs/compatibility/P0-003_VERIFICATION_DESIGN.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T16:52:29.791Z",
+  "updatedDate": "2026-07-26T16:55:46.996Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-014/verification-20260726165537911.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T16:52:29.791Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T16:52:57.405Z",
+      "actor": "engineering-planner",
+      "reason": "Owner-approved exact-command verifier remediation packet is complete."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T16:52:57.448Z",
+      "actor": "engineering-planner",
+      "reason": "Packet validated; implement only the exact allowlist mapping and fail-closed tests."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:55:35.471Z",
+      "actor": "engineering-planner",
+      "reason": "Exact-command implementation and independent QA passed; machine verification required."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:55:46.996Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA and machine verification passed exact-command, rejection, boundary, and acceptance checks."
+    }
+  ]
+}
