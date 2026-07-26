@@ -232,3 +232,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Product backlog routing, independent review, task transitions, CI diff enforcement, and telemetry totals
 - **Evidence:** The readiness review corrected non-executor implementation routes, duplicate controls, owner/reviewer identity, stale packet context paths, pull-request diff discovery, detached-checkout branch discovery, and cached-token double counting.
 - **Next action / owner:** Retain `evidence/verification/SUT-AIOS-GOV-011/verification-20260726130854628.json` with this task and monitor the pushed GitHub workflow separately.
+
+### 2026-07-26 — Production dependency audit command admitted safely across platforms
+
+- **Task ID:** `SUT-AIOS-P0-002`, remediated by `SUT-AIOS-GOV-012`
+- **Status:** Resolved
+- **Severity:** High
+- **Affected scope:** `verify:task` safe required-command parsing and CI evidence for production-dependency audits
+- **Evidence:** Two independent P0-002 verifier runs, `verification-20260726152717886.json` and `verification-20260726152741451.json` on branch `task/SUT-AIOS-P0-002-plan-dependency-and-security-remediation`, recorded `blocked` even though a direct packet-authorized `npm audit --omit=dev` passed with exit `0`. The parser rejected the required command before execution. GOV-012's first bare-`npm` Windows mapping failed in `verification-20260726155555816.json`; its `npm.cmd` revision also failed shell-free execution in `verification-20260726160006575.json`, while direct packet-authorized audits passed. The final bounded revision uses `process.execPath` to execute the existing bundled npm CLI JavaScript path on Windows, checks that path before launch, retains `shell: false`, and fixes the remaining arguments to `audit`, `--omit=dev`. Deterministic self-tests cover platform mappings, missing-CLI blocking, unchanged rejection forms, and actual child success, nonzero, and execution-error outcomes. Independent verification in `evidence/verification/SUT-AIOS-GOV-012/verification-20260726160516462.json` passed the real audit, self-test, packet validation, fast governance, changed-path, and secret-boundary checks.
+- **Next action / owner:** Retain the historical blocked/failed evidence and the final independent pass. Any future expansion beyond the exact literal `npm audit --omit=dev` requires a separate approved governance task and independent review.
