@@ -138,3 +138,4 @@ The following separation changes were made:
 - Added deterministic local governance validation for task packets, branch/PR metadata, verification evidence, changed/forbidden paths, schemas, policies, agent definitions, and secret patterns.
 - Added `npm run github:validate` and documented exact, unexecuted branch-protection, ruleset, and staging/production environment API entry points.
 - No branch protection, remote, environment, deployment, secret, database, DNS, payment, or production state was changed.
+- Rechecked the installed GitHub connector: it returned zero accessible repositories, accounts, and installations. Remote identity and authority remain unresolved.

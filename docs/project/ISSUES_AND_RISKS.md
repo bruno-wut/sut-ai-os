@@ -167,8 +167,8 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Status:** Open / blocked for remote configuration
 - **Severity:** High
 - **Affected scope:** Remote, branch protection, rulesets, CODEOWNERS activation, staging and production environments
-- **Evidence:** `git remote -v` is empty; `gh` is not installed or authenticated.
-- **Next action / owner:** Workspace owner must connect the intended GitHub repository and authenticate an authorized account. Review existing rules before applying the documented non-destructive commands.
+- **Evidence:** `git remote -v` is empty; `gh` is not installed or authenticated; the installed GitHub connector reports zero accessible repositories, accounts, and installations.
+- **Next action / owner:** Workspace owner must connect the intended GitHub repository and authenticate/install an authorized account. Review existing rules before applying the documented non-destructive commands.
 
 ### 2026-07-26 — Independent review pending for GitHub governance
 

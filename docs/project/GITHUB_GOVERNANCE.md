@@ -2,7 +2,7 @@
 
 ## Local audit
 
-This independent repository currently has no configured Git remote and no GitHub CLI (`gh`) available or authenticated. No repository identity, default branch owner, or authority can therefore be confirmed. Existing governance was preserved; this bootstrap adds only local templates, validation, and documentation.
+This independent repository currently has no configured Git remote. The installed GitHub connector is reachable but reports no accessible repositories, installed accounts, or installations; the GitHub CLI (`gh`) is also unavailable or unauthenticated. No repository identity, default branch owner, or authority can therefore be confirmed. Existing governance was preserved; this bootstrap adds only local templates, validation, and documentation.
 
 ## Pull requests and issues
 
@@ -17,7 +17,7 @@ This independent repository currently has no configured Git remote and no GitHub
 Run locally:
 
 ```text
-npm run github:validate
+npm run github:validate -- --task SUT-AIOS-GOV-008
 npm run task:validate -- --all
 npm run verify:fast
 ```
