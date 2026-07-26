@@ -1,0 +1,147 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-012",
+  "title": "Safely admit the exact production dependency audit to task verification",
+  "status": "ready",
+  "phase": "workspace-bootstrap",
+  "workstream": "engineering-governance",
+  "workflowId": "verification-control-remediation",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Restore deterministic machine verification of approved production-dependency audits without granting generic npm execution or changing application dependencies.",
+  "technicalObjective": "Extend verify:task's safe required-command parser to accept only the literal npm audit --omit=dev command, preserve its true exit status, and add fail-closed parser coverage.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/DEFINITION_OF_DONE.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-012/verification.md"
+  ],
+  "assumptions": [
+    "npm audit --omit=dev is a registry-read-only dependency audit; it must not be replaced with install, update, fix, or force behavior.",
+    "The audit result is time-sensitive and a nonzero exit remains a real verification failure rather than a parser failure.",
+    "The finalized platform remains an immutable compatibility baseline and is never built, installed into, or modified by this task."
+  ],
+  "acceptanceCriteria": [
+    "verify:task accepts exactly npm audit --omit=dev and executes it as npm with the fixed arguments audit and --omit=dev, without a shell.",
+    "verify:task rejects npm audit, npm audit fix, npm audit --omit=dev with any extra argument, npm commands with shell operators, and every other npm command as blocked.",
+    "The verifier preserves the audit process exit code: zero passes; nonzero or execution error fails the required test; unsupported text remains blocked.",
+    "The verifier self-test covers the exact accepted command, its command and argument mapping, and representative rejected near-miss and mutation-capable forms.",
+    "Verification policy documents the one admitted audit command and the continued fail-closed behavior.",
+    "Independent QA records a successful verifier result with changed-path and secret-boundary checks, or records a durable blocked or fail result without weakening the control."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-012/**",
+    "evidence/verification/SUT-AIOS-GOV-012/**",
+    "tasks/backlog/SUT-AIOS-GOV-012/**",
+    "tasks/ready/SUT-AIOS-GOV-012/**",
+    "tasks/active/SUT-AIOS-GOV-012/**",
+    "tasks/review/SUT-AIOS-GOV-012/**",
+    "tasks/revision-required/SUT-AIOS-GOV-012/**",
+    "tasks/verified/SUT-AIOS-GOV-012/**",
+    "tasks/blocked/SUT-AIOS-GOV-012/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "policies/**",
+    "scripts/task/**",
+    "scripts/codex/**",
+    "package.json",
+    "package-lock.json",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm audit --omit=dev",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-012 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact-command parser allowlist",
+    "fail-closed rejection coverage",
+    "audit exit-status propagation",
+    "verifier self-test",
+    "all task-packet validation",
+    "fast governance verification",
+    "independent machine verification",
+    "changed-path and secret-boundary inspection",
+    "whitespace check"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm audit --omit=dev",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal admits an npm command other than the exact npm audit --omit=dev literal.",
+    "Any proposal uses shell execution, expands arguments, invokes npm install, update, or fix, changes dependencies, or changes package manifests or lockfiles.",
+    "Audit output indicates a secret, credential, payment, privacy, production, or protected-path concern.",
+    "Independent verification cannot distinguish an unsupported command from a real audit failure."
+  ],
+  "rollbackExpectations": "Revert only the safe-command parser, its self-test coverage, policy wording, and this task's evidence. Restore the prior fail-closed rejection of npm audit --omit=dev; do not alter packages, lockfiles, immutable baseline files, or prior blocked evidence.",
+  "outputSchema": "schemas/verification-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/ready/SUT-AIOS-GOV-012/task.json",
+      "scripts/verify/verify-cli.mjs",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "tasks/blocked/SUT-AIOS-P0-002/task.json",
+      "evidence/tasks/SUT-AIOS-P0-002/verification.md",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T15:34:35.726Z",
+  "updatedDate": "2026-07-26T15:35:28.552Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T15:34:35.726Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created to remediate the exact safe-command incompatibility blocking SUT-AIOS-P0-002 machine verification."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T15:35:28.552Z",
+      "actor": "engineering-planner",
+      "reason": "Owner approved exact fail-closed verifier remediation; GOV-005 dependency is done with merged independent evidence"
+    }
+  ]
+}
