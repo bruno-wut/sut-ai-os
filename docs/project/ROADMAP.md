@@ -1,8 +1,12 @@
 # Roadmap
 
-## 0. Workspace and governance foundation — current
+## 0. Workspace and governance foundation — complete
 
-Maintain permanent memory, task/evidence workflow, immutable compatibility boundary, risk register, and non-deploying validation practice.
+The governed workspace, permanent memory, task/evidence workflow, immutable compatibility boundary, risk register, non-deploying validation practice, GitHub workflow, and technical baseline gate are established on `main`. Production writes and autonomous operation remain disabled.
+
+## 0A. Existing platform stabilization — current
+
+The baseline gate (`SUT-AIOS-P0-001`) is done. `SUT-AIOS-P0-002` and `SUT-AIOS-P0-003` are ready because their only dependency is complete. The selected next task is P0-002; P0-003 remains ready but is not selected.
 
 ## 1. Trusted control foundation
 

@@ -10,6 +10,13 @@ This backlog translates the canonical architecture into 33 small, dependency-awa
 | `SUT-AIOS-P0-002` | Produce an approved dependency/security remediation plan. | P0-001 |
 | `SUT-AIOS-P0-003` | Capture compatibility contracts for the finalized platform. | P0-001 |
 
+## Current packet state
+
+- `SUT-AIOS-P0-001`: `done` with independent verification evidence.
+- `SUT-AIOS-P0-002`: `ready`; selected next task.
+- `SUT-AIOS-P0-003`: `ready`; genuinely unblocked but not selected.
+- All Phase 1+ packets remain in `backlog` because their dependencies are not satisfied.
+
 ## Phase 1 — Trusted control foundation
 
 | Task | Outcome | Depends on |
@@ -80,4 +87,4 @@ This backlog translates the canonical architecture into 33 small, dependency-awa
 | `P8-002` | Evidence-based autonomy promotion gate. | P8-001, P1-005, P5-003 |
 | `P8-003` | Content-repair autonomy-promotion rehearsal. | P8-002, P6-004 |
 
-Only `SUT-AIOS-P0-001` is initially unblocked. Every other product task remains in backlog until all packet dependencies are verified, not merely implemented.
+Only tasks whose packet dependencies are verified or done may leave backlog. After P0-001 completed, P0-002 and P0-003 became ready; all later product tasks remain in backlog until their dependencies are verified, not merely implemented.

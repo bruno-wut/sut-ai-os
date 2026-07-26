@@ -164,3 +164,12 @@ The following separation changes were made:
 - Confirmed GitHub CLI authentication as `bruno-wut`, administrator access to `bruno-wut/sut-ai-os`, and the configured `origin` identity.
 - Planned remote changes required for the requested pull request: publish the existing seed `main`, set it as the default branch, push the verified bootstrap branch, and open a draft pull request. No merge, protection, environment, deployment, or production mutation is authorized.
 - No application code, canonical source, finalized compatibility baseline, secret, database, payment, DNS, Cloudflare, deployment, or production state was changed.
+
+## Post-merge reconciliation for SUT-AIOS-P0-001
+
+- Confirmed `main` contains the merged bootstrap workspace, commits `ce6403e` and `40ccda4`, and merge commit `90a1876`.
+- Confirmed the sole canonical task packet on `main` is `tasks/done/SUT-AIOS-P0-001/task.json`; no active, review, or ready copy remains.
+- Preserved all baseline-gate evidence, including the independent passing result and earlier blocked results, under `evidence/verification/SUT-AIOS-P0-001/`.
+- Confirmed the assigned task worktree was clean, merged, and safely removed; no task branch worktree remains registered.
+- Moved only `SUT-AIOS-P0-002` and `SUT-AIOS-P0-003` to `ready`, because their sole dependency P0-001 is done. Selected `SUT-AIOS-P0-002` as the single next task; no Phase 1+ task was unblocked.
+- Updated permanent memory to reflect `main` as current, the completed baseline gate, current focus, and continued production/autonomy prohibitions.

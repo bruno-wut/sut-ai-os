@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-003",
   "title": "Capture finalized-platform compatibility contracts",
-  "status": "backlog",
+  "status": "ready",
   "phase": "phase-0",
   "workstream": "compatibility",
   "workflowId": "implementation-p0-003",
@@ -86,14 +86,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P0-003/task.json",
+      "tasks/ready/SUT-AIOS-P0-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-26T14:18:29.550Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -102,6 +102,13 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T14:18:29.550Z",
+      "actor": "engineering-planner",
+      "reason": "P0-001 is done with durable independent verification; sole dependency satisfied."
     }
   ]
 }
