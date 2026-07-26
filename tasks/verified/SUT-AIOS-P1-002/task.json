@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-002",
   "title": "Define static control-plane schema contract",
-  "status": "ready",
+  "status": "verified",
   "phase": "phase-1",
   "workstream": "control-plane-schema",
   "workflowId": "implementation-p1-002",
@@ -21,7 +21,8 @@
     "SUT-AIOS-P1-001"
   ],
   "evidence": [
-    "evidence/tasks/SUT-AIOS-P1-002/verification.md"
+    "evidence/tasks/SUT-AIOS-P1-002/verification.md",
+    "evidence/verification/SUT-AIOS-P1-002/verification-20260726185915272.json"
   ],
   "assumptions": [
     "No production write, deployment, live credential access, database access, migration execution, RLS, queue, or external service access is authorized.",
@@ -35,11 +36,11 @@
   ],
   "allowedPaths": [
     "packages/control-plane-schema/**",
-      "tests/control-plane-schema/**",
-      "docs/control-plane-schema/**",
-      "evidence/tasks/SUT-AIOS-P1-002/**",
-      "evidence/verification/SUT-AIOS-P1-002/**",
-      "tasks/**/SUT-AIOS-P1-002/**"
+    "tests/control-plane-schema/**",
+    "docs/control-plane-schema/**",
+    "evidence/tasks/SUT-AIOS-P1-002/**",
+    "evidence/verification/SUT-AIOS-P1-002/**",
+    "tasks/**/SUT-AIOS-P1-002/**"
   ],
   "forbiddenPaths": [
     "reference/finalized-platform/**",
@@ -91,7 +92,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P1-002/task.json",
+      "tasks/verified/SUT-AIOS-P1-002/task.json",
       "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
@@ -99,8 +100,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T18:54:16.694Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T18:59:47.131Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P1-002/verification-20260726185915272.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -115,6 +118,27 @@
       "at": "2026-07-26T18:54:16.694Z",
       "actor": "engineering-planner",
       "reason": "P1-001 is done; GOV-017's bounded static schema contract is delivered; and GOV-018's exact shell-free validator admission is done with independent evidence."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T18:57:29.716Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #22 merged with passing governance CI; begin the bounded static schema and offline-validator implementation in this isolated worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T18:58:46.368Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Static control-plane schema artifact and deterministic offline validator implemented; deterministic checks passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T18:59:47.131Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed the static eight-entity schema, exact relationship boundaries, deterministic invalid cases, and machine verification."
     }
   ]
 }
