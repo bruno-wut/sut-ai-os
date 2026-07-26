@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-002",
   "title": "Define static control-plane schema contract",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "control-plane-schema",
   "workflowId": "implementation-p1-002",
@@ -92,7 +92,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P1-002/task.json",
+      "tasks/done/SUT-AIOS-P1-002/task.json",
       "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
@@ -100,7 +100,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T18:59:47.131Z",
+  "updatedDate": "2026-07-26T19:02:28.534Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P1-002/verification-20260726185915272.json"
   ],
@@ -139,6 +139,13 @@
       "at": "2026-07-26T18:59:47.131Z",
       "actor": "qa-verification",
       "reason": "Independent QA passed the static eight-entity schema, exact relationship boundaries, deterministic invalid cases, and machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T19:02:28.534Z",
+      "actor": "qa-verification",
+      "reason": "PR #23 merged to main at 71f83246d5551ea9bb28ff87014fdbd419fa968b after passing Governance / validate; completion reconciliation records terminal delivery."
     }
   ]
 }
