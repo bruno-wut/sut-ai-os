@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-020",
   "title": "Admit exact P1-003 audit validator safely",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "verification-governance",
   "workflowId": "p1-003-verifier-admission",
@@ -92,7 +92,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-020/task.json",
+      "tasks/done/SUT-AIOS-GOV-020/task.json",
       "tasks/backlog/SUT-AIOS-P1-003/task.json",
       "scripts/verify/verify-cli.mjs",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -101,7 +101,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T19:16:30.668Z",
-  "updatedDate": "2026-07-26T19:23:55.135Z",
+  "updatedDate": "2026-07-26T19:27:15.246Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-020/verification-20260726192325085.json"
   ],
@@ -140,6 +140,13 @@
       "at": "2026-07-26T19:23:55.135Z",
       "actor": "qa-verification",
       "reason": "Independent QA passed the exact audit-validator mapping, fail-closed rejection coverage, deterministic checks, and machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T19:27:15.246Z",
+      "actor": "qa-verification",
+      "reason": "PR #29 merged with passing Governance CI; completion reconciliation records terminal delivery."
     }
   ]
 }
