@@ -43,6 +43,10 @@
     "local-ai:draft-fixtures": "node scripts/local-ai/draft-fixtures",
     "local-ai:check-content": "node scripts/local-ai/check-content",
     "local-ai:health": "node scripts/local-ai/health",
-    "local-ai:benchmark": "node scripts/local-ai/benchmark"
+    "local-ai:benchmark": "node scripts/local-ai/benchmark",
+    "model-run:record": "node scripts/model-run/record",
+    "model-run:report": "node scripts/model-run/report",
+    "model-run:compare": "node scripts/model-run/compare",
+    "model-run:recommend-routing": "node scripts/model-run/recommend-routing"
   }
 }

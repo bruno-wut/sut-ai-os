@@ -178,3 +178,30 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** `.github/`, `scripts/github/`, CI policy enforcement
 - **Evidence:** Local validation is implemented; an independent QA agent has not yet reviewed the final diff and evidence.
 - **Next action / owner:** QA and Verification Agent must run the governance checks and record a machine-readable result before any pull request is considered verified.
+
+### 2026-07-26 — Model telemetry starts without historical provider usage
+
+- **Task ID:** `SUT-AIOS-GOV-009`
+- **Status:** Open
+- **Severity:** Low
+- **Affected scope:** `artifacts/reports/model-runs/` and model-routing evaluation
+- **Evidence:** Existing Codex/local wrappers intentionally do not retain token counts, prompts, or outputs. Initial aggregate reports are therefore empty until new sanitized run records are supplied.
+- **Next action / owner:** Engineering and QA should record comparable, independently verified runs for each evaluation class before treating routing metrics as directional.
+
+### 2026-07-26 — Documented task move command is not exposed through npm
+
+- **Task ID:** `SUT-AIOS-GOV-009`
+- **Status:** Open
+- **Severity:** Low
+- **Affected scope:** Task packet lifecycle ergonomics
+- **Evidence:** `npm run task:move` is documented but absent from `package.json`; `node scripts/task/move` remains available and was used for this packet.
+- **Next action / owner:** Add and independently verify the missing package command in a separate governance task.
+
+### 2026-07-26 — Telemetry verification initially blocked by a non-allowlisted command form
+
+- **Task ID:** `SUT-AIOS-GOV-009`
+- **Status:** Resolved; failed evidence retained
+- **Severity:** Low
+- **Affected scope:** Task-packet required-test compatibility with the independent verifier
+- **Evidence:** `verification-20260726124741943.json` recorded a blocked result because `verify:task` deliberately permits only safe direct script commands and the packet used an npm indirection for task validation.
+- **Next action / owner:** Packet now uses `node scripts/task/validate --all`; QA must rerun independent verification before task completion.

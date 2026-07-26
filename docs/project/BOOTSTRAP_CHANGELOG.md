@@ -142,3 +142,9 @@ The following separation changes were made:
 - Retried with GitHub CLI `2.96.0`: authenticated as `bruno-wut`; read-only discovery found two application repositories only. No remote was added and no repository settings were changed.
 - Confirmed target `bruno-wut/sut-ai-os` with administrator permission. Read-only inspection found an empty repository with no branch, workflows, environments, rulesets, or protection. No remote was added and no push or remote mutation was performed.
 - Per explicit authorization, added local `origin` for `https://github.com/bruno-wut/sut-ai-os.git` and pushed `chore/codex-workspace-bootstrap` (commit `06115d9`). No pull request, branch protection, ruleset, environment, deployment, or production change was performed.
+
+## Verified-work efficiency telemetry
+
+- Added schemas, cross-platform model-run commands, aggregate reporting, and advisory-only routing recommendations.
+- Added privacy boundaries that prohibit prompts, model output, credentials, guest data, and raw logs from durable telemetry records.
+- Added a representative routing evaluation suite. No automatic policy, task-packet, or agent-routing change is enabled.

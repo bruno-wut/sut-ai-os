@@ -1,0 +1,2 @@
+#!/usr/bin/env node
+import "./model-run-cli.mjs";

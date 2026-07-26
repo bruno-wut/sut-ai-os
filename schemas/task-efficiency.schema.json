@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/task-efficiency.schema.json",
+  "title": "Model-routing efficiency report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "runCount", "metrics", "byModel", "privacyNotice"],
+  "properties": {
+    "schemaVersion": {"const": "1.0.0"}, "generatedAt": {"type": "string", "format": "date-time"}, "runCount": {"type": "integer", "minimum": 0},
+    "metrics": {"type": "object", "additionalProperties": false, "required": ["verifiedTasksCompleted", "firstPassVerificationRate", "revisionRate", "escalationRate", "rollbackRate", "tokensPerVerifiedTask", "tokensSpentOnRework", "lunaToTerraEscalations", "terraToSolEscalations", "qwenOutputAcceptanceRate", "defectsFoundAfterMerge"], "properties": {"verifiedTasksCompleted": {"type": "integer", "minimum": 0}, "firstPassVerificationRate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "revisionRate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "escalationRate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "rollbackRate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "tokensPerVerifiedTask": {"type": ["number", "null"], "minimum": 0}, "tokensSpentOnRework": {"type": "integer", "minimum": 0}, "lunaToTerraEscalations": {"type": "integer", "minimum": 0}, "terraToSolEscalations": {"type": "integer", "minimum": 0}, "qwenOutputAcceptanceRate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "defectsFoundAfterMerge": {"type": "integer", "minimum": 0}}},
+    "byModel": {"type": "object"}, "privacyNotice": {"type": "string", "maxLength": 1000}
+  }
+}

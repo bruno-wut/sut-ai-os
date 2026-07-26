@@ -1,0 +1,158 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-009",
+  "title": "Add verified-work efficiency telemetry",
+  "status": "verified",
+  "phase": "workspace-bootstrap",
+  "workstream": "model-routing",
+  "workflowId": "codex-workspace-bootstrap",
+  "playbookId": "model-efficiency-telemetry",
+  "playbookMode": "shadow",
+  "businessObjective": "Measure and improve verified engineering output per token without exposing sensitive data or changing routing automatically.",
+  "technicalObjective": "Add validated model-run records, aggregate efficiency reports, comparison/recommendation commands, and representative routing evaluations.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-005",
+    "SUT-AIOS-GOV-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-009/verification.md"
+  ],
+  "assumptions": [
+    "Run records contain aggregate metadata only and never prompts, credentials, guest data, raw logs, or model output.",
+    "Model policy changes remain human-controlled."
+  ],
+  "acceptanceCriteria": [
+    "Schemas cover all requested model-run and task-efficiency fields with privacy constraints.",
+    "Recording and reporting commands produce validated structured JSON without storing sensitive content.",
+    "Reports calculate the requested metrics from durable run records.",
+    "Routing recommendations are advisory and cannot change routing policy.",
+    "Documentation defines metrics, privacy limits, and representative evaluation tasks."
+  ],
+  "allowedPaths": [
+    "schemas/model-run.schema.json",
+    "schemas/task-efficiency.schema.json",
+    "artifacts/reports/model-runs/**",
+    "docs/model-routing/EFFICIENCY_METRICS.md",
+    "docs/model-routing/MODEL_EVALUATION.md",
+    "scripts/model-run/**",
+    "package.json",
+    "tasks/backlog/SUT-AIOS-GOV-009/**",
+    "tasks/ready/SUT-AIOS-GOV-009/**",
+    "tasks/active/SUT-AIOS-GOV-009/**",
+    "tasks/review/SUT-AIOS-GOV-009/**",
+    "tasks/verified/SUT-AIOS-GOV-009/**",
+    "evidence/tasks/SUT-AIOS-GOV-009/**",
+    "evidence/verification/SUT-AIOS-GOV-009/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/project/BOOTSTRAP_CHANGELOG.md"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    ".env*",
+    "**/*secret*",
+    "supabase/**",
+    "policies/**"
+  ],
+  "allowedCommands": [
+    "node scripts/model-run/model-run-cli.mjs --self-test",
+    "npm run model-run:record",
+    "npm run model-run:report",
+    "npm run model-run:compare",
+    "npm run model-run:recommend-routing",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "schema parsing",
+    "model-run tool self-test",
+    "privacy redaction check",
+    "task validation",
+    "fast verification",
+    "whitespace check"
+  ],
+  "requiredTests": [
+    "node scripts/model-run/model-run-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "terra",
+  "defaultModel": "gpt-5.6-terra",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Telemetry changes would capture prompts, credentials, guest data, or other sensitive content.",
+    "A recommendation is proposed to automatically alter model policy."
+  ],
+  "rollbackExpectations": "Revert telemetry schemas, scripts, documents, and example reports; do not alter historical task or verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-GOV-009/task.json",
+      "docs/model-routing/MODEL_ROUTING_POLICY.md",
+      "docs/architecture/source/Agent Architecture.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T12:43:42.915Z",
+  "updatedDate": "2026-07-26T12:48:27.493Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-009/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T12:43:42.915Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T12:44:44.487Z",
+      "actor": "chief-orchestrator",
+      "reason": "Telemetry scope, privacy boundary, and verification requirements defined."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T12:44:44.845Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Approved local telemetry implementation started."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T12:48:27.192Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Telemetry implementation submitted with deterministic checks and evidence."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T12:48:27.493Z",
+      "actor": "qa-verification",
+      "reason": "Independent verification passed with retained failed-attempt evidence."
+    }
+  ]
+}
