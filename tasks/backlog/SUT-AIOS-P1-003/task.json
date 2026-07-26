@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-003",
-  "title": "Implement append-only audit record contracts",
+  "title": "Define static append-only audit contract",
   "status": "backlog",
   "phase": "phase-1",
   "workstream": "audit",
@@ -10,10 +10,11 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded audit outcome.",
-  "technicalObjective": "Implement append-only audit record contracts",
+  "technicalObjective": "Create the version 1 static append-only audit-contract artifact and deterministic offline validator exactly as defined in docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
+    "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
@@ -23,19 +24,21 @@
     "evidence/tasks/SUT-AIOS-P1-003/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
+    "No production write, deployment, live credential access, audit-store access, database access, migration execution, RLS, queue, or external service access is authorized.",
+    "The contract and validator are static repository artifacts; the validator uses Node built-ins only and must not install packages.",
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement append-only audit record contracts is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "packages/audit-sdk/append-only-audit-contract-v1.json implements the closed version 1 audit-record and append-only design specified in docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md.",
+    "tests/audit/validate-append-only-audit-contract.mjs deterministically accepts the finite valid artifact and rejects every documented invalid case without network or external state.",
+    "The exact validator command and fast governance verification pass, and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
     "packages/audit-sdk/**",
     "tests/audit/**",
     "docs/audit/**",
     "evidence/tasks/SUT-AIOS-P1-003/**",
+    "evidence/verification/SUT-AIOS-P1-003/**",
     "tasks/**/SUT-AIOS-P1-003/**"
   ],
   "forbiddenPaths": [
@@ -43,21 +46,26 @@
     "docs/architecture/source/**",
     ".env*",
     "**/*secret*",
-    "**/*credential*"
+    "**/*credential*",
+    "supabase/**",
+    "migrations/**",
+    "apps/**"
   ],
   "allowedCommands": [
-    "npm run test:audit",
+    "node tests/audit/validate-append-only-audit-contract.mjs",
     "npm run verify:fast",
-    "git diff --check"
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P1-003 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
   ],
   "requiredChecks": [
     "audit contract validation",
     "changed-path inspection",
     "secret scan",
-    "independent verification"
+    "independent verification",
+    "independent machine verification"
   ],
   "requiredTests": [
-    "npm run test:audit",
+    "node tests/audit/validate-append-only-audit-contract.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -77,13 +85,14 @@
     "Any required change crosses declared subsystem or protected paths.",
     "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
   ],
-  "rollbackExpectations": "Revert the audit branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert the static audit contract, validator, task-state record, and evidence together; preserve audit and verification evidence.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P1-003/task.json",
+      "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
