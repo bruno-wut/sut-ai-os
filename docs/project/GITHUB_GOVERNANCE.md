@@ -2,7 +2,7 @@
 
 ## Local audit
 
-This independent repository currently has no configured Git remote. The GitHub CLI is now authenticated as `bruno-wut`. Read-only discovery found two private application repositories, `bruno-wut/sriuthongstaging` and `bruno-wut/sri-u-thong-new-chapter`; neither is an independent AI OS repository. The finalized application repository must remain untouched. The intended remote for `SUT_AI_OS` is still unconfirmed.
+This independent repository currently has no configured Git remote. The GitHub CLI is authenticated as `bruno-wut` (administrator). The intended target `bruno-wut/sut-ai-os` is confirmed, but the remote is empty: it has no default branch, contents, workflows, environments, protection rulesets, or branch protection. The finalized application repositories remain out of scope.
 
 ## Pull requests and issues
 
