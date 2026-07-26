@@ -142,3 +142,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Content schema, Astro/storefront, Next.js/IBE, Staff OS, webhook replay, preview smoke, Lighthouse, and migration verification
 - **Evidence:** The command inventory found runnable scripts only in `reference/finalized-platform/`, which is immutable. `verify:content`, `verify:storefront`, `verify:ibe`, and `verify:staff-os` therefore return explicit blocked results.
 - **Next action / owner:** Create approved implementation-worktree tasks that install dependencies locally and bind each detected application command to a no-side-effect verification profile.
+
+### 2026-07-26 â€” Context summarizer requires independent semantic review
+
+- **Task ID:** `SUT-AIOS-GOV-006`
+- **Status:** Open
+- **Severity:** Low
+- **Affected scope:** `scripts/context/summarize-artifact` and generated summaries under `artifacts/reports/`
+- **Evidence:** The summarizer preserves exact error/failure lines and labels Qwen/local preprocessing as unverified, but it does not establish semantic truth about an artifact.
+- **Next action / owner:** QA and Verification Agent must review summaries before they influence decisions, code, public content, or completion evidence.

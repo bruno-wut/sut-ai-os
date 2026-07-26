@@ -31,6 +31,7 @@
     "verify:storefront": "node scripts/verify/storefront",
     "verify:ibe": "node scripts/verify/ibe",
     "verify:staff-os": "node scripts/verify/staff-os",
-    "verify:security-boundaries": "node scripts/verify/security-boundaries"
+    "verify:security-boundaries": "node scripts/verify/security-boundaries",
+    "context:check": "node scripts/context/check-context-size --path tasks/active"
   }
 }

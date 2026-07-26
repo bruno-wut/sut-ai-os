@@ -115,3 +115,11 @@ The following separation changes were made:
 - Added independent-verifier/model recording, required-test execution, protected-path and secret scanning, machine-readable result evidence, and a false-by-default production-eligibility result.
 - Added verification policy, acceptance matrix, and test-ownership documents. Checks that exist only in the immutable compatibility baseline now report blocked rather than executing there.
 - Added active bootstrap task `SUT-AIOS-GOV-005` and preserved both failed framework-discovery results and the subsequent passing result as durable evidence.
+
+## Context management
+
+- Added bounded task/review context builders, handoff generation, artifact summarization, and context-size checks under `scripts/context/`.
+- Added implementer-to-reviewer, reviewer-to-remediator, and fresh-session resume templates.
+- Added practical packet/context/evidence/handoff/raw-excerpt limits and generated the six required context files for every active task.
+- Added active bootstrap task `SUT-AIOS-GOV-006`; no canonical architecture source was copied into a context pack.
+- Removed the now-unneeded placeholder files from populated context/handoff directories and added path/secret guards to summarization and size checking.
