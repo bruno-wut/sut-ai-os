@@ -18,7 +18,8 @@
   ],
   "dependencies": [],
   "evidence": [
-    "evidence/tasks/SUT-AIOS-GOV-016/verification.md"
+    "evidence/tasks/SUT-AIOS-GOV-016/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726173513611.json"
   ],
   "assumptions": [
     "No production, staging, database, event delivery, credential, or external-service access is authorized.",

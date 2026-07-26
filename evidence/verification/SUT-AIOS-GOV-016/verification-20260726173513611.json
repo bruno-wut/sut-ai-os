@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-016",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-terra",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T17:35:13.611Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/verify/verify-cli.mjs --self-test: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: verify:task accepts only the byte-for-byte literal node tests/event-contracts/validate-normalized-system-event-contract.mjs and launches node with shell false and exactly that one fixed argument.",
+    "confirmed: Self-tests reject whitespace, argument, alternate-path, shell-operator, and unrelated node tests variants.",
+    "confirmed: Task validation, fast governance verification, changed-path inspection, secret scan, and independent verification pass without touching forbidden paths."
+  ],
+  "changedPaths": [],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726173513611.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
