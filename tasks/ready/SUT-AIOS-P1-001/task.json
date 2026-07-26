@@ -3,17 +3,18 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-001",
   "title": "Define normalized system event contract",
-  "status": "backlog",
+  "status": "ready",
   "phase": "phase-1",
   "workstream": "event-contracts",
   "workflowId": "implementation-p1-001",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded event-contracts outcome.",
-  "technicalObjective": "Define normalized system event contract",
+  "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded, static normalized-event contract.",
+  "technicalObjective": "Create the version 1 normalized system-event JSON Schema and its deterministic offline validator exactly as defined in docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
+    "docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
@@ -23,13 +24,14 @@
     "evidence/tasks/SUT-AIOS-P1-001/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
+    "No production write, deployment, live credential access, event ingestion, queue, database, or external service access is authorized.",
+    "The schema and validator are static repository artifacts; the validator uses Node built-ins only and must not install packages.",
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Define normalized system event contract is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "packages/event-contracts/normalized-system-event.schema.json implements the closed version 1 envelope specified in docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md.",
+    "tests/event-contracts/validate-normalized-system-event-contract.mjs deterministically accepts the finite valid case and rejects every documented invalid case without network or external state.",
+    "The exact validator command and fast governance verification pass, and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
     "packages/event-contracts/**",
@@ -49,7 +51,7 @@
     "apps/ibe/src/inventory/**"
   ],
   "allowedCommands": [
-    "npm run test:event-contracts",
+    "node tests/event-contracts/validate-normalized-system-event-contract.mjs",
     "npm run verify:fast",
     "git diff --check"
   ],
@@ -60,7 +62,7 @@
     "independent verification"
   ],
   "requiredTests": [
-    "npm run test:event-contracts",
+    "node tests/event-contracts/validate-normalized-system-event-contract.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -77,23 +79,24 @@
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
   "solEscalationTriggers": [
-    "Any required change crosses declared subsystem or protected paths.",
-    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+    "Any required change crosses the declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, workflow-correctness, delivery, or payload privacy ambiguity arises."
   ],
-  "rollbackExpectations": "Revert the event-contracts branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert the event-contract schema, validator, generated artifacts, task-state record, and evidence together; preserve audit and verification evidence.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P1-001/task.json",
+      "tasks/ready/SUT-AIOS-P1-001/task.json",
+      "docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-27T00:20:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -102,6 +105,13 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T00:20:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "P0-003 is done and GOV-015 defined P1-001's exact deterministic validator command and bounded static contract scope."
     }
   ]
 }

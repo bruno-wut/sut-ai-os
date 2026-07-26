@@ -12,6 +12,8 @@ The baseline gate (`SUT-AIOS-P0-001`) and dependency/security remediation (`SUT-
 
 Define event, task, analysis, proposal, approval, and result schemas; create deterministic path/command/data policies; establish audit conventions, correlation IDs, task packets, and observe-only defaults.
 
+`SUT-AIOS-P1-001` is ready to create the static normalized system-event schema and offline validator defined by `SUT-AIOS-GOV-015`. Event ingestion, queues, databases, and production access remain out of scope.
+
 ## 2. Intelligence and reporting
 
 Add prepared metrics, read-only data interfaces, structured analysis outputs, initial insight/report workflows, and Staff OS integration designs. No autonomous production changes.

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-015",
+  "status": "blocked",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-terra",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-26T17:24:32.943Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --task SUT-AIOS-GOV-015: fail",
+    "node scripts/task/validate --task SUT-AIOS-P1-001: fail",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design defines a versioned normalized event envelope, required identifiers, type, severity, timestamp, payload boundary, and deterministic invalid-input behavior.",
+    "confirmed: P1-001 is amended to use the exact future command node tests/event-contracts/validate-normalized-system-event-contract.mjs.",
+    "confirmed: Both packets validate and independent review confirms protected paths remain untouched."
+  ],
+  "changedPaths": [
+    "docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/project/ROADMAP.md",
+    "evidence/tasks/SUT-AIOS-GOV-015/verification.md",
+    "tasks/backlog/SUT-AIOS-P1-001/task.json",
+    "tasks/ready/SUT-AIOS-P1-001/task.json",
+    "tasks/review/SUT-AIOS-GOV-015/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-015/verification-20260726172432943.json"
+  ],
+  "risks": [],
+  "recommendation": "blocked"
+}
