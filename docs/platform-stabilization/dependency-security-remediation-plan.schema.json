@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/contracts/dependency-security-remediation-plan.schema.json",
+  "title": "Dependency and security remediation plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "planId",
+    "taskId",
+    "status",
+    "observedAt",
+    "sourceBaseline",
+    "boundary",
+    "auditTargets",
+    "remediationWaves",
+    "releaseGates",
+    "failureBehavior",
+    "riskAcceptance",
+    "rollback"
+  ],
+  "properties": {
+    "$schema": { "const": "./dependency-security-remediation-plan.schema.json" },
+    "schemaVersion": { "const": "1.0.0" },
+    "planId": { "const": "dependency-security-remediation-plan" },
+    "taskId": { "const": "SUT-AIOS-P0-002" },
+    "status": { "enum": ["proposed", "approved", "superseded"] },
+    "observedAt": { "type": "string", "format": "date" },
+    "sourceBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceCommit", "immutable", "evidence"],
+      "properties": {
+        "path": { "const": "reference/finalized-platform/" },
+        "sourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "immutable": { "const": true },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planOnly",
+        "productionWritePermission",
+        "futureImplementationOnly",
+        "implementationTarget",
+        "forbiddenTargets"
+      ],
+      "properties": {
+        "planOnly": { "const": true },
+        "productionWritePermission": { "const": false },
+        "futureImplementationOnly": { "const": true },
+        "implementationTarget": {
+          "const": "A future approved worktree created from the maintained upstream application repository."
+        },
+        "forbiddenTargets": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "contains": { "const": "reference/finalized-platform/**" },
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "auditTargets": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/auditTarget" }
+    },
+    "remediationWaves": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/remediationWave" }
+    },
+    "releaseGates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/releaseGate" }
+    },
+    "failureBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auditHighOrCritical",
+        "auditCommandError",
+        "lockfileDrift",
+        "requiredCheckFailure",
+        "protectedPathChanged",
+        "secretDetected",
+        "breakingUpgradeWithoutEvidence",
+        "protectedDomainTouched",
+        "deploymentRequested"
+      ],
+      "properties": {
+        "auditHighOrCritical": { "const": "fail" },
+        "auditCommandError": { "const": "blocked" },
+        "lockfileDrift": { "const": "fail" },
+        "requiredCheckFailure": { "const": "fail" },
+        "protectedPathChanged": { "const": "fail" },
+        "secretDetected": { "const": "fail" },
+        "breakingUpgradeWithoutEvidence": { "const": "fail" },
+        "protectedDomainTouched": { "const": "escalate-and-split-task" },
+        "deploymentRequested": { "const": "blocked-without-separate-approval" }
+      }
+    },
+    "riskAcceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executorMayApprove", "requiredFields", "expiryRequired"],
+      "properties": {
+        "executorMayApprove": { "const": false },
+        "requiredFields": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "expiryRequired": { "const": true }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "atomicFiles", "preserveEvidence", "productionAction"],
+      "properties": {
+        "strategy": { "type": "string", "minLength": 1 },
+        "atomicFiles": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "preserveEvidence": { "const": true },
+        "productionAction": { "const": "none-authorized" }
+      }
+    }
+  },
+  "$defs": {
+    "severityCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critical", "high", "moderate", "low", "total"],
+      "properties": {
+        "critical": { "type": "integer", "minimum": 0 },
+        "high": { "type": "integer", "minimum": 0 },
+        "moderate": { "type": "integer", "minimum": 0 },
+        "low": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package", "installedVersion", "severity", "direct", "dependencyPaths", "advisories", "remediation"],
+      "properties": {
+        "package": { "type": "string", "minLength": 1 },
+        "installedVersion": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["critical", "high", "moderate", "low"] },
+        "direct": { "type": "boolean" },
+        "dependencyPaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "advisories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^GHSA-[0-9a-z-]+$" }
+        },
+        "remediation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "auditTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "command", "result", "exitCode", "counts", "findings"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "path": { "type": "string", "minLength": 1 },
+        "command": { "const": "npm audit --omit=dev" },
+        "result": { "enum": ["pass", "fail", "blocked"] },
+        "exitCode": { "type": "integer", "minimum": 0 },
+        "counts": { "$ref": "#/$defs/severityCounts" },
+        "findings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/finding" }
+        }
+      }
+    },
+    "remediationWave": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "id", "status", "owner", "futureTaskRequired", "actions", "exitCriteria"],
+      "properties": {
+        "order": { "type": "integer", "minimum": 1 },
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "status": { "const": "planned" },
+        "owner": { "type": "string", "minLength": 1 },
+        "futureTaskRequired": { "const": true },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "exitCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "releaseGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "scope", "commands", "passCondition", "onFailure"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scope": { "type": "string", "minLength": 1 },
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "passCondition": { "type": "string", "minLength": 1 },
+        "onFailure": { "enum": ["fail", "blocked", "escalate"] }
+      }
+    }
+  }
+}

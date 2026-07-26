@@ -1,0 +1,318 @@
+{
+  "$schema": "./dependency-security-remediation-plan.schema.json",
+  "schemaVersion": "1.0.0",
+  "planId": "dependency-security-remediation-plan",
+  "taskId": "SUT-AIOS-P0-002",
+  "status": "proposed",
+  "observedAt": "2026-07-26",
+  "sourceBaseline": {
+    "path": "reference/finalized-platform/",
+    "sourceCommit": "dbce321f61144b50a94bd11a068fa5897b0f2293",
+    "immutable": true,
+    "evidence": [
+      "docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md",
+      "evidence/tasks/SUT-AIOS-P0-001/verification.md",
+      "evidence/tasks/SUT-AIOS-P0-002/verification.md"
+    ]
+  },
+  "boundary": {
+    "planOnly": true,
+    "productionWritePermission": false,
+    "futureImplementationOnly": true,
+    "implementationTarget": "A future approved worktree created from the maintained upstream application repository.",
+    "forbiddenTargets": [
+      "reference/finalized-platform/**",
+      "docs/architecture/source/**",
+      "production systems",
+      "staging systems without separate approval"
+    ]
+  },
+  "auditTargets": [
+    {
+      "id": "governance-workspace",
+      "path": ".",
+      "command": "npm audit --omit=dev",
+      "result": "pass",
+      "exitCode": 0,
+      "counts": { "critical": 0, "high": 0, "moderate": 0, "low": 0, "total": 0 },
+      "findings": []
+    },
+    {
+      "id": "compatibility-root",
+      "path": "reference/finalized-platform/",
+      "command": "npm audit --omit=dev",
+      "result": "fail",
+      "exitCode": 1,
+      "counts": { "critical": 0, "high": 6, "moderate": 0, "low": 0, "total": 6 },
+      "findings": [
+        {
+          "package": "brace-expansion",
+          "installedVersion": "multiple: 1.1.15, 2.1.1, 5.0.7",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["@node-minify/core > brace-expansion", "glob > brace-expansion"],
+          "advisories": ["GHSA-3jxr-9vmj-r5cp", "GHSA-mh99-v99m-4gvg"],
+          "remediation": "Upgrade the owning dependency chains to versions that resolve brace-expansion above the audited vulnerable ranges; do not add an override without compatibility evidence."
+        },
+        {
+          "package": "next",
+          "installedVersion": "16.2.9",
+          "severity": "high",
+          "direct": true,
+          "dependencyPaths": ["next"],
+          "advisories": [
+            "GHSA-6gpp-xcg3-4w24",
+            "GHSA-m99w-x7hq-7vfj",
+            "GHSA-89xv-2m56-2m9x",
+            "GHSA-68g3-v927-f742",
+            "GHSA-4633-3j49-mh5q",
+            "GHSA-4c39-4ccg-62r3",
+            "GHSA-p9j2-gv94-2wf4",
+            "GHSA-q8wf-6r8g-63ch",
+            "GHSA-955p-x3mx-jcvp"
+          ],
+          "remediation": "Refresh the audit in the future upstream task, select the then-current patched Next.js release compatible with OpenNext, and verify App Router, Server Actions, rewrites, image handling, and middleware-to-proxy behavior."
+        },
+        {
+          "package": "postcss",
+          "installedVersion": "8.5.15",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["next > postcss"],
+          "advisories": ["GHSA-r28c-9q8g-f849"],
+          "remediation": "Resolve to a patched version above 8.5.17 through compatible parent upgrades or a reviewed override, then prove source-map handling and builds."
+        },
+        {
+          "package": "sharp",
+          "installedVersion": "0.34.5",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["next > sharp", "wrangler > miniflare > sharp"],
+          "advisories": ["GHSA-f88m-g3jw-g9cj"],
+          "remediation": "Resolve to sharp 0.35.0 or newer through compatible Next.js and Cloudflare tooling updates, then verify image processing and Worker builds on the supported runtime."
+        }
+      ]
+    },
+    {
+      "id": "astro-storefront",
+      "path": "reference/finalized-platform/website/astro-site/",
+      "command": "npm audit --omit=dev",
+      "result": "fail",
+      "exitCode": 1,
+      "counts": { "critical": 0, "high": 6, "moderate": 0, "low": 1, "total": 7 },
+      "findings": [
+        {
+          "package": "astro",
+          "installedVersion": "5.18.2",
+          "severity": "high",
+          "direct": true,
+          "dependencyPaths": ["astro"],
+          "advisories": [
+            "GHSA-j687-52p2-xcff",
+            "GHSA-xr5h-phrj-8vxv",
+            "GHSA-8hv8-536x-4wqp",
+            "GHSA-2pvr-wf23-7pc7",
+            "GHSA-jrpj-wcv7-9fh9",
+            "GHSA-4g3v-8h47-v7g6",
+            "GHSA-f48w-9m4c-m7f5",
+            "GHSA-7pw4-f3q4-r2p2"
+          ],
+          "remediation": "Plan an explicit Astro 7 migration rather than using npm audit fix --force; the audit identifies 7.1.3 as the first proposed fix target, which must be refreshed and migration-tested at execution time."
+        },
+        {
+          "package": "esbuild",
+          "installedVersion": "0.27.7",
+          "severity": "low",
+          "direct": false,
+          "dependencyPaths": ["astro toolchain > esbuild"],
+          "advisories": ["GHSA-g7r4-m6w7-qqqr"],
+          "remediation": "Resolve outside the vulnerable 0.27.3 through 0.28.0 range through the Astro toolchain upgrade and verify Windows development-server isolation."
+        },
+        {
+          "package": "fast-uri",
+          "installedVersion": "3.1.3",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["Astro transitive dependency > fast-uri"],
+          "advisories": ["GHSA-v2hh-gcrm-f6hx"],
+          "remediation": "Refresh the transitive graph to a release above 3.1.3 and exercise URL and host validation paths."
+        },
+        {
+          "package": "js-yaml",
+          "installedVersion": "4.2.0",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["Astro transitive dependency > js-yaml"],
+          "advisories": ["GHSA-52cp-r559-cp3m"],
+          "remediation": "Resolve above 4.2.0 through parent upgrades and test content/config parsing with bounded fixtures."
+        },
+        {
+          "package": "postcss",
+          "installedVersion": "8.5.15",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["Astro toolchain > postcss"],
+          "advisories": ["GHSA-r28c-9q8g-f849"],
+          "remediation": "Resolve above 8.5.17 through the Astro toolchain upgrade and verify CSS and source-map output."
+        },
+        {
+          "package": "sharp",
+          "installedVersion": "0.34.5",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["astro > sharp"],
+          "advisories": ["GHSA-f88m-g3jw-g9cj"],
+          "remediation": "Resolve to sharp 0.35.0 or newer through the Astro major upgrade and verify image output across supported formats."
+        },
+        {
+          "package": "svgo",
+          "installedVersion": "4.0.1",
+          "severity": "high",
+          "direct": false,
+          "dependencyPaths": ["Astro toolchain > svgo"],
+          "advisories": ["GHSA-2p49-hgcm-8545"],
+          "remediation": "Resolve above 4.0.1 and add an executable-script SVG regression fixture before accepting optimized SVG output."
+        }
+      ]
+    }
+  ],
+  "remediationWaves": [
+    {
+      "order": 1,
+      "id": "refresh-and-exposure-triage",
+      "status": "planned",
+      "owner": "engineering-planner with security reviewer",
+      "futureTaskRequired": true,
+      "actions": [
+        "Create approved implementation packets and isolated worktrees against the maintained upstream application, never this compatibility snapshot.",
+        "Refresh both production-dependency audits and map each advisory to reachable runtime features before changing manifests.",
+        "Prioritize public request handling, Server Actions, rewrites, images, Astro rendering, and SVG optimization; document any non-reachability claim as expiring risk evidence."
+      ],
+      "exitCriteria": [
+        "Fresh machine-readable audit evidence is attached to each implementation packet.",
+        "Every high-severity advisory has an owner, disposition, and validation mapping.",
+        "No production, staging, payment, inventory, booking, database, or credential action is included."
+      ]
+    },
+    {
+      "order": 2,
+      "id": "nextjs-and-cloudflare-chain",
+      "status": "planned",
+      "owner": "codex-engineering-executor with security and Cloudflare review",
+      "futureTaskRequired": true,
+      "actions": [
+        "Upgrade Next.js and compatible OpenNext/Cloudflare packages to versions that clear the refreshed advisories.",
+        "Refresh package-lock.json atomically with package.json; do not use an unreviewed force fix.",
+        "Add focused tests for Server Action limits, rewrite destination validation, response caching, image SVG handling, internal function disclosure, and proxy behavior."
+      ],
+      "exitCriteria": [
+        "The root production-dependency audit exits zero with no high or critical findings.",
+        "Root lint, typecheck, unit tests, application build, Cloudflare dry-run build, and scoped regression tests pass.",
+        "Security and Cloudflare reviewers approve compatibility evidence; no protected operational domain changed."
+      ]
+    },
+    {
+      "order": 3,
+      "id": "astro-major-migration",
+      "status": "planned",
+      "owner": "codex-engineering-executor with frontend security review",
+      "futureTaskRequired": true,
+      "actions": [
+        "Migrate Astro to a refreshed patched major release using its official migration guidance; treat the audit-proposed 7.1.3 target as provisional until execution.",
+        "Refresh the storefront lockfile and transitive esbuild, fast-uri, js-yaml, postcss, sharp, and svgo resolutions without blind force fixing.",
+        "Add regression fixtures for script termination, spread attributes, slot names, transition directives, server-island replay, host handling, SVG scripts, YAML resource bounds, and image generation."
+      ],
+      "exitCriteria": [
+        "The storefront production-dependency audit exits zero with no high or critical findings.",
+        "Astro check, static build, metadata/freeze verification, and security regression fixtures pass.",
+        "Rendered Thai and English routes and booking handoff URLs remain compatible."
+      ]
+    },
+    {
+      "order": 4,
+      "id": "independent-release-readiness",
+      "status": "planned",
+      "owner": "qa-verification",
+      "futureTaskRequired": true,
+      "actions": [
+        "Independently inspect manifest and lockfile diffs, advisory closure, scope, secret boundaries, and generated artifacts.",
+        "Exercise local builds and test suites in clean disposable environments.",
+        "Prepare a pull request with rollback notes; request staging or production actions only through separately approved release tasks."
+      ],
+      "exitCriteria": [
+        "Independent verification passes and records evidence.",
+        "The pull request contains no snapshot, architecture-source, migration, payment, inventory, or credential changes.",
+        "Production eligibility remains false until a distinct authorized release workflow approves it."
+      ]
+    }
+  ],
+  "releaseGates": [
+    {
+      "id": "audit-gate",
+      "scope": "Each maintained upstream application worktree",
+      "commands": ["npm audit --omit=dev"],
+      "passCondition": "Command exits zero and reports zero critical and zero high production-dependency vulnerabilities; any exception is separately approved, expiring, and linked as evidence.",
+      "onFailure": "fail"
+    },
+    {
+      "id": "nextjs-local-verification",
+      "scope": "Future maintained upstream root application task",
+      "commands": [
+        "npm ci",
+        "npm run lint",
+        "npm run typecheck",
+        "npm test",
+        "npm run build",
+        "npm run verify:cloudflare-config"
+      ],
+      "passCondition": "All approved local checks exit zero in a clean environment and focused security regressions pass.",
+      "onFailure": "fail"
+    },
+    {
+      "id": "astro-local-verification",
+      "scope": "Future maintained upstream Astro storefront task",
+      "commands": [
+        "npm ci",
+        "npm run check",
+        "npm run build"
+      ],
+      "passCondition": "All approved local checks exit zero and security, rendered-route, metadata, and booking-handoff fixtures pass.",
+      "onFailure": "fail"
+    },
+    {
+      "id": "independent-review",
+      "scope": "Each future remediation pull request",
+      "commands": ["changed-path inspection", "secret scan", "lockfile diff inspection"],
+      "passCondition": "An independent reviewer confirms scope, audit closure, deterministic checks, rollback, and forbidden-path compliance.",
+      "onFailure": "blocked"
+    }
+  ],
+  "failureBehavior": {
+    "auditHighOrCritical": "fail",
+    "auditCommandError": "blocked",
+    "lockfileDrift": "fail",
+    "requiredCheckFailure": "fail",
+    "protectedPathChanged": "fail",
+    "secretDetected": "fail",
+    "breakingUpgradeWithoutEvidence": "fail",
+    "protectedDomainTouched": "escalate-and-split-task",
+    "deploymentRequested": "blocked-without-separate-approval"
+  },
+  "riskAcceptance": {
+    "executorMayApprove": false,
+    "requiredFields": [
+      "advisory identifiers and affected dependency paths",
+      "reachability evidence and business impact",
+      "compensating controls",
+      "named approving owner and independent security reviewer",
+      "expiry date and follow-up task"
+    ],
+    "expiryRequired": true
+  },
+  "rollback": {
+    "strategy": "Revert the future upstream remediation commit or pull request as one unit if verification regresses; restore the manifest and lockfile together, and rerun the prior known-good local checks before any separately authorized release action.",
+    "atomicFiles": ["package.json", "package-lock.json"],
+    "preserveEvidence": true,
+    "productionAction": "none-authorized"
+  }
+}
