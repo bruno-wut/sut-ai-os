@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-001",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T17:56:35.987Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/event-contracts/validate-normalized-system-event-contract.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: packages/event-contracts/normalized-system-event.schema.json implements the closed version 1 envelope specified in docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md.",
+    "confirmed: tests/event-contracts/validate-normalized-system-event-contract.mjs deterministically accepts the finite valid case and rejects every documented invalid case without network or external state.",
+    "confirmed: The exact validator command and fast governance verification pass, and independent verification confirms forbidden paths were untouched."
+  ],
+  "changedPaths": [
+    "evidence/tasks/SUT-AIOS-P1-001/verification.md",
+    "packages/event-contracts/normalized-system-event.schema.json",
+    "tasks/active/SUT-AIOS-P1-001/task.json",
+    "tasks/ready/SUT-AIOS-P1-001/task.json",
+    "tests/event-contracts/validate-normalized-system-event-contract.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-001/verification-20260726175635987.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
