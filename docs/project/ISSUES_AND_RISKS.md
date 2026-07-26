@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-27 - P1-002 machine-verifier command admission is not yet authorized
+
+- **Task ID:** `SUT-AIOS-GOV-017`
+- **Status:** Open
+- **Severity:** Medium
+- **Affected scope:** `scripts/verify/verify-cli.mjs` safe required-command parser and P1-002 machine verification
+- **Evidence:** GOV-017 defines P1-002's exact validator command as `node tests/control-plane-schema/validate-control-plane-schema.mjs`; the current verifier admits only separately reviewed literal test paths and has no P1-002 mapping.
+- **Next action / owner:** After GOV-017 is independently reviewed and delivered, create a separate reviewed governance task that admits only this byte-for-byte command with fixed Node arguments, `shell: false`, and rejection coverage. Do not weaken the generic test-path parser.
+
 ### 2026-07-27 - Terminal task completion accepts a nonexistent supplemental evidence path
 
 - **Task ID:** `SUT-AIOS-GOV-016`
