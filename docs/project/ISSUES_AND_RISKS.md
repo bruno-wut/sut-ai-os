@@ -224,6 +224,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Evidence:** Packets name intended subsystem tests such as `test:event-contracts` and `test:workflow`; those package commands do not exist until their subsystem scaffold is approved and created.
 - **Next action / owner:** Engineering Planner must confirm each command against the real package manifest before moving that packet to `ready`; unavailable or invented commands block execution.
 
+### 2026-07-26 — P0-003 contract-validator verification admission is exact only
+
+- **Task ID:** `SUT-AIOS-GOV-014`
+- **Status:** Resolved pending independent verification
+- **Severity:** High
+- **Affected scope:** `verify:task` required-command parser for P0-003 compatibility verification
+- **Evidence:** P0-003's deterministic command is `node tests/compatibility/validate-finalized-platform-contracts.mjs`. GOV-014 maps only that byte-for-byte literal to `node` with one fixed argument and `shell: false`. Self-tests reject whitespace and argument variants, alternate paths, and shell-operator forms; generic `node tests/...` execution remains unsupported.
+- **Next action / owner:** QA Verification must run the packet-authorized independent machine verification and retain its result before GOV-014 is marked verified. Any further test-path admission requires a separate approved governance task.
+
 ### 2026-07-26 — Workspace readiness review limitations
 
 - **Task ID:** `SUT-AIOS-GOV-011`
