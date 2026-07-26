@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-017",
   "title": "Plan executable P1-002 control-plane schema verification",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "engineering-governance",
   "workflowId": "p1-002-verification-planning",
@@ -88,7 +88,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-017/task.json",
+      "tasks/done/SUT-AIOS-GOV-017/task.json",
       "tasks/backlog/SUT-AIOS-P1-002/task.json",
       "docs/architecture/source/Agent Architecture.md"
     ]
@@ -96,7 +96,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T18:01:35.671Z",
-  "updatedDate": "2026-07-26T18:15:15.022Z",
+  "updatedDate": "2026-07-26T18:34:57.441Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-017/verification-20260726181506953.json"
   ],
@@ -135,6 +135,13 @@
       "at": "2026-07-26T18:15:15.022Z",
       "actor": "qa-verification",
       "reason": "Independent QA review and machine verification passed; protected paths remained untouched."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T18:34:57.441Z",
+      "actor": "qa-verification",
+      "reason": "PR #17 merged to main at 217f4fe644ffa6bf230e2fa5b4bfafcff451f565 after passing Governance / validate; completion reconciliation records terminal delivery."
     }
   ]
 }
