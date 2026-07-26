@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-019",
   "title": "Plan P1-003 append-only audit verification",
-  "status": "ready",
+  "status": "verified",
   "phase": "phase-1",
   "workstream": "engineering-governance",
   "workflowId": "p1-003-audit-verification-planning",
@@ -22,7 +22,8 @@
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-GOV-019/verification.md",
-    "evidence/verification/SUT-AIOS-GOV-019/verification-20260726190524109.json"
+    "evidence/verification/SUT-AIOS-GOV-019/verification-20260726190524109.json",
+    "evidence/verification/SUT-AIOS-GOV-019/verification-20260726191148738.json"
   ],
   "assumptions": [
     "P1-003 produces static repository audit-contract artifacts only; it must not access an audit database, execute SQL, write live records, or invoke a service.",
@@ -94,7 +95,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-GOV-019/task.json",
+      "tasks/verified/SUT-AIOS-GOV-019/task.json",
       "tasks/backlog/SUT-AIOS-P1-003/task.json",
       "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md"
     ]
@@ -102,8 +103,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T19:04:35.995Z",
-  "updatedDate": "2026-07-26T19:05:21.698Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T19:12:10.155Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-019/verification-20260726191148738.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -118,6 +121,27 @@
       "at": "2026-07-26T19:05:21.698Z",
       "actor": "engineering-planner",
       "reason": "P1-002 is done; the P1-003 audit-contract planning scope is static, fail-closed, independently verifiable, and owner-approved."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T19:10:03.214Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #25 merged with passing governance CI; begin bounded static P1-003 audit-contract verification planning in this isolated worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T19:11:17.228Z",
+      "actor": "engineering-planner",
+      "reason": "Static append-only audit-contract design and P1-003 verification plan completed; deterministic checks passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T19:12:10.155Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed the bounded static audit-contract design, P1-003 packet amendment, protected-path inspection, and machine verification."
     }
   ]
 }
