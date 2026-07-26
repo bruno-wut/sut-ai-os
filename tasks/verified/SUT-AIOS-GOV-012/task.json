@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-012",
   "title": "Safely admit the exact production dependency audit to task verification",
-  "status": "ready",
+  "status": "verified",
   "phase": "workspace-bootstrap",
   "workstream": "engineering-governance",
   "workflowId": "verification-control-remediation",
@@ -115,7 +115,7 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/project/CONTEXT_INDEX.md",
-      "tasks/ready/SUT-AIOS-GOV-012/task.json",
+      "tasks/verified/SUT-AIOS-GOV-012/task.json",
       "scripts/verify/verify-cli.mjs",
       "docs/verification/VERIFICATION_POLICY.md",
       "tasks/blocked/SUT-AIOS-P0-002/task.json",
@@ -126,8 +126,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T15:34:35.726Z",
-  "updatedDate": "2026-07-26T15:35:28.552Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T16:06:23.075Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726160549080.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -142,6 +144,69 @@
       "at": "2026-07-26T15:35:28.552Z",
       "actor": "engineering-planner",
       "reason": "Owner approved exact fail-closed verifier remediation; GOV-005 dependency is done with merged independent evidence"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T15:48:07.226Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Merged ready packet validated; isolated worktree created; owner approval received"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T15:54:10.019Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact parser mapping, rejection coverage, policy, risk entry, evidence, and all authorized checks completed"
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-26T15:56:44.354Z",
+      "actor": "qa-verification",
+      "reason": "Independent verify:task fails on Windows because shell-free spawnSync cannot execute the npm shim; preserve exact arguments while selecting the platform executable"
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-26T15:56:44.648Z",
+      "actor": "chief-orchestrator",
+      "reason": "Resume for bounded cross-platform npm executable resolution"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T15:59:31.335Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Windows-safe exact audit executable resolution implemented; platform mapping, rejection coverage, audit, validation, governance, and diff checks pass"
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-26T16:01:07.770Z",
+      "actor": "qa-verification",
+      "reason": "npm.cmd remains non-executable through shell-free spawnSync on Windows; require a directly executable Node plus npm CLI target with fixed audit arguments"
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-26T16:01:08.077Z",
+      "actor": "chief-orchestrator",
+      "reason": "Resume for bounded directly executable Windows npm CLI launcher"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:04:41.455Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Direct Windows Node plus bundled npm CLI launcher, real child outcome coverage, policy, risks, and all authorized checks completed"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:06:23.075Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed exact command restriction, cross-platform launcher, child outcome coverage, audit execution, and boundary checks"
     }
   ]
 }
