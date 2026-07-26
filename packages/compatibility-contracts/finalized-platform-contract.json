@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0.0",
+  "baseline": {
+    "path": "reference/finalized-platform",
+    "commit": "dbce321f61144b50a94bd11a068fa5897b0f2293"
+  },
+  "packages": [
+    {
+      "path": "package.json",
+      "name": "sri-u-thong-hotel-inventory-bridge",
+      "scripts": [
+        "build",
+        "build:cloudflare",
+        "deploy:cloudflare",
+        "deploy:cloudflare:production",
+        "dev",
+        "lint",
+        "preview:cloudflare",
+        "start",
+        "test",
+        "test:allocation:concurrency",
+        "test:coverage",
+        "test:db",
+        "test:db:baseline-010",
+        "test:e2e",
+        "test:e2e:8a",
+        "test:e2e:storefront",
+        "test:e2e:storefront:8a",
+        "test:watch",
+        "typecheck",
+        "verify:cloudflare-config",
+        "verify:images",
+        "verify:images:remote",
+        "verify:migration-history",
+        "verify:storefront:freeze",
+        "verify:storefront:metadata"
+      ]
+    },
+    {
+      "path": "website/astro-site/package.json",
+      "name": "sri-u-thong-hotel-website",
+      "scripts": [
+        "build",
+        "check",
+        "dev",
+        "preview"
+      ]
+    }
+  ],
+  "routeFiles": [
+    "src/app/(guest)/book/page.tsx",
+    "src/app/(guest)/checkout/page.tsx",
+    "src/app/(guest)/confirmation/page.tsx",
+    "src/app/(guest)/lookup/page.tsx",
+    "src/app/api/booking-lookup/route.ts",
+    "src/app/api/checkout/hold/route.ts",
+    "src/app/api/checkout/pay-at-hotel/route.ts",
+    "src/app/api/health/route.ts",
+    "src/app/api/notifications/process/route.ts",
+    "src/app/api/resend/webhook/route.ts",
+    "src/app/api/stripe/checkout-session/route.ts",
+    "src/app/api/stripe/webhook/route.ts",
+    "website/astro-site/src/pages/index.astro"
+  ]
+}

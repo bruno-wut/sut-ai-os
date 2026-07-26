@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-003",
   "title": "Capture finalized-platform compatibility contracts",
-  "status": "ready",
+  "status": "verified",
   "phase": "phase-0",
   "workstream": "compatibility",
   "workflowId": "implementation-p0-003",
@@ -36,6 +36,7 @@
     "tests/compatibility/**",
     "docs/compatibility/**",
     "evidence/tasks/SUT-AIOS-P0-003/**",
+    "evidence/verification/SUT-AIOS-P0-003/**",
     "tasks/**/SUT-AIOS-P0-003/**"
   ],
   "forbiddenPaths": [
@@ -51,13 +52,15 @@
   "allowedCommands": [
     "node tests/compatibility/validate-finalized-platform-contracts.mjs",
     "npm run verify:fast",
-    "git diff --check"
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P0-003 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
   ],
   "requiredChecks": [
     "compatibility contract validation",
     "changed-path inspection",
     "secret scan",
-    "independent verification"
+    "independent verification",
+    "independent machine verification"
   ],
   "requiredTests": [
     "node tests/compatibility/validate-finalized-platform-contracts.mjs",
@@ -86,15 +89,24 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P0-003/task.json",
+      "tasks/verified/SUT-AIOS-P0-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T14:18:29.550Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T16:58:14.165Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P0-003/verification-20260726165800443.json"
+  ],
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/.codex/worktrees/49fa/SUT_AI_OS-worktrees/SUT-AIOS-P0-002-worktrees/SUT-AIOS-P0-003",
+    "branch": "task/SUT-AIOS-P0-003-capture-finalized-platform-compatibility-contrac",
+    "primaryBranch": "origin/main",
+    "createdAt": "2026-07-26T16:43:43.092Z",
+    "createdBy": "codex-engineering-executor"
+  },
   "stateTransitions": [
     {
       "from": null,
@@ -109,6 +121,62 @@
       "at": "2026-07-26T14:18:29.550Z",
       "actor": "engineering-planner",
       "reason": "P0-001 is done with durable independent verification; sole dependency satisfied."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T16:44:32.721Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Merged GOV-013 design is approved; isolated worktree is registered on main and packet validation passed."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:48:21.898Z",
+      "actor": "codex-engineering-executor",
+      "reason": "QA-required exact script-set equality is implemented; authorized validator, fast verification, and diff checks rerun."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-26T16:49:08.561Z",
+      "actor": "chief-orchestrator",
+      "reason": "Add machine-verification evidence controls required by GitHub governance CI before final verification."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-26T16:49:08.603Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume for CI-required evidence-path and verifier-command amendment only."
+    },
+    {
+      "from": "active",
+      "to": "blocked",
+      "at": "2026-07-26T16:50:00.469Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent machine verification is blocked: verify:task safely admits only node scripts/... commands, not the required tests/compatibility validator; recorded local main base is stale and includes unrelated history. A separate shared-verifier remediation packet is required."
+    },
+    {
+      "from": "blocked",
+      "to": "active",
+      "at": "2026-07-26T16:57:56.249Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-014 merged exact validator admission and origin/main verification base correction resolve the recorded machine-verification blocker."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:58:14.123Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Final exact machine verification passed; independent QA evidence recorded."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:58:14.165Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA and machine verification passed contract, boundary, scope, and acceptance checks."
     }
   ]
 }
