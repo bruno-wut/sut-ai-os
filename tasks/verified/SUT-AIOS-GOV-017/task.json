@@ -1,0 +1,140 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-017",
+  "title": "Plan executable P1-002 control-plane schema verification",
+  "status": "verified",
+  "phase": "phase-1",
+  "workstream": "engineering-governance",
+  "workflowId": "p1-002-verification-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make P1-002 control-plane schema design executable and independently verifiable without database access or migrations.",
+  "technicalObjective": "Define a static control-plane schema artifact and exact offline validator command, then amend P1-002's packet.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-017/verification.md"
+  ],
+  "assumptions": [
+    "P1-002 produces static repository schema artifacts only; it must not access a database, run migrations, or create live control-plane tables."
+  ],
+  "acceptanceCriteria": [
+    "A durable design defines the bounded control-plane schema artifact and deterministic invalid-input behavior.",
+    "P1-002 uses exact future command node tests/control-plane-schema/validate-control-plane-schema.mjs.",
+    "Both packets validate and independent review confirms protected paths remain untouched."
+  ],
+  "allowedPaths": [
+    "docs/control-plane-schema/**",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-017/**",
+    "tasks/backlog/SUT-AIOS-P1-002/**",
+    "evidence/tasks/SUT-AIOS-GOV-017/**",
+    "evidence/verification/SUT-AIOS-GOV-017/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "packages/control-plane-schema/**",
+    "tests/control-plane-schema/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-017 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "control-plane planning scope",
+    "P1-002 packet validation",
+    "fast governance verification",
+    "independent machine verification",
+    "independent review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any database access, migration execution, RLS, production control-plane write, or schema scope beyond static design."
+  ],
+  "rollbackExpectations": "Revert only the planning document, P1-002 packet amendment, evidence, and this task packet.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-017/task.json",
+      "tasks/backlog/SUT-AIOS-P1-002/task.json",
+      "docs/architecture/source/Agent Architecture.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T18:01:35.671Z",
+  "updatedDate": "2026-07-26T18:15:15.022Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-017/verification-20260726181506953.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T18:01:35.671Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T18:04:43.336Z",
+      "actor": "engineering-planner",
+      "reason": "Owner-approved P1-002 verification planning packet is complete."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T18:04:43.383Z",
+      "actor": "engineering-planner",
+      "reason": "Packet validated; static control-plane schema verification design only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T18:15:14.978Z",
+      "actor": "engineering-planner",
+      "reason": "Static control-plane schema contract and P1-002 verification plan completed; deterministic checks passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T18:15:15.022Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and machine verification passed; protected paths remained untouched."
+    }
+  ]
+}

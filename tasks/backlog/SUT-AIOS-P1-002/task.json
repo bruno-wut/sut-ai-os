@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-002",
-  "title": "Design control-plane database schema",
+  "title": "Define static control-plane schema contract",
   "status": "backlog",
   "phase": "phase-1",
   "workstream": "control-plane-schema",
@@ -10,10 +10,11 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded control-plane-schema outcome.",
-  "technicalObjective": "Design control-plane database schema",
+  "technicalObjective": "Create the version 1 static control-plane schema artifact and deterministic offline validator exactly as defined in docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
+    "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
@@ -23,16 +24,17 @@
     "evidence/tasks/SUT-AIOS-P1-002/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
+    "No production write, deployment, live credential access, database access, migration execution, RLS, queue, or external service access is authorized.",
+    "The schema and validator are static repository artifacts; the validator uses Node built-ins only and must not install packages.",
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Design control-plane database schema is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "packages/control-plane-schema/control-plane-schema-v1.json implements the closed version 1 entity and relationship design specified in docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md.",
+    "tests/control-plane-schema/validate-control-plane-schema.mjs deterministically accepts the finite valid case and rejects every documented invalid case without network or external state.",
+    "The exact validator command and fast governance verification pass, and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
-    "supabase/migrations/**",
+    "packages/control-plane-schema/**",
     "tests/control-plane-schema/**",
     "docs/control-plane-schema/**",
     "evidence/tasks/SUT-AIOS-P1-002/**",
@@ -43,54 +45,60 @@
     "docs/architecture/source/**",
     ".env*",
     "**/*secret*",
-    "**/*credential*"
+    "**/*credential*",
+    "supabase/**",
+    "migrations/**",
+    "apps/**"
   ],
   "allowedCommands": [
-    "npm run migration:lint",
+    "node tests/control-plane-schema/validate-control-plane-schema.mjs",
     "npm run verify:fast",
-    "git diff --check"
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P1-002 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
   ],
   "requiredChecks": [
     "control-plane-schema contract validation",
     "changed-path inspection",
     "secret scan",
-    "independent verification"
+    "independent verification",
+    "independent machine verification"
   ],
   "requiredTests": [
-    "npm run migration:lint",
+    "node tests/control-plane-schema/validate-control-plane-schema.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
-  "riskLevel": "high",
+  "riskLevel": "medium",
   "autonomyTier": "tier-0",
   "defaultAgent": "codex-engineering-executor",
   "allowedAgents": [
     "codex-engineering-executor",
     "qa-verification"
   ],
-  "modelRoute": "sol",
-  "defaultModel": "gpt-5.6-sol",
+  "modelRoute": "terra",
+  "defaultModel": "gpt-5.6-terra",
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
   "solEscalationTriggers": [
-    "Any required change crosses declared subsystem or protected paths.",
-    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+    "Any required change crosses the declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, workflow-correctness, database-design, or data-retention ambiguity arises."
   ],
-  "rollbackExpectations": "Revert the control-plane-schema branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert the control-plane schema artifact, validator, task-state record, and evidence together; preserve audit and verification evidence.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P1-002/task.json",
+      "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-27T00:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

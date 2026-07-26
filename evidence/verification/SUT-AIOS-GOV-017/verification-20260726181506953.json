@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-017",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-26T18:15:06.953Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design defines the bounded control-plane schema artifact and deterministic invalid-input behavior.",
+    "confirmed: P1-002 uses exact future command node tests/control-plane-schema/validate-control-plane-schema.mjs.",
+    "confirmed: Both packets validate and independent review confirms protected paths remain untouched."
+  ],
+  "changedPaths": [
+    "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-017/verification.md",
+    "tasks/active/SUT-AIOS-GOV-017/task.json",
+    "tasks/backlog/SUT-AIOS-P1-002/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-017/verification-20260726181506953.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
