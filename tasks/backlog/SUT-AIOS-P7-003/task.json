@@ -68,9 +68,9 @@
   "pullRequestRequirement": true,
   "riskLevel": "high",
   "autonomyTier": "tier-0",
-  "defaultAgent": "revenue-proposal",
+  "defaultAgent": "codex-engineering-executor",
   "allowedAgents": [
-    "revenue-proposal",
+    "codex-engineering-executor",
     "qa-verification"
   ],
   "modelRoute": "sol",
@@ -91,10 +91,10 @@
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
-  "owner": "revenue-proposal",
+  "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T13:05:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

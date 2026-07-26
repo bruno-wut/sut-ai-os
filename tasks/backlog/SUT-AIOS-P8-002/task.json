@@ -66,9 +66,9 @@
   "pullRequestRequirement": true,
   "riskLevel": "critical",
   "autonomyTier": "tier-0",
-  "defaultAgent": "qa-verification",
+  "defaultAgent": "codex-engineering-executor",
   "allowedAgents": [
-    "qa-verification",
+    "codex-engineering-executor",
     "qa-verification"
   ],
   "modelRoute": "sol",
@@ -89,10 +89,10 @@
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
-  "owner": "qa-verification",
+  "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T13:05:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

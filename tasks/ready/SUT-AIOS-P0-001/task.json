@@ -32,7 +32,6 @@
   "allowedPaths": [
     "docs/verification/**",
     "tests/verification/**",
-    "docs/verification/**",
     "evidence/tasks/SUT-AIOS-P0-001/**",
     "tasks/**/SUT-AIOS-P0-001/**"
   ],
@@ -68,7 +67,7 @@
   "defaultAgent": "qa-verification",
   "allowedAgents": [
     "qa-verification",
-    "qa-verification"
+    "engineering-planner"
   ],
   "modelRoute": "terra",
   "defaultModel": "gpt-5.6-terra",
@@ -84,14 +83,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P0-001/task.json",
+      "tasks/ready/SUT-AIOS-P0-001/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "qa-verification",
-  "reviewer": "qa-verification",
+  "reviewer": "engineering-planner",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T12:56:26.424Z",
+  "updatedDate": "2026-07-26T13:05:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

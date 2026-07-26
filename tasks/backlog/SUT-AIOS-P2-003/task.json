@@ -69,9 +69,9 @@
   "pullRequestRequirement": true,
   "riskLevel": "medium",
   "autonomyTier": "tier-0",
-  "defaultAgent": "executive-briefing",
+  "defaultAgent": "codex-engineering-executor",
   "allowedAgents": [
-    "executive-briefing",
+    "codex-engineering-executor",
     "qa-verification"
   ],
   "modelRoute": "terra",
@@ -92,10 +92,10 @@
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
-  "owner": "executive-briefing",
+  "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T13:05:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

@@ -155,3 +155,12 @@ The following separation changes were made:
 - Added implementation backlog, dependency graph, milestone, and first vertical-slice documents.
 - Moved only `SUT-AIOS-P0-001` to `ready`; all dependent product tasks remain in backlog.
 - No application code, production service, database, deployment, policy, or canonical architecture source was changed.
+
+## Independent workspace readiness review
+
+- Added `SUT-AIOS-GOV-011` and the evidence-backed `WORKSPACE_READINESS_REPORT.md` with an overall `READY_WITH_WARNINGS` classification.
+- Revalidated canonical-source hashes, instruction hierarchy, JSON, packet readiness, routing, worktrees, verification, context limits, GitHub governance, telemetry, secrets, and protected paths.
+- Corrected backlog agent permissions, duplicate task controls, independent-review assignments, task context paths, GitHub pull-request diff detection, package task aliases, and cached-token accounting.
+- Confirmed GitHub CLI authentication as `bruno-wut`, administrator access to `bruno-wut/sut-ai-os`, and the configured `origin` identity.
+- Planned remote changes required for the requested pull request: publish the existing seed `main`, set it as the default branch, push the verified bootstrap branch, and open a draft pull request. No merge, protection, environment, deployment, or production mutation is authorized.
+- No application code, canonical source, finalized compatibility baseline, secret, database, payment, DNS, Cloudflare, deployment, or production state was changed.

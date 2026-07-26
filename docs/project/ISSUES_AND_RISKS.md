@@ -214,3 +214,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Phase 1–8 backlog packets
 - **Evidence:** Packets name intended subsystem tests such as `test:event-contracts` and `test:workflow`; those package commands do not exist until their subsystem scaffold is approved and created.
 - **Next action / owner:** Engineering Planner must confirm each command against the real package manifest before moving that packet to `ready`; unavailable or invented commands block execution.
+
+### 2026-07-26 — Workspace readiness review limitations
+
+- **Task ID:** `SUT-AIOS-GOV-011`
+- **Status:** Open / monitored
+- **Severity:** High until runtime prerequisites exist
+- **Affected scope:** Live Codex execution, Qwen preprocessing, application verification, and protected GitHub operation
+- **Evidence:** `WORKSPACE_READINESS_REPORT.md` records an inaccessible Codex executable alias, no approved local Qwen runtime/model, application suites available only in the immutable baseline, unresolved agent schema URNs, and absent remote protection/environments.
+- **Next action / owner:** Workspace owner and Engineering Planner must resolve each prerequisite through separate approved task packets. None may be inferred as production authorization.
+
+### 2026-07-26 — Backlog permissions and governance enforcement defects
+
+- **Task ID:** `SUT-AIOS-GOV-011`
+- **Status:** Resolved and independently verified
+- **Severity:** High
+- **Affected scope:** Product backlog routing, independent review, task transitions, CI diff enforcement, and telemetry totals
+- **Evidence:** The readiness review corrected non-executor implementation routes, duplicate controls, owner/reviewer identity, stale packet context paths, pull-request diff discovery, detached-checkout branch discovery, and cached-token double counting.
+- **Next action / owner:** Retain `evidence/verification/SUT-AIOS-GOV-011/verification-20260726130854628.json` with this task and monitor the pushed GitHub workflow separately.

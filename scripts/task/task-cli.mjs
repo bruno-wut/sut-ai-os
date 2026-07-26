@@ -70,6 +70,7 @@ function validatePacket(packet, { strict = false, directoryState } = {}) {
   if (directoryState && packet.status !== directoryState) errors.push(`status ${packet.status} does not match directory ${directoryState}`);
   for (const field of ["title", "phase", "workstream", "workflowId", "businessObjective", "technicalObjective", "rollbackExpectations", "outputSchema", "owner", "reviewer", "defaultAgent", "defaultModel", "fallbackModel"]) if (!nonEmptyString(packet[field])) errors.push(`${field} must be a non-empty string`);
   for (const field of ["architectureReferences", "dependencies", "evidence", "assumptions", "acceptanceCriteria", "allowedPaths", "forbiddenPaths", "allowedCommands", "requiredChecks", "requiredTests", "allowedAgents", "solEscalationTriggers", "completionEvidence"]) if (!Array.isArray(packet[field]) || !packet[field].every(nonEmptyString)) errors.push(`${field} must be an array of non-empty strings`);
+  for (const field of ["allowedPaths", "forbiddenPaths", "allowedCommands", "requiredChecks", "requiredTests", "allowedAgents"]) if (Array.isArray(packet[field]) && new Set(packet[field]).size !== packet[field].length) errors.push(`${field} must not contain duplicates`);
   if (typeof packet.productionWritePermission !== "boolean") errors.push("productionWritePermission must be boolean");
   if (typeof packet.pullRequestRequirement !== "boolean") errors.push("pullRequestRequirement must be boolean");
   if (typeof packet.workspaceWrite !== "boolean") errors.push("workspaceWrite must be boolean");
@@ -91,6 +92,7 @@ function validatePacket(packet, { strict = false, directoryState } = {}) {
   }
   const missingExecution = requiredForExecution.filter((field) => !nonEmptyList(packet[field]));
   const needsExecutionReadiness = ["ready", "active", "blocked", "review", "revision-required", "verified", "done"].includes(packet.status);
+  if (needsExecutionReadiness && packet.owner === packet.reviewer) errors.push("owner and reviewer must differ for independent verification");
   if (needsExecutionReadiness && missingExecution.length) errors.push(`execution-blocking fields are empty: ${missingExecution.join(", ")}`);
   else if (missingExecution.length) warnings.push(`not execution-ready: ${missingExecution.join(", ")}`);
   if (packet.playbookId && packet.playbookMode !== "shadow" && packet.autonomyTier === "tier-0") warnings.push("tier-0 playbook is expected to remain in shadow mode");
@@ -110,6 +112,8 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   if (options.evidence) packet.completionEvidence = [...new Set([...(packet.completionEvidence ?? []), options.evidence])];
   packet.stateTransitions.push({ from: state, to, at: packet.updatedDate, actor, reason });
   const destination = taskPath(to, id, root); const sourceDirectory = path.dirname(file); const destinationDirectory = path.dirname(destination);
+  const oldRelative = normalize(path.relative(root, file)); const newRelative = normalize(path.relative(root, destination));
+  if (packet.contextBudget?.includedPaths) packet.contextBudget.includedPaths = packet.contextBudget.includedPaths.map((item) => item === oldRelative ? newRelative : item);
   fs.mkdirSync(path.dirname(destinationDirectory), { recursive: true });
   fs.renameSync(sourceDirectory, destinationDirectory); writePacket(destination, packet);
   return { from: state, to, file: normalize(path.relative(root, destination)) };
