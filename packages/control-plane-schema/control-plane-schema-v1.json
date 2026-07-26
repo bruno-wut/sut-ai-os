@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0.0",
+  "entities": {
+    "system_events": {
+      "fields": {
+        "id": "string",
+        "correlationId": "string",
+        "type": "string",
+        "occurredAt": "string"
+      },
+      "relationships": {}
+    },
+    "workflow_runs": {
+      "fields": {
+        "id": "string",
+        "correlationId": "string",
+        "status": "string",
+        "triggerEventId": "string"
+      },
+      "relationships": {
+        "triggerEvent": {
+          "field": "triggerEventId",
+          "referencesEntity": "system_events",
+          "referencesField": "id"
+        }
+      }
+    },
+    "workflow_steps": {
+      "fields": {
+        "id": "string",
+        "workflowRunId": "string",
+        "sequence": "integer",
+        "status": "string"
+      },
+      "relationships": {
+        "workflowRun": {
+          "field": "workflowRunId",
+          "referencesEntity": "workflow_runs",
+          "referencesField": "id"
+        }
+      }
+    },
+    "action_proposals": {
+      "fields": {
+        "id": "string",
+        "workflowRunId": "string",
+        "status": "string",
+        "riskLevel": "string"
+      },
+      "relationships": {
+        "workflowRun": {
+          "field": "workflowRunId",
+          "referencesEntity": "workflow_runs",
+          "referencesField": "id"
+        }
+      }
+    },
+    "approval_requests": {
+      "fields": {
+        "id": "string",
+        "proposalId": "string",
+        "status": "string"
+      },
+      "relationships": {
+        "proposal": {
+          "field": "proposalId",
+          "referencesEntity": "action_proposals",
+          "referencesField": "id"
+        }
+      }
+    },
+    "agent_runs": {
+      "fields": {
+        "id": "string",
+        "workflowRunId": "string",
+        "agentId": "string",
+        "status": "string"
+      },
+      "relationships": {
+        "workflowRun": {
+          "field": "workflowRunId",
+          "referencesEntity": "workflow_runs",
+          "referencesField": "id"
+        }
+      }
+    },
+    "tool_executions": {
+      "fields": {
+        "id": "string",
+        "agentRunId": "string",
+        "toolName": "string",
+        "status": "string"
+      },
+      "relationships": {
+        "agentRun": {
+          "field": "agentRunId",
+          "referencesEntity": "agent_runs",
+          "referencesField": "id"
+        }
+      }
+    },
+    "verification_results": {
+      "fields": {
+        "id": "string",
+        "workflowRunId": "string",
+        "status": "string",
+        "verifiedAt": "string"
+      },
+      "relationships": {
+        "workflowRun": {
+          "field": "workflowRunId",
+          "referencesEntity": "workflow_runs",
+          "referencesField": "id"
+        }
+      }
+    }
+  }
+}
