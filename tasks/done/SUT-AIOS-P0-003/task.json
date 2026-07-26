@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-003",
   "title": "Capture finalized-platform compatibility contracts",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-0",
   "workstream": "compatibility",
   "workflowId": "implementation-p0-003",
@@ -89,14 +89,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P0-003/task.json",
+      "tasks/done/SUT-AIOS-P0-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T16:58:14.165Z",
+  "updatedDate": "2026-07-26T17:04:07.510Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P0-003/verification-20260726165800443.json"
   ],
@@ -177,6 +177,13 @@
       "at": "2026-07-26T16:58:14.165Z",
       "actor": "qa-verification",
       "reason": "Independent QA and machine verification passed contract, boundary, scope, and acceptance checks."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T17:04:07.510Z",
+      "actor": "qa-verification",
+      "reason": "PR #10 merged at cdf3a536a99ae420d9750076bac6f25e89c7006d; independent machine verification and completion evidence are recorded."
     }
   ]
 }
