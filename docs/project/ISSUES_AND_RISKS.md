@@ -17,6 +17,24 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-27 - Terminal task completion accepts a nonexistent supplemental evidence path
+
+- **Task ID:** `SUT-AIOS-GOV-016`
+- **Status:** Open
+- **Severity:** Medium
+- **Affected scope:** `scripts/task/complete` terminal-record evidence validation
+- **Evidence:** GOV-016's terminal `completionEvidence` includes `evidence/verification/SUT-AIOS-GOV-016/verification-20260726174004908.json`, which does not exist. Valid passing machine verification remains at `evidence/verification/SUT-AIOS-GOV-016/verification-20260726173952633.json`, and the valid durable task record is `evidence/tasks/SUT-AIOS-GOV-016/verification.md`.
+- **Next action / owner:** Create a separate, independently reviewed lifecycle-tool remediation that validates every supplied completion-evidence path before allowing a terminal transition. Do not manually alter the immutable GOV-016 record.
+
+### 2026-07-27 - P1-001 validator admission remains exact and fail-closed
+
+- **Task ID:** `SUT-AIOS-GOV-016`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** `scripts/verify/verify-cli.mjs` safe required-command parser and P1-001 machine verification
+- **Evidence:** GOV-016 admits only the byte-for-byte literal `node tests/event-contracts/validate-normalized-system-event-contract.mjs`, maps it to `node` with one fixed argument and `shell: false`, and self-tests reject whitespace, argument, alternate-path, and shell-operator variants.
+- **Next action / owner:** QA Verification must independently verify GOV-016 before P1-001 implementation begins. Any further test-path admission requires a separate approved governance task.
+
 ### 2026-07-27 - Normalized event payload semantics remain intentionally deferred
 
 - **Task ID:** `SUT-AIOS-GOV-015`
