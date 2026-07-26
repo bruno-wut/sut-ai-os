@@ -11,6 +11,8 @@ This record covers only the executable-verification design for P0-003 and its pa
 - `npm run verify:fast` — passed; task validation, routing validation, worktree fixture, and task lifecycle fixture passed.
 - `git diff --check` — passed.
 
+The independent machine verifier fail-closes `node` commands with positional values, including `--task <id>`. Its equivalent admitted required test is `node scripts/task/validate --all`, which validates GOV-013 and P0-003 together; the task-specific validation commands above remain recorded as direct planning checks.
+
 ## Proposed P0-003 execution contract
 
 The packet now authorizes `node tests/compatibility/validate-finalized-platform-contracts.mjs`. P0-003 will create that validator and its contract artifact within its existing allowed paths. The validator may read but must not modify or execute the immutable snapshot.

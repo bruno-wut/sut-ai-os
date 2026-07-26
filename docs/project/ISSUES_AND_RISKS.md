@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-26 — Machine verifier admits only flag-only Node task commands
+
+- **Task ID:** `SUT-AIOS-GOV-013`
+- **Status:** Monitoring
+- **Severity:** Low
+- **Affected scope:** `scripts/verify/verify-cli.mjs` safe required-command parser and task-packet test declarations
+- **Evidence:** The parser fail-closed on `node scripts/task/validate --task <id>` because it permits only `--flag` arguments. `node scripts/task/validate --all` is safely admitted and validates the same packets for GOV-013.
+- **Next action / owner:** Use the all-packet form for machine verification unless a separately approved verifier-parser task expands the safe grammar with full rejection coverage.
+
 ### 2026-07-26 — Compatibility baseline dependency audit findings
 
 - **Task ID:** `workspace-bootstrap`

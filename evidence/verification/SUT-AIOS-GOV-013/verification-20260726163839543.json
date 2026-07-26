@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-013",
+  "status": "blocked",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-26T16:38:39.543Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --task SUT-AIOS-GOV-013: fail",
+    "node scripts/task/validate --task SUT-AIOS-P0-003: fail",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design identifies the compatibility contracts to capture, their source locations, machine-readable representation, and deterministic failure behavior.",
+    "confirmed: SUT-AIOS-P0-003 is amended to require the exact future validator command node tests/compatibility/validate-finalized-platform-contracts.mjs, with scope limited to its declared paths.",
+    "confirmed: The amended P0-003 packet and this planning packet validate successfully, and independent review confirms immutable sources remain untouched."
+  ],
+  "changedPaths": [
+    "tasks/active/SUT-AIOS-GOV-013/task.json",
+    "tasks/verified/SUT-AIOS-GOV-013/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-013/verification-20260726163839543.json"
+  ],
+  "risks": [],
+  "recommendation": "blocked"
+}

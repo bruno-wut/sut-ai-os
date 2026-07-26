@@ -38,7 +38,8 @@
     "docs/project/ISSUES_AND_RISKS.md",
     "tasks/**/SUT-AIOS-GOV-013/**",
     "tasks/ready/SUT-AIOS-P0-003/**",
-    "evidence/tasks/SUT-AIOS-GOV-013/**"
+    "evidence/tasks/SUT-AIOS-GOV-013/**",
+    "evidence/verification/SUT-AIOS-GOV-013/**"
   ],
   "forbiddenPaths": [
     "reference/finalized-platform/**",
@@ -52,21 +53,21 @@
     "**/*credential*"
   ],
   "allowedCommands": [
-    "node scripts/task/validate --task SUT-AIOS-GOV-013",
-    "node scripts/task/validate --task SUT-AIOS-P0-003",
+    "node scripts/task/validate --all",
     "npm run verify:fast",
-    "git diff --check"
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-GOV-013 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
   ],
   "requiredChecks": [
     "planning-scope inspection",
     "P0-003 packet validation",
     "fast governance verification",
     "changed-path inspection",
-    "independent review"
+    "independent review",
+    "independent machine verification"
   ],
   "requiredTests": [
-    "node scripts/task/validate --task SUT-AIOS-GOV-013",
-    "node scripts/task/validate --task SUT-AIOS-P0-003",
+    "node scripts/task/validate --all",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -100,9 +101,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T16:29:49.465Z",
-  "updatedDate": "2026-07-26T16:34:38.408Z",
+  "updatedDate": "2026-07-26T16:39:35.305Z",
   "completionEvidence": [
-    "evidence/tasks/SUT-AIOS-GOV-013/verification.md"
+    "evidence/tasks/SUT-AIOS-GOV-013/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-013/verification-20260726163924109.json"
   ],
   "stateTransitions": [
     {
@@ -181,6 +183,34 @@
       "at": "2026-07-26T16:34:38.408Z",
       "actor": "qa-verification",
       "reason": "Independent QA passed scope, command, finite-inventory, validation, governance, and protected-path review."
+    },
+    {
+      "from": "verified",
+      "to": "revision-required",
+      "at": "2026-07-26T16:38:20.324Z",
+      "actor": "chief-orchestrator",
+      "reason": "Governance CI requires the missing machine-readable independent verification result."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-26T16:38:20.365Z",
+      "actor": "engineering-planner",
+      "reason": "Resume for CI-required evidence-path amendment and independent machine verification only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:39:35.266Z",
+      "actor": "engineering-planner",
+      "reason": "CI-required evidence-path amendment and independent machine verification completed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:39:35.305Z",
+      "actor": "qa-verification",
+      "reason": "Independent machine verification passed with all required tests, boundary checks, and acceptance confirmation."
     }
   ]
 }
