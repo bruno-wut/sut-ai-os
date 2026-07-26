@@ -6,6 +6,7 @@ Read `AGENTS.md` first for every task. Then use the shortest path below; open ca
 | --- | --- |
 | Task creation, lifecycle, or packet validation | [TASK_WORKFLOW.md](TASK_WORKFLOW.md) -> task packet -> [ISSUES_AND_RISKS.md](ISSUES_AND_RISKS.md) -> relevant evidence template |
 | Worktree creation or cleanup | [WORKTREE_WORKFLOW.md](WORKTREE_WORKFLOW.md) -> ready task packet -> [TASK_WORKFLOW.md](TASK_WORKFLOW.md) -> [ISSUES_AND_RISKS.md](ISSUES_AND_RISKS.md) |
+| Verification or acceptance review | [VERIFICATION_POLICY.md](../verification/VERIFICATION_POLICY.md) -> task packet -> [ACCEPTANCE_MATRIX.md](../verification/ACCEPTANCE_MATRIX.md) -> [TEST_OWNERSHIP.md](../verification/TEST_OWNERSHIP.md) |
 | Workspace orientation | [PRODUCT.md](PRODUCT.md) → [CURRENT_STATE.md](CURRENT_STATE.md) → [SYSTEM_MAP.md](SYSTEM_MAP.md) |
 | Ordinary implementation | [CURRENT_STATE.md](CURRENT_STATE.md) → task packet → [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) → relevant interface in `reference/finalized-platform/` |
 | Bounded discovery or preparation | task packet → [GLOSSARY.md](GLOSSARY.md) → [ENGINEERING_PRINCIPLES.md](ENGINEERING_PRINCIPLES.md) |

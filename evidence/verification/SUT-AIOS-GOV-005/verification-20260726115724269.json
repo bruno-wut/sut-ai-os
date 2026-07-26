@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-005",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-terra",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T11:57:24.269Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/verify/verify-cli.mjs --self-test: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Verification commands only invoke detected, local, approved commands.",
+    "confirmed: Task verification emits a schema-compatible machine-readable result and blocks self-verification.",
+    "confirmed: Changed and protected path checks are deterministic and evidence is written outside task context.",
+    "confirmed: Unavailable app checks report blocked rather than being fabricated."
+  ],
+  "changedPaths": [
+    "docs/project/CONTEXT_INDEX.md",
+    "docs/verification/ACCEPTANCE_MATRIX.md",
+    "docs/verification/TEST_OWNERSHIP.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/verification/SUT-AIOS-GOV-005/verification-20260726115536075.json",
+    "evidence/verification/SUT-AIOS-GOV-005/verification-20260726115556800.json",
+    "evidence/verification/SUT-AIOS-GOV-005/verification-20260726115637991.json",
+    "package.json",
+    "schemas/verification-result.schema.json",
+    "scripts/verify/changed",
+    "scripts/verify/content",
+    "scripts/verify/fast",
+    "scripts/verify/full",
+    "scripts/verify/ibe",
+    "scripts/verify/security-boundaries",
+    "scripts/verify/staff-os",
+    "scripts/verify/storefront",
+    "scripts/verify/task",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/active/SUT-AIOS-GOV-005/task.json",
+    "tasks/templates/VERIFICATION_RESULT.template.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-005/verification-20260726115724269.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

@@ -108,3 +108,10 @@ The following separation changes were made:
 - Added a cross-platform Node worktree manager with packet-aware create, list, status, fail-closed remove, dry-run prune, and doctor commands.
 - Added package commands, primary-branch detection, sibling worktree placement, task-packet worktree metadata, and a concise workflow guide.
 - Added active bootstrap task `SUT-AIOS-GOV-004`; no remote was configured, no worktree was created outside the manager's disposable fixture, and no existing branch or finalized baseline was altered.
+
+## Independent verification framework
+
+- Added cross-platform Node verification commands for fast, changed-path, task, full, content, storefront, IBE, Staff OS, and security-boundary verification.
+- Added independent-verifier/model recording, required-test execution, protected-path and secret scanning, machine-readable result evidence, and a false-by-default production-eligibility result.
+- Added verification policy, acceptance matrix, and test-ownership documents. Checks that exist only in the immutable compatibility baseline now report blocked rather than executing there.
+- Added active bootstrap task `SUT-AIOS-GOV-005` and preserved both failed framework-discovery results and the subsequent passing result as durable evidence.

@@ -133,3 +133,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** `scripts/worktree/` and task packet worktree metadata
 - **Evidence:** The manager is designed to fail closed for dirty, conflicted, unpushed, and unmerged worktrees, but no independent reviewer has exercised it against shared developer worktrees or diverse Git versions.
 - **Next action / owner:** QA and Verification Agent should independently review the manager and its disposable Git fixture before removal automation is used outside isolated local tasks.
+
+### 2026-07-26 â€” Application-level verification remains unavailable in the governance workspace
+
+- **Task ID:** `SUT-AIOS-GOV-005`
+- **Status:** Open
+- **Severity:** Medium
+- **Affected scope:** Content schema, Astro/storefront, Next.js/IBE, Staff OS, webhook replay, preview smoke, Lighthouse, and migration verification
+- **Evidence:** The command inventory found runnable scripts only in `reference/finalized-platform/`, which is immutable. `verify:content`, `verify:storefront`, `verify:ibe`, and `verify:staff-os` therefore return explicit blocked results.
+- **Next action / owner:** Create approved implementation-worktree tasks that install dependencies locally and bind each detected application command to a no-side-effect verification profile.

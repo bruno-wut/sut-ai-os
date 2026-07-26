@@ -22,6 +22,15 @@
     "worktree:status": "node scripts/worktree/status",
     "worktree:remove": "node scripts/worktree/remove",
     "worktree:prune": "node scripts/worktree/prune",
-    "worktree:doctor": "node scripts/worktree/doctor"
+    "worktree:doctor": "node scripts/worktree/doctor",
+    "verify:fast": "node scripts/verify/fast",
+    "verify:changed": "node scripts/verify/changed",
+    "verify:task": "node scripts/verify/task",
+    "verify:full": "node scripts/verify/full",
+    "verify:content": "node scripts/verify/content",
+    "verify:storefront": "node scripts/verify/storefront",
+    "verify:ibe": "node scripts/verify/ibe",
+    "verify:staff-os": "node scripts/verify/staff-os",
+    "verify:security-boundaries": "node scripts/verify/security-boundaries"
   }
 }
