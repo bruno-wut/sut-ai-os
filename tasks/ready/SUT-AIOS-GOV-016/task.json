@@ -1,0 +1,118 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-016",
+  "title": "Admit exact P1-001 event-contract validator safely",
+  "status": "ready",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-001-verifier-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit independently verifiable, deterministic P1-001 event-contract validation without broadening command-execution authority.",
+  "technicalObjective": "Extend the fail-closed verify:task parser to admit only the exact literal node tests/event-contracts/validate-normalized-system-event-contract.mjs, with shell-free fixed-argument execution and exhaustive rejection coverage for variants.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md"
+  ],
+  "dependencies": [],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-016/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-016/verification-20260726173513611.json"
+  ],
+  "assumptions": [
+    "No production, staging, database, event delivery, credential, or external-service access is authorized.",
+    "P1-001's future validator remains the only event-contract test path admitted by this task."
+  ],
+  "acceptanceCriteria": [
+    "verify:task accepts only the byte-for-byte literal node tests/event-contracts/validate-normalized-system-event-contract.mjs and launches node with shell false and exactly that one fixed argument.",
+    "Self-tests reject whitespace, argument, alternate-path, shell-operator, and unrelated node tests variants.",
+    "Task validation, fast governance verification, changed-path inspection, secret scan, and independent verification pass without touching forbidden paths."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-016/**",
+    "evidence/verification/SUT-AIOS-GOV-016/**",
+    "tasks/**/SUT-AIOS-GOV-016/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "packages/event-contracts/**",
+    "tests/event-contracts/**",
+    "apps/**",
+    "supabase/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact-command admission and rejection coverage",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any command-admission expansion beyond the exact P1-001 validator literal.",
+    "Any shell use, dynamic path resolution, production access, credential handling, or protected-path change."
+  ],
+  "rollbackExpectations": "Revert the parser admission, self-tests, policy wording, task-state record, and evidence together; retain historical blocked verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/ready/SUT-AIOS-GOV-016/task.json",
+      "tasks/ready/SUT-AIOS-P1-001/task.json",
+      "scripts/verify/verify-cli.mjs",
+      "docs/verification/VERIFICATION_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T17:31:48.389Z",
+  "updatedDate": "2026-07-26T17:32:45.573Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T17:31:48.389Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T17:32:45.573Z",
+      "actor": "engineering-planner",
+      "reason": "Exact P1-001 validator admission is bounded, fail-closed, independently verifiable, and required before P1-001 implementation."
+    }
+  ]
+}
