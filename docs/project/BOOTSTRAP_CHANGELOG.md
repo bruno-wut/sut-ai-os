@@ -94,3 +94,11 @@ The following separation changes were made:
 - Added task/agent allowlisting, active-status enforcement, downgrade rejection, minimum context assembly, secret-pattern preflight, read-only default, explicit workspace-write gate, sanitized timestamps/model traces, and Qwen environment isolation.
 - Added model-routing, escalation, capability, and local-model policy documents plus npm commands and a dependency-free npm lockfile.
 - Recorded the inaccessible installed Codex executable alias, absent local provider, and pending independent wrapper review as pre-activation blockers.
+
+## File-based task-packet system
+
+- Added canonical JSON task, evidence, agent-result, verification-result, and handoff schemas, with companion Markdown templates for review and evidence.
+- Added cross-platform Node lifecycle commands for new, validation, transition, start, block, review, completion, list, and status; the lifecycle records transitions and refuses execution when scope, acceptance criteria, checks, or tests are missing.
+- Added npm task commands and `docs/project/TASK_WORKFLOW.md`, including one-packet/one-branch/one-PR guidance, terminal-packet immutability, independent verification, and artifact-reference rules.
+- Updated the Codex launcher to safely consume canonical JSON packets while retaining legacy Markdown packet compatibility.
+- Added active bootstrap task `SUT-AIOS-GOV-003`; no external access, production permission, deployment, or application-baseline change was made.

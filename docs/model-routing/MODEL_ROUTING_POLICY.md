@@ -18,7 +18,7 @@ The installed Windows app exposes a Codex executable alias, but this shell recei
 
 ## Selection precedence
 
-1. The eligible task packet must declare `Allowed agents` and `Model route`.
+1. The eligible canonical JSON task packet must declare `allowedAgents` and `modelRoute` (legacy Markdown packets use `Allowed agents` and `Model route`).
 2. The selected agent must exist in `agents/REGISTRY.md`, be `active`, and be listed in the task packet.
 3. `codex:agent` uses the task packet route. When no explicit routing policy applies during planning, Terra is the policy default.
 4. An explicit wrapper may escalate Luna → Terra → Sol, but may never downgrade below either the packet route or the agent's `default_model`.

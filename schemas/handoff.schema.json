@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/handoff.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "handoffId", "workflowId", "taskId", "fromAgent", "toAgent", "createdAt", "summary", "inputReferences", "outputReferences", "confidence", "risks", "nextAction", "stopConditions"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" }, "handoffId": { "type": "string" }, "workflowId": { "type": "string" }, "taskId": { "type": "string" }, "fromAgent": { "type": "string" }, "toAgent": { "type": "string" }, "createdAt": { "type": "string", "format": "date-time" }, "summary": { "type": "string", "maxLength": 4000 }, "inputReferences": { "type": "array", "items": { "type": "string" } }, "outputReferences": { "type": "array", "items": { "type": "string" } }, "confidence": { "enum": ["low", "medium", "high"] }, "risks": { "type": "array", "items": { "type": "string" } }, "nextAction": { "type": "string", "maxLength": 1000 }, "stopConditions": { "type": "array", "items": { "type": "string", "maxLength": 1000 } }
+  }
+}

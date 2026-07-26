@@ -13,7 +13,7 @@ const modelIds = Object.freeze({
   luna: "gpt-5.6-luna",
 });
 const routeRank = Object.freeze({ luna: 1, terra: 2, sol: 3 });
-const taskStates = Object.freeze(["ready", "active", "review"]);
+const taskStates = Object.freeze(["ready", "active", "review", "revision-required", "verified"]);
 const agentCategories = Object.freeze([
   "command",
   "intelligence",
@@ -106,8 +106,16 @@ function discoverAgents() {
 function findTaskPacket(taskId) {
   const matches = [];
   for (const state of taskStates) {
-    const relativePath = path.join("tasks", state, taskId, "TASK.md");
-    if (fs.existsSync(path.join(repositoryRoot, relativePath))) matches.push(readText(relativePath));
+    const jsonPath = path.join("tasks", state, taskId, "task.json");
+    const markdownPath = path.join("tasks", state, taskId, "TASK.md");
+    if (fs.existsSync(path.join(repositoryRoot, jsonPath))) {
+      const record = readText(jsonPath);
+      let data;
+      try { data = JSON.parse(record.text); } catch { throw new Error(`Cannot parse canonical JSON task packet: ${record.relativePath}`); }
+      matches.push({ ...record, format: "json", data });
+    } else if (fs.existsSync(path.join(repositoryRoot, markdownPath))) {
+      matches.push({ ...readText(markdownPath), format: "markdown" });
+    }
   }
   if (matches.length === 0) throw new Error(`Missing eligible task packet for ${taskId}`);
   if (matches.length > 1) throw new Error(`Ambiguous task packet for ${taskId}`);
@@ -128,6 +136,21 @@ function packetIdentifiers(text, field) {
 
 function normalizePacketRoute(value) {
   return value?.replaceAll("`", "").trim().toLowerCase();
+}
+
+function packetAccess(packet) {
+  if (packet.format === "json") {
+    return {
+      allowedAgents: Array.isArray(packet.data.allowedAgents) ? packet.data.allowedAgents : [],
+      route: packet.data.modelRoute,
+      workspaceWrite: packet.data.workspaceWrite === true,
+    };
+  }
+  return {
+    allowedAgents: packetIdentifiers(packet.text, "Allowed agents"),
+    route: normalizePacketRoute(packetField(packet.text, "Model route")),
+    workspaceWrite: normalizePacketRoute(packetField(packet.text, "Workspace write")) === "true",
+  };
 }
 
 function selectRoute(requestedRoute, packetRoute, agentRoute) {
@@ -279,13 +302,14 @@ async function main() {
   if (agent.status !== "active") throw new Error(`Agent is not active: ${agentId}`);
 
   const taskPacket = findTaskPacket(taskId);
-  const allowedAgents = packetIdentifiers(taskPacket.text, "Allowed agents");
+  const access = packetAccess(taskPacket);
+  const allowedAgents = access.allowedAgents;
   if (allowedAgents.length === 0) throw new Error("Task packet must declare Allowed agents");
   if (!allowedAgents.includes(agentId)) throw new Error(`Agent ${agentId} is not allowed by task ${taskId}`);
 
-  const packetRoute = normalizePacketRoute(packetField(taskPacket.text, "Model route"));
+  const packetRoute = access.route;
   const selectedRoute = selectRoute(requestedRoute, packetRoute, agent.defaultRoute);
-  const workspaceAllowed = normalizePacketRoute(packetField(taskPacket.text, "Workspace write")) === "true";
+  const workspaceAllowed = access.workspaceWrite;
   if (options["workspace-write"] && (!workspaceAllowed || agent.category !== "execution" || selectedRoute === "qwen-local")) {
     throw new Error("Workspace write requires an execution agent, explicit task permission, and a hosted route");
   }

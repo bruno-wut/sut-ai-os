@@ -10,6 +10,12 @@
     "codex:terra": "node scripts/codex/launch.mjs --route terra",
     "codex:luna": "node scripts/codex/launch.mjs --route luna",
     "codex:qwen-local": "node scripts/codex/launch.mjs --route qwen-local",
-    "codex:validate": "node scripts/codex/validate-routing.mjs"
+    "codex:validate": "node scripts/codex/validate-routing.mjs",
+    "task:new": "node scripts/task/new",
+    "task:validate": "node scripts/task/validate",
+    "task:start": "node scripts/task/start",
+    "task:review": "node scripts/task/review",
+    "task:complete": "node scripts/task/complete",
+    "task:list": "node scripts/task/list"
   }
 }

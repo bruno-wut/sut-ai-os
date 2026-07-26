@@ -106,3 +106,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Unattended Codex workspace-write execution
 - **Evidence:** Deterministic syntax, dry-run, route, rejection, context, trace, and secret-pattern tests pass, but no separate reviewer has approved the subprocess, environment, permission, and context-boundary design.
 - **Next action / owner:** Assign independent assurance/security review and record it in `evidence/tasks/SUT-AIOS-GOV-002/verification.md` before unattended workspace-write use.
+
+### 2026-07-26 â€” Task-packet control system awaits independent assurance review
+
+- **Task ID:** `SUT-AIOS-GOV-003`
+- **Status:** Blocked
+- **Severity:** Medium
+- **Affected scope:** `tasks/`, `schemas/`, `scripts/task/`, and canonical JSON packet use in `scripts/codex/launch.mjs`
+- **Evidence:** JSON parsing, lifecycle self-test, active-packet validation, canonical JSON dry run, and model-routing regression tests pass. See `evidence/tasks/SUT-AIOS-GOV-003/verification.md`.
+- **Next action / owner:** QA and Verification Agent should independently inspect state transitions, execution-readiness checks, terminal immutability, schema/tool parity, and launcher compatibility before this system becomes completion authority for implementation tasks.
+
+### 2026-07-26 â€” Artifact retention backend is not yet implemented
+
+- **Task ID:** `SUT-AIOS-GOV-003`
+- **Status:** Open
+- **Severity:** Low
+- **Affected scope:** Raw log, screenshot, and trace retention for task evidence
+- **Evidence:** The task workflow requires large payloads to be stored under `artifacts/` and referenced from packets, but no retention, access-control, hashing service, or CI uploader exists yet.
+- **Next action / owner:** Add a separately reviewed artifact/evidence retention design before high-volume or sensitive operational evidence is collected.

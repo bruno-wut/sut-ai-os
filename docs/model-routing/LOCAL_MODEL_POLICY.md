@@ -16,7 +16,7 @@ Qwen local is an untrusted offline preprocessing route. No supported local provi
 
 ## Invocation
 
-The task packet must declare `Model route: qwen-local`. Invoke with non-secret values:
+The canonical JSON task packet must declare `modelRoute: qwen-local` (legacy Markdown packets use `Model route: qwen-local`). Invoke with non-secret values:
 
 ```powershell
 npm run codex:qwen-local -- --agent <active-agent-id> --task <task-id> --local-provider ollama --local-model <installed-qwen-id>

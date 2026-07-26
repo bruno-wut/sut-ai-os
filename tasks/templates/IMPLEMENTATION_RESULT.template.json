@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../schemas/agent-result.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-AREA-001",
+  "agentId": "codex-engineering-executor",
+  "status": "completed",
+  "startedAt": "2026-07-26T00:00:00.000Z",
+  "finishedAt": "2026-07-26T00:00:00.000Z",
+  "summary": "Replace with concise result.",
+  "filesChanged": [],
+  "commandsRun": [],
+  "checks": [],
+  "outputReferences": [],
+  "confidence": { "level": "medium", "rationale": "Replace with basis." },
+  "risks": [],
+  "handoff": { "required": true, "to": "qa-verification", "reference": "docs/handoffs/replace-me.md" }
+}
