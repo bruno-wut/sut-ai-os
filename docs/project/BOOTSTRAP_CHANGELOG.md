@@ -72,3 +72,9 @@ The following separation changes were made:
 - Validated the copied Next.js and Astro applications in a disposable copy outside the immutable baseline. Both `npm ci` and build commands passed; warnings and dependency-audit findings are recorded in `docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md`.
 - Added `docs/project/ISSUES_AND_RISKS.md` and made durable issue/blocker/risk recording mandatory before future task handoffs.
 - Added the concise permanent-memory system: product, current state, system map, roadmap, glossary, known risks, source-of-truth boundaries, context index, definition of done, engineering principles, and autonomy boundaries. Root `AGENTS.md` now links to this detail rather than duplicating the architecture charter.
+
+## Scoped agent instruction map
+
+- Added `agents/AGENTS.md`, `playbooks/AGENTS.md`, and `scripts/AGENTS.md` only for existing directories with distinct local safety and evidence conventions.
+- Added `docs/project/AGENT_INSTRUCTION_MAP.md` to document inheritance, major-area applicability, future subsystem boundaries, and the consistency check.
+- Did not create scoped instructions for absent `apps/`, `services/`, `packages/`, or `supabase/` paths.
