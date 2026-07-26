@@ -25,6 +25,7 @@ The structure below establishes the repository control plane before application 
 | `docs/runbooks/` | Human-operated and emergency procedures | Tracked |
 | `docs/agents/` | Agent design, responsibility, and permission documentation | Tracked |
 | `docs/model-routing/` | Provider-routing and data-sensitivity decisions | Tracked |
+| `docs/project/` | Project records, workspace audits, and the issue/blocker/risk register | Tracked |
 | `scripts/codex/` | Codex executor helpers | Tracked; no credentials |
 | `scripts/task/` | Task packet lifecycle helpers | Tracked |
 | `scripts/worktree/` | Isolated-worktree helpers | Tracked; local worktree directories are ignored |
@@ -51,6 +52,7 @@ Track durable, reviewable records:
 - policies, schemas, prompts, agent definitions, and playbooks
 - ADRs, runbooks, incident summaries, research conclusions, and final verification reports
 - final reports in `artifacts/reports/` when they are intentionally retained
+- every discovered issue, blocker, risk, failed check, and unresolved warning in `docs/project/ISSUES_AND_RISKS.md`
 
 Do not track transient or sensitive output:
 
@@ -85,6 +87,12 @@ Codex must never write to these paths through ordinary task execution:
 - ignored local state, secrets, credentials, generated artifacts, or local worktrees
 
 No task packet grants authority to deploy, mutate production systems, modify production databases or RLS, change payment configuration, alter DNS, or bypass human approval.
+
+## Issue, blocker, and risk register
+
+`docs/project/ISSUES_AND_RISKS.md` is the mandatory repository-wide register for unresolved concerns found during workspace setup, task execution, review, or verification. Record an entry before handoff whenever a check fails, a warning remains unresolved, an external dependency blocks progress, or a material operational, security, or product risk is identified.
+
+Each entry must identify the discovery date, task ID when available, status, severity, affected scope, evidence, and next owner/action. Link to detailed task evidence or verification reports rather than reproducing sensitive data.
 
 ## Initial operating sequence
 

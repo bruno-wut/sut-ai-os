@@ -34,3 +34,4 @@ The repository workflow is documented in `docs/project/REPOSITORY_STRUCTURE.md`.
 - Codex may write only to the task-scoped locations named by that packet, plus the corresponding task, evidence, handoff, and final report records.
 - `agents/`, `prompts/`, `schemas/`, `policies/`, `playbooks/`, shared `scripts/`, and completed/archive task records are governance surfaces. Modify them only through an explicitly approved governance task packet.
 - Never use a task packet to bypass the immutable baseline, canonical architecture sources, production safeguards, or human approval requirements.
+- Record every newly discovered issue, blocker, risk, failed check, or unresolved warning in `docs/project/ISSUES_AND_RISKS.md` before handoff. Include the task ID when available, evidence, affected scope, severity, owner/next action, and current status. Do not rely on chat-only reporting.
