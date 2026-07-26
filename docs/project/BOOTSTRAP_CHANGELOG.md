@@ -139,3 +139,4 @@ The following separation changes were made:
 - Added `npm run github:validate` and documented exact, unexecuted branch-protection, ruleset, and staging/production environment API entry points.
 - No branch protection, remote, environment, deployment, secret, database, DNS, payment, or production state was changed.
 - Rechecked the installed GitHub connector: it returned zero accessible repositories, accounts, and installations. Remote identity and authority remain unresolved.
+- Retried with GitHub CLI `2.96.0`: authenticated as `bruno-wut`; read-only discovery found two application repositories only. No remote was added and no repository settings were changed.
