@@ -52,3 +52,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Codex-led repository execution and PR governance
 - **Evidence:** Historical audit found GitHub CLI unavailable and the shell-invoked Codex CLI inaccessible on this workstation. See [workspace audit](WORKSPACE_AUDIT.md).
 - **Next action / owner:** Obtain approved GitHub CLI/GitHub App and a working, scoped Codex execution environment before enabling automated PR or executor workflows.
+
+### 2026-07-26 — Disposable validation output remains outside the repository
+
+- **Task ID:** `workspace-bootstrap`
+- **Status:** Open
+- **Severity:** Low
+- **Affected scope:** local system temporary directory only
+- **Evidence:** The isolated compatibility validation copy remains at `C:\Users\Bruno Browny\AppData\Local\Temp\sut-ai-os-validation-dbce321-20260726` after the environment safety layer declined recursive cleanup. It contains generated dependencies and build output only.
+- **Next action / owner:** Remove the validated temporary directory through an approved local cleanup action; no repository files are affected.
