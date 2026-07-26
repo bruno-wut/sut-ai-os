@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-012",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T16:05:16.462Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/verify/verify-cli.mjs --self-test: pass",
+    "npm audit --omit=dev: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: verify:task accepts exactly npm audit --omit=dev and executes it as npm with the fixed arguments audit and --omit=dev, without a shell.",
+    "confirmed: verify:task rejects npm audit, npm audit fix, npm audit --omit=dev with any extra argument, npm commands with shell operators, and every other npm command as blocked.",
+    "confirmed: The verifier preserves the audit process exit code: zero passes; nonzero or execution error fails the required test; unsupported text remains blocked.",
+    "confirmed: The verifier self-test covers the exact accepted command, its command and argument mapping, and representative rejected near-miss and mutation-capable forms.",
+    "confirmed: Verification policy documents the one admitted audit command and the continued fail-closed behavior.",
+    "confirmed: Independent QA records a successful verifier result with changed-path and secret-boundary checks, or records a durable blocked or fail result without weakening the control."
+  ],
+  "changedPaths": [
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-012/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726155555816.json",
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726160006575.json",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/ready/SUT-AIOS-GOV-012/task.json",
+    "tasks/review/SUT-AIOS-GOV-012/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726160516462.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
