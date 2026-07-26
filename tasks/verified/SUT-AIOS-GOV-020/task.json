@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-020",
   "title": "Admit exact P1-003 audit validator safely",
-  "status": "ready",
+  "status": "verified",
   "phase": "phase-1",
   "workstream": "verification-governance",
   "workflowId": "p1-003-verifier-admission",
@@ -21,7 +21,8 @@
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-GOV-020/verification.md",
-    "evidence/verification/SUT-AIOS-GOV-020/verification-20260726191712353.json"
+    "evidence/verification/SUT-AIOS-GOV-020/verification-20260726191712353.json",
+    "evidence/verification/SUT-AIOS-GOV-020/verification-20260726192325085.json"
   ],
   "assumptions": [
     "No production, staging, audit-store, database, migration, credential, or external-service access is authorized.",
@@ -91,7 +92,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-GOV-020/task.json",
+      "tasks/verified/SUT-AIOS-GOV-020/task.json",
       "tasks/backlog/SUT-AIOS-P1-003/task.json",
       "scripts/verify/verify-cli.mjs",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -100,8 +101,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T19:16:30.668Z",
-  "updatedDate": "2026-07-26T19:17:09.899Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T19:23:55.135Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-020/verification-20260726192325085.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -116,6 +119,27 @@
       "at": "2026-07-26T19:17:09.899Z",
       "actor": "engineering-planner",
       "reason": "P1-003 validator admission is bounded, fail-closed, independently verifiable, and required before P1-003 implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T19:19:19.139Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #28 merged with passing governance CI; begin bounded fail-closed P1-003 audit-validator admission implementation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T19:22:50.092Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact P1-003 audit-validator admission and dedicated rejection coverage implemented; deterministic checks passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T19:23:55.135Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed the exact audit-validator mapping, fail-closed rejection coverage, deterministic checks, and machine verification."
     }
   ]
 }
