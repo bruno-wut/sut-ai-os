@@ -124,3 +124,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Raw log, screenshot, and trace retention for task evidence
 - **Evidence:** The task workflow requires large payloads to be stored under `artifacts/` and referenced from packets, but no retention, access-control, hashing service, or CI uploader exists yet.
 - **Next action / owner:** Add a separately reviewed artifact/evidence retention design before high-volume or sensitive operational evidence is collected.
+
+### 2026-07-26 â€” Worktree removal automation awaits independent review
+
+- **Task ID:** `SUT-AIOS-GOV-004`
+- **Status:** Blocked
+- **Severity:** Medium
+- **Affected scope:** `scripts/worktree/` and task packet worktree metadata
+- **Evidence:** The manager is designed to fail closed for dirty, conflicted, unpushed, and unmerged worktrees, but no independent reviewer has exercised it against shared developer worktrees or diverse Git versions.
+- **Next action / owner:** QA and Verification Agent should independently review the manager and its disposable Git fixture before removal automation is used outside isolated local tasks.

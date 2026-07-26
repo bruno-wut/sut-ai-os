@@ -102,3 +102,9 @@ The following separation changes were made:
 - Added npm task commands and `docs/project/TASK_WORKFLOW.md`, including one-packet/one-branch/one-PR guidance, terminal-packet immutability, independent verification, and artifact-reference rules.
 - Updated the Codex launcher to safely consume canonical JSON packets while retaining legacy Markdown packet compatibility.
 - Added active bootstrap task `SUT-AIOS-GOV-003`; no external access, production permission, deployment, or application-baseline change was made.
+
+## Safe Git worktree management
+
+- Added a cross-platform Node worktree manager with packet-aware create, list, status, fail-closed remove, dry-run prune, and doctor commands.
+- Added package commands, primary-branch detection, sibling worktree placement, task-packet worktree metadata, and a concise workflow guide.
+- Added active bootstrap task `SUT-AIOS-GOV-004`; no remote was configured, no worktree was created outside the manager's disposable fixture, and no existing branch or finalized baseline was altered.

@@ -16,6 +16,12 @@
     "task:start": "node scripts/task/start",
     "task:review": "node scripts/task/review",
     "task:complete": "node scripts/task/complete",
-    "task:list": "node scripts/task/list"
+    "task:list": "node scripts/task/list",
+    "worktree:create": "node scripts/worktree/create",
+    "worktree:list": "node scripts/worktree/list",
+    "worktree:status": "node scripts/worktree/status",
+    "worktree:remove": "node scripts/worktree/remove",
+    "worktree:prune": "node scripts/worktree/prune",
+    "worktree:doctor": "node scripts/worktree/doctor"
   }
 }

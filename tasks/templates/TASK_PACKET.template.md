@@ -11,6 +11,7 @@ The canonical, machine-enforced record is `task.json` in the same task directory
 - **Workflow ID / playbook ID:** `replace-me` / `replace-me`
 - **Owner / reviewer:** `unassigned` / `unassigned`
 - **Created / updated:** ISO-8601 timestamps
+- **Worktree:** path, branch, primary branch, creation time, and creator once a ready task receives an isolated worktree.
 
 ## Objective and context
 

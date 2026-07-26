@@ -40,6 +40,7 @@
   "createdDate": "2026-07-26T00:00:00.000Z",
   "updatedDate": "2026-07-26T00:00:00.000Z",
   "completionEvidence": [],
+  "worktree": null,
   "stateTransitions": [
     { "from": null, "to": "backlog", "at": "2026-07-26T00:00:00.000Z", "actor": "chief-orchestrator", "reason": "Template-derived task created." }
   ]
