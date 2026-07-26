@@ -14,8 +14,9 @@ This backlog translates the canonical architecture into 33 small, dependency-awa
 
 - `SUT-AIOS-P0-001`: `done` with independent verification evidence.
 - `SUT-AIOS-P0-002`: `done` with merged delivery and completion records.
-- `SUT-AIOS-P0-003`: `ready`; its required contract-validator command is defined by the active `SUT-AIOS-GOV-013` planning task and must be merged before execution.
-- All Phase 1+ packets remain in `backlog` because their dependencies are not satisfied.
+- `SUT-AIOS-P0-003`: `done` with merged delivery and completion records.
+- `SUT-AIOS-P1-001`: `ready`; its sole dependency is done and `SUT-AIOS-GOV-015` defines its exact offline event-contract validator command.
+- All Phase 1+ packets other than P1-001 remain in `backlog` because their dependencies are not satisfied.
 
 ## Phase 1 — Trusted control foundation
 

@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-27 - Normalized event payload semantics remain intentionally deferred
+
+- **Task ID:** `SUT-AIOS-GOV-015`
+- **Status:** Monitoring
+- **Severity:** Low
+- **Affected scope:** `docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md` and future event consumers
+- **Evidence:** Version 1 requires a closed envelope but permits an object-valued `payload` with open internal fields. This preserves a stable common boundary while avoiding invented domain schemas before control-plane and audit tasks are approved.
+- **Next action / owner:** Downstream domain-contract tasks must define and independently verify payload semantics before relying on payload fields for authorization, retention, routing, delivery, or personal-data handling.
+
 ### 2026-07-26 — Machine verifier admits only flag-only Node task commands
 
 - **Task ID:** `SUT-AIOS-GOV-013`
