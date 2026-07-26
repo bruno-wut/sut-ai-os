@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-001",
   "title": "Establish clean technical baseline gate",
-  "status": "ready",
+  "status": "done",
   "phase": "phase-0",
   "workstream": "verification",
   "workflowId": "implementation-p0-001",
@@ -33,6 +33,7 @@
     "docs/verification/**",
     "tests/verification/**",
     "evidence/tasks/SUT-AIOS-P0-001/**",
+    "evidence/verification/SUT-AIOS-P0-001/**",
     "tasks/**/SUT-AIOS-P0-001/**"
   ],
   "forbiddenPaths": [
@@ -47,6 +48,7 @@
   ],
   "allowedCommands": [
     "npm run verify:full",
+    "node scripts/verify/full",
     "npm run verify:fast",
     "git diff --check"
   ],
@@ -57,7 +59,7 @@
     "independent verification"
   ],
   "requiredTests": [
-    "npm run verify:full",
+    "node scripts/verify/full",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -83,15 +85,17 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P0-001/task.json",
+      "tasks/done/SUT-AIOS-P0-001/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "qa-verification",
   "reviewer": "engineering-planner",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T13:26:40.357Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P0-001/verification-20260726132632601.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -106,6 +110,34 @@
       "at": "2026-07-26T12:56:26.424Z",
       "actor": "engineering-planner",
       "reason": "No packet dependencies; technical baseline gate is the only genuinely unblocked product task."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T13:21:45.096Z",
+      "actor": "qa-verification",
+      "reason": "Assigned worktree aligned to the governed bootstrap base; scope and deterministic checks confirmed."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T13:23:37.182Z",
+      "actor": "qa-verification",
+      "reason": "Baseline gate contract and implementer evidence are ready for independent verification."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T13:26:40.024Z",
+      "actor": "engineering-planner",
+      "reason": "Independent verification passed all required checks and acceptance criteria."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T13:26:40.357Z",
+      "actor": "qa-verification",
+      "reason": "Technical baseline gate completed with production eligibility false."
     }
   ]
 }
