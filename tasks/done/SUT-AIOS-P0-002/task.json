@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-002",
   "title": "Plan dependency and security remediation",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-0",
   "workstream": "platform-stabilization",
   "workflowId": "implementation-p0-002",
@@ -91,14 +91,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P0-002/task.json",
+      "tasks/done/SUT-AIOS-P0-002/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T16:14:50.552Z",
+  "updatedDate": "2026-07-26T16:19:37.188Z",
   "completionEvidence": [
     "evidence/tasks/SUT-AIOS-P0-002/verification.md",
     "evidence/verification/SUT-AIOS-P0-002/verification-20260726161346223.json"
@@ -271,6 +271,13 @@
       "at": "2026-07-26T16:14:50.552Z",
       "actor": "qa-verification",
       "reason": "Independent QA passed the final machine verification, acceptance, audit, path, secret-boundary, and diff checks"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T16:19:37.188Z",
+      "actor": "qa-verification",
+      "reason": "PR #3 merged at 4594e2db1a2f4d2b91570c6224fb24c2745aa139; independent verification and completion evidence are recorded"
     }
   ]
 }
