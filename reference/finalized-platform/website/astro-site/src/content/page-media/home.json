@@ -1,0 +1,85 @@
+{
+  "kind": "home",
+  "heroImage": "grand-exterior",
+  "overviewImage": "grand-lobby",
+  "roomCards": [
+    {
+      "image": "grand-superior-room",
+      "alt": "Classic Room at Sri U-Thong Grand Hotel",
+      "eyebrow": "Heritage Series",
+      "title": "Classic Room",
+      "text": "A graceful everyday room for short business stays, family visits, and guests who prefer the hotel's familiar classic character.",
+      "href": "/rooms/",
+      "cta": "Explore Rooms"
+    },
+    {
+      "image": "grand-deluxe-room",
+      "alt": "Deluxe Room at Sri U-Thong Grand Hotel",
+      "eyebrow": "Heritage Series",
+      "title": "Deluxe Room",
+      "text": "A refined step up in the Heritage Series, balancing practical space with a calm, polished setting for city stays.",
+      "href": "/rooms/",
+      "cta": "Explore Rooms"
+    },
+    {
+      "image": "grand-suite-room",
+      "alt": "Studio Suite at Sri U-Thong Grand Hotel",
+      "eyebrow": "Heritage Series",
+      "title": "Studio Suite",
+      "text": "A more generous Heritage option for longer visits, special occasions, or guests who appreciate added room to settle in.",
+      "href": "/rooms/",
+      "cta": "Explore Rooms"
+    },
+    {
+      "image": "grand-deluxe-room",
+      "alt": "Executive Room at Sri U-Thong Grand Hotel",
+      "eyebrow": "Premier Series",
+      "title": "Executive Room",
+      "text": "A newly renovated room for business travellers and discerning guests who want a sharper, more composed stay experience.",
+      "href": "/rooms/",
+      "cta": "Explore Rooms"
+    },
+    {
+      "image": "grand-suite-room",
+      "alt": "Premier Suite at Sri U-Thong Grand Hotel",
+      "eyebrow": "Premier Series",
+      "title": "Executive Suite",
+      "text": "A premium suite category with a more spacious feel, ideal for longer stays, senior guests, or special local occasions.",
+      "href": "/rooms/",
+      "cta": "Explore Rooms"
+    },
+    {
+      "image": "grand-suite-room",
+      "alt": "Grand Residence at Sri U-Thong Grand Hotel",
+      "eyebrow": "Premier Series",
+      "title": "Grand Residence",
+      "text": "The most elevated accommodation in the Premier Series, shaped for guests who want the hotel's fullest sense of space and privacy.",
+      "href": "/rooms/",
+      "cta": "Explore Rooms"
+    }
+  ],
+  "diningImage": "grand-restaurant",
+  "eventSlides": [
+    {
+      "image": "grand-ballroom",
+      "alt": "Ballroom setup for meetings and banquet events at Sri U-Thong Grand Hotel",
+      "eyebrow": "Banquets",
+      "title": "Weddings and banquets",
+      "text": "A locally trusted setting for family celebrations and social occasions, with details confirmed by the hotel team."
+    },
+    {
+      "image": "grand-meeting-room",
+      "alt": "Meeting room setup at Sri U-Thong Grand Hotel",
+      "eyebrow": "Meetings",
+      "title": "Business meetings",
+      "text": "For teams, visiting partners, training sessions, and local business events in Suphanburi."
+    },
+    {
+      "image": "grand-event-setup",
+      "alt": "Private event setup at Sri U-Thong Grand Hotel",
+      "eyebrow": "Groups",
+      "title": "Group dining",
+      "text": "For practical meal arrangements alongside meetings, seminars, or private gatherings."
+    }
+  ]
+}

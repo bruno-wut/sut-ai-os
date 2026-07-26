@@ -1,0 +1,41 @@
+---
+import CloudflareImage from "./CloudflareImage.astro";
+
+const {
+  image = null,
+  eyebrow = "Suphanburi, Thailand",
+  title = "Sri U-Thong Grand Hotel",
+  text = "A trusted stay in the heart of Suphanburi.",
+  primaryLabel = "Book Your Stay",
+  secondaryHref = "/rooms/",
+  secondaryLabel = "Explore Rooms"
+} = Astro.props;
+
+const heroImage = typeof image === "string" ? { src: image } : (image ?? {});
+const heroImageAlt = heroImage.alt ?? `Exterior view of ${title}`;
+---
+
+<section class="home-hero" aria-label={title}>
+  <div class="home-hero__image">
+    <CloudflareImage
+      class="w-full max-w-full h-auto"
+      src={heroImage.src}
+      alt={heroImageAlt}
+      widths={[640, 960, 1280, 1600, 1920]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <div class="hero-scrim" aria-hidden="true"></div>
+  </div>
+  <div class="home-hero__content break-words">
+    {eyebrow && <p class="eyebrow leading-relaxed">{eyebrow}</p>}
+    <h1>{title}</h1>
+    {text && <p class="lead leading-relaxed">{text}</p>}
+    <div class="button-row">
+      <button class="button button--light" type="button" data-reserve-open aria-controls="reserve-drawer" aria-expanded="false">{primaryLabel}</button>
+      <a class="button button--ghost" href={secondaryHref}>{secondaryLabel}</a>
+    </div>
+  </div>
+</section>

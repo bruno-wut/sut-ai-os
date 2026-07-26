@@ -1,0 +1,59 @@
+---
+import { getDictionary } from "../data/dictionaries.js";
+import { withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+import { astroSiteConfig } from "../data/siteConfig.js";
+import { getIbeLookupUrl } from "../data/bookingConfig.js";
+
+const year = new Date().getFullYear();
+const bookingBaseUrl = import.meta.env.PUBLIC_BOOKING_URL ?? astroSiteConfig.bookingSiteUrl;
+const { locale = "en" } = Astro.props;
+const dictionary = getDictionary(locale);
+const copy = dictionary.footer;
+const siteCopy = getAstroCopy(locale).site;
+const navItems = dictionary.nav.slice(1);
+const bookingUrl = (path) => `${bookingBaseUrl}/${locale}${path}`;
+const ibeLookupUrl = getIbeLookupUrl(locale);
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <p class="eyebrow">{copy.location}</p>
+        <h2>{siteCopy.hotelName}</h2>
+        <p>{copy.description}</p>
+        <div class="button-row">
+          <a class="button button--light" href={bookingUrl("/book")}>{dictionary.header.enquire}</a>
+          <a class="button button--ghost" href={siteCopy.emailHref}>{dictionary.header.email}</a>
+        </div>
+      </div>
+
+      <nav class="footer-links" aria-label={copy.quickLinks}>
+        <h3>{copy.quickLinks}</h3>
+        {navItems.map(([href, label]) => <a href={withLocale(href, locale)}>{label}</a>)}
+        <a href={ibeLookupUrl}>{dictionary.header.manageReservation}</a>
+      </nav>
+
+      <nav class="footer-links" aria-label={copy.legal}>
+        <h3>{copy.legal}</h3>
+        <a href={withLocale("/privacy/", locale)}>{copy.privacy}</a>
+        <a href={withLocale("/cancellation/", locale)}>{copy.cancellation}</a>
+        <a href={withLocale("/terms/", locale)}>{copy.terms}</a>
+        <button type="button" class="footer-cookie-btn" onclick="window.openCookieSettings?.()">ตั้งค่าคุกกี้ / Cookie Settings</button>
+      </nav>
+
+      <div class="footer-contact">
+        <h3>{copy.contact}</h3>
+        <p>{siteCopy.addressLine}</p>
+        <a href={siteCopy.phoneHref}>{siteCopy.phoneShortLabel}: {siteCopy.phoneDisplay}</a>
+        <p>{siteCopy.faxShortLabel}: {siteCopy.faxDisplay}</p>
+        <a href={siteCopy.emailHref}>{siteCopy.email}</a>
+        <span>{copy.line}</span>
+        <a href={siteCopy.agodaUrl} rel="noreferrer" target="_blank">Agoda</a>
+        <a href={siteCopy.facebookUrl} rel="noreferrer" target="_blank">Facebook</a>
+      </div>
+    </div>
+    <p class="footer-bottom">&copy; {year} {siteCopy.hotelName}. {copy.copyright}</p>
+  </div>
+</footer>

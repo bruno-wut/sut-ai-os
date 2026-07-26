@@ -1,0 +1,129 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sri-u-thong-hotel-inventory-bridge",
+  "main": "./cloudflare-worker.ts",
+  "compatibility_date": "2026-07-02",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "secrets": {
+    "required": [
+      "CRON_SECRET",
+      "RESEND_API_KEY",
+      "RESEND_WEBHOOK_SECRET",
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "sri-u-thong-hotel-inventory-bridge"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "secure.sriuthonghotels.com",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "STAGING_PREVIEW_ENABLED": "false",
+    "STAGING_PREVIEW_HOSTNAME": ""
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "images": {
+    "binding": "IMAGES"
+  },
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "sri-u-thong-assets"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "env": {
+    "staging": {
+      "name": "sri-u-thong-hotel-inventory-bridge-staging",
+      "secrets": {
+        "required": [
+          "CRON_SECRET",
+          "RESEND_API_KEY",
+          "RESEND_WEBHOOK_SECRET",
+          "STRIPE_SECRET_KEY",
+          "STRIPE_WEBHOOK_SECRET",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "STAGING_PREVIEW_USERNAME",
+          "STAGING_PREVIEW_PASSWORD"
+        ]
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "sri-u-thong-hotel-inventory-bridge-staging",
+          "environment": "production"
+        }
+      ],
+      "triggers": {
+        "crons": ["*/5 * * * *"]
+      },
+      "routes": [
+        {
+          "pattern": "staging-preview-7q2x.sriuthonghotels.com",
+          "custom_domain": true,
+          "zone_name": "sriuthonghotels.com",
+          "enabled": true,
+          "previews_enabled": false
+        }
+      ],
+      "images": {
+        "binding": "IMAGES"
+      },
+      "r2_buckets": [
+        {
+          "binding": "MEDIA_BUCKET",
+          "bucket_name": "sri-u-thong-assets-staging"
+        }
+      ],
+      "vars": {
+        "NEXT_PUBLIC_SUPABASE_URL": "https://xvvuehwohxybfwpvndas.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2dnVlaHdvaHh5YmZ3cHZuZGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNDM1ODIsImV4cCI6MjA5ODcxOTU4Mn0.HB4eNAH1fpEEw9lA6nwKUh9h4pDP5oilch6Vxm608GA",
+        "HOTEL_ID": "12f20dc4-4dde-49d7-bcfb-5190e15da638",
+        "CHECKOUT_HOLD_LIVE_ENABLED": "true",
+        "STAGING_PREVIEW_ENABLED": "true",
+        "STAGING_PREVIEW_HOSTNAME": "staging-preview-7q2x.sriuthonghotels.com",
+        "STRIPE_CHECKOUT_LOGO_URL": "https://sri-u-thong-storefront-staging.pages.dev/images/sri-u-thong-text-logo-transparent.png",
+        "NEXT_PUBLIC_LEGAL_TERMS_VERSION": "1.5 · 2026-07-05",
+        "NEXT_PUBLIC_LEGAL_PRIVACY_POLICY_VERSION": "2026-06-29",
+        "NEXT_PUBLIC_LEGAL_CANCELLATION_POLICY_VERSION": "1.1 · 2026-07-05"
+      }
+    },
+    "audit-preview": {
+      "name": "sri-u-thong-audit-preview-2026",
+      "routes": [],
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "sri-u-thong-audit-preview-2026"
+        }
+      ],
+      "images": {
+        "binding": "IMAGES"
+      },
+      "r2_buckets": [
+        {
+          "binding": "MEDIA_BUCKET",
+          "bucket_name": "sri-u-thong-assets-staging"
+        }
+      ],
+      "vars": {
+        "CHECKOUT_HOLD_LIVE_ENABLED": "true",
+        "STAGING_PREVIEW_ENABLED": "false"
+      }
+    }
+  }
+}

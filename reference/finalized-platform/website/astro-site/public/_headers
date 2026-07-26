@@ -1,0 +1,4 @@
+# Keep the Cloudflare Pages staging hostname out of search indexes. The
+# production custom domain is intentionally not matched by this rule.
+/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet

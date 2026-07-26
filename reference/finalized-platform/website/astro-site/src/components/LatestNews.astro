@@ -1,0 +1,82 @@
+---
+import CloudflareImage from "./CloudflareImage.astro";
+import { getNewsPosts } from "../data/newsCollection.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const posts = (await getNewsPosts()).slice(0, 3);
+const copy = getAstroCopy(locale).latestNews;
+const {
+  embedded = false,
+  theme = "light",
+  showEmpty = false,
+  eyebrow = "News & Travel Notes",
+  title = "Latest from Sri U-Thong",
+  text = "Seasonal notes, city guidance, and hotel updates for guests planning a Suphanburi stay."
+} = Astro.props;
+
+const dateFormatter = new Intl.DateTimeFormat(getAstroCopy(locale).site.localeArticleDate, {
+  month: "short",
+  day: "numeric",
+  year: "numeric"
+});
+
+const shouldRender = posts.length > 0 || showEmpty;
+const RootTag = embedded ? "div" : "section";
+const rootClass = [
+  embedded ? "latest-news latest-news--embedded" : "section latest-news-section",
+  theme === "green" && "latest-news--green"
+].filter(Boolean).join(" ");
+---
+
+{shouldRender && (
+  <RootTag class={rootClass} aria-labelledby="latest-news-title">
+    <div class={embedded ? "latest-news__inner break-words" : "container latest-news break-words"}>
+      <div class="section-heading latest-news__heading">
+        <div>
+          <p class="eyebrow leading-relaxed">{eyebrow}</p>
+          <h2 id="latest-news-title" class="leading-[1.5]">{title}</h2>
+        </div>
+          <p class="lead leading-relaxed">{text}</p>
+      </div>
+
+      {posts.length > 0 ? (
+        <div class="latest-news__grid">
+          {posts.map((post) => (
+            <article class="news-card">
+              <a class="news-card__image" href={withLocale(`/news/${post.id}/`, locale)} aria-label={copy.articleLinkAria(post.data.title)}>
+                <CloudflareImage
+                  class="w-full max-w-full h-auto"
+                  src={post.data.coverImage}
+                  alt={copy.coverAlt(post.data.title)}
+                  widths={[480, 800, 1200]}
+                  width={800}
+                  sizes="(max-width: 760px) 100vw, 33vw"
+                />
+              </a>
+              <div class="news-card__body break-words">
+                <p class="news-card__meta leading-relaxed">
+                  <time datetime={post.data.publishDate.toISOString()}>{dateFormatter.format(post.data.publishDate)}</time>
+                  <span>{post.data.author}</span>
+                </p>
+                <h3 class="leading-[1.5]"><a href={withLocale(`/news/${post.id}/`, locale)}>{post.data.title}</a></h3>
+                <p class="leading-relaxed">{post.data.excerpt}</p>
+                <a class="text-link" href={withLocale(`/news/${post.id}/`, locale)}>{copy.readArticle}</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="latest-news__empty">
+          <h3>{copy.emptyTitle}</h3>
+          <p>{copy.emptyText}</p>
+        </div>
+      )}
+
+      <div class="latest-news__footer">
+        <a class="text-link" href={withLocale("/news/", locale)}>{copy.viewAll}</a>
+      </div>
+    </div>
+  </RootTag>
+)}

@@ -1,0 +1,30 @@
+---
+import { getAstroCopy } from "../data/siteCopy.js";
+import { withLocale } from "../data/locale.js";
+
+const { locale = "en" } = Astro.props;
+const { contactOptions: copy, site } = getAstroCopy(locale);
+---
+
+<div class="contact-options">
+  <a href={site.phoneHref}>
+    <strong>{copy.call}</strong>
+    <span>{site.phoneDisplay}</span>
+  </a>
+  <a href={site.emailHref}>
+    <strong>{copy.email}</strong>
+    <span>{site.email}</span>
+  </a>
+  <a href={withLocale("/contact/", locale)} aria-label={copy.lineAria}>
+    <strong>{copy.line}</strong>
+    <span>{copy.lineStatus}</span>
+  </a>
+  <a href={site.agodaUrl} rel="noreferrer" target="_blank">
+    <strong>{copy.agoda}</strong>
+    <span>{copy.agodaStatus}</span>
+  </a>
+  <a href={site.facebookUrl} rel="noreferrer" target="_blank">
+    <strong>{copy.facebook}</strong>
+    <span>{copy.facebookStatus}</span>
+  </a>
+</div>

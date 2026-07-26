@@ -1,0 +1,27 @@
+---
+import { cloudflareImageSrcSet, cloudflareImageUrl, getDefaultCloudflareImageSource, responsiveWidths } from "../data/cloudflareImages.js";
+
+const {
+  src,
+  alt,
+  widths = responsiveWidths,
+  sizes = "100vw",
+  width = 1200,
+  quality = 82,
+  loading = "lazy",
+  class: className,
+  ...rest
+} = Astro.props;
+const safeSrc = src || getDefaultCloudflareImageSource(null);
+---
+
+<img
+  class={className}
+  src={cloudflareImageUrl(safeSrc, width, quality)}
+  srcset={cloudflareImageSrcSet(safeSrc, widths, quality)}
+  sizes={sizes}
+  alt={alt}
+  loading={loading}
+  decoding="async"
+  {...rest}
+/>

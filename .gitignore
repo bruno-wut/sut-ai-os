@@ -1,0 +1,40 @@
+# Local secrets and environment overrides
+**/.env
+**/.env.local
+**/.env.*.local
+**/.dev.vars
+**/.dev.vars.*
+!**/.env.example
+!**/.env.*.example
+!reference/finalized-platform/.env.staging.local.md
+
+# Dependencies and generated application output
+**/node_modules/
+**/.next/
+**/.open-next/
+**/dist/
+**/.astro/
+**/out/
+**/.wrangler/
+**/coverage/
+**/playwright-report/
+**/test-results/
+**/blob-report/
+**/artifacts/
+
+# Logs, caches, and local tooling
+**/*.log
+**/*.tsbuildinfo
+**/next-env.d.ts
+.pnpm-store/
+.vercel/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Credentials and operating-system files
+**/*.pem
+**/*.key
+.DS_Store
+Thumbs.db

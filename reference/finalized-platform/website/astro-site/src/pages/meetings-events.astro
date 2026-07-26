@@ -1,0 +1,128 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import MediaCard from "../components/MediaCard.astro";
+import ClosingCta from "../components/ClosingCta.astro";
+import CloudflareImage from "../components/CloudflareImage.astro";
+import { getManagedImage, getPageMedia } from "../data/siteMedia.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const media = await getPageMedia("meetings-events");
+const heroImage = await getManagedImage(media.heroImage, {
+  alt: "Ballroom at Sri U-Thong Grand Hotel"
+});
+const overviewCards = await Promise.all(
+  media.overviewCards.map(async (card, index) => {
+    const cardCopy = copy.meetingsEvents.overviewCards?.[index] || {};
+    return {
+      ...card,
+      eyebrow: cardCopy.eyebrow || card.eyebrow,
+      title: cardCopy.title || card.title,
+      text: cardCopy.text || card.text,
+      cta: cardCopy.cta || card.cta,
+      image: await getManagedImage(card.image, { alt: card.alt })
+    };
+  })
+);
+const venues = await Promise.all(
+  media.venues.map(async (venue) => {
+    const slug = venue.title.toLowerCase().includes("ballroom") ? "ballroom" : (venue.title.toLowerCase().includes("morakot") ? "morakot" : "busarakam");
+    const venueCopy = copy.meetingsEvents.venueList?.[slug] || {};
+    return {
+      ...venue,
+      title: venueCopy.title || venue.title,
+      capacity: venueCopy.capacity || venue.capacity,
+      text: venueCopy.text || venue.text,
+      image: await getManagedImage(venue.image, { alt: venue.alt })
+    };
+  })
+);
+
+const sectionNav = { items: copy.meetingsEvents.sectionNav };
+---
+
+<BaseLayout
+  title={copy.meetingsEvents.meta.title}
+  description={copy.meetingsEvents.meta.description}
+  canonicalPath="/meetings-events/"
+  image={heroImage}
+  sectionNav={sectionNav}
+>
+  <PageHero
+    title={copy.meetingsEvents.hero.title}
+    text={copy.meetingsEvents.hero.text}
+    image={heroImage}
+    primaryLabel={copy.meetingsEvents.hero.primaryLabel}
+    primaryHref={withLocale("/contact/?topic=Meeting%20or%20event", locale)}
+    secondaryLabel={copy.meetingsEvents.hero.secondaryLabel}
+    secondaryHref={copy.site.phoneHref}
+  />
+
+  <section class="section page-scroll-target" id="events-overview">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">{copy.meetingsEvents.overview.eyebrow}</p>
+          <h2>{copy.meetingsEvents.overview.title}</h2>
+        </div>
+        <p class="lead">{copy.meetingsEvents.overview.lead}</p>
+      </div>
+      <div class="card-grid">
+        {overviewCards.map((card) => <MediaCard {...card} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section venue-section page-scroll-target" id="venues">
+    <div class="container">
+      <div class="venue-heading">
+        <div>
+          <p class="eyebrow">{copy.meetingsEvents.venues.eyebrow}</p>
+          <h2>{copy.meetingsEvents.venues.title}</h2>
+        </div>
+        <a class="venue-compare-link" href={withLocale("/contact/?topic=Venue%20size%20and%20capacity#hotel-enquiry", locale)}>{copy.meetingsEvents.venues.compareLabel}</a>
+      </div>
+
+      <div class="venue-grid" aria-label={copy.meetingsEvents.venues.gridAria}>
+        {
+          venues.map((venue) => (
+            <article class:list={["venue-card", { "venue-card--featured": venue.featured }]}>
+              <a class="venue-card__image" href={withLocale(venue.href, locale)} aria-label={copy.meetingsEvents.venues.enquireAria(venue.title)}>
+                <CloudflareImage
+                  src={venue.image.src}
+                  alt={venue.alt}
+                  widths={[640, 880, 1120, 1440]}
+                  sizes={venue.featured ? "(max-width: 860px) 100vw, 50vw" : "(max-width: 860px) 100vw, 42vw"}
+                  loading="lazy"
+                />
+                <span class="venue-card__badge" aria-hidden="true">{copy.meetingsEvents.venues.badge}</span>
+              </a>
+              <div class="venue-card__body">
+                <p class="eyebrow">{venue.eyebrow}</p>
+                <h3>{venue.title}</h3>
+                <p class="venue-card__capacity"><span>{copy.meetingsEvents.venues.bestFor}</span>{venue.capacity}</p>
+                <p>{venue.text}</p>
+                <a class="text-link" href={withLocale(venue.href, locale)}>{copy.meetingsEvents.venues.exploreMore}</a>
+                <a class="button button--outline venue-card__cta" href={withLocale(venue.href, locale)}>{copy.meetingsEvents.venues.plannerLabel}</a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <ClosingCta
+    id="events-cta"
+    eyebrow={copy.meetingsEvents.closing.eyebrow}
+    title={copy.meetingsEvents.closing.title}
+    text={copy.meetingsEvents.closing.text}
+    primaryLabel={copy.meetingsEvents.closing.primaryLabel}
+    primaryHref={withLocale("/contact/?topic=Meeting%20or%20event#hotel-enquiry", locale)}
+    secondaryLabel={copy.meetingsEvents.closing.secondaryLabel}
+    secondaryHref={copy.site.phoneHref}
+  />
+</BaseLayout>

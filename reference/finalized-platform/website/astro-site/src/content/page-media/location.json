@@ -1,0 +1,36 @@
+{
+  "kind": "location",
+  "heroImage": "grand-location",
+  "highlights": [
+    {
+      "title": "Wat Pa Lelai Worawihan",
+      "image": "grand-location",
+      "alt": "Suphanburi cultural landmark near Sri U-Thong Grand Hotel",
+      "text": "One of Suphanburi's best-known temple landmarks, often included in a first visit to the city for its local heritage and easy access from the central area."
+    },
+    {
+      "title": "Dragon Descendants Museum",
+      "image": "grand-neighborhood",
+      "alt": "Suphanburi city attraction near Sri U-Thong Grand Hotel",
+      "text": "A distinctive cultural stop in Suphanburi, known for its dramatic dragon form and exhibitions connected to Thai-Chinese heritage."
+    },
+    {
+      "title": "Banharn-Jamsai Tower",
+      "image": "grand-exterior",
+      "alt": "Suphanburi city view reference near Sri U-Thong Grand Hotel",
+      "text": "A useful city orientation point for guests who want a broader view of Suphanburi and a simple landmark to plan around."
+    },
+    {
+      "title": "Sam Chuk Old Market",
+      "image": "grand-lobby",
+      "alt": "Suphanburi travel highlight near Sri U-Thong Grand Hotel",
+      "text": "A heritage market experience for local food, nostalgic shopfronts, and an easy half-day outing from the hotel."
+    },
+    {
+      "title": "Bueng Chawak",
+      "image": "grand-restaurant",
+      "alt": "Family travel highlight near Sri U-Thong Grand Hotel",
+      "text": "A family-friendly destination often paired with relaxed day trips, local dining, and a slower Suphanburi itinerary."
+    }
+  ]
+}

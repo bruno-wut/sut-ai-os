@@ -1,0 +1,258 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import SectionNavigator from "../components/SectionNavigator.astro";
+import ThirdPartyScripts from "../components/ThirdPartyScripts.astro";
+import CookieBanner from "../components/CookieBanner.astro";
+import { getLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+import { astroSiteConfig } from "../data/siteConfig.js";
+import { getManagedImage } from "../data/siteMedia.js";
+
+const {
+  title = "Sri U-Thong Grand Hotel",
+  description = "A trusted stay in the heart of Suphanburi, Thailand.",
+  image = null,
+  canonicalPath = "/",
+  headerVariant = "overlay",
+  sectionNav = null
+} = Astro.props;
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const defaultMetaImage = await getManagedImage("grand-exterior");
+
+const cookieVal = Astro.cookies.get("cookie_consent_state")?.value;
+let serverConsentState = null;
+if (cookieVal) {
+  try {
+    serverConsentState = JSON.parse(decodeURIComponent(cookieVal));
+  } catch (e) {}
+}
+
+const siteUrl = astroSiteConfig.canonicalSiteUrl;
+const configuredBookingUrl = import.meta.env.PUBLIC_SUT_IBE_URL || import.meta.env.PUBLIC_BOOKING_URL || "";
+const isStagingBuild =
+  import.meta.env.PUBLIC_STAGING === "true" ||
+  /(?:staging-preview-|pages\.dev|localhost)/i.test(configuredBookingUrl ?? "");
+const localizedCanonicalPath = `/${locale}${canonicalPath === "/" ? "/" : canonicalPath}`;
+const localizedCanonicalUrl = new URL(localizedCanonicalPath, siteUrl).toString();
+const englishUrl = new URL(`/en${canonicalPath === "/" ? "/" : canonicalPath}`, siteUrl).toString();
+const thaiUrl = new URL(`/th${canonicalPath === "/" ? "/" : canonicalPath}`, siteUrl).toString();
+const metaImage = typeof image === "string" ? { src: image } : (image ?? defaultMetaImage);
+const imageSrc = metaImage?.src ?? defaultMetaImage.src;
+const imageUrl = /^https?:\/\//.test(imageSrc) ? imageSrc : new URL(imageSrc, siteUrl).toString();
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "Hotel",
+  name: astroSiteConfig.hotelName,
+  url: siteUrl,
+  image: imageUrl,
+  telephone: astroSiteConfig.phoneSchema,
+  faxNumber: astroSiteConfig.faxDisplay,
+  email: astroSiteConfig.email,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: astroSiteConfig.schemaAddress.streetAddress,
+    addressLocality: astroSiteConfig.schemaAddress.addressLocality,
+    postalCode: astroSiteConfig.schemaAddress.postalCode,
+    addressCountry: astroSiteConfig.schemaAddress.addressCountry
+  },
+  amenityFeature: [
+    {
+      "@type": "LocationFeatureSpecification",
+      name: copy.site.schemaAmenity,
+      value: true
+    }
+  ],
+  sameAs: [...astroSiteConfig.sameAs]
+};
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={localizedCanonicalUrl} />
+    <link rel="alternate" hreflang="en" href={englishUrl} />
+    <link rel="alternate" hreflang="th" href={thaiUrl} />
+    <link rel="alternate" hreflang="x-default" href={englishUrl} />
+    <meta name="robots" content={isStagingBuild ? "noindex, nofollow, noarchive, nosnippet" : "index, follow"} />
+    <meta name="theme-color" content="#30443b" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sri U-Thong Grand Hotel" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={localizedCanonicalUrl} />
+    <meta property="og:image" content={imageUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Serif+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <ThirdPartyScripts />
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  </head>
+  <body>
+    <div class="site-shell">
+      <Header locale={locale} variant={headerVariant} />
+      {sectionNav?.items?.length ? <SectionNavigator {...sectionNav} ariaLabel={sectionNav?.ariaLabel ?? copy.site.sectionNavigationLabel} /> : null}
+      <main id="main-content">
+        <slot />
+      </main>
+      <Footer locale={locale} />
+    </div>
+    <CookieBanner serverConsentState={serverConsentState} />
+    <script>
+      const toggle = document.querySelector("[data-menu-toggle]");
+      const menu = document.querySelector("[data-site-menu]");
+      const scrim = document.querySelector("[data-menu-scrim]");
+      const close = document.querySelector("[data-menu-close]");
+      const menuLinks = document.querySelectorAll("[data-site-menu] a");
+      const header = document.querySelector(".site-header");
+      const reserveDrawer = document.querySelector("[data-reserve-drawer]");
+      const reserveScrim = document.querySelector("[data-reserve-scrim]");
+      const reserveClose = document.querySelector("[data-reserve-close]");
+      const reserveOpenButtons = document.querySelectorAll("[data-reserve-open]");
+      let reserveTrigger = null;
+
+      const getFocusableElements = (container) => {
+        if (!container) return [];
+        return Array.from(
+          container.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((element) => element instanceof HTMLElement && element.getClientRects().length > 0);
+      };
+
+      const trapFocus = (event, container) => {
+        if (event.key !== "Tab" || !container) return;
+
+        const focusable = getFocusableElements(container);
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const activeElement = document.activeElement;
+
+        if (!focusable.includes(activeElement)) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+          return;
+        }
+
+        if (event.shiftKey && activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+
+      const setHeaderState = () => {
+        header?.classList.toggle("is-scrolled", window.scrollY > 8);
+      };
+
+      const setMenu = (isOpen) => {
+        if (!toggle || !menu || !scrim) return;
+        menu.classList.toggle("is-open", isOpen);
+        scrim.classList.toggle("is-open", isOpen);
+        document.body.classList.toggle("nav-open", isOpen);
+        toggle.setAttribute("aria-expanded", String(isOpen));
+        menu.setAttribute("aria-hidden", String(!isOpen));
+        scrim.hidden = !isOpen;
+        if (isOpen) {
+          setReserveDrawer(false, false);
+          requestAnimationFrame(() => {
+            if (window.innerWidth < 700) {
+              toggle.focus();
+            } else {
+              close?.focus();
+            }
+          });
+        } else if (document.activeElement && menu.contains(document.activeElement)) {
+          toggle.focus();
+        }
+      };
+
+      const setReserveDrawer = (isOpen, restoreFocus = true) => {
+        if (!reserveDrawer || !reserveScrim) return;
+        reserveDrawer.classList.toggle("is-open", isOpen);
+        reserveScrim.classList.toggle("is-open", isOpen);
+        document.body.classList.toggle("reserve-open", isOpen);
+        reserveDrawer.setAttribute("aria-hidden", String(!isOpen));
+        reserveScrim.hidden = !isOpen;
+        reserveOpenButtons.forEach((button) => button.setAttribute("aria-expanded", String(isOpen)));
+        if (isOpen) {
+          setMenu(false);
+          requestAnimationFrame(() => reserveClose?.focus());
+        } else if (restoreFocus && reserveTrigger instanceof HTMLElement) {
+          reserveTrigger.focus();
+          reserveTrigger = null;
+        }
+      };
+
+      if (toggle && menu && scrim) {
+        toggle.addEventListener("click", () => setMenu(!menu.classList.contains("is-open")));
+        close?.addEventListener("click", () => setMenu(false));
+        scrim.addEventListener("click", () => setMenu(false));
+        menuLinks.forEach((link) => link.addEventListener("click", () => setMenu(false)));
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") setMenu(false);
+          if (menu.classList.contains("is-open")) trapFocus(event, menu);
+        });
+      }
+
+      if (reserveDrawer && reserveScrim) {
+        reserveOpenButtons.forEach((button) => button.addEventListener("click", () => {
+          reserveTrigger = button;
+          setReserveDrawer(true);
+        }));
+        reserveClose?.addEventListener("click", () => setReserveDrawer(false));
+        reserveScrim.addEventListener("click", () => setReserveDrawer(false));
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") setReserveDrawer(false);
+          if (reserveDrawer.classList.contains("is-open")) trapFocus(event, reserveDrawer);
+        });
+      }
+
+      setHeaderState();
+      window.addEventListener("scroll", setHeaderState, { passive: true });
+
+      // Dynamic link rewrite for staging/preview environments
+      const isStaging = window.location.hostname.includes("staging") ||
+                        window.location.hostname.includes("localhost") ||
+                        window.location.hostname.includes("netlify") ||
+                        window.location.hostname.includes("pages.dev") ||
+                        window.location.hostname.includes("preview");
+      if (isStaging) {
+        const stagingBookingHost = ["staging", "preview", "7q2x.sriuthonghotels.com"].join("-");
+        document.querySelectorAll("a[href*='secure.sriuthonghotels.com'], a[href*='book.sriuthonggrand.com']").forEach((link) => {
+          try {
+            const url = new URL((link as HTMLAnchorElement).href);
+            if (url.hostname === "secure.sriuthonghotels.com" || url.hostname === "book.sriuthonggrand.com") {
+              url.hostname = stagingBookingHost;
+              (link as HTMLAnchorElement).href = url.toString();
+            }
+          } catch (e) {}
+        });
+      }
+    </script>
+  </body>
+</html>

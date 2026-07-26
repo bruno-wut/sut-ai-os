@@ -1,0 +1,5 @@
+---
+import Page from "../gallery.astro";
+export function getStaticPaths() { return ["en", "th"].map((locale) => ({ params: { locale } })); }
+---
+<Page />

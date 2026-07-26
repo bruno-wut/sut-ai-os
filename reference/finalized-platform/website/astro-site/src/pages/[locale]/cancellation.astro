@@ -1,0 +1,11 @@
+---
+import LegalPolicy from "../../components/LegalPolicy.astro";
+import EnContent from "../../../../../docs/sri-u-thong-grand-hotel-cancellation-refund-policy-v1.1.md";
+import ThContent from "../../../../../docs/sri-u-thong-grand-hotel-cancellation-refund-policy-v1.1-th.md";
+
+export function getStaticPaths() { return ["en", "th"].map((locale) => ({ params: { locale } })); }
+const locale = Astro.params.locale;
+---
+<LegalPolicy title={locale === "th" ? "เงื่อนไขการยกเลิกและคืนเงิน | โรงแรมศรีอู่ทอง แกรนด์" : "Cancellation & Refund Terms | Sri U-Thong Grand Hotel"}>
+  {locale === "th" ? <ThContent /> : <EnContent />}
+</LegalPolicy>

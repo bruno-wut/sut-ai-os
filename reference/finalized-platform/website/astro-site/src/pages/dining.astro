@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import MediaCard from "../components/MediaCard.astro";
+import { getManagedImage, getPageMedia } from "../data/siteMedia.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const media = await getPageMedia("dining");
+const heroImage = await getManagedImage(media.heroImage, {
+  alt: "Restaurant dining at Sri U-Thong Grand Hotel"
+});
+const overviewCards = await Promise.all(
+  media.overviewCards.map(async (card, index) => {
+    const cardCopy = copy.dining.overviewCards?.[index] || {};
+    return {
+      ...card,
+      eyebrow: cardCopy.eyebrow || card.eyebrow,
+      title: cardCopy.title || card.title,
+      text: cardCopy.text || card.text,
+      cta: cardCopy.cta || card.cta,
+      image: await getManagedImage(card.image, { alt: card.alt })
+    };
+  })
+);
+
+const sectionNav = { items: copy.dining.sectionNav };
+---
+
+<BaseLayout
+  title={copy.dining.meta.title}
+  description={copy.dining.meta.description}
+  canonicalPath="/dining/"
+  image={heroImage}
+  sectionNav={sectionNav}
+>
+  <PageHero
+    title={copy.dining.hero.title}
+    text={copy.dining.hero.text}
+    image={heroImage}
+    primaryLabel={copy.dining.hero.primaryLabel}
+    primaryHref={withLocale("/contact/?topic=Dining%20arrangement", locale)}
+    secondaryLabel={copy.dining.hero.secondaryLabel}
+    secondaryHref={copy.site.phoneHref}
+  />
+
+  <section class="section page-scroll-target" id="dining-overview">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">{copy.dining.overview.eyebrow}</p>
+          <h2>{copy.dining.overview.title}</h2>
+        </div>
+        <p class="lead">{copy.dining.overview.lead}</p>
+      </div>
+      <div class="card-grid">
+        {overviewCards.map((card) => <MediaCard {...card} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--green page-scroll-target" id="dining-enquiries">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">{copy.dining.enquiries.eyebrow}</p>
+        <h2>{copy.dining.enquiries.title}</h2>
+      </div>
+      <div>
+        <p class="lead">{copy.dining.enquiries.lead}</p>
+        <div class="button-row" style="margin-top: 26px;">
+          <a class="button button--light" href={withLocale("/contact/", locale)}>{copy.dining.enquiries.primaryLabel}</a>
+          <a class="button button--ghost" href={copy.site.phoneHref}>{copy.dining.enquiries.secondaryLabel}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

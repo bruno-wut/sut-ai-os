@@ -1,0 +1,127 @@
+---
+import BookingBar from "./BookingBar.astro";
+import { withLocale } from "../data/locale.js";
+import { getDictionary } from "../data/dictionaries.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+import { getManagedImage } from "../data/siteMedia.js";
+import { getIbeLookupUrl } from "../data/bookingConfig.js";
+
+const { locale = "en", variant = "overlay" } = Astro.props;
+const dictionary = getDictionary(locale);
+const copy = dictionary.header;
+const siteCopy = getAstroCopy(locale).site;
+const navItems = dictionary.nav.map(([href, label]) => ({ href, label }));
+const ibeLookupUrl = getIbeLookupUrl(locale);
+const currentPath = Astro.url.pathname;
+const search = Astro.url.search;
+const unlocalizedPath = currentPath.replace(/^\/(?:en|th)(?=\/|$)/, "") || "/";
+const isEnglish = locale === "en";
+const thaiPath = withLocale(unlocalizedPath, "th");
+const englishPath = withLocale(unlocalizedPath, "en");
+const isCurrent = (href) => href === "/" ? unlocalizedPath === "/" : unlocalizedPath.startsWith(href);
+const wordmarkLogo = await getManagedImage("brand-wordmark", { alt: siteCopy.logoAlt });
+const symbolLogo = await getManagedImage("brand-symbol", { alt: siteCopy.symbolAlt });
+---
+
+<header class:list={["site-header", variant === "solid" && "site-header--solid"]}>
+  <a class="visually-hidden" href="#main-content">{copy.skip}</a>
+  <div class="site-header__inner">
+    <button class="menu-toggle" type="button" aria-label={copy.openMenu} aria-controls="site-menu" aria-expanded="false" data-menu-toggle>
+      <span aria-hidden="true"></span><span>{copy.menu}</span>
+    </button>
+    <a class="brand" href={withLocale("/", locale)} aria-label={siteCopy.brandHomeLabel}>
+      <img class="brand__text-logo" src={wordmarkLogo.src} alt={wordmarkLogo.alt} loading="eager" decoding="async" />
+    </a>
+    <div class="mobile-language-toggle" aria-label={siteCopy.languageOptionsLabel}>
+      <a href={`${englishPath}${search}`} class:list={["language-toggle__link", isEnglish && "is-active"]} aria-label={siteCopy.switchToEnglish} aria-current={isEnglish ? "page" : undefined}>EN</a>
+      <span class="language-toggle__divider" aria-hidden="true">|</span>
+      <a href={`${thaiPath}${search}`} class:list={["language-toggle__link", !isEnglish && "is-active"]} aria-label={siteCopy.switchToThai} aria-current={!isEnglish ? "page" : undefined}>TH</a>
+    </div>
+    <div class="header-actions">
+      <a class="header-link" href={withLocale("/contact/", locale)}>{copy.contact}</a>
+      <span class="header-separator" aria-hidden="true"></span>
+      <div class="language-toggle" aria-label={siteCopy.languageOptionsLabel}>
+        <a
+          href={`${thaiPath}${search}`}
+          class:list={["language-toggle__link", !isEnglish && "is-active"]}
+          aria-label={siteCopy.switchToThai}
+          aria-current={!isEnglish ? "page" : undefined}
+        >
+          TH
+        </a>
+        <span class="language-toggle__divider" aria-hidden="true">|</span>
+        <a
+          href={`${englishPath}${search}`}
+          class:list={["language-toggle__link", isEnglish && "is-active"]}
+          aria-label={siteCopy.switchToEnglish}
+          aria-current={isEnglish ? "page" : undefined}
+        >
+          EN
+        </a>
+      </div>
+      <button class="reserve-button" type="button" data-reserve-open aria-controls="reserve-drawer" aria-expanded="false">{copy.reserve}</button>
+    </div>
+  </div>
+  <div class="mobile-action-bar" aria-label={copy.quickActions}>
+    <a href={withLocale("/contact/", locale)}>{copy.contact}</a>
+    <button type="button" data-reserve-open aria-controls="reserve-drawer" aria-expanded="false">{copy.reserve}</button>
+  </div>
+</header>
+
+<div class="menu-scrim" data-menu-scrim hidden></div>
+<aside class="site-menu" id="site-menu" aria-label={copy.siteMenu} aria-hidden="true" data-site-menu>
+  <div class="site-menu__panel">
+    <div class="site-menu__top">
+      <a class="drawer-symbol" href={withLocale("/", locale)} aria-label={siteCopy.brandHomeLabel}>
+        <img src={symbolLogo.src} alt={symbolLogo.alt} loading="lazy" decoding="async" />
+      </a>
+      <button class="menu-close" type="button" aria-label={copy.closeMenu} data-menu-close>&times;</button>
+    </div>
+    <nav class="drawer-nav" aria-label={copy.mainPages}>
+      {navItems.map((item) => (
+        <a href={withLocale(item.href, locale)} aria-current={isCurrent(item.href) ? "page" : undefined}>
+          <span>{item.label}</span><span aria-hidden="true">&rsaquo;</span>
+        </a>
+      ))}
+      <a href={ibeLookupUrl} class="drawer-nav__lookup">
+        <span>{copy.manageReservation}</span><span aria-hidden="true">&rsaquo;</span>
+      </a>
+    </nav>
+    <div class="drawer-utility">
+      <a href={siteCopy.phoneHref}>{copy.call}</a>
+      <a href={siteCopy.emailHref}>{copy.email}</a>
+      <button type="button" data-reserve-open>{copy.enquire}</button>
+      <div class="language-toggle" aria-label={siteCopy.languageOptionsLabel}>
+        <a
+          href={`${thaiPath}${search}`}
+          class:list={["language-toggle__link", !isEnglish && "is-active"]}
+          aria-label={siteCopy.switchToThai}
+          aria-current={!isEnglish ? "page" : undefined}
+        >
+          TH
+        </a>
+        <span class="language-toggle__divider" aria-hidden="true">|</span>
+        <a
+          href={`${englishPath}${search}`}
+          class:list={["language-toggle__link", isEnglish && "is-active"]}
+          aria-label={siteCopy.switchToEnglish}
+          aria-current={isEnglish ? "page" : undefined}
+        >
+          EN
+        </a>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="reserve-scrim" data-reserve-scrim hidden></div>
+<aside class="reserve-drawer" id="reserve-drawer" aria-label={copy.reserveStay} aria-hidden="true" data-reserve-drawer>
+  <div class="reserve-drawer__inner">
+    <div class="reserve-drawer__top">
+      <h2>{copy.reserve}</h2>
+      <button class="reserve-drawer__close" type="button" aria-label={copy.closeReserve} data-reserve-close>&times;</button>
+    </div>
+    <div class="reserve-drawer__hotel"><span>{copy.hotel}</span><strong>{siteCopy.hotelName}</strong></div>
+    <BookingBar variant="drawer" idPrefix="reserve-drawer-booking" locale={locale} />
+  </div>
+</aside>

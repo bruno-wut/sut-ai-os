@@ -1,0 +1,435 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import BookingBar from "../components/BookingBar.astro";
+import LatestNews from "../components/LatestNews.astro";
+import MediaCard from "../components/MediaCard.astro";
+import CloudflareImage from "../components/CloudflareImage.astro";
+import { getManagedImage, getPageMedia } from "../data/siteMedia.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const media = await getPageMedia("home");
+const heroImage = await getManagedImage(media.heroImage);
+const overviewImage = await getManagedImage(media.overviewImage, {
+  alt: "Lobby interior at Sri U-Thong Grand Hotel"
+});
+const roomCards = await Promise.all(
+  media.roomCards.map(async (card) => {
+    const slug = card.title.toLowerCase().replace(/\s+/g, "");
+    let key = slug;
+    if (slug === "classicroom") key = "classic";
+    if (slug === "deluxeroom") key = "deluxe";
+    if (slug === "executiveroom") key = "executive";
+    if (slug === "executivesuite") key = "execsuite";
+    if (slug === "grandresidence") key = "grandres";
+    if (slug === "studiosuite") key = "studiosuite";
+
+    const roomCopy = copy.rooms.categories?.[key] || {};
+    const isPremier = card.eyebrow === "Premier Series";
+    const localizedEyebrow = locale === "th"
+      ? (isPremier ? "พรีเมียร์ ซีรีส์" : "เฮอริเทจ ซีรีส์")
+      : (isPremier ? "Premier Series" : "Heritage Series");
+    const localizedCTA = locale === "th" ? "รายละเอียดห้องพัก" : "Explore Rooms";
+
+    return {
+      ...card,
+      title: roomCopy.title || card.title,
+      text: roomCopy.desc || card.text,
+      eyebrow: localizedEyebrow,
+      cta: localizedCTA,
+      href: withLocale("/rooms/", locale),
+      image: await getManagedImage(card.image, { alt: card.alt })
+    };
+  })
+);
+const diningImage = await getManagedImage(media.diningImage, {
+  alt: "Restaurant dining room at Sri U-Thong Grand Hotel"
+});
+const eventSlides = await Promise.all(
+  media.eventSlides.map(async (slide) => ({
+    ...slide,
+    image: await getManagedImage(slide.image, { alt: slide.alt })
+  }))
+);
+
+const sectionNav = copy.home.sectionNav;
+---
+
+<BaseLayout
+  title={copy.home.meta.title}
+  description={copy.home.meta.description}
+  canonicalPath="/"
+  sectionNav={sectionNav}
+>
+  <Hero
+    image={heroImage}
+    eyebrow={copy.home.hero.eyebrow}
+    title={copy.home.hero.title}
+    text={copy.home.hero.text}
+    primaryLabel={copy.home.hero.primaryLabel}
+    secondaryHref={withLocale("/rooms/", locale)}
+    secondaryLabel={copy.home.hero.secondaryLabel}
+  />
+  <BookingBar locale={locale} />
+
+  <section class="section section--tight home-direct-bar page-scroll-target" id="home-overview">
+    <div class="container">
+      <div class="home-direct-bar__inner">
+        <p class="home-direct-bar__address">{copy.site.hotelName}, {copy.site.addressLine}</p>
+        <div class="home-direct-bar__actions">
+          <a class="home-direct-pill" href={copy.site.phoneHref}>{copy.site.phoneDisplay}</a>
+          <a class="home-direct-link home-direct-email" href={copy.site.emailHref}>{copy.site.email}</a>
+          <a class="home-direct-link" href="#home-location">{copy.home.directBar.locationLink}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="intro-panel__text">
+        <p class="eyebrow">{copy.home.overview.eyebrow}</p>
+        <h2>{copy.home.overview.title}</h2>
+        <p class="lead">{copy.home.overview.lead}</p>
+        <div class="intro-facts">
+          {copy.home.overview.facts.map((fact) => (
+            <div>
+              <strong>{fact.strong}</strong>
+              <span>{fact.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div class="image-frame" style="aspect-ratio: 4 / 5;">
+        <CloudflareImage src={overviewImage.src} alt={overviewImage.alt} widths={[480, 720, 960]} sizes="(max-width: 860px) 100vw, 48vw" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ivory page-scroll-target" id="home-rooms">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">{copy.home.rooms.eyebrow}</p>
+          <h2>{copy.home.rooms.title}</h2>
+        </div>
+        <p class="lead">{copy.home.rooms.lead}</p>
+      </div>
+      
+      <div class="room-slider-wrapper">
+        <button class="slider-arrow slider-arrow--left" aria-label="Previous rooms" id="rooms-prev-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+        </button>
+        
+        <div class="room-slider" id="rooms-slider-track">
+          {roomCards.map((card) => (
+            <div class="room-slider__slide">
+              <MediaCard {...card} />
+            </div>
+          ))}
+        </div>
+        
+        <button class="slider-arrow slider-arrow--right" aria-label="Next rooms" id="rooms-next-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .room-slider-wrapper {
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .room-slider {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      gap: 22px;
+      padding: 10px 0 24px 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+    }
+
+    .room-slider::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+
+    .room-slider__slide {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+      display: flex;
+    }
+    
+    .room-slider__slide :global(.media-card) {
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .room-slider__slide {
+        flex: 0 0 calc(50% - 11px);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .room-slider__slide {
+        flex: 0 0 calc(33.333% - 14.666px);
+      }
+    }
+
+    .slider-arrow {
+      position: absolute;
+      top: calc(50% - 24px);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: var(--color-white);
+      border: 1px solid var(--color-line);
+      border-radius: 50%;
+      color: var(--color-stone-800, #292524);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: all 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slider-arrow:hover {
+      background: var(--color-stone-100, #f5f5f4);
+      transform: scale(1.08);
+      color: var(--color-primary, #b8860b);
+      border-color: var(--color-stone-300, #d6d3d1);
+    }
+
+    .slider-arrow:active {
+      transform: scale(0.95);
+    }
+
+    .slider-arrow--left {
+      left: -24px;
+    }
+
+    .slider-arrow--right {
+      right: -24px;
+    }
+
+    .slider-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    @media (max-width: 1100px) {
+      .slider-arrow--left {
+        left: -8px;
+      }
+      .slider-arrow--right {
+        right: -8px;
+      }
+    }
+  </style>
+
+  <script>
+    const track = document.getElementById('rooms-slider-track');
+    const prevBtn = document.getElementById('rooms-prev-btn');
+    const nextBtn = document.getElementById('rooms-next-btn');
+
+    if (track && prevBtn && nextBtn) {
+      const getScrollAmount = () => {
+        const slide = track.querySelector('.room-slider__slide');
+        if (slide) {
+          return slide.getBoundingClientRect().width + 22;
+        }
+        return 300;
+      };
+
+      prevBtn.addEventListener('click', () => {
+        track.scrollBy({
+          left: -getScrollAmount(),
+          behavior: 'smooth'
+        });
+      });
+
+      nextBtn.addEventListener('click', () => {
+        track.scrollBy({
+          left: getScrollAmount(),
+          behavior: 'smooth'
+        });
+      });
+
+      const updateButtons = () => {
+        const isAtStart = track.scrollLeft <= 5;
+        const isAtEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 5;
+        prevBtn.style.opacity = isAtStart ? '0.4' : '1';
+        prevBtn.style.pointerEvents = isAtStart ? 'none' : 'auto';
+        nextBtn.style.opacity = isAtEnd ? '0.4' : '1';
+        nextBtn.style.pointerEvents = isAtEnd ? 'none' : 'auto';
+      };
+
+      track.addEventListener('scroll', updateButtons);
+      setTimeout(updateButtons, 100);
+      window.addEventListener('resize', updateButtons);
+    }
+  </script>
+
+  <section class="section page-scroll-target" id="home-dining">
+    <div class="container split split--reverse">
+      <div>
+        <p class="eyebrow">{copy.home.dining.eyebrow}</p>
+        <h2>{copy.home.dining.title}</h2>
+        <p class="lead">{copy.home.dining.lead}</p>
+        <div class="button-row" style="margin-top: 26px;">
+          <a class="button" href={withLocale("/dining/", locale)}>{copy.home.dining.primaryLabel}</a>
+          <a class="button button--ghost" href={withLocale("/contact/", locale)}>{copy.home.dining.secondaryLabel}</a>
+        </div>
+      </div>
+      <div class="image-frame" style="aspect-ratio: 5 / 4;">
+        <CloudflareImage src={diningImage.src} alt={diningImage.alt} widths={[480, 720, 960]} sizes="(max-width: 860px) 100vw, 48vw" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--green event-showcase-section page-scroll-target" id="home-events" aria-labelledby="event-showcase-title">
+    <div class="container event-showcase">
+      <div class="event-showcase__heading">
+        <p class="eyebrow">{copy.home.events.eyebrow}</p>
+        <h2 id="event-showcase-title">{copy.home.events.title}</h2>
+        <p class="lead">{copy.home.events.lead}</p>
+        <div class="event-showcase__cta">
+          <a class="button button--light" href={withLocale("/meetings-events/#venues", locale)}>{copy.home.events.primaryLabel}</a>
+        </div>
+      </div>
+
+      <sut-event-slideshow class="event-slideshow" aria-label={copy.home.events.slideshowLabel}>
+        <div class="event-slideshow__viewport">
+          <div class="event-slideshow__track">
+            {eventSlides.map((slide, index) => (
+              <figure class={`event-slide${index === 0 ? " is-active" : ""}`} data-event-slide data-event-title={slide.title} aria-hidden={index === 0 ? "false" : "true"}>
+                <CloudflareImage
+                  src={slide.image.src}
+                  alt={slide.alt}
+                  widths={[640, 920, 1280, 1600]}
+                  sizes="(max-width: 760px) calc(100vw - 28px), 78vw"
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
+              </figure>
+            ))}
+          </div>
+
+          <button class="event-slideshow__nav event-slideshow__nav--prev" type="button" data-event-prev aria-label={copy.home.events.previousImage}>&larr;</button>
+          <button class="event-slideshow__nav event-slideshow__nav--next" type="button" data-event-next aria-label={copy.home.events.nextImage}>&rarr;</button>
+        </div>
+
+        <p class="event-slideshow__label" aria-live="polite" data-event-label>
+          {eventSlides[0]?.title}
+        </p>
+      </sut-event-slideshow>
+
+      <div class="event-showcase__footer page-scroll-target" id="home-news">
+        <LatestNews
+          embedded
+          theme="green"
+          showEmpty
+          eyebrow={copy.home.news.eyebrow}
+          title={copy.home.news.title}
+          text={copy.home.news.text}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section page-scroll-target" id="home-location">
+    <div class="container split">
+      <div class="intro-panel__text">
+        <p class="eyebrow">{copy.home.location.eyebrow}</p>
+        <h2>{copy.home.location.title}</h2>
+        <p class="lead">{copy.home.location.lead}</p>
+        <div class="button-row" style="margin-top: 26px;">
+          <a class="button" href={withLocale("/location/", locale)}>{copy.home.location.primaryLabel}</a>
+          <a class="button button--ghost" href={withLocale("/contact/", locale)}>{copy.home.location.secondaryLabel}</a>
+        </div>
+      </div>
+      <div class="map-embed">
+        <iframe
+          title={copy.site.mapTitle}
+          src={copy.site.mapsEmbedUrl}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  class SUTEventSlideshow extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready === "true") return;
+      this.dataset.ready = "true";
+
+      this.slides = Array.from(this.querySelectorAll("[data-event-slide]"));
+      this.label = this.querySelector("[data-event-label]");
+      this.previousButton = this.querySelector("[data-event-prev]");
+      this.nextButton = this.querySelector("[data-event-next]");
+      this.activeIndex = 0;
+      this.autoAdvance = null;
+      this.prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      if (!this.slides.length) return;
+
+      this.previousButton?.addEventListener("click", () => this.goTo(this.activeIndex - 1));
+      this.nextButton?.addEventListener("click", () => this.goTo(this.activeIndex + 1));
+      this.addEventListener("pointerenter", () => this.stopAutoplay());
+      this.addEventListener("pointerleave", () => this.startAutoplay());
+      this.addEventListener("focusin", () => this.stopAutoplay());
+      this.addEventListener("focusout", (event) => {
+        if (!this.contains(event.relatedTarget)) this.startAutoplay();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) this.stopAutoplay();
+        else this.startAutoplay();
+      });
+
+      this.update();
+      this.startAutoplay();
+    }
+
+    startAutoplay() {
+      if (this.prefersReducedMotion?.matches || this.autoAdvance || this.slides.length < 2) return;
+      this.autoAdvance = window.setInterval(() => this.goTo(this.activeIndex + 1), 2000);
+    }
+
+    stopAutoplay() {
+      if (!this.autoAdvance) return;
+      window.clearInterval(this.autoAdvance);
+      this.autoAdvance = null;
+    }
+
+    goTo(nextIndex) {
+      const count = this.slides.length;
+      this.activeIndex = (nextIndex + count) % count;
+      this.update();
+    }
+
+    update() {
+      this.slides.forEach((slide, index) => {
+        const isActive = index === this.activeIndex;
+        slide.classList.toggle("is-active", isActive);
+        slide.setAttribute("aria-hidden", String(!isActive));
+      });
+
+      const activeTitle = this.slides[this.activeIndex]?.dataset.eventTitle || "";
+      if (this.label) this.label.textContent = activeTitle;
+    }
+  }
+
+  if (!customElements.get("sut-event-slideshow")) {
+    customElements.define("sut-event-slideshow", SUTEventSlideshow);
+  }
+</script>

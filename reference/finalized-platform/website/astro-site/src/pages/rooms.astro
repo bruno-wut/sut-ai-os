@@ -1,0 +1,164 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import RoomCard from "../components/RoomCard.astro";
+import ClosingCta from "../components/ClosingCta.astro";
+import { getManagedImage, getPageMedia } from "../data/siteMedia.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const media = await getPageMedia("rooms");
+const heroImage = await getManagedImage(media.heroImage, {
+  alt: "Room at Sri U-Thong Grand Hotel"
+});
+const roomSeries = await Promise.all(
+  media.roomSeries.map(async (series) => {
+    const isPremier = series.id === "premier-series";
+    const localizedTitle = locale === "th" 
+      ? (isPremier ? "ห้องพักพรีเมียร์ที่ตกแต่งอย่างประณีตและพรีเมียมยิ่งขึ้น" : "ความสะดวกสบายที่คุ้นเคยพร้อมความอบอุ่นแบบศรีอู่ทองคลาสสิก")
+      : (isPremier ? "Newly renovated rooms with a more premium finish" : "Familiar comfort with classic Sri U-Thong warmth");
+    const localizedText = locale === "th"
+      ? (isPremier ? "พรีเมียร์ ซีรีส์ นำเสนอประสบการณ์ห้องพักโฉมใหม่ที่ได้รับการปรับปรุงของโรงแรม ออกแบบมาสำหรับผู้เข้าพักที่ต้องการความเหนือระดับ บรรยากาศที่เงียบสงบ และการตกแต่งร่วมสมัย" : "เฮอริเทจ ซีรีส์ คงเอกลักษณ์การต้อนรับอันอบอุ่นของโรงแรมไว้เป็นแกนหลัก มอบความสะดวกสบายที่คุ้นเคยและเป็นฐานที่มั่นใจได้สำหรับทุกการมาเยือนสุพรรณบุรี")
+      : (isPremier ? "The Premier Series introduces the hotel's refreshed accommodation experience, designed for guests seeking a more elevated stay with a quieter, more contemporary feel." : "The Heritage Series keeps the hotel's established character at the center: practical comfort, generous hospitality, and a trusted base for Suphanburi visits.");
+    const localizedEyebrow = locale === "th"
+      ? (isPremier ? "พรีเมียร์ ซีรีส์" : "เฮอริเทจ ซีรีส์")
+      : (isPremier ? "Premier Series" : "Heritage Series");
+      
+    return {
+      ...series,
+      title: localizedTitle,
+      text: localizedText,
+      eyebrow: localizedEyebrow,
+      rooms: await Promise.all(
+        series.rooms.map(async (room) => {
+          const slug = room.title.toLowerCase().replace(/\s+/g, "");
+          let key = slug;
+          if (slug === "classicroom") key = "classic";
+          if (slug === "deluxeroom") key = "deluxe";
+          if (slug === "executiveroom") key = "executive";
+          if (slug === "suite") key = "execsuite";
+          if (slug === "grandresidence") key = "grandres";
+          
+          const roomCopy = copy.rooms.categories?.[key] || {};
+          
+          return {
+            ...room,
+            title: roomCopy.title || room.title,
+            statement: roomCopy.statement || "",
+            text: roomCopy.desc || room.text,
+            ideal: roomCopy.ideal || "",
+            features: roomCopy.features || room.features,
+            image: await getManagedImage(room.image, { alt: room.alt })
+          };
+        })
+      )
+    };
+  })
+);
+
+const sectionNav = { items: copy.rooms.sectionNav };
+---
+
+<BaseLayout
+  title={copy.rooms.meta.title}
+  description={copy.rooms.meta.description}
+  canonicalPath="/rooms/"
+  image={heroImage}
+  sectionNav={sectionNav}
+>
+  <PageHero
+    title={copy.rooms.hero.title}
+    text={copy.rooms.hero.text}
+    image={heroImage}
+    primaryLabel={copy.rooms.hero.primaryLabel}
+    primaryAction="reserve"
+    secondaryLabel={copy.rooms.hero.secondaryLabel}
+    secondaryHref={withLocale("/gallery/#gallery-rooms", locale)}
+  />
+
+  <section class="section rooms-page page-scroll-target" id="rooms-collection">
+    <div class="container">
+      <div class="section-heading rooms-intro">
+        <div>
+          <p class="eyebrow">{copy.rooms.intro.eyebrow}</p>
+          <h2>{copy.rooms.intro.title}</h2>
+        </div>
+        <p class="lead">{copy.rooms.intro.lead}</p>
+      </div>
+
+      <sut-room-filter>
+        <nav class="room-series-nav" aria-label={copy.rooms.filter.ariaLabel}>
+          <span>{copy.rooms.filter.prompt}</span>
+          <button class="is-active" type="button" data-room-filter="all" aria-pressed="true">{copy.rooms.filter.all}</button>
+          <button type="button" data-room-filter="premier-series" aria-pressed="false">{copy.rooms.filter.premier}</button>
+          <button type="button" data-room-filter="heritage-series" aria-pressed="false">{copy.rooms.filter.heritage}</button>
+        </nav>
+
+        <div class="room-series-list" data-room-series-list>
+          {roomSeries.map((series) => (
+            <section class="room-series page-scroll-target" id={series.id} data-room-series={series.id} aria-labelledby={`${series.id}-title`}>
+              <div class="room-series__heading">
+                <p class="eyebrow">{series.eyebrow}</p>
+                <h2 id={`${series.id}-title`}>{series.title}</h2>
+                <p>{series.text}</p>
+              </div>
+              <div class="room-series__grid">
+                {series.rooms.map((room) => <RoomCard {...room} eyebrow={series.eyebrow} locale={locale} galleryHref={withLocale("/gallery/#gallery-rooms", locale)} />)}
+              </div>
+            </section>
+          ))}
+        </div>
+      </sut-room-filter>
+    </div>
+  </section>
+
+  <ClosingCta
+    id="rooms-cta"
+    eyebrow={copy.rooms.closing.eyebrow}
+    title={copy.rooms.closing.title}
+    text={copy.rooms.closing.text}
+    primaryLabel={copy.rooms.closing.primaryLabel}
+    primaryAction="reserve"
+    secondaryLabel={copy.rooms.closing.secondaryLabel}
+    secondaryHref={copy.site.phoneHref}
+  />
+</BaseLayout>
+
+<script>
+  class SUTRoomFilter extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready === "true") return;
+      this.dataset.ready = "true";
+
+      this.buttons = Array.from(this.querySelectorAll("[data-room-filter]"));
+      this.seriesSections = Array.from(this.querySelectorAll("[data-room-series]"));
+
+      this.buttons.forEach((button) => {
+        button.addEventListener("click", () => this.applyFilter(button.dataset.roomFilter || "all"));
+      });
+
+      this.applyFilter("all");
+    }
+
+    applyFilter(filterValue) {
+      this.dataset.activeFilter = filterValue;
+
+      this.buttons.forEach((button) => {
+        const isActive = button.dataset.roomFilter === filterValue;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
+      });
+
+      this.seriesSections.forEach((section) => {
+        const shouldShow = filterValue === "all" || section.dataset.roomSeries === filterValue;
+        section.hidden = !shouldShow;
+      });
+    }
+  }
+
+  if (!customElements.get("sut-room-filter")) {
+    customElements.define("sut-room-filter", SUTRoomFilter);
+  }
+</script>

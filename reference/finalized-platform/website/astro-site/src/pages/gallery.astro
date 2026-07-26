@@ -1,0 +1,272 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import ClosingCta from "../components/ClosingCta.astro";
+import CloudflareImage from "../components/CloudflareImage.astro";
+import { getGalleryData, getManagedImage } from "../data/siteMedia.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const gallery = await getGalleryData("main");
+const thaiGalleryLabels = {
+  Gallery: "แกลเลอรี",
+  Hotel: "โรงแรม",
+  Rooms: "ห้องพัก",
+  Dining: "ห้องอาหาร",
+  "Meetings & Events": "ประชุมและจัดเลี้ยง",
+  Location: "ที่ตั้ง",
+  "Hotel Exterior": "ภายนอกโรงแรม",
+  "Hotel Arrival": "ทางเข้าโรงแรม",
+  "Hotel Location": "ที่ตั้งโรงแรม",
+  "Lobby & Arrival": "ล็อบบี้และทางเข้า",
+  "Arrival Exterior": "ภายนอกบริเวณทางเข้า",
+  "Nearby Area": "พื้นที่ใกล้เคียง",
+  "Classic Room": "ห้องคลาสสิก",
+  "Classic Room detail": "รายละเอียดห้องคลาสสิก",
+  "Classic Room sitting area": "พื้นที่นั่งเล่นห้องคลาสสิก",
+  "Deluxe Room": "ห้องดีลักซ์",
+  "Deluxe Room detail": "รายละเอียดห้องดีลักซ์",
+  "Deluxe Room sitting area": "พื้นที่นั่งเล่นห้องดีลักซ์",
+  "Studio Suite": "สตูดิโอ สวีท",
+  "Studio Suite bedroom": "ห้องนอนสตูดิโอ สวีท",
+  "Studio Suite detail": "รายละเอียดสตูดิโอ สวีท",
+  "Executive Room": "ห้องเอ็กเซ็กคิวทีฟ",
+  "Executive Room sitting area": "พื้นที่นั่งเล่นห้องเอ็กเซ็กคิวทีฟ",
+  "Executive Room detail": "รายละเอียดห้องเอ็กเซ็กคิวทีฟ",
+  Suite: "ห้องสวีท",
+  "Suite bedroom": "ห้องนอนสวีท",
+  "Suite detail": "รายละเอียดห้องสวีท",
+  "Grand Residence": "แกรนด์ เรสซิเดนซ์",
+  "Grand Residence bedroom": "ห้องนอนแกรนด์ เรสซิเดนซ์",
+  "Grand Residence detail": "รายละเอียดแกรนด์ เรสซิเดนซ์",
+  Restaurant: "ห้องอาหาร",
+  "Restaurant Table": "โต๊ะอาหาร",
+  "Restaurant Breakfast": "อาหารเช้าในห้องอาหาร",
+  Breakfast: "อาหารเช้า",
+  "Breakfast Setting": "บรรยากาศอาหารเช้า",
+  "Breakfast Table": "โต๊ะอาหารเช้า",
+  "Dining Table": "โต๊ะอาหาร",
+  "Dining Room": "ห้องอาหาร",
+  "Dining Breakfast": "อาหารเช้าในห้องอาหาร",
+  "The Grand Ballroom": "ห้องแกรนด์บอลรูม",
+  "Grand Ballroom Event Setup": "การจัดงานห้องแกรนด์บอลรูม",
+  "Grand Ballroom Meeting Layout": "รูปแบบการประชุมห้องแกรนด์บอลรูม",
+  "Morakot Room": "ห้องมรกต",
+  "Morakot Room Event Setup": "การจัดงานห้องมรกต",
+  "Morakot Room Celebration Reference": "บรรยากาศงานฉลองห้องมรกต",
+  "Busarakam Room": "ห้องบุษราคัม",
+  "Busarakam Room Seminar Layout": "รูปแบบสัมมนาห้องบุษราคัม",
+  "Busarakam Room Celebration Reference": "บรรยากาศงานฉลองห้องบุษราคัม",
+  "Suphanburi Location": "ที่ตั้งในสุพรรณบุรี",
+  "Hotel Arrival Point": "จุดทางเข้าโรงแรม",
+  "Location Context": "บริบทโดยรอบที่ตั้ง",
+  Close: "ปิด"
+};
+const translateGalleryLabel = (value) => locale === "th" ? (thaiGalleryLabels[value] ?? value) : value;
+const localizedGallery = {
+  ...gallery,
+  title: translateGalleryLabel(gallery.title),
+  groups: gallery.groups.map((group) => ({
+    ...group,
+    title: translateGalleryLabel(group.title),
+    items: group.items.map((item) => ({
+      ...item,
+      label: translateGalleryLabel(item.label),
+      slides: item.slides.map((slide) => ({ ...slide, label: translateGalleryLabel(slide.label) }))
+    }))
+  }))
+};
+const heroImage = await getManagedImage(gallery.heroImage, {
+  alt: gallery.heroAlt
+});
+const groups = await Promise.all(
+  localizedGallery.groups.map(async (group) => ({
+    ...group,
+    items: await Promise.all(
+      group.items.map(async (item) => ({
+        ...item,
+        slides: await Promise.all(
+          item.slides.map(async (slide) => ({
+            ...slide,
+            image: await getManagedImage(slide.image, {
+              alt: `${slide.label} at Sri U-Thong Grand Hotel`
+            })
+          }))
+        )
+      }))
+    )
+  }))
+);
+
+const galleryId = (title) => `gallery-${title.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}`;
+const gallerySectionId = (title) => `gallery-section-${title.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}`;
+const sectionNav = {
+  items: gallery.groups.map((group) => ({
+    id: gallerySectionId(group.title),
+    label: group.title.replace(locale === "th" ? "ประชุมและจัดเลี้ยง" : "Meetings & Events", locale === "th" ? "งานกิจกรรม" : "Events")
+  }))
+};
+---
+
+<BaseLayout
+  title={`${localizedGallery.title} | ${copy.gallery.metaTitleSuffix}`}
+  description={gallery.description}
+  canonicalPath="/gallery/"
+  image={heroImage}
+  sectionNav={sectionNav}
+>
+  <PageHero
+    title={localizedGallery.title}
+    text={gallery.heroText}
+    image={heroImage}
+    primaryLabel={copy.gallery.heroPrimaryLabel}
+    primaryAction="reserve"
+    secondaryLabel={copy.gallery.heroSecondaryLabel}
+    secondaryHref="#gallery-hotel"
+  />
+
+  <section class="section page-scroll-target" id={gallerySectionId(groups[0].title)}>
+    <div class="container">
+      {groups.map((group, index) => (
+        <section class="gallery-group page-scroll-target" id={index === 0 ? undefined : gallerySectionId(group.title)} aria-labelledby={galleryId(group.title)}>
+          <div class="section-heading" style="margin-bottom: 0;">
+            <div>
+              <p class="eyebrow">{copy.gallery.sectionEyebrow}</p>
+              <h2 id={galleryId(group.title)}>{group.title}</h2>
+            </div>
+          </div>
+          <div class="gallery-grid">
+            {group.items.map((item) => (
+              <sut-gallery-slider class="gallery-slider" data-slide-count={item.slides.length}>
+                <button
+                  class="gallery-slider__stage"
+                  type="button"
+                  data-gallery-open
+                  data-image={item.slides[0].image.src}
+                  data-label={item.slides[0].label}
+                  aria-label={copy.gallery.openPhotoAria(item.label)}
+                >
+                  {item.slides.map((slide, slideIndex) => (
+                    <CloudflareImage
+                      class={slideIndex === 0 ? "gallery-slider__image is-active" : "gallery-slider__image"}
+                      src={slide.image.src}
+                      alt={slide.image.alt}
+                      widths={[360, 540, 720]}
+                      sizes="(max-width: 720px) 100vw, 33vw"
+                      loading="lazy"
+                      data-slider-image
+                      data-full={slide.image.src}
+                      data-label={slide.label}
+                    />
+                  ))}
+                  <span class="gallery-slider__label" data-slider-label>{item.label}</span>
+                  <span class="gallery-slider__count" data-slider-count>1 / {item.slides.length}</span>
+                </button>
+                <div class="gallery-slider__controls" aria-label={copy.gallery.controlsAria(item.label)}>
+                  <button type="button" data-slider-prev aria-label={copy.gallery.previousPhotoAria(item.label)}>&larr;</button>
+                  <button type="button" data-slider-next aria-label={copy.gallery.nextPhotoAria(item.label)}>&rarr;</button>
+                </div>
+              </sut-gallery-slider>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </section>
+
+  <ClosingCta
+    eyebrow={copy.gallery.closing.eyebrow}
+    title={copy.gallery.closing.title}
+    text={copy.gallery.closing.text}
+    primaryLabel={copy.gallery.closing.primaryLabel}
+    primaryAction="reserve"
+    secondaryLabel={copy.gallery.closing.secondaryLabel}
+    secondaryHref={withLocale("/rooms/", locale)}
+  />
+
+  <dialog class="gallery-dialog" data-gallery-dialog aria-label={copy.site.photoViewerLabel}>
+    <div class="gallery-dialog__frame">
+      <CloudflareImage src={heroImage.src} alt="Sri U-Thong Grand Hotel gallery image" widths={[800, 1200, 1600]} sizes="100vw" loading="lazy" data-gallery-image />
+      <div class="gallery-dialog__footer">
+        <p data-gallery-caption></p>
+        <button class="button button--light" type="button" data-gallery-close>{copy.gallery.dialogClose}</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script define:vars={{ galleryFallbackLabel: copy.gallery.sliderFallbackLabel, galleryCaptionFallback: copy.gallery.dialogCaptionFallback, galleryHotelName: copy.site.hotelName }}>
+
+    class SutGallerySlider extends HTMLElement {
+      connectedCallback() {
+        this.index = 0;
+        this.images = Array.from(this.querySelectorAll("[data-slider-image]"));
+        this.stage = this.querySelector("[data-gallery-open]");
+        this.label = this.querySelector("[data-slider-label]");
+        this.count = this.querySelector("[data-slider-count]");
+        this.prev = this.querySelector("[data-slider-prev]");
+        this.next = this.querySelector("[data-slider-next]");
+
+        this.prev?.addEventListener("click", () => this.go(-1));
+        this.next?.addEventListener("click", () => this.go(1));
+        this.update();
+      }
+
+      go(direction) {
+        if (!this.images.length) return;
+        this.index = (this.index + direction + this.images.length) % this.images.length;
+        this.update();
+      }
+
+      update() {
+        const active = this.images[this.index];
+        if (!active) return;
+
+        this.images.forEach((image, imageIndex) => {
+          image.classList.toggle("is-active", imageIndex === this.index);
+        });
+
+        const full = active.getAttribute("data-full") || "";
+        const label = active.getAttribute("data-label") || galleryFallbackLabel;
+
+        this.stage?.setAttribute("data-image", full);
+        this.stage?.setAttribute("data-label", label);
+        if (this.label) this.label.textContent = label.replace(/ (detail|bedroom|sitting area|arrival|location|nearby area|table|breakfast|setting|room|event setup|meeting layout|seminar layout|celebration reference|arrival point|context|exterior)$/i, "");
+        if (this.count) this.count.textContent = `${this.index + 1} / ${this.images.length}`;
+      }
+    }
+
+    if (!customElements.get("sut-gallery-slider")) {
+      customElements.define("sut-gallery-slider", SutGallerySlider);
+    }
+
+    const galleryDialog = document.querySelector("[data-gallery-dialog]");
+    const galleryImage = document.querySelector("[data-gallery-image]");
+    const galleryCaption = document.querySelector("[data-gallery-caption]");
+    const galleryClose = document.querySelector("[data-gallery-close]");
+    const galleryItems = document.querySelectorAll("[data-gallery-open]");
+
+    galleryItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        if (!(galleryDialog instanceof HTMLDialogElement) || !(galleryImage instanceof HTMLImageElement)) return;
+        const src = item.getAttribute("data-image") || "";
+        const label = item.getAttribute("data-label") || galleryCaptionFallback;
+        galleryImage.removeAttribute("srcset");
+        galleryImage.removeAttribute("sizes");
+        galleryImage.src = src;
+        galleryImage.alt = `${label} at ${galleryHotelName}`;
+        if (galleryCaption) galleryCaption.textContent = label;
+        galleryDialog.showModal();
+      });
+    });
+
+    galleryClose?.addEventListener("click", () => {
+      if (galleryDialog instanceof HTMLDialogElement) galleryDialog.close();
+    });
+
+    galleryDialog?.addEventListener("click", (event) => {
+      if (event.target === galleryDialog && galleryDialog instanceof HTMLDialogElement) galleryDialog.close();
+    });
+  </script>
+</BaseLayout>

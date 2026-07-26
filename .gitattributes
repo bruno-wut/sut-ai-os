@@ -1,0 +1,3 @@
+# Preserve immutable source artifacts byte-for-byte across Windows checkouts.
+docs/architecture/source/** -text
+reference/finalized-platform/** -text

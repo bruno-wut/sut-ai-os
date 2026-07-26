@@ -1,0 +1,951 @@
+---
+import bookingConfig, { getIbeLookupUrl } from "../data/bookingConfig.js";
+import { getDictionary } from "../data/dictionaries.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+import { withLocale } from "../data/locale.js";
+
+const {
+  variant = "inline",
+  idPrefix = variant === "drawer" ? "drawer-booking" : "booking",
+  locale = "en"
+} = Astro.props;
+const dictionary = getDictionary(locale);
+const copy = dictionary.booking;
+const headerCopy = dictionary.header;
+const bookingCopy = getAstroCopy(locale).bookingBar;
+const ibeLookupUrl = getIbeLookupUrl(locale);
+
+const isDrawer = variant === "drawer";
+const panelId = isDrawer ? "reserve-drawer-panel" : "booking-panel";
+const className = isDrawer ? "booking-panel booking-panel--drawer" : "booking-panel";
+---
+
+<sut-booking-bar class={className} id={panelId} data-booking-panel data-booking-variant={variant} data-locale={locale} aria-label={copy.enquiry}>
+  <form class="booking-panel__inner" data-booking-form novalidate>
+    <input type="hidden" name="checkin" data-booking-hidden="checkin" />
+    <input type="hidden" name="checkout" data-booking-hidden="checkout" />
+    <input type="hidden" name="adults" data-booking-hidden="adults" />
+    <input type="hidden" name="children" data-booking-hidden="children" />
+    <input type="hidden" name="rooms" data-booking-hidden="rooms" />
+    <input type="hidden" name="promoCode" data-booking-hidden="promoCode" />
+
+    <div class="booking-control booking-control--dates">
+      <button
+        class="booking-trigger"
+        type="button"
+        aria-expanded="false"
+        aria-controls={`${idPrefix}-dates-panel`}
+        data-booking-toggle="dates"
+      >
+        <span class="booking-trigger__label">{copy.dates}</span>
+        <span class="booking-trigger__value" data-booking-dates-label>{copy.chooseStay}</span>
+        <span class="booking-trigger__meta" data-booking-nights-label>{copy.selectDates}</span>
+      </button>
+
+      <div
+        class="booking-popover booking-popover--dates"
+        id={`${idPrefix}-dates-panel`}
+        data-booking-popover="dates"
+        role="dialog"
+        aria-modal={isDrawer ? "true" : "false"}
+        aria-labelledby={`${idPrefix}-dates-title`}
+        hidden
+      >
+        <button class="booking-popover__back" type="button" data-booking-back="dates" aria-label={bookingCopy.backToReserveDetails}>&larr;</button>
+        <button class="booking-popover__close" type="button" data-booking-close aria-label={bookingCopy.closeDateSelection}>&times;</button>
+        <div class="booking-popover__header">
+          <div>
+            <p class="booking-popover__eyebrow">{bookingCopy.datesEyebrow}</p>
+            <h3 id={`${idPrefix}-dates-title`}>{bookingCopy.datesTitle}</h3>
+          </div>
+          <span class="booking-badge" data-booking-night-badge>{bookingCopy.client.defaultNight}</span>
+        </div>
+
+        <div class="booking-date-summary" aria-live="polite">
+          <span>
+            <strong>{bookingCopy.checkInLabel}</strong>
+            <em data-booking-checkin-display>{bookingCopy.selectDate}</em>
+          </span>
+          <span>
+            <strong>{bookingCopy.checkOutLabel}</strong>
+            <em data-booking-checkout-display>{bookingCopy.selectDate}</em>
+          </span>
+        </div>
+
+        <div class="booking-calendar-toolbar">
+          <button class="booking-calendar-nav" type="button" data-calendar-prev aria-label={bookingCopy.previousMonth}>&larr;</button>
+          <strong data-booking-calendar-title>June 2026</strong>
+          <button class="booking-calendar-nav" type="button" data-calendar-next aria-label={bookingCopy.nextMonth}>&rarr;</button>
+        </div>
+
+        <div class="booking-calendar" data-booking-calendar role="grid" aria-label={bookingCopy.calendarLabel} aria-live="polite"></div>
+
+        <p class="booking-popover__note">{bookingCopy.datesNote}</p>
+      </div>
+    </div>
+
+    <div class="booking-control">
+      <button
+        class="booking-trigger"
+        type="button"
+        aria-expanded="false"
+        aria-controls={`${idPrefix}-guests-panel`}
+        data-booking-toggle="guests"
+      >
+        <span class="booking-trigger__label">{copy.guests}</span>
+        <span class="booking-trigger__value" data-booking-guests-label>{copy.guestSummary}</span>
+      </button>
+
+      <div
+        class="booking-popover booking-popover--guests"
+        id={`${idPrefix}-guests-panel`}
+        data-booking-popover="guests"
+        role="dialog"
+        aria-modal={isDrawer ? "true" : "false"}
+        aria-labelledby={`${idPrefix}-guests-title`}
+        hidden
+      >
+        <button class="booking-popover__back" type="button" data-booking-back="guests" aria-label={bookingCopy.backToReserveDetails}>&larr;</button>
+        <button class="booking-popover__close" type="button" data-booking-close aria-label={bookingCopy.closeGuestDetails}>&times;</button>
+        <div class="booking-popover__header">
+          <div>
+            <p class="booking-popover__eyebrow">{bookingCopy.guestsEyebrow}</p>
+            <h3 id={`${idPrefix}-guests-title`}>{bookingCopy.guestsTitle}</h3>
+          </div>
+        </div>
+
+        <div class="booking-stepper-list">
+          <div class="booking-stepper">
+            <div>
+              <strong>{bookingCopy.adultsLabel}</strong>
+              <span>{bookingCopy.adultsNote}</span>
+            </div>
+            <div class="booking-stepper__controls">
+              <button type="button" class="booking-stepper__button" data-booking-stepper="adults" data-step="-1" aria-label={`- ${bookingCopy.adultsLabel}`}>-</button>
+              <span data-booking-count="adults">2</span>
+              <button type="button" class="booking-stepper__button" data-booking-stepper="adults" data-step="1" aria-label={`+ ${bookingCopy.adultsLabel}`}>+</button>
+            </div>
+          </div>
+
+          <div class="booking-stepper">
+            <div>
+              <strong>{bookingCopy.childrenLabel}</strong>
+              <span>{bookingCopy.childrenNote}</span>
+            </div>
+            <div class="booking-stepper__controls">
+              <button type="button" class="booking-stepper__button" data-booking-stepper="children" data-step="-1" aria-label={`- ${bookingCopy.childrenLabel}`}>-</button>
+              <span data-booking-count="children">0</span>
+              <button type="button" class="booking-stepper__button" data-booking-stepper="children" data-step="1" aria-label={`+ ${bookingCopy.childrenLabel}`}>+</button>
+            </div>
+          </div>
+
+          <div class="booking-stepper">
+            <div>
+              <strong>{bookingCopy.roomsLabel}</strong>
+              <span>{bookingCopy.roomsNote}</span>
+            </div>
+            <div class="booking-stepper__controls">
+              <button type="button" class="booking-stepper__button" data-booking-stepper="rooms" data-step="-1" aria-label={`- ${bookingCopy.roomsLabel}`}>-</button>
+              <span data-booking-count="rooms">1</span>
+              <button type="button" class="booking-stepper__button" data-booking-stepper="rooms" data-step="1" aria-label={`+ ${bookingCopy.roomsLabel}`}>+</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="booking-popover__note">{bookingCopy.guestCountsNote}</p>
+        <button class="booking-popover__confirm" type="button" data-booking-confirm="guests">{bookingCopy.confirmGuests}</button>
+      </div>
+    </div>
+
+    <div class="booking-control">
+      <button
+        class="booking-trigger"
+        type="button"
+        aria-expanded="false"
+        aria-controls={`${idPrefix}-code-panel`}
+        data-booking-toggle="codes"
+      >
+        <span class="booking-trigger__label">{copy.codes}</span>
+        <span class="booking-trigger__value" data-booking-code-label>{copy.addCode}</span>
+      </button>
+
+      <div
+        class="booking-popover booking-popover--codes"
+        id={`${idPrefix}-code-panel`}
+        data-booking-popover="codes"
+        role="dialog"
+        aria-modal={isDrawer ? "true" : "false"}
+        aria-labelledby={`${idPrefix}-codes-title`}
+        hidden
+      >
+        <button class="booking-popover__back" type="button" data-booking-back="codes" aria-label={bookingCopy.backToReserveDetails}>&larr;</button>
+        <button class="booking-popover__close" type="button" data-booking-close aria-label={bookingCopy.closeSpecialCodes}>&times;</button>
+        <div class="booking-popover__header">
+          <div>
+            <p class="booking-popover__eyebrow">{bookingCopy.codesEyebrow}</p>
+            <h3 id={`${idPrefix}-codes-title`}>{bookingCopy.codesTitle}</h3>
+          </div>
+        </div>
+
+        <label class="booking-text-field" for={`${idPrefix}-code`}>
+          <span>{bookingCopy.codeLabel}</span>
+          <input id={`${idPrefix}-code`} type="text" maxlength="40" placeholder={bookingCopy.codePlaceholder} data-booking-input="promoCode" />
+        </label>
+
+        <p class="booking-popover__note">{bookingCopy.codeNote}</p>
+        <button class="booking-popover__confirm" type="button" data-booking-confirm="codes">{bookingCopy.confirmCode}</button>
+      </div>
+    </div>
+
+    <button class="booking-submit" type="submit">{copy.reserve}</button>
+    {isDrawer && (
+      <div class="booking-drawer-manage">
+        <span class="booking-drawer-manage__text">{headerCopy.existingBooking}</span>
+        <a class="booking-drawer-manage__link" href={ibeLookupUrl}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>{headerCopy.manageReservation}</span>
+        </a>
+      </div>
+    )}
+  </form>
+
+  <p class="booking-panel__hint" data-booking-status aria-live="polite"></p>
+</sut-booking-bar>
+
+<script define:vars={{ bookingConfig, bookingUi: bookingCopy.client, bookingStatusReady: bookingCopy.submitReady }}>
+  class SUTBookingBar extends HTMLElement {
+    constructor() {
+      super();
+      this.state = {
+        checkin: "",
+        checkout: "",
+        adults: 2,
+        children: 0,
+        rooms: 1,
+        promoCode: ""
+      };
+      this.isSelectingCheckout = false;
+      this.hoverCheckout = "";
+      this.calendarCursor = new Date();
+      this.calendarCursor.setDate(1);
+      this.cleanup = [];
+      this.lastTouchSelection = null;
+      this.initializationRetries = 0;
+      this.maxInitializationRetries = 12;
+      this.initializationRetryFrame = 0;
+      this.activePopoverName = "";
+      this.minMax = {
+        adults: { min: 1, max: 6 },
+        children: { min: 0, max: 4 },
+        rooms: { min: 1, max: 6 }
+      };
+    }
+
+    connectedCallback() {
+      if (this.dataset.bookingReady === "true") return;
+
+      this.form = this.querySelector("[data-booking-form]");
+      if (!this.form) {
+        this.scheduleInitializationRetry("form");
+        return;
+      }
+
+      this.hiddenFields = Object.fromEntries(
+        Array.from(this.querySelectorAll("[data-booking-hidden]")).map((field) => [field.dataset.bookingHidden, field])
+      );
+      this.labels = {
+        dates: this.querySelector("[data-booking-dates-label]"),
+        nights: this.querySelector("[data-booking-nights-label]"),
+        nightBadge: this.querySelector("[data-booking-night-badge]"),
+        checkinDisplay: this.querySelector("[data-booking-checkin-display]"),
+        checkoutDisplay: this.querySelector("[data-booking-checkout-display]"),
+        guests: this.querySelector("[data-booking-guests-label]"),
+        code: this.querySelector("[data-booking-code-label]")
+      };
+      this.counters = Object.fromEntries(
+        Array.from(this.querySelectorAll("[data-booking-count]")).map((node) => [node.dataset.bookingCount, node])
+      );
+      this.inputs = Object.fromEntries(
+        Array.from(this.querySelectorAll("[data-booking-input]")).map((field) => [field.dataset.bookingInput, field])
+      );
+      this.calendar = this.querySelector("[data-booking-calendar]");
+      this.calendarTitle = this.querySelector("[data-booking-calendar-title]");
+      this.previousMonthButton = this.querySelector("[data-calendar-prev]");
+      this.nextMonthButton = this.querySelector("[data-calendar-next]");
+      this.toggles = Array.from(this.querySelectorAll("[data-booking-toggle]"));
+      this.stepperButtons = Array.from(this.querySelectorAll("[data-booking-stepper]"));
+      this.popovers = Object.fromEntries(
+        Array.from(this.querySelectorAll("[data-booking-popover]")).map((node) => [node.dataset.bookingPopover, node])
+      );
+      this.status = this.querySelector("[data-booking-status]");
+
+      const hasRequiredUi =
+        this.labels.dates &&
+        this.labels.nights &&
+        this.labels.nightBadge &&
+        this.labels.checkinDisplay &&
+        this.labels.checkoutDisplay &&
+        this.labels.guests &&
+        this.labels.code &&
+        this.calendar &&
+        this.calendarTitle &&
+        this.previousMonthButton &&
+        this.nextMonthButton &&
+        this.status &&
+        Object.keys(this.popovers).length === 3 &&
+        this.toggles.length === 3 &&
+        this.stepperButtons.length === 6;
+
+      if (!hasRequiredUi) {
+        this.scheduleInitializationRetry("required controls");
+        return;
+      }
+
+      this.dataset.bookingReady = "true";
+      this.initializationRetries = 0;
+      this.initializationRetryFrame = 0;
+      this.setDefaultDates();
+      this.syncCheckoutConstraint();
+      this.syncHiddenFields();
+      this.syncLabels();
+      this.renderCalendar();
+      this.closePopovers();
+      this.bindEvents();
+
+      if (window.location.hash === "#booking-panel" && this.id === "booking-panel") {
+        window.setTimeout(() => this.scrollIntoBookingPanel(), 180);
+      }
+    }
+
+    disconnectedCallback() {
+      if (this.initializationRetryFrame) {
+        window.cancelAnimationFrame(this.initializationRetryFrame);
+        this.initializationRetryFrame = 0;
+      }
+      this.cleanup.forEach((removeListener) => removeListener());
+      this.cleanup = [];
+    }
+
+    scheduleInitializationRetry(reason) {
+      if (this.dataset.bookingReady === "failed") return;
+
+      this.initializationRetries += 1;
+
+      if (this.initializationRetries > this.maxInitializationRetries) {
+        this.dataset.bookingReady = "failed";
+        console.warn(`Sri U-Thong booking bar could not initialize: missing ${reason}.`);
+        return;
+      }
+
+      if (this.initializationRetryFrame) return;
+
+      this.initializationRetryFrame = window.requestAnimationFrame(() => {
+        this.initializationRetryFrame = 0;
+        this.connectedCallback();
+      });
+    }
+
+    on(target, eventName, handler, options) {
+      target?.addEventListener(eventName, handler, options);
+      this.cleanup.push(() => target?.removeEventListener(eventName, handler, options));
+    }
+
+    bindEvents() {
+      this.toggles.forEach((toggle) => {
+        this.on(toggle, "click", () => this.openPopover(toggle.dataset.bookingToggle || ""));
+      });
+
+      if (this.inputs.promoCode) {
+        this.on(this.inputs.promoCode, "input", () => {
+          this.state.promoCode = this.inputs.promoCode.value.trim();
+          this.syncHiddenFields();
+          this.syncLabels();
+        });
+      }
+
+      this.on(this.calendar, "click", (event) => {
+        const dayButton = event.target.closest("[data-date]");
+        if (!dayButton || dayButton.disabled) return;
+        if (
+          this.lastTouchSelection &&
+          this.lastTouchSelection.date === dayButton.dataset.date &&
+          Date.now() - this.lastTouchSelection.at < 700
+        ) {
+          this.lastTouchSelection = null;
+          return;
+        }
+        this.selectCalendarDate(dayButton.dataset.date);
+      });
+
+      this.on(this.calendar, "pointerup", (event) => {
+        if (event.pointerType === "mouse") return;
+        const dayButton = event.target.closest("[data-date]");
+        if (!dayButton || dayButton.disabled) return;
+        event.preventDefault();
+        this.lastTouchSelection = { at: Date.now(), date: dayButton.dataset.date };
+        this.selectCalendarDate(dayButton.dataset.date);
+      });
+
+      this.on(this.calendar, "keydown", (event) => this.handleCalendarKeydown(event));
+
+      this.on(this.calendar, "mousemove", (event) => {
+        if (!this.isSelectingCheckout || !this.state.checkin) return;
+        const dayButton = event.target.closest("[data-date]");
+        if (!dayButton || dayButton.disabled || dayButton.dataset.date <= this.state.checkin) return;
+        if (this.hoverCheckout === dayButton.dataset.date) return;
+
+        this.hoverCheckout = dayButton.dataset.date;
+        this.syncLabels();
+        this.renderCalendar();
+      });
+
+      this.on(this.calendar, "mouseleave", () => {
+        if (!this.hoverCheckout) return;
+        this.hoverCheckout = "";
+        this.syncLabels();
+        this.renderCalendar();
+      });
+
+      this.on(this.previousMonthButton, "click", () => {
+        this.calendarCursor.setMonth(this.calendarCursor.getMonth() - 1);
+        this.renderCalendar();
+      });
+
+      this.on(this.nextMonthButton, "click", () => {
+        this.calendarCursor.setMonth(this.calendarCursor.getMonth() + 1);
+        this.renderCalendar();
+      });
+
+      this.stepperButtons.forEach((button) => {
+        this.on(button, "click", () => {
+          if (button.disabled) return;
+
+          const key = button.dataset.bookingStepper;
+          const step = Number(button.dataset.step || "0");
+          const bounds = this.minMax[key];
+          if (!bounds) return;
+
+          this.state[key] = Math.min(bounds.max, Math.max(bounds.min, this.state[key] + step));
+          this.syncHiddenFields();
+          this.syncLabels();
+        });
+      });
+
+      this.querySelectorAll("[data-booking-confirm], [data-booking-close], [data-booking-back]").forEach((button) => {
+        this.on(button, "click", () => this.closePopovers());
+      });
+
+      this.on(this.form, "submit", (event) => this.handleSubmit(event));
+      this.on(document, "click", (event) => {
+        const clickPath = event.composedPath?.() || [];
+        if (!clickPath.includes(this)) this.closePopovers();
+      });
+      this.on(document, "keydown", (event) => {
+        if (event.key === "Escape") this.closePopovers();
+        if (event.key === "Tab") this.trapPopoverFocus(event);
+      });
+    }
+
+    localizedCount(count, singular, plural) {
+      if (!singular || singular === plural) return `${count} ${plural}`;
+      return `${count} ${count === 1 ? singular : plural}`;
+    }
+
+    pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    formatIsoDate(date) {
+      return `${date.getFullYear()}-${this.pad(date.getMonth() + 1)}-${this.pad(date.getDate())}`;
+    }
+
+    formatDisplayDate(isoValue) {
+      if (!isoValue) return "";
+      const date = new Date(`${isoValue}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat(bookingUi.localeDate, {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }).format(date);
+    }
+
+    isMobileViewport() {
+      return window.innerWidth < 840;
+    }
+
+    getThailandToday() {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Bangkok",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      })
+        .formatToParts(new Date())
+        .reduce((accumulator, part) => {
+          accumulator[part.type] = part.value;
+          return accumulator;
+        }, {});
+
+      return new Date(Number(parts.year), Number(parts.month) - 1, Number(parts.day));
+    }
+
+    todayIso() {
+      return this.formatIsoDate(this.getThailandToday());
+    }
+
+    getNightCount(endDate = this.state.checkout) {
+      if (!this.state.checkin || !endDate) return 0;
+      const start = new Date(`${this.state.checkin}T00:00:00`);
+      const end = new Date(`${endDate}T00:00:00`);
+      const nights = Math.round((end.getTime() - start.getTime()) / 86400000);
+      return nights > 0 ? nights : 0;
+    }
+
+    syncHiddenFields() {
+      Object.entries(this.hiddenFields).forEach(([key, field]) => {
+        field.value = String(this.state[key] ?? "");
+      });
+    }
+
+    syncLabels() {
+      const nightCount = this.getNightCount();
+      const adultsText = this.localizedCount(this.state.adults, bookingUi.adultSingular, bookingUi.adultPlural);
+      const roomsText = this.localizedCount(this.state.rooms, bookingUi.roomSingular, bookingUi.roomPlural);
+      const childrenText = this.state.children > 0
+        ? ` | ${this.localizedCount(this.state.children, bookingUi.childSingular, bookingUi.childPlural)}`
+        : "";
+      const staySuffix = bookingUi.staySuffix ? ` ${bookingUi.staySuffix}` : "";
+
+      if (this.state.checkin && this.state.checkout) {
+        this.labels.dates.textContent = `${this.formatDisplayDate(this.state.checkin)} - ${this.formatDisplayDate(this.state.checkout)}`;
+        this.labels.nights.textContent = `${this.localizedCount(nightCount || 1, bookingUi.nightSingular, bookingUi.nightPlural)}${staySuffix}`;
+        this.labels.nightBadge.textContent = this.localizedCount(nightCount || 1, bookingUi.nightSingular, bookingUi.nightPlural);
+        this.labels.checkinDisplay.textContent = this.formatDisplayDate(this.state.checkin);
+        this.labels.checkoutDisplay.textContent = this.formatDisplayDate(this.state.checkout);
+      } else if (this.state.checkin) {
+        const previewNights = this.hoverCheckout ? this.getNightCount(this.hoverCheckout) : 0;
+        this.labels.dates.textContent = `${this.formatDisplayDate(this.state.checkin)} - ${bookingUi.selectCheckout}`;
+        this.labels.nights.textContent = this.hoverCheckout && previewNights
+          ? `${this.localizedCount(previewNights, bookingUi.nightSingular, bookingUi.nightPlural)} ${bookingUi.previewSuffix}`.trim()
+          : bookingUi.chooseCheckoutDate;
+        this.labels.nightBadge.textContent = this.hoverCheckout && previewNights
+          ? this.localizedCount(previewNights, bookingUi.nightSingular, bookingUi.nightPlural)
+          : bookingUi.selectCheckout;
+        this.labels.checkinDisplay.textContent = this.formatDisplayDate(this.state.checkin);
+        this.labels.checkoutDisplay.textContent = this.hoverCheckout ? this.formatDisplayDate(this.hoverCheckout) : bookingUi.selectDate;
+      } else {
+        this.labels.dates.textContent = bookingUi.chooseStay;
+        this.labels.nights.textContent = bookingUi.selectDates;
+        this.labels.nightBadge.textContent = bookingUi.defaultNight;
+        this.labels.checkinDisplay.textContent = bookingUi.selectDate;
+        this.labels.checkoutDisplay.textContent = bookingUi.selectDate;
+      }
+
+      this.labels.guests.textContent = `${roomsText} | ${adultsText}${childrenText}`;
+      this.labels.code.textContent = this.state.promoCode.trim() ? this.state.promoCode.trim() : bookingUi.addCode;
+
+      Object.entries(this.counters).forEach(([key, node]) => {
+        node.textContent = String(this.state[key]);
+      });
+
+      this.syncStepperControls();
+    }
+
+    syncStepperControls() {
+      this.stepperButtons.forEach((button) => {
+        const key = button.dataset.bookingStepper;
+        const step = Number(button.dataset.step || "0");
+        const bounds = this.minMax[key];
+        if (!bounds) return;
+
+        const value = this.state[key];
+        const isAtLowerLimit = step < 0 && value <= bounds.min;
+        const isAtUpperLimit = step > 0 && value >= bounds.max;
+        const shouldDisable = isAtLowerLimit || isAtUpperLimit;
+
+        button.disabled = shouldDisable;
+        button.setAttribute("aria-disabled", String(shouldDisable));
+      });
+    }
+
+    closePopovers(activeName = "") {
+      this.activePopoverName = activeName;
+
+      this.toggles.forEach((toggle) => {
+        const name = toggle.dataset.bookingToggle;
+        const isActive = name === activeName;
+        toggle.setAttribute("aria-expanded", String(isActive));
+        toggle.classList.toggle("is-open", isActive);
+      });
+
+      Object.entries(this.popovers).forEach(([name, popover]) => {
+        popover.hidden = name !== activeName;
+      });
+    }
+
+    openPopover(name) {
+      const popover = this.popovers[name];
+      if (!popover) return;
+      const shouldOpen = popover.hidden;
+      this.closePopovers(shouldOpen ? name : "");
+
+      if (shouldOpen) {
+        this.setPopoverPlacement(name);
+        if (this.isMobileViewport()) {
+          const toggle = this.toggles.find((node) => node.dataset.bookingToggle === name);
+          toggle?.closest(".booking-control")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        window.requestAnimationFrame(() => this.focusPopover(name));
+      }
+    }
+
+    getFocusableElements(container) {
+      if (!container) return [];
+      return Array.from(
+        container.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((element) => element instanceof HTMLElement && element.getClientRects().length > 0);
+    }
+
+    focusPopover(name) {
+      const popover = this.popovers[name];
+      if (!popover || popover.hidden) return;
+
+      if (name === "dates") {
+        const preferredDate = this.state.checkin || this.todayIso();
+        if (this.focusCalendarDate(preferredDate)) return;
+      }
+
+      const focusable = this.getFocusableElements(popover);
+      focusable[0]?.focus();
+    }
+
+    trapPopoverFocus(event) {
+      if (!this.activePopoverName) return;
+
+      const popover = this.popovers[this.activePopoverName];
+      if (!popover || popover.hidden) return;
+
+      const focusable = this.getFocusableElements(popover);
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const activeElement = document.activeElement;
+
+      if (!focusable.includes(activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+
+      if (event.shiftKey && activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    setPopoverPlacement(name) {
+      const popover = this.popovers[name];
+      const toggle = this.toggles.find((node) => node.dataset.bookingToggle === name);
+      if (!popover || !toggle) return;
+
+      popover.classList.remove("booking-popover--above", "booking-popover--below");
+      const rect = toggle.getBoundingClientRect();
+      const triggerCenter = rect.top + rect.height / 2;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const shouldOpenAbove = this.dataset.bookingVariant !== "drawer" && triggerCenter > window.innerHeight / 2 && spaceBelow < rect.top;
+      popover.classList.add(shouldOpenAbove ? "booking-popover--above" : "booking-popover--below");
+    }
+
+    setDefaultDates() {
+      const today = this.getThailandToday();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const dayAfter = new Date(today);
+      dayAfter.setDate(today.getDate() + 2);
+      this.state.checkin = this.formatIsoDate(tomorrow);
+      this.state.checkout = this.formatIsoDate(dayAfter);
+    }
+
+    syncCheckoutConstraint() {
+      if (!this.state.checkin) return;
+      if (this.state.checkout && this.state.checkout <= this.state.checkin) {
+        const checkinDate = new Date(`${this.state.checkin}T00:00:00`);
+        checkinDate.setDate(checkinDate.getDate() + 1);
+        this.state.checkout = this.formatIsoDate(checkinDate);
+        this.isSelectingCheckout = false;
+      }
+    }
+
+    ensureCheckoutForSubmit() {
+      if (!this.state.checkin || this.state.checkout) return;
+      const nextDay = new Date(`${this.state.checkin}T00:00:00`);
+      nextDay.setDate(nextDay.getDate() + 1);
+      this.state.checkout = this.formatIsoDate(nextDay);
+    }
+
+    getMonthLabel(date) {
+      return new Intl.DateTimeFormat(bookingUi.localeDate, {
+        month: "long",
+        year: "numeric"
+      }).format(date);
+    }
+
+    getPreviewCheckout() {
+      if (!this.isSelectingCheckout || !this.hoverCheckout || this.hoverCheckout <= this.state.checkin) return "";
+      return this.hoverCheckout;
+    }
+
+    isSelectedDate(isoDate) {
+      return isoDate === this.state.checkin || isoDate === this.state.checkout;
+    }
+
+    isInSelectedRange(isoDate) {
+      const activeCheckout = this.state.checkout || this.getPreviewCheckout();
+      return this.state.checkin && activeCheckout && isoDate > this.state.checkin && isoDate < activeCheckout;
+    }
+
+    createDayButton(date, monthIndex) {
+      const isoDate = this.formatIsoDate(date);
+      const activeCheckout = this.state.checkout || this.getPreviewCheckout();
+      const dayButton = document.createElement("button");
+      dayButton.type = "button";
+      dayButton.className = "booking-calendar__day";
+      dayButton.dataset.date = isoDate;
+      dayButton.textContent = String(date.getDate());
+      dayButton.setAttribute("role", "gridcell");
+      dayButton.setAttribute("aria-label", this.formatDisplayDate(isoDate));
+      dayButton.setAttribute("aria-selected", String(this.isSelectedDate(isoDate)));
+
+      if (date.getMonth() !== monthIndex) dayButton.classList.add("is-muted");
+      if (isoDate < this.todayIso()) {
+        dayButton.disabled = true;
+        dayButton.classList.add("is-disabled");
+      }
+      if (this.isInSelectedRange(isoDate)) dayButton.classList.add("is-range");
+      if (isoDate === this.state.checkin) dayButton.classList.add("is-checkin");
+      if (isoDate === this.state.checkout) dayButton.classList.add("is-checkout");
+      if (this.isSelectingCheckout && activeCheckout && isoDate === activeCheckout) dayButton.classList.add("is-preview-checkout");
+      dayButton.tabIndex = -1;
+
+      return dayButton;
+    }
+
+    getCalendarDayButtons() {
+      if (!this.calendar) return [];
+      return Array.from(this.calendar.querySelectorAll("[data-date]"));
+    }
+
+    focusCalendarDate(isoDate) {
+      const buttons = this.getCalendarDayButtons();
+      const exactMatch = buttons.find((button) => button.dataset.date === isoDate && !button.disabled);
+      const fallback = buttons.find((button) => !button.disabled);
+      const target = exactMatch || fallback;
+
+      if (!target) return false;
+      target.focus();
+      return true;
+    }
+
+    handleCalendarKeydown(event) {
+      const activeDay = event.target.closest?.("[data-date]");
+      if (!activeDay) return;
+
+      const keyOffsets = {
+        ArrowLeft: -1,
+        ArrowRight: 1,
+        ArrowUp: -7,
+        ArrowDown: 7,
+        Home: "start",
+        End: "end"
+      };
+
+      if (!(event.key in keyOffsets)) return;
+      event.preventDefault();
+
+      const buttons = this.getCalendarDayButtons().filter((button) => !button.disabled);
+      if (!buttons.length) return;
+
+      const currentIndex = buttons.indexOf(activeDay);
+      if (currentIndex < 0) {
+        buttons[0].focus();
+        return;
+      }
+
+      let nextIndex = currentIndex;
+      const offset = keyOffsets[event.key];
+
+      if (offset === "start") {
+        nextIndex = 0;
+      } else if (offset === "end") {
+        nextIndex = buttons.length - 1;
+      } else {
+        nextIndex = Math.min(buttons.length - 1, Math.max(0, currentIndex + offset));
+      }
+
+      buttons[nextIndex]?.focus();
+    }
+
+    renderCalendarMonth(date) {
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      const firstDay = new Date(year, month, 1);
+      const startDate = new Date(firstDay);
+      startDate.setDate(firstDay.getDate() - firstDay.getDay());
+
+      const monthNode = document.createElement("section");
+      monthNode.className = "booking-calendar__month";
+
+      const weekdays = document.createElement("div");
+      weekdays.className = "booking-calendar__weekdays";
+      weekdays.setAttribute("role", "row");
+      bookingUi.weekdays.forEach((day) => {
+        const node = document.createElement("span");
+        node.textContent = day;
+        node.setAttribute("role", "columnheader");
+        weekdays.append(node);
+      });
+      monthNode.append(weekdays);
+
+      const grid = document.createElement("div");
+      grid.className = "booking-calendar__grid";
+      grid.setAttribute("role", "rowgroup");
+
+      for (let weekIndex = 0; weekIndex < 6; weekIndex += 1) {
+        const row = document.createElement("div");
+        row.className = "booking-calendar__row";
+        row.setAttribute("role", "row");
+
+        for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+          const day = new Date(startDate);
+          day.setDate(startDate.getDate() + weekIndex * 7 + dayIndex);
+          row.append(this.createDayButton(day, month));
+        }
+        grid.append(row);
+      }
+
+      monthNode.append(grid);
+      return monthNode;
+    }
+
+    renderCalendar() {
+      if (!this.calendar) return;
+      const firstMonth = new Date(this.calendarCursor);
+      const shouldRenderSingleMonth = this.dataset.bookingVariant === "drawer" && this.isMobileViewport();
+      const months = [this.renderCalendarMonth(firstMonth)];
+
+      if (!shouldRenderSingleMonth) {
+        const secondMonth = new Date(this.calendarCursor);
+        secondMonth.setMonth(this.calendarCursor.getMonth() + 1);
+        months.push(this.renderCalendarMonth(secondMonth));
+      }
+
+      this.calendar.replaceChildren(...months);
+      if (this.calendarTitle) this.calendarTitle.textContent = this.getMonthLabel(firstMonth);
+      this.previousMonthButton.disabled = `${this.calendarCursor.getFullYear()}-${this.pad(this.calendarCursor.getMonth() + 1)}` <= this.todayIso().slice(0, 7);
+    }
+
+    selectCalendarDate(isoDate) {
+      let completedRange = false;
+
+      if (!this.state.checkin || !this.isSelectingCheckout) {
+        this.state.checkin = isoDate;
+        this.state.checkout = "";
+        this.hoverCheckout = "";
+        this.isSelectingCheckout = true;
+      } else if (isoDate <= this.state.checkin) {
+        this.state.checkin = isoDate;
+        this.state.checkout = "";
+        this.hoverCheckout = "";
+        this.isSelectingCheckout = true;
+      } else {
+        this.state.checkout = isoDate;
+        this.hoverCheckout = "";
+        this.isSelectingCheckout = false;
+        completedRange = true;
+      }
+
+      this.syncCheckoutConstraint();
+      this.syncHiddenFields();
+      this.syncLabels();
+      this.renderCalendar();
+
+      if (completedRange) {
+        this.closePopovers();
+        this.toggles.find((node) => node.dataset.bookingToggle === "dates")?.focus();
+      }
+    }
+
+    scrollIntoBookingPanel() {
+      this.scrollIntoView({ behavior: "smooth", block: "center" });
+      this.classList.remove("is-emphasized");
+      window.requestAnimationFrame(() => this.classList.add("is-emphasized"));
+      window.setTimeout(() => this.classList.remove("is-emphasized"), 2200);
+      window.setTimeout(() => this.toggles[0]?.focus(), 420);
+    }
+
+    handleSubmit(event) {
+      event.preventDefault();
+      this.syncCheckoutConstraint();
+      this.ensureCheckoutForSubmit();
+      this.syncHiddenFields();
+      this.syncLabels();
+
+      const query = new URLSearchParams();
+      const { ibeBaseUrl, enabled, fallbackUrl, queryMap } = bookingConfig;
+
+      Object.entries(queryMap).forEach(([key, value]) => {
+        const stateValue = this.state[key];
+        if (stateValue === "" || stateValue === null || stateValue === undefined) return;
+        query.set(value, String(stateValue));
+      });
+      query.set("lang", this.dataset.locale || "en");
+
+      if (enabled && ibeBaseUrl) {
+        const url = new URL(ibeBaseUrl);
+        if (
+          window.location.hostname.includes("staging") ||
+          window.location.hostname.includes("localhost") ||
+          window.location.hostname.includes("netlify") ||
+          window.location.hostname.includes("pages.dev") ||
+          window.location.hostname.includes("preview")
+        ) {
+          if (url.hostname === "secure.sriuthonghotels.com") {
+            url.hostname = ["staging", "preview", "7q2x.sriuthonghotels.com"].join("-");
+          }
+        }
+        const activeLocale = this.dataset.locale || "en";
+        if (!url.pathname.startsWith(`/${activeLocale}/`) && url.pathname !== `/${activeLocale}`) {
+          url.pathname = `/${activeLocale}${url.pathname.startsWith("/") ? url.pathname : `/${url.pathname}`}`;
+        }
+        url.search = query.toString();
+        window.location.href = url.toString();
+        return;
+      }
+
+      if (fallbackUrl) {
+        const url = new URL(fallbackUrl, window.location.origin);
+        url.search = query.toString();
+        window.location.href = url.toString();
+        return;
+      }
+
+      this.status.textContent = bookingStatusReady;
+      this.status.classList.add("is-active");
+    }
+  }
+
+  if (!customElements.get("sut-booking-bar")) {
+    customElements.define("sut-booking-bar", SUTBookingBar);
+  }
+</script>

@@ -1,0 +1,33 @@
+---
+const {
+  id,
+  eyebrow = "Sri U-Thong Grand Hotel",
+  title,
+  text,
+  primaryLabel,
+  primaryHref = "/contact/",
+  primaryAction,
+  secondaryLabel,
+  secondaryHref
+} = Astro.props;
+---
+
+<section class="section section--green closing-cta page-scroll-target" id={id} aria-label={title}>
+  <div class="container closing-cta__inner break-words">
+    <div>
+      <p class="eyebrow leading-relaxed">{eyebrow}</p>
+      <h2 class="leading-[1.5]">{title}</h2>
+    </div>
+    <div class="closing-cta__action break-words">
+      <p class="lead leading-relaxed">{text}</p>
+      <div class="button-row">
+        {primaryAction === "reserve" ? (
+          <button class="button button--light" type="button" data-reserve-open aria-controls="reserve-drawer" aria-expanded="false">{primaryLabel}</button>
+        ) : (
+          <a class="button button--light" href={primaryHref}>{primaryLabel}</a>
+        )}
+        {secondaryLabel && secondaryHref && <a class="button button--ghost" href={secondaryHref}>{secondaryLabel}</a>}
+      </div>
+    </div>
+  </div>
+</section>

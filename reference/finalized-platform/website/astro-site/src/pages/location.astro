@@ -1,0 +1,222 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import ClosingCta from "../components/ClosingCta.astro";
+import CloudflareImage from "../components/CloudflareImage.astro";
+import { getManagedImage, getPageMedia } from "../data/siteMedia.js";
+import { getLocale, withLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const media = await getPageMedia("location");
+const heroImage = await getManagedImage(media.heroImage, {
+  alt: "Sri U-Thong Grand Hotel location"
+});
+const supHanburiHighlights = await Promise.all(
+  media.highlights.map(async (highlight) => {
+    const highlightCopy = copy.location.highlights?.[highlight.title] || {};
+    return {
+      ...highlight,
+      title: highlightCopy.title || highlight.title,
+      text: highlightCopy.text || highlight.text,
+      image: await getManagedImage(highlight.image, { alt: highlight.alt })
+    };
+  })
+);
+
+const sectionNav = { items: copy.location.sectionNav };
+---
+
+<BaseLayout
+  title={copy.location.meta.title}
+  description={copy.location.meta.description}
+  canonicalPath="/location/"
+  image={heroImage}
+  sectionNav={sectionNav}
+>
+  <PageHero
+    title={copy.location.hero.title}
+    text={copy.location.hero.text}
+    image={heroImage}
+    primaryLabel={copy.location.hero.primaryLabel}
+    primaryHref={copy.site.mapsUrl}
+    secondaryLabel={copy.location.hero.secondaryLabel}
+    secondaryHref={withLocale("/contact/", locale)}
+  />
+
+  <section class="location-recommends page-scroll-target" id="location-highlights" aria-labelledby="location-recommends-title">
+    <div class="container location-recommends__shell">
+      <div class="location-recommends__heading">
+        <div>
+          <p class="eyebrow">{copy.location.recommends.eyebrow}</p>
+          <h2 id="location-recommends-title">{copy.location.recommends.title}</h2>
+        </div>
+        <button class="location-recommends__share" type="button" data-location-share>{copy.location.recommends.shareLabel}</button>
+      </div>
+
+      <sut-location-recommends class="location-recommends__slider">
+        <div class="location-recommends__topline">
+          <div class="location-recommends__controls" aria-label={copy.location.recommends.controlsLabel}>
+            <button type="button" data-location-prev aria-label={copy.location.recommends.previousHighlight}>&larr;</button>
+            <span data-location-count>01/05</span>
+            <button type="button" data-location-next aria-label={copy.location.recommends.nextHighlight}>&rarr;</button>
+          </div>
+        </div>
+
+        <div class="location-recommends__frame">
+          {
+            supHanburiHighlights.map((highlight, index) => (
+              <article class:list={["location-recommend", { "is-active": index === 0 }]} data-location-slide>
+                <div class="location-recommend__image">
+                  <CloudflareImage
+                    src={highlight.image.src}
+                    alt={highlight.alt}
+                    widths={[720, 960, 1280, 1600]}
+                    sizes="(max-width: 860px) calc(100vw - 40px), 64vw"
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                </div>
+                <div class="location-recommend__copy">
+                  <p class="eyebrow">{copy.location.recommends.cardEyebrow}</p>
+                  <h3>{highlight.title}</h3>
+                  <p>{highlight.text}</p>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </sut-location-recommends>
+    </div>
+  </section>
+
+  <section class="section page-scroll-target" id="location-access">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">{copy.location.access.eyebrow}</p>
+        <h2>{copy.location.access.title}</h2>
+        <p class="lead" style="margin-top: 22px;">{copy.location.access.lead}</p>
+      </div>
+      <div class="map-embed">
+        <iframe
+          title={copy.site.mapTitle}
+          src={copy.site.mapsEmbedUrl}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ivory page-scroll-target" id="location-details">
+    <div class="container">
+      <div class="location-details">
+        {copy.location.details.map((detail) => (
+          <div class="location-detail">
+            <strong>{detail.strong}</strong>
+            <span>{detail.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <ClosingCta
+    id="location-cta"
+    eyebrow={copy.location.closing.eyebrow}
+    title={copy.location.closing.title}
+    text={copy.location.closing.text}
+    primaryLabel={copy.location.closing.primaryLabel}
+    primaryAction="reserve"
+    secondaryLabel={copy.location.closing.secondaryLabel}
+    secondaryHref={copy.site.phoneHref}
+  />
+
+  <script define:vars={{ locationShareTitle: copy.site.locationShareTitle, locationShareText: copy.site.locationShareText, localizedLocationPath: withLocale("/location/", locale) }}>
+    class SUTLocationRecommends extends HTMLElement {
+      connectedCallback() {
+        if (this.dataset.ready === "true") return;
+        this.dataset.ready = "true";
+
+        this.index = 0;
+        this.slides = Array.from(this.querySelectorAll("[data-location-slide]"));
+        this.count = this.querySelector("[data-location-count]");
+        this.prev = this.querySelector("[data-location-prev]");
+        this.next = this.querySelector("[data-location-next]");
+        this.intervalMs = 6500;
+        this.autoplayTimer = 0;
+
+        this.prev?.addEventListener("click", () => this.go(-1, true));
+        this.next?.addEventListener("click", () => this.go(1, true));
+        this.addEventListener("pointerenter", () => this.stopAutoplay());
+        this.addEventListener("pointerleave", () => this.startAutoplay());
+        this.addEventListener("focusin", () => this.stopAutoplay());
+        this.addEventListener("focusout", () => this.startAutoplay());
+        this.update();
+        this.startAutoplay();
+      }
+
+      disconnectedCallback() {
+        this.stopAutoplay();
+      }
+
+      startAutoplay() {
+        if (this.autoplayTimer || this.slides.length < 2) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        this.autoplayTimer = window.setInterval(() => {
+          this.go(1, false);
+        }, this.intervalMs);
+      }
+
+      stopAutoplay() {
+        if (!this.autoplayTimer) return;
+        window.clearInterval(this.autoplayTimer);
+        this.autoplayTimer = 0;
+      }
+
+      restartAutoplay() {
+        this.stopAutoplay();
+        this.startAutoplay();
+      }
+
+      go(direction, resetAutoplay = false) {
+        if (!this.slides.length) return;
+        this.index = (this.index + direction + this.slides.length) % this.slides.length;
+        this.update();
+        if (resetAutoplay) this.restartAutoplay();
+      }
+
+      update() {
+        this.slides.forEach((slide, slideIndex) => {
+          slide.classList.toggle("is-active", slideIndex === this.index);
+        });
+
+        if (this.count) {
+          const current = String(this.index + 1).padStart(2, "0");
+          const total = String(this.slides.length).padStart(2, "0");
+          this.count.textContent = `${current}/${total}`;
+        }
+      }
+    }
+
+    if (!customElements.get("sut-location-recommends")) {
+      customElements.define("sut-location-recommends", SUTLocationRecommends);
+    }
+
+    document.querySelector("[data-location-share]")?.addEventListener("click", async () => {
+      const shareData = {
+        title: locationShareTitle,
+        text: locationShareText,
+        url: `${window.location.origin}${localizedLocationPath}`
+      };
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      await navigator.clipboard?.writeText(shareData.url);
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,33 @@
+{
+  "kind": "dining",
+  "heroImage": "grand-restaurant",
+  "overviewCards": [
+    {
+      "image": "grand-breakfast",
+      "alt": "Breakfast service at Sri U-Thong Grand Hotel",
+      "eyebrow": "Breakfast",
+      "title": "Start the day comfortably",
+      "text": "Breakfast information can be added here once serving style, hours, and inclusions are confirmed.",
+      "href": "/contact/",
+      "cta": "Ask About Breakfast"
+    },
+    {
+      "image": "grand-restaurant",
+      "alt": "Casual dining at Sri U-Thong Grand Hotel",
+      "eyebrow": "Casual Dining",
+      "title": "Simple meals in the hotel",
+      "text": "Use this section for confirmed everyday dining details, local Thai dishes, or hotel restaurant information.",
+      "href": "/contact/",
+      "cta": "Contact Dining Team"
+    },
+    {
+      "image": "grand-dining-table",
+      "alt": "Group dining table at Sri U-Thong Grand Hotel",
+      "eyebrow": "Groups",
+      "title": "Group and private meals",
+      "text": "For meetings, family visits, and local gatherings, guests can contact the hotel to discuss dining arrangements.",
+      "href": "/contact/",
+      "cta": "Group Arrangements"
+    }
+  ]
+}

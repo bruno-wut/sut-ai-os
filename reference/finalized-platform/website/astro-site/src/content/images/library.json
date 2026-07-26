@@ -1,0 +1,112 @@
+{
+  "images": [
+    {
+      "key": "grand-exterior",
+      "title": "Grand Exterior",
+      "altText": "Exterior view of Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-exterior",
+      "localFallback": "/images/grand-exterior.jpg"
+    },
+    {
+      "key": "grand-lobby",
+      "title": "Grand Lobby",
+      "altText": "Lobby view at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-lobby",
+      "localFallback": "/images/grand-lobby.jpg"
+    },
+    {
+      "key": "grand-location",
+      "title": "Grand Location",
+      "altText": "Location reference for Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-location",
+      "localFallback": "/images/grand-location.jpg"
+    },
+    {
+      "key": "grand-neighborhood",
+      "title": "Grand Neighborhood",
+      "altText": "Nearby neighborhood reference for Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-neighborhood",
+      "localFallback": "/images/grand-neighborhood.jpg"
+    },
+    {
+      "key": "grand-superior-room",
+      "title": "Grand Superior Room",
+      "altText": "Classic room at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-superior-room",
+      "r2ObjectKey": "library/images/grand-superior-room.jpg",
+      "localFallback": "/images/grand-superior-room.jpg"
+    },
+    {
+      "key": "grand-deluxe-room",
+      "title": "Grand Deluxe Room",
+      "altText": "Deluxe room at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-deluxe-room",
+      "r2ObjectKey": "library/images/grand-deluxe-room.jpg",
+      "localFallback": "/images/grand-deluxe-room.jpg"
+    },
+    {
+      "key": "grand-suite-room",
+      "title": "Grand Suite Room",
+      "altText": "Suite room at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-suite-room",
+      "r2ObjectKey": "library/images/grand-suite-room.jpg",
+      "localFallback": "/images/grand-suite-room.jpg"
+    },
+    {
+      "key": "grand-restaurant",
+      "title": "Grand Restaurant",
+      "altText": "Restaurant at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-restaurant",
+      "localFallback": "/images/grand-restaurant.jpg"
+    },
+    {
+      "key": "grand-breakfast",
+      "title": "Grand Breakfast",
+      "altText": "Breakfast setting at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-breakfast",
+      "localFallback": "/images/grand-breakfast.jpg"
+    },
+    {
+      "key": "grand-dining-table",
+      "title": "Grand Dining Table",
+      "altText": "Dining table setting at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-dining-table",
+      "localFallback": "/images/grand-dining-table.jpg"
+    },
+    {
+      "key": "grand-ballroom",
+      "title": "Grand Ballroom",
+      "altText": "Ballroom at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-ballroom",
+      "localFallback": "/images/grand-ballroom.jpg"
+    },
+    {
+      "key": "grand-meeting-room",
+      "title": "Grand Meeting Room",
+      "altText": "Meeting room at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-meeting-room",
+      "localFallback": "/images/grand-meeting-room.jpg"
+    },
+    {
+      "key": "grand-event-setup",
+      "title": "Grand Event Setup",
+      "altText": "Event setup at Sri U-Thong Grand Hotel",
+      "cloudflareId": "grand-event-setup",
+      "localFallback": "/images/grand-event-setup.jpg"
+    },
+    {
+      "key": "brand-wordmark",
+      "title": "Sri U-Thong Wordmark",
+      "altText": "Sri U-Thong Grand Hotel",
+      "cloudflareId": "brand-wordmark",
+      "localFallback": "/images/sri-u-thong-text-logo-transparent.png"
+    },
+    {
+      "key": "brand-symbol",
+      "title": "Sri U-Thong Symbol",
+      "altText": "Sri U-Thong symbol",
+      "cloudflareId": "brand-symbol",
+      "localFallback": "/images/sut-symbol-transparent.png"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+backend:
+  name: github
+  repo: bruno-wut/sri-u-thong-new-chapter
+  branch: main
+  base_url: https://cms-auth.sriuthonghotels.com
+  commit_messages:
+    create: "Create news post {{slug}}"
+    update: "Update news post {{slug}}"
+    delete: "Delete news post {{slug}}"
+
+local_backend: true
+publish_mode: editorial_workflow
+media_folder: "website/astro-site/public/admin/_unused"
+public_folder: "/admin/_unused"
+
+collections:
+  - name: "news"
+    label: "News & Blog"
+    label_singular: "News Post"
+    description: "Hotel updates, Suphanburi travel notes, and SEO articles."
+    folder: "website/astro-site/src/content/news"
+    create: true
+    delete: true
+    format: "frontmatter"
+    extension: "md"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    identifier_field: "title"
+    editor:
+      preview: false
+    fields:
+      - label: "Title"
+        name: "title"
+        widget: "string"
+      - label: "Publish Date"
+        name: "publishDate"
+        widget: "datetime"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        format: "YYYY-MM-DD"
+      - label: "Excerpt"
+        name: "excerpt"
+        widget: "text"
+        hint: "Short summary used by homepage and index cards."
+      - label: "Cover Image URL"
+        name: "coverImage"
+        widget: "string"
+        hint: "Paste the Cloudflare Images delivery URL from imagedelivery.net. Do not upload large photos to Git."
+        pattern:
+          - "^https://imagedelivery\\.net/.+"
+          - "Use a Cloudflare Images imagedelivery.net URL."
+      - label: "Author"
+        name: "author"
+        widget: "string"
+        default: "Hotel Management"
+      - label: "Tags"
+        name: "tags"
+        widget: "list"
+        summary: "{{fields.tag}}"
+        field:
+          label: "Tag"
+          name: "tag"
+          widget: "string"
+      - label: "Body"
+        name: "body"
+        widget: "markdown"

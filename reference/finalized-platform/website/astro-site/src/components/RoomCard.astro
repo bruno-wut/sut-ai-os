@@ -1,0 +1,58 @@
+---
+import CloudflareImage from "./CloudflareImage.astro";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const {
+  image = null,
+  alt,
+  title,
+  text,
+  statement = "",
+  ideal = "",
+  features = [],
+  eyebrow = "Signature Collection",
+  locale = "en",
+  galleryHref = "/gallery/#gallery-rooms"
+} = Astro.props;
+const copy = getAstroCopy(locale).roomCard;
+const roomImage = typeof image === "string" ? { src: image } : (image ?? {});
+const roomImageAlt = alt ?? roomImage.alt ?? "";
+---
+
+<article class="room-card">
+  <div class="image-frame room-card__image">
+    <CloudflareImage
+      class="w-full max-w-full h-auto"
+      src={roomImage.src}
+      alt={roomImageAlt}
+      widths={[480, 720, 960, 1280]}
+      sizes="(max-width: 920px) 100vw, 52vw"
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+  <div class="room-card__content break-words">
+    <p class="eyebrow leading-relaxed">{eyebrow}</p>
+    <h2 class="leading-[1.5]">{title}</h2>
+    {statement && (
+      <p class="room-card__statement" style="font-weight: 500; font-style: italic; color: var(--color-stone-600, #57534e); margin-top: -6px; margin-bottom: 12px; font-size: 0.95rem;">
+        {statement}
+      </p>
+    )}
+    <p class="leading-relaxed">{text}</p>
+    {features.length > 0 && (
+      <ul class="room-features" aria-label={copy.amenitiesAria(title)}>
+        {features.map((feature) => <li class="leading-relaxed">{feature}</li>)}
+      </ul>
+    )}
+    {ideal && (
+      <div class="room-card__ideal-recommendation" style="margin-top: 16px; margin-bottom: 16px; padding: 12px; border-left: 2px solid var(--color-stone-300, #d6d3d1); background-color: var(--color-stone-50, #fafaf9); font-size: 0.875rem; color: var(--color-stone-600, #57534e);">
+        {ideal}
+      </div>
+    )}
+    <div class="button-row">
+      <a class="button button--ghost" href={galleryHref}>{copy.photographyLabel}</a>
+      <button class="button" type="button" data-reserve-open aria-controls="reserve-drawer" aria-expanded="false">{copy.availabilityLabel}</button>
+    </div>
+  </div>
+</article>

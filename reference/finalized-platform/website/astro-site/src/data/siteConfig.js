@@ -1,0 +1,27 @@
+import { SITE_CONFIG, SITE_LEGAL_PATHS, SITE_SOCIAL_URLS } from "../../../../src/lib/site-config.ts";
+
+export const astroSiteConfig = {
+  canonicalSiteUrl: SITE_CONFIG.brand.canonicalSiteUrl,
+  bookingSiteUrl: SITE_CONFIG.brand.bookingSiteUrl,
+  hotelName: SITE_CONFIG.brand.hotelName,
+  logoAlt: SITE_CONFIG.brand.logoAlt,
+  symbolAlt: SITE_CONFIG.brand.symbolAlt,
+  addressLine: SITE_CONFIG.contact.addressLine,
+  phoneDisplay: SITE_CONFIG.contact.phoneDisplay,
+  phoneSchema: SITE_CONFIG.contact.phoneSchema,
+  phoneHref: SITE_CONFIG.contact.phoneHref,
+  phoneShortLabel: "Tel",
+  faxDisplay: SITE_CONFIG.contact.faxDisplay,
+  faxShortLabel: "Fax",
+  email: SITE_CONFIG.contact.reservationsEmail,
+  emailHref: SITE_CONFIG.contact.reservationsEmailHref,
+  privacyEmail: SITE_CONFIG.contact.privacyEmail,
+  agodaUrl: SITE_CONFIG.social.agodaUrl,
+  facebookUrl: SITE_CONFIG.social.facebookUrl,
+  lineUrl: SITE_CONFIG.social.lineUrl,
+  mapsUrl: SITE_CONFIG.contact.mapsUrl,
+  mapsEmbedUrl: SITE_CONFIG.contact.mapsEmbedUrl,
+  legalPaths: SITE_LEGAL_PATHS,
+  schemaAddress: SITE_CONFIG.contact.schemaAddress,
+  sameAs: SITE_SOCIAL_URLS,
+};

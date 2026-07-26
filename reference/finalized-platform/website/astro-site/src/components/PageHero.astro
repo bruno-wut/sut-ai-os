@@ -1,0 +1,54 @@
+---
+import CloudflareImage from "./CloudflareImage.astro";
+
+const {
+  title,
+  text,
+  eyebrow = "Sri U-Thong Grand Hotel",
+  image = null,
+  alt,
+  primaryLabel,
+  primaryHref = "/contact/",
+  primaryAction,
+  secondaryLabel,
+  secondaryHref
+} = Astro.props;
+
+const heroImage = typeof image === "string" ? { src: image } : (image ?? {});
+const imageAlt = alt ?? heroImage.alt ?? `${title} at Sri U-Thong Grand Hotel`;
+---
+
+<section class="page-hero" aria-label={title}>
+  <div class="page-hero__image">
+    <CloudflareImage
+      class="w-full max-w-full h-auto"
+      src={heroImage.src}
+      alt={imageAlt}
+      widths={[640, 960, 1280, 1600, 1920]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <div class="hero-scrim" aria-hidden="true"></div>
+  </div>
+  <div class="page-hero__content break-words">
+    <p class="eyebrow leading-relaxed">{eyebrow}</p>
+    <h1>{title}</h1>
+    {text && <p class="lead leading-relaxed">{text}</p>}
+    {(primaryLabel || secondaryLabel) && (
+      <div class="button-row page-hero__actions">
+        {primaryLabel && primaryAction === "reserve" ? (
+          <button class="button button--light" type="button" data-reserve-open aria-controls="reserve-drawer" aria-expanded="false">
+            {primaryLabel}
+          </button>
+        ) : primaryLabel ? (
+          <a class="button button--light" href={primaryHref}>{primaryLabel}</a>
+        ) : null}
+        {secondaryLabel && secondaryHref && (
+          <a class="button button--ghost" href={secondaryHref}>{secondaryLabel}</a>
+        )}
+      </div>
+    )}
+  </div>
+</section>

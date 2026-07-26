@@ -1,0 +1,19 @@
+---
+import { getNewsPosts } from "../../../data/newsCollection.js";
+import Page from "../../news/[slug].astro";
+
+export async function getStaticPaths() {
+  const posts = await getNewsPosts();
+
+  return ["en", "th"].flatMap((locale) =>
+    posts.map((post) => ({
+      params: { locale, slug: post.id },
+      props: { post }
+    }))
+  );
+}
+
+const { post } = Astro.props;
+---
+
+<Page post={post} />

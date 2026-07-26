@@ -1,0 +1,9 @@
+---
+import Page from "../../news/index.astro";
+
+export function getStaticPaths() {
+  return ["en", "th"].map((locale) => ({ params: { locale } }));
+}
+---
+
+<Page />

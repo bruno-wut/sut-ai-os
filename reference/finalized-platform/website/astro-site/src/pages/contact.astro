@@ -1,0 +1,143 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import ContactOptions from "../components/ContactOptions.astro";
+import { getManagedImage, getPageMedia } from "../data/siteMedia.js";
+import { getLocale } from "../data/locale.js";
+import { getAstroCopy } from "../data/siteCopy.js";
+
+const locale = getLocale(Astro.url);
+const copy = getAstroCopy(locale);
+const media = await getPageMedia("contact");
+const heroImage = await getManagedImage(media.heroImage, {
+  alt: "Sri U-Thong Grand Hotel exterior"
+});
+
+const sectionNav = { items: copy.contact.sectionNav };
+---
+
+<BaseLayout
+  title={copy.contact.meta.title}
+  description={copy.contact.meta.description}
+  canonicalPath="/contact/"
+  image={heroImage}
+  sectionNav={sectionNav}
+>
+  <PageHero
+    title={copy.contact.hero.title}
+    text={copy.contact.hero.text}
+    image={heroImage}
+    primaryLabel={copy.contact.hero.primaryLabel}
+    primaryHref={copy.site.phoneHref}
+    secondaryLabel={copy.contact.hero.secondaryLabel}
+    secondaryHref="#hotel-enquiry"
+  />
+
+  <section class="section page-scroll-target" id="contact-details">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">{copy.contact.details.eyebrow}</p>
+        <h2>{copy.contact.details.title}</h2>
+        <p class="lead" style="margin-top: 22px;">{copy.contact.details.lead}</p>
+        <ul class="meta-list" style="margin-top: 24px;">
+          <li><strong>{copy.contact.details.addressLabel}:</strong> {copy.site.addressLine}</li>
+          <li><strong>{copy.contact.details.telLabel}:</strong> <a href={copy.site.phoneHref}>{copy.site.phoneDisplay}</a></li>
+          <li><strong>{copy.contact.details.faxLabel}:</strong> {copy.site.faxDisplay}</li>
+          <li><strong>{copy.contact.details.emailLabel}:</strong> <a href={copy.site.emailHref}>{copy.site.email}</a></li>
+        </ul>
+        <div style="margin-top: 28px;">
+          <ContactOptions locale={locale} />
+        </div>
+      </div>
+
+      <form class="contact-form page-scroll-target" id="hotel-enquiry" name="hotel-enquiry" method="post" action="/api/contact">
+        <div class="form-grid form-grid--two">
+          <div class="field">
+            <label for="name">{copy.contact.form.name}</label>
+            <input id="name" name="name" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="email">{copy.contact.form.email}</label>
+            <input id="email" name="email" type="email" autocomplete="email" />
+          </div>
+        </div>
+        <div class="form-grid form-grid--two">
+          <div class="field">
+            <label for="phone">{copy.contact.form.phone}</label>
+            <input id="phone" name="phone" autocomplete="tel" required />
+          </div>
+          <div class="field">
+            <label for="topic">{copy.contact.form.topic}</label>
+            <select id="topic" name="topic">
+              {copy.contact.form.topics.map((topic) => <option value={topic.value}>{topic.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div class="form-grid form-grid--two">
+          <div class="field">
+            <label for="checkin">{copy.contact.form.checkin}</label>
+            <input id="checkin" name="checkin" type="date" />
+          </div>
+          <div class="field">
+            <label for="checkout">{copy.contact.form.checkout}</label>
+            <input id="checkout" name="checkout" type="date" />
+          </div>
+        </div>
+        <div class="form-grid form-grid--two">
+          <div class="field">
+            <label for="guestSummary">{copy.contact.form.guestSummary}</label>
+            <input id="guestSummary" name="guestSummary" placeholder={copy.contact.form.guestSummaryPlaceholder} />
+          </div>
+          <div class="field">
+            <label for="promoCode">{copy.contact.form.promoCode}</label>
+            <input id="promoCode" name="promoCode" placeholder={copy.contact.form.promoPlaceholder} />
+          </div>
+        </div>
+        <div class="field">
+          <label for="message">{copy.contact.form.message}</label>
+          <textarea id="message" name="message" placeholder={copy.contact.form.messagePlaceholder} required></textarea>
+        </div>
+        <p class="notice" data-contact-status>{copy.contact.form.requiredNotice}</p>
+        <button class="button" type="submit">{copy.contact.form.submitLabel}</button>
+      </form>
+    </div>
+  </section>
+
+  <script define:vars={{ contactSuccessNotice: copy.contact.form.successNotice, contactErrorNotice: copy.contact.form.errorNotice }}>
+    const contactForm = document.querySelector(".contact-form");
+
+    if (contactForm) {
+      const status = contactForm.querySelector("[data-contact-status]");
+      const params = new URLSearchParams(window.location.search);
+      const mappedFields = ["name", "email", "phone", "topic", "checkin", "checkout", "guestSummary", "promoCode", "message"];
+
+      mappedFields.forEach((name) => {
+        const field = contactForm.querySelector(`[name="${name}"]`);
+        const value = params.get(name);
+        if (field && value) field.value = value;
+      });
+
+      const hostname = window.location.hostname;
+      const devHostPart1 = "sri-u-thong-storefront";
+      const devHostPart2 = "staging.pages.dev";
+      const devHost = [devHostPart1, devHostPart2].join("-");
+      const isStagingPagesHost =
+        hostname === devHost ||
+        hostname.endsWith("." + devHost);
+
+      if (isStagingPagesHost) {
+        contactForm.action = "https://" + ["staging", "preview", "7q2x.sriuthonghotels.com/api/contact-enquiry"].join("-");
+      }
+
+      if (status) {
+        if (params.get("sent") === "1") {
+          status.textContent = contactSuccessNotice;
+          window.history.replaceState({}, "", `${window.location.pathname}#hotel-enquiry`);
+        } else if (params.get("error") === "1") {
+          status.textContent = contactErrorNotice;
+          window.history.replaceState({}, "", `${window.location.pathname}#hotel-enquiry`);
+        }
+      }
+    }
+  </script>
+</BaseLayout>

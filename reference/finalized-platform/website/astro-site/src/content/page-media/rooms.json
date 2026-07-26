@@ -1,0 +1,64 @@
+{
+  "kind": "rooms",
+  "heroImage": "grand-deluxe-room",
+  "roomSeries": [
+    {
+      "id": "premier-series",
+      "eyebrow": "Premier Series",
+      "title": "Newly renovated rooms with a more premium finish",
+      "text": "The Premier Series introduces the hotel's refreshed accommodation experience, designed for guests seeking a more elevated stay with a quieter, more contemporary feel.",
+      "rooms": [
+        {
+          "title": "Executive Room",
+          "image": "grand-deluxe-room",
+          "alt": "Executive Room at Sri U-Thong Grand Hotel",
+          "text": "A newly renovated room for business travellers and discerning guests who want a sharper, more composed stay experience.",
+          "features": ["Newly renovated", "Executive comfort", "Premium stay experience"]
+        },
+        {
+          "title": "Suite",
+          "image": "grand-suite-room",
+          "alt": "Premier Suite at Sri U-Thong Grand Hotel",
+          "text": "A premium suite category with a more spacious feel, ideal for longer stays, senior guests, or special local occasions.",
+          "features": ["Newly renovated", "Separate-feel living space", "Premium stay experience"]
+        },
+        {
+          "title": "Grand Residence",
+          "image": "grand-suite-room",
+          "alt": "Grand Residence at Sri U-Thong Grand Hotel",
+          "text": "The most elevated accommodation in the Premier Series, shaped for guests who want the hotel's fullest sense of space and privacy.",
+          "features": ["Top room category", "Residence-style comfort", "Premium stay experience"]
+        }
+      ]
+    },
+    {
+      "id": "heritage-series",
+      "eyebrow": "Heritage Series",
+      "title": "Familiar comfort with classic Sri U-Thong warmth",
+      "text": "The Heritage Series keeps the hotel's established character at the center: practical comfort, generous hospitality, and a trusted base for Suphanburi visits.",
+      "rooms": [
+        {
+          "title": "Classic Room",
+          "image": "grand-superior-room",
+          "alt": "Classic Room at Sri U-Thong Grand Hotel",
+          "text": "A graceful everyday room for short business stays, family visits, and guests who prefer the hotel's familiar classic character.",
+          "features": ["Heritage comfort", "Essential stay amenities", "Direct booking support"]
+        },
+        {
+          "title": "Deluxe Room",
+          "image": "grand-deluxe-room",
+          "alt": "Deluxe Room at Sri U-Thong Grand Hotel",
+          "text": "A refined step up in the Heritage Series, balancing practical space with a calm, polished setting for city stays.",
+          "features": ["Enhanced room setting", "Comfort-focused layout", "Direct booking support"]
+        },
+        {
+          "title": "Studio Suite",
+          "image": "grand-suite-room",
+          "alt": "Studio Suite at Sri U-Thong Grand Hotel",
+          "text": "A more generous Heritage option for longer visits, special occasions, or guests who appreciate added room to settle in.",
+          "features": ["Suite-style comfort", "Additional living space", "Direct booking support"]
+        }
+      ]
+    }
+  ]
+}

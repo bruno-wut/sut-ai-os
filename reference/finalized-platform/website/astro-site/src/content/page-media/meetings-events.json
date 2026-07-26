@@ -1,0 +1,63 @@
+{
+  "kind": "meetings-events",
+  "heroImage": "grand-ballroom",
+  "overviewCards": [
+    {
+      "image": "grand-meeting-room",
+      "alt": "Meeting room at Sri U-Thong Grand Hotel",
+      "eyebrow": "Meetings",
+      "title": "Meetings and seminars",
+      "text": "Suitable for business meetings, trainings, seminars, and visiting teams who need a convenient Suphanburi location.",
+      "href": "/contact/",
+      "cta": "Enquire"
+    },
+    {
+      "image": "grand-ballroom",
+      "alt": "Ballroom at Sri U-Thong Grand Hotel",
+      "eyebrow": "Celebrations",
+      "title": "Weddings and banquets",
+      "text": "A locally trusted setting for family occasions and banquet-style gatherings, with final details confirmed by the hotel.",
+      "href": "/contact/",
+      "cta": "Plan an Event"
+    },
+    {
+      "image": "grand-event-setup",
+      "alt": "Event setup at Sri U-Thong Grand Hotel",
+      "eyebrow": "Groups",
+      "title": "Private and community events",
+      "text": "For group meals, local gatherings, and private functions, contact the hotel team to discuss arrangements.",
+      "href": "/contact/",
+      "cta": "Contact Hotel"
+    }
+  ],
+  "venues": [
+    {
+      "title": "The Grand Ballroom",
+      "image": "grand-ballroom",
+      "alt": "The Grand Ballroom arranged for a large celebration at Sri U-Thong Grand Hotel",
+      "eyebrow": "Weddings & Celebrations",
+      "capacity": "For weddings, large events, banquets, and formal celebrations",
+      "text": "The hotel's signature event venue for milestone occasions, larger family gatherings, and polished banquet-style celebrations in Suphanburi.",
+      "href": "/contact/?topic=The%20Grand%20Ballroom#hotel-enquiry",
+      "featured": true
+    },
+    {
+      "title": "Morakot Room",
+      "image": "grand-meeting-room",
+      "alt": "Morakot Room arranged for a meeting at Sri U-Thong Grand Hotel",
+      "eyebrow": "Meetings & Seminars",
+      "capacity": "For small celebrations, business meetings, seminars, and private events",
+      "text": "A flexible room for visiting teams, training sessions, intimate social occasions, and focused business gatherings.",
+      "href": "/contact/?topic=Morakot%20Room#hotel-enquiry"
+    },
+    {
+      "title": "Busarakam Room",
+      "image": "grand-event-setup",
+      "alt": "Busarakam Room arranged for a private event at Sri U-Thong Grand Hotel",
+      "eyebrow": "Private Gatherings",
+      "capacity": "For small celebrations, business meetings, seminars, and private events",
+      "text": "A refined setting for smaller local events, practical seminar formats, family celebrations, and community occasions.",
+      "href": "/contact/?topic=Busarakam%20Room#hotel-enquiry"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+---
+const {
+  items = [],
+  ariaLabel = "On-page navigation",
+  revealOffset = 18
+} = Astro.props;
+---
+
+{
+  items.length ? (
+    <nav class="page-section-nav" aria-label={ariaLabel} data-page-section-nav data-reveal-offset={String(revealOffset)}>
+      <span class="page-section-nav__track" aria-hidden="true">
+        <span class="page-section-nav__progress" data-page-nav-progress></span>
+      </span>
+      <ol class="page-section-nav__list">
+        {items.map((section, index) => (
+          <li>
+            <a
+              class={`page-section-nav__link${index === 0 ? " is-active" : ""}`}
+              href={`#${section.id}`}
+              data-page-nav-link={section.id}
+              aria-current={index === 0 ? "location" : "false"}
+            >
+              <span class="page-section-nav__dot" aria-hidden="true">
+                <span class="page-section-nav__dot-core"></span>
+              </span>
+              <span class="page-section-nav__label">{section.label}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  ) : null
+}
+
+<script>
+  const sectionNav = document.querySelector("[data-page-section-nav]");
+  const navLinks = Array.from(sectionNav?.querySelectorAll("[data-page-nav-link]") ?? []);
+  const navProgress = sectionNav?.querySelector("[data-page-nav-progress]");
+  const trackedSections = navLinks
+    .map((link) => {
+      const id = link.getAttribute("data-page-nav-link");
+      return id ? document.getElementById(id) : null;
+    })
+    .filter((section) => section instanceof HTMLElement);
+
+  if (sectionNav instanceof HTMLElement && trackedSections.length) {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const navRevealOffset = Number(sectionNav.dataset.revealOffset || "18");
+    let ticking = false;
+
+    const setActiveLink = (activeId) => {
+      navLinks.forEach((link) => {
+        const isActive = link.getAttribute("data-page-nav-link") === activeId;
+        link.classList.toggle("is-active", isActive);
+        link.setAttribute("aria-current", isActive ? "location" : "false");
+      });
+    };
+
+    const updateProgress = () => {
+      const firstSection = trackedSections[0];
+      const lastSection = trackedSections[trackedSections.length - 1];
+      const start = firstSection.offsetTop - window.innerHeight * 0.35;
+      const end = lastSection.offsetTop + lastSection.offsetHeight - window.innerHeight * 0.55;
+      const progressRange = Math.max(end - start, 1);
+      const progressValue = Math.min(1, Math.max(0, (window.scrollY - start) / progressRange));
+      navProgress?.style.setProperty("--page-nav-progress", progressValue.toFixed(4));
+    };
+
+    const updateSectionNav = () => {
+      ticking = false;
+      sectionNav.classList.toggle("is-visible", window.scrollY > navRevealOffset);
+
+      let activeId = trackedSections[0].id;
+      trackedSections.forEach((section) => {
+        if (window.scrollY >= section.offsetTop - window.innerHeight * 0.42) {
+          activeId = section.id;
+        }
+      });
+
+      setActiveLink(activeId);
+      updateProgress();
+    };
+
+    const requestSectionNavUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateSectionNav);
+    };
+
+    navLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const id = link.getAttribute("data-page-nav-link");
+        const target = id ? document.getElementById(id) : null;
+        if (!(target instanceof HTMLElement)) return;
+        event.preventDefault();
+        target.scrollIntoView({
+          behavior: prefersReducedMotion.matches ? "auto" : "smooth",
+          block: "start"
+        });
+        window.history.replaceState(null, "", `#${id}`);
+      });
+    });
+
+    updateSectionNav();
+    window.addEventListener("scroll", requestSectionNavUpdate, { passive: true });
+    window.addEventListener("resize", requestSectionNavUpdate);
+  }
+</script>

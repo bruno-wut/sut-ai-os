@@ -1,0 +1,162 @@
+{
+  "title": "Gallery",
+  "description": "Photo gallery for Sri U-Thong Grand Hotel, grouped by hotel, rooms, dining, meetings and events, and location.",
+  "heroImage": "grand-lobby",
+  "heroAlt": "Sri U-Thong Grand Hotel gallery",
+  "heroText": "",
+  "groups": [
+    {
+      "title": "Hotel",
+      "items": [
+        {
+          "label": "Hotel Exterior",
+          "slides": [
+            { "image": "grand-exterior", "label": "Hotel Exterior" },
+            { "image": "grand-lobby", "label": "Hotel Arrival" },
+            { "image": "grand-location", "label": "Hotel Location" }
+          ]
+        },
+        {
+          "label": "Lobby & Arrival",
+          "slides": [
+            { "image": "grand-lobby", "label": "Lobby & Arrival" },
+            { "image": "grand-exterior", "label": "Arrival Exterior" },
+            { "image": "grand-neighborhood", "label": "Nearby Area" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Rooms",
+      "items": [
+        {
+          "label": "Classic Room",
+          "slides": [
+            { "image": "grand-superior-room", "label": "Classic Room" },
+            { "image": "grand-deluxe-room", "label": "Classic Room detail" },
+            { "image": "grand-suite-room", "label": "Classic Room sitting area" }
+          ]
+        },
+        {
+          "label": "Deluxe Room",
+          "slides": [
+            { "image": "grand-deluxe-room", "label": "Deluxe Room" },
+            { "image": "grand-superior-room", "label": "Deluxe Room detail" },
+            { "image": "grand-suite-room", "label": "Deluxe Room sitting area" }
+          ]
+        },
+        {
+          "label": "Studio Suite",
+          "slides": [
+            { "image": "grand-suite-room", "label": "Studio Suite" },
+            { "image": "grand-deluxe-room", "label": "Studio Suite bedroom" },
+            { "image": "grand-superior-room", "label": "Studio Suite detail" }
+          ]
+        },
+        {
+          "label": "Executive Room",
+          "slides": [
+            { "image": "grand-deluxe-room", "label": "Executive Room" },
+            { "image": "grand-suite-room", "label": "Executive Room sitting area" },
+            { "image": "grand-superior-room", "label": "Executive Room detail" }
+          ]
+        },
+        {
+          "label": "Suite",
+          "slides": [
+            { "image": "grand-suite-room", "label": "Suite" },
+            { "image": "grand-deluxe-room", "label": "Suite bedroom" },
+            { "image": "grand-superior-room", "label": "Suite detail" }
+          ]
+        },
+        {
+          "label": "Grand Residence",
+          "slides": [
+            { "image": "grand-suite-room", "label": "Grand Residence" },
+            { "image": "grand-deluxe-room", "label": "Grand Residence bedroom" },
+            { "image": "grand-superior-room", "label": "Grand Residence detail" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Dining",
+      "items": [
+        {
+          "label": "Restaurant",
+          "slides": [
+            { "image": "grand-restaurant", "label": "Restaurant" },
+            { "image": "grand-dining-table", "label": "Restaurant Table" },
+            { "image": "grand-breakfast", "label": "Restaurant Breakfast" }
+          ]
+        },
+        {
+          "label": "Breakfast",
+          "slides": [
+            { "image": "grand-breakfast", "label": "Breakfast" },
+            { "image": "grand-restaurant", "label": "Breakfast Setting" },
+            { "image": "grand-dining-table", "label": "Breakfast Table" }
+          ]
+        },
+        {
+          "label": "Dining Table",
+          "slides": [
+            { "image": "grand-dining-table", "label": "Dining Table" },
+            { "image": "grand-restaurant", "label": "Dining Room" },
+            { "image": "grand-breakfast", "label": "Dining Breakfast" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Meetings & Events",
+      "items": [
+        {
+          "label": "The Grand Ballroom",
+          "slides": [
+            { "image": "grand-ballroom", "label": "The Grand Ballroom" },
+            { "image": "grand-event-setup", "label": "Grand Ballroom Event Setup" },
+            { "image": "grand-meeting-room", "label": "Grand Ballroom Meeting Layout" }
+          ]
+        },
+        {
+          "label": "Morakot Room",
+          "slides": [
+            { "image": "grand-meeting-room", "label": "Morakot Room" },
+            { "image": "grand-event-setup", "label": "Morakot Room Event Setup" },
+            { "image": "grand-ballroom", "label": "Morakot Room Celebration Reference" }
+          ]
+        },
+        {
+          "label": "Busarakam Room",
+          "slides": [
+            { "image": "grand-event-setup", "label": "Busarakam Room" },
+            { "image": "grand-meeting-room", "label": "Busarakam Room Seminar Layout" },
+            { "image": "grand-ballroom", "label": "Busarakam Room Celebration Reference" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Location",
+      "items": [
+        {
+          "label": "Suphanburi Location",
+          "slides": [
+            { "image": "grand-location", "label": "Suphanburi Location" },
+            { "image": "grand-neighborhood", "label": "Nearby Area" },
+            { "image": "grand-exterior", "label": "Hotel Arrival Point" }
+          ]
+        },
+        {
+          "label": "Nearby Area",
+          "slides": [
+            { "image": "grand-neighborhood", "label": "Nearby Area" },
+            { "image": "grand-location", "label": "Location Context" },
+            { "image": "grand-exterior", "label": "Hotel Exterior" }
+          ]
+        }
+      ]
+    }
+  ]
+}
