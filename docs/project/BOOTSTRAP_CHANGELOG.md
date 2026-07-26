@@ -78,3 +78,11 @@ The following separation changes were made:
 - Added `agents/AGENTS.md`, `playbooks/AGENTS.md`, and `scripts/AGENTS.md` only for existing directories with distinct local safety and evidence conventions.
 - Added `docs/project/AGENT_INSTRUCTION_MAP.md` to document inheritance, major-area applicability, future subsystem boundaries, and the consistency check.
 - Did not create scoped instructions for absent `apps/`, `services/`, `packages/`, or `supabase/` paths.
+
+## Canonical logical agent registry
+
+- Added one bounded Markdown definition for each of the 12 canonical and 3 optional agents described by the canonical agent architecture.
+- Added registry, routing, handoff, permission-matrix, and active-team documents under `agents/`.
+- Marked the recommended first operating team active at the logical registry level, Content and Brand plus Release and Deployment staged, and all optional agents inactive.
+- Added task packet `SUT-AIOS-GOV-001`; no runtime, credential, external connector, autonomous process, deployment, or production permission was created.
+- Updated permanent memory and recorded the missing machine-readable schemas and independent-review requirement in the live risk register.

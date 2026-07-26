@@ -10,12 +10,13 @@
 ## What exists
 
 - Canonical architecture and agent-design sources.
+- Canonical logical definitions, routing, handoffs, permissions, and status registry for 12 core and 3 optional agents. These are governance artifacts, not provisioned runtimes.
 - Workflow directories for agents, prompts, tasks, evidence, artifacts, scripts, schemas, policies, and playbooks.
 - Repository boundaries, issue/risk register, validation record, and permanent-memory documents.
 
 ## What does not exist yet
 
-- Active AI OS services, control-plane schemas, policy engine, workflow engine, scoped executor, GitHub App integration, CI, deployment gate, or production integration.
+- Active AI OS services, implemented agent input/output schemas, policy engine, workflow engine, scoped executor, GitHub App integration, CI, deployment gate, or production integration.
 - Approved task-packet templates and machine-readable contracts.
 
 ## Compatibility baseline validation

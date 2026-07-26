@@ -8,7 +8,7 @@ Read `AGENTS.md` first for every task. Then use the shortest path below; open ca
 | Ordinary implementation | [CURRENT_STATE.md](CURRENT_STATE.md) → task packet → [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) → relevant interface in `reference/finalized-platform/` |
 | Bounded discovery or preparation | task packet → [GLOSSARY.md](GLOSSARY.md) → [ENGINEERING_PRINCIPLES.md](ENGINEERING_PRINCIPLES.md) |
 | Architecture or repository shape | [SYSTEM_MAP.md](SYSTEM_MAP.md) → [ROADMAP.md](ROADMAP.md) → canonical architecture source |
-| Agent, prompt, model, or executor design | [ENGINEERING_PRINCIPLES.md](ENGINEERING_PRINCIPLES.md) → [AUTONOMY_BOUNDARIES.md](AUTONOMY_BOUNDARIES.md) → canonical agent architecture source |
+| Agent, prompt, model, or executor design | [`agents/REGISTRY.md`](../../agents/REGISTRY.md) → [`agents/ROUTING.md`](../../agents/ROUTING.md) → [`agents/PERMISSION_MATRIX.md`](../../agents/PERMISSION_MATRIX.md) → [AUTONOMY_BOUNDARIES.md](AUTONOMY_BOUNDARIES.md) → canonical agent architecture source |
 | Security, privacy, payment, concurrency, RLS, or difficult escalation | [AUTONOMY_BOUNDARIES.md](AUTONOMY_BOUNDARIES.md) → [SOURCE_OF_TRUTH.md](SOURCE_OF_TRUTH.md) → [KNOWN_RISKS.md](KNOWN_RISKS.md) → canonical source |
 | Compatibility or integration planning | [CURRENT_STATE.md](CURRENT_STATE.md) → [SOURCE_OF_TRUTH.md](SOURCE_OF_TRUTH.md) → specific read-only baseline files → validation record |
 | Verification or handoff | task packet → [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) → [ISSUES_AND_RISKS.md](ISSUES_AND_RISKS.md) → relevant evidence |

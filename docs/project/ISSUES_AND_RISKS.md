@@ -61,3 +61,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** local system temporary directory only
 - **Evidence:** The isolated compatibility validation copy remains at `C:\Users\Bruno Browny\AppData\Local\Temp\sut-ai-os-validation-dbce321-20260726` after the environment safety layer declined recursive cleanup. It contains generated dependencies and build output only.
 - **Next action / owner:** Remove the validated temporary directory through an approved local cleanup action; no repository files are affected.
+
+### 2026-07-26 — Agent schema contracts are identifiers only
+
+- **Task ID:** `SUT-AIOS-GOV-001`
+- **Status:** Open
+- **Severity:** Medium
+- **Affected scope:** `agents/**` logical input/output schema URNs and future agent runtime activation
+- **Evidence:** All 15 definitions declare stable input/output schema URNs, but `schemas/` does not yet contain their machine-readable JSON or Zod implementations.
+- **Next action / owner:** Engineering Planner and QA should define and independently validate shared envelope/result contracts before any agent runtime or dispatcher is provisioned.
+
+### 2026-07-26 — Agent registry awaits independent specialist review
+
+- **Task ID:** `SUT-AIOS-GOV-001`
+- **Status:** Blocked
+- **Severity:** Medium
+- **Affected scope:** Agent registry production readiness and any future runtime activation
+- **Evidence:** Deterministic structural and permission-boundary checks can be completed locally, but no separate reviewer has yet approved the definitions, routing, handoffs, or permission matrix.
+- **Next action / owner:** Assign an independent assurance/security reviewer; record the review in `evidence/tasks/SUT-AIOS-GOV-001/verification.md` before treating the registry as verified or provisioning tools/credentials.
