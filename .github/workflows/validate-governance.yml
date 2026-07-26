@@ -1,0 +1,30 @@
+name: Governance / validate
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Governance metadata, paths, schemas, policies, agents and secrets
+        run: node scripts/github/validate-governance.mjs
+      - name: Validate every task packet
+        run: npm run task:validate -- --all
+      - name: Run repository fast verification
+        run: npm run verify:fast

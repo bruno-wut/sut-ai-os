@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-008",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T12:23:00.090Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/github/validate-governance.mjs --self-test: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Every requested PR field is represented in the PR template.",
+    "confirmed: Local validation covers task/branch/PR metadata, schemas, policies, agents, forbidden paths, and secret patterns.",
+    "confirmed: CI workflows use existing runnable repository commands and do not deploy or mutate production.",
+    "confirmed: Remote protection commands are documented but not executed without confirmed authority."
+  ],
+  "changedPaths": [
+    ".github/CODEOWNERS",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/task.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/workflows/validate-governance.yml",
+    "docs/project/BOOTSTRAP_CHANGELOG.md",
+    "docs/project/GITHUB_GOVERNANCE.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "package.json",
+    "scripts/github/validate-governance.mjs",
+    "tasks/active/SUT-AIOS-GOV-008/context/artifact-index.md",
+    "tasks/active/SUT-AIOS-GOV-008/context/decisions.md",
+    "tasks/active/SUT-AIOS-GOV-008/context/file-map.md",
+    "tasks/active/SUT-AIOS-GOV-008/context/known-risks.md",
+    "tasks/active/SUT-AIOS-GOV-008/context/latest-handoff.md",
+    "tasks/active/SUT-AIOS-GOV-008/context/task-context.md",
+    "tasks/active/SUT-AIOS-GOV-008/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-008/verification-20260726122300090.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

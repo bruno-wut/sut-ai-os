@@ -1,0 +1,7 @@
+# Governance is intentionally inactive until GitHub repository identity and owner handles are confirmed.
+# Replace logical placeholders below with verified handles before enabling code-owner review.
+# /agents/ @<governance-owner>
+# /policies/ @<security-owner>
+# /schemas/ @<architecture-owner>
+# /scripts/ @<engineering-owner>
+# /.github/ @<governance-owner>

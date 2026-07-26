@@ -160,3 +160,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** `scripts/local-ai/`, Qwen preprocessing, and Qwen/Luna/Terra benchmark execution
 - **Evidence:** Windows audit found no Ollama, LM Studio CLI, llama.cpp, vLLM, llamafile, or Qwen model file. No model ID was guessed and no download was attempted. See `docs/model-routing/QWEN_SETUP.md`.
 - **Next action / owner:** Workspace owner must select one approved runtime and one exact hardware-appropriate Qwen model/quantization, then perform a local-only privacy and deterministic-validation review before enabling execution.
+
+### 2026-07-26 — GitHub identity and authority are unconfirmed
+
+- **Task ID:** `SUT-AIOS-GOV-008`
+- **Status:** Open / blocked for remote configuration
+- **Severity:** High
+- **Affected scope:** Remote, branch protection, rulesets, CODEOWNERS activation, staging and production environments
+- **Evidence:** `git remote -v` is empty; `gh` is not installed or authenticated.
+- **Next action / owner:** Workspace owner must connect the intended GitHub repository and authenticate an authorized account. Review existing rules before applying the documented non-destructive commands.
+
+### 2026-07-26 — Independent review pending for GitHub governance
+
+- **Task ID:** `SUT-AIOS-GOV-008`
+- **Status:** Open
+- **Severity:** Medium
+- **Affected scope:** `.github/`, `scripts/github/`, CI policy enforcement
+- **Evidence:** Local validation is implemented; an independent QA agent has not yet reviewed the final diff and evidence.
+- **Next action / owner:** QA and Verification Agent must run the governance checks and record a machine-readable result before any pull request is considered verified.

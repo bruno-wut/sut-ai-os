@@ -130,3 +130,11 @@ The following separation changes were made:
 - Added fail-closed local-ai wrappers with structured JSON, explicit prompt/model fields, input/time limits, PII masking, read-only defaults, no production/database access, and unverified output labels.
 - Added Qwen setup, allowed-task, and benchmark documentation. The benchmark records blocked Qwen/Luna/Terra comparisons rather than inventing correctness results.
 - Added active bootstrap task `SUT-AIOS-GOV-007`; no local model installation or external side effect was performed.
+
+## GitHub governance
+
+- Audited GitHub integration: no remote is configured and the GitHub CLI is unavailable or unauthenticated; no remote mutation was attempted.
+- Added a required-field pull-request template, bounded task issue form, inactive-until-confirmed CODEOWNERS mapping, and local `Governance / validate` workflow.
+- Added deterministic local governance validation for task packets, branch/PR metadata, verification evidence, changed/forbidden paths, schemas, policies, agent definitions, and secret patterns.
+- Added `npm run github:validate` and documented exact, unexecuted branch-protection, ruleset, and staging/production environment API entry points.
+- No branch protection, remote, environment, deployment, secret, database, DNS, payment, or production state was changed.

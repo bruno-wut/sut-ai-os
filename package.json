@@ -32,6 +32,7 @@
     "verify:ibe": "node scripts/verify/ibe",
     "verify:staff-os": "node scripts/verify/staff-os",
     "verify:security-boundaries": "node scripts/verify/security-boundaries",
+    "github:validate": "node scripts/github/validate-governance.mjs",
     "context:check": "node scripts/context/check-context-size --path tasks/active",
     "local-ai:repo-map": "node scripts/local-ai/repo-map",
     "local-ai:summarize-module": "node scripts/local-ai/summarize-module",
