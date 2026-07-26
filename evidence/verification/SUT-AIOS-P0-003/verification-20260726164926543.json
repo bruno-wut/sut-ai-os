@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P0-003",
+  "status": "blocked",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T16:49:26.543Z",
+  "checks": [
+    "changed-path-inspection: fail",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/compatibility/validate-finalized-platform-contracts.mjs: fail",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Capture finalized-platform compatibility contracts is implemented only within the declared subsystem.",
+    "confirmed: Machine-readable contracts and deterministic failure behavior are documented.",
+    "confirmed: Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "changedPaths": [
+    "docs/compatibility/P0-003_VERIFICATION_DESIGN.md",
+    "docs/platform-stabilization/DEPENDENCY_SECURITY_REMEDIATION_PLAN.md",
+    "docs/platform-stabilization/dependency-security-remediation-plan.json",
+    "docs/platform-stabilization/dependency-security-remediation-plan.schema.json",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/project/ROADMAP.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-012/verification.md",
+    "evidence/tasks/SUT-AIOS-GOV-013/verification.md",
+    "evidence/tasks/SUT-AIOS-P0-002/verification.md",
+    "evidence/tasks/SUT-AIOS-P0-003/implementation.md",
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726155555816.json",
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726160006575.json",
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726160516462.json",
+    "evidence/verification/SUT-AIOS-GOV-012/verification-20260726160549080.json",
+    "evidence/verification/SUT-AIOS-GOV-013/verification-20260726163839543.json",
+    "evidence/verification/SUT-AIOS-GOV-013/verification-20260726163924109.json",
+    "evidence/verification/SUT-AIOS-P0-002/verification-20260726152717886.json",
+    "evidence/verification/SUT-AIOS-P0-002/verification-20260726152741451.json",
+    "evidence/verification/SUT-AIOS-P0-002/verification-20260726161346223.json",
+    "packages/compatibility-contracts/finalized-platform-contract.json",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/active/SUT-AIOS-P0-003/task.json",
+    "tasks/done/SUT-AIOS-P0-002/task.json",
+    "tasks/ready/SUT-AIOS-P0-002/task.json",
+    "tasks/ready/SUT-AIOS-P0-003/task.json",
+    "tasks/verified/SUT-AIOS-GOV-012/task.json",
+    "tasks/verified/SUT-AIOS-GOV-013/task.json",
+    "tests/compatibility/validate-finalized-platform-contracts.mjs",
+    "tests/platform-stabilization/validate-dependency-security-remediation-plan.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P0-003/verification-20260726164926543.json"
+  ],
+  "risks": [],
+  "recommendation": "blocked"
+}
