@@ -6,7 +6,7 @@ The governed workspace, permanent memory, task/evidence workflow, immutable comp
 
 ## 0A. Existing platform stabilization — current
 
-The baseline gate (`SUT-AIOS-P0-001`) is done. `SUT-AIOS-P0-002` and `SUT-AIOS-P0-003` are ready because their only dependency is complete. The selected next task is P0-002; P0-003 remains ready but is not selected.
+The baseline gate (`SUT-AIOS-P0-001`) and dependency/security remediation (`SUT-AIOS-P0-002`) are done. `SUT-AIOS-P0-003` remains ready because its sole dependency is complete; its executable compatibility-verification design is governed by `SUT-AIOS-GOV-013` before implementation begins.
 
 ## 1. Trusted control foundation
 

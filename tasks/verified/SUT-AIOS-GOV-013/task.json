@@ -1,0 +1,186 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-013",
+  "title": "Plan executable P0-003 compatibility verification",
+  "status": "verified",
+  "phase": "phase-0",
+  "workstream": "engineering-governance",
+  "workflowId": "p0-003-verification-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Restore an executable, independently verifiable compatibility-contract outcome for Phase 0 without modifying the immutable finalized-platform baseline.",
+  "technicalObjective": "Define the bounded compatibility-contract artifact and deterministic validator for SUT-AIOS-P0-003, then amend its packet to use that exact validator command instead of the nonexistent npm script.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md"
+  ],
+  "dependencies": [],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-013/verification.md"
+  ],
+  "assumptions": [
+    "The finalized-platform snapshot is read-only and may be inspected only to capture interfaces.",
+    "The P0-003 validator will be created by P0-003; this planning task must not create application or compatibility-contract code.",
+    "No production, staging, credential, payment, inventory, or booking access is authorized."
+  ],
+  "acceptanceCriteria": [
+    "A durable design identifies the compatibility contracts to capture, their source locations, machine-readable representation, and deterministic failure behavior.",
+    "SUT-AIOS-P0-003 is amended to require the exact future validator command node tests/compatibility/validate-finalized-platform-contracts.mjs, with scope limited to its declared paths.",
+    "The amended P0-003 packet and this planning packet validate successfully, and independent review confirms immutable sources remain untouched."
+  ],
+  "allowedPaths": [
+    "docs/compatibility/**",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-013/**",
+    "tasks/ready/SUT-AIOS-P0-003/**",
+    "evidence/tasks/SUT-AIOS-GOV-013/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "packages/compatibility-contracts/**",
+    "tests/compatibility/**",
+    "apps/**",
+    "supabase/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --task SUT-AIOS-GOV-013",
+    "node scripts/task/validate --task SUT-AIOS-P0-003",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "planning-scope inspection",
+    "P0-003 packet validation",
+    "fast governance verification",
+    "changed-path inspection",
+    "independent review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --task SUT-AIOS-GOV-013",
+    "node scripts/task/validate --task SUT-AIOS-P0-003",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal that edits the immutable baseline or expands into production integrations.",
+    "Any ambiguity in the compatibility contract source, scope, or deterministic verification design."
+  ],
+  "rollbackExpectations": "Revert only the planning document, P0-003 packet amendment, evidence, and this task packet; preserve the immutable baseline unchanged.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/verified/SUT-AIOS-GOV-013/task.json",
+      "tasks/ready/SUT-AIOS-P0-003/task.json",
+      "docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T16:29:49.465Z",
+  "updatedDate": "2026-07-26T16:34:38.408Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-013/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T16:29:49.465Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T16:30:44.235Z",
+      "actor": "engineering-planner",
+      "reason": "Owner-approved planning packet defines a bounded remediation for the missing P0-003 test command."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T16:30:44.278Z",
+      "actor": "engineering-planner",
+      "reason": "Packet validated; investigation confirmed the missing command and isolated planning branch is active."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:31:42.990Z",
+      "actor": "engineering-planner",
+      "reason": "Compatibility verification design, P0-003 packet amendment, durable memory updates, and authorized checks are complete; independent review required."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-26T16:32:45.247Z",
+      "actor": "qa-verification",
+      "reason": "Evidence recorded non-allowlisted --strict validator forms; rerun and record the exact packet-authorized validation commands."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-26T16:32:45.288Z",
+      "actor": "engineering-planner",
+      "reason": "Evidence-only correction authorized; planning scope and implementation remain unchanged."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:33:13.017Z",
+      "actor": "engineering-planner",
+      "reason": "QA evidence correction and explicit source-path inventory are complete; exact allowlisted checks rerun."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-26T16:33:44.383Z",
+      "actor": "qa-verification",
+      "reason": "The Astro page inventory was not finite because it included a dynamic directory clause; restrict it to an explicit path."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-26T16:33:44.423Z",
+      "actor": "engineering-planner",
+      "reason": "Apply final bounded inventory correction only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:34:01.601Z",
+      "actor": "engineering-planner",
+      "reason": "Finite Astro inventory correction applied; exact allowed checks rerun and independent verification requested."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:34:38.408Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed scope, command, finite-inventory, validation, governance, and protected-path review."
+    }
+  ]
+}

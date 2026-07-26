@@ -49,7 +49,7 @@
     "apps/ibe/src/inventory/**"
   ],
   "allowedCommands": [
-    "npm run test:contracts",
+    "node tests/compatibility/validate-finalized-platform-contracts.mjs",
     "npm run verify:fast",
     "git diff --check"
   ],
@@ -60,7 +60,7 @@
     "independent verification"
   ],
   "requiredTests": [
-    "npm run test:contracts",
+    "node tests/compatibility/validate-finalized-platform-contracts.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
