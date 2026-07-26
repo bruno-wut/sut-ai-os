@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-018",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T18:40:56.943Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/verify/verify-cli.mjs --self-test: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: verify:task accepts only the byte-for-byte literal node tests/control-plane-schema/validate-control-plane-schema.mjs and launches node with shell false and exactly that one fixed argument.",
+    "confirmed: Self-tests reject whitespace, argument, alternate-path, shell-operator, and unrelated node tests variants.",
+    "confirmed: Task validation, fast governance verification, changed-path inspection, secret scan, and independent verification pass without touching forbidden paths."
+  ],
+  "changedPaths": [],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184056943.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

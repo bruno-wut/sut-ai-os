@@ -20,7 +20,8 @@
     "SUT-AIOS-GOV-017"
   ],
   "evidence": [
-    "evidence/tasks/SUT-AIOS-GOV-018/verification.md"
+    "evidence/tasks/SUT-AIOS-GOV-018/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184056943.json"
   ],
   "assumptions": [
     "No production, staging, database, migration, schema execution, credential, or external-service access is authorized.",
