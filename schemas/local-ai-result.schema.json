@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/local-ai-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "operation", "status", "model", "promptVersion", "inputBytes", "piiMasked", "verified", "productionEligible", "validation", "startedAt", "finishedAt"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" }, "runId": { "type": "string", "minLength": 1 }, "operation": { "type": "string", "minLength": 1 }, "taskId": { "type": "string" }, "status": { "enum": ["completed", "blocked", "failed", "timeout"] }, "reason": { "type": "string", "maxLength": 2000 },
+    "model": { "type": "object", "additionalProperties": false, "required": ["provider", "id", "version"], "properties": { "provider": { "type": "string" }, "id": { "type": "string" }, "version": { "type": "string" } } }, "promptVersion": { "type": "string", "minLength": 1 }, "inputBytes": { "type": "integer", "minimum": 0, "maximum": 262144 }, "piiMasked": { "type": "boolean" }, "verified": { "type": "boolean" }, "unverifiedLabel": { "type": "string" }, "productionEligible": { "type": "boolean" }, "output": { "type": "object" }, "validation": { "type": "object", "additionalProperties": false, "required": ["passed", "checks"], "properties": { "passed": { "type": "boolean" }, "checks": { "type": "array", "items": { "type": "string" } } } }, "durationMs": { "type": "integer", "minimum": 0 }, "startedAt": { "type": "string", "format": "date-time" }, "finishedAt": { "type": "string", "format": "date-time" }
+  }
+}

@@ -32,6 +32,16 @@
     "verify:ibe": "node scripts/verify/ibe",
     "verify:staff-os": "node scripts/verify/staff-os",
     "verify:security-boundaries": "node scripts/verify/security-boundaries",
-    "context:check": "node scripts/context/check-context-size --path tasks/active"
+    "context:check": "node scripts/context/check-context-size --path tasks/active",
+    "local-ai:repo-map": "node scripts/local-ai/repo-map",
+    "local-ai:summarize-module": "node scripts/local-ai/summarize-module",
+    "local-ai:classify-logs": "node scripts/local-ai/classify-logs",
+    "local-ai:redact-evidence": "node scripts/local-ai/redact-evidence",
+    "local-ai:compare-schemas": "node scripts/local-ai/compare-schemas",
+    "local-ai:summarize-diff": "node scripts/local-ai/summarize-diff",
+    "local-ai:draft-fixtures": "node scripts/local-ai/draft-fixtures",
+    "local-ai:check-content": "node scripts/local-ai/check-content",
+    "local-ai:health": "node scripts/local-ai/health",
+    "local-ai:benchmark": "node scripts/local-ai/benchmark"
   }
 }

@@ -123,3 +123,10 @@ The following separation changes were made:
 - Added practical packet/context/evidence/handoff/raw-excerpt limits and generated the six required context files for every active task.
 - Added active bootstrap task `SUT-AIOS-GOV-006`; no canonical architecture source was copied into a context pack.
 - Removed the now-unneeded placeholder files from populated context/handoff directories and added path/secret guards to summarization and size checking.
+
+## Controlled local Qwen sidecar
+
+- Audited hardware, storage, local runtimes, and common model paths without downloading or deleting anything; no supported runtime or exact Qwen model ID was found.
+- Added fail-closed local-ai wrappers with structured JSON, explicit prompt/model fields, input/time limits, PII masking, read-only defaults, no production/database access, and unverified output labels.
+- Added Qwen setup, allowed-task, and benchmark documentation. The benchmark records blocked Qwen/Luna/Terra comparisons rather than inventing correctness results.
+- Added active bootstrap task `SUT-AIOS-GOV-007`; no local model installation or external side effect was performed.

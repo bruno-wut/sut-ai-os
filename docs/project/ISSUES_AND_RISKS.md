@@ -151,3 +151,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** `scripts/context/summarize-artifact` and generated summaries under `artifacts/reports/`
 - **Evidence:** The summarizer preserves exact error/failure lines and labels Qwen/local preprocessing as unverified, but it does not establish semantic truth about an artifact.
 - **Next action / owner:** QA and Verification Agent must review summaries before they influence decisions, code, public content, or completion evidence.
+
+### 2026-07-26 â€” No approved local Qwen runtime or model is installed
+
+- **Task ID:** `SUT-AIOS-GOV-007`
+- **Status:** Blocked
+- **Severity:** High
+- **Affected scope:** `scripts/local-ai/`, Qwen preprocessing, and Qwen/Luna/Terra benchmark execution
+- **Evidence:** Windows audit found no Ollama, LM Studio CLI, llama.cpp, vLLM, llamafile, or Qwen model file. No model ID was guessed and no download was attempted. See `docs/model-routing/QWEN_SETUP.md`.
+- **Next action / owner:** Workspace owner must select one approved runtime and one exact hardware-appropriate Qwen model/quantization, then perform a local-only privacy and deterministic-validation review before enabling execution.

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordedAt": "2026-07-26T12:12:32.724Z",
+  "os": "Windows 11 Pro 64-bit 10.0.26200",
+  "cpu": "AMD Ryzen 5 7500F 6-Core Processor",
+  "logicalCpus": 12,
+  "ramBytes": 33946222592,
+  "freeRamBytesAtWrapperAudit": 19074580480,
+  "gpu": "NVIDIA GeForce RTX 4070 Ti SUPER; WMI AdapterRAM reported 4293918720 bytes",
+  "disks": {
+    "C:": { "totalBytes": 999194357760, "freeBytes": 418644680704 },
+    "E:": { "totalBytes": 1000186310656, "freeBytes": 664390262784 }
+  },
+  "runtimes": { "ollama": false, "lmStudioCli": false, "llamaServer": false, "vllm": false, "llamafile": false },
+  "qwenModelIdentifier": null,
+  "qwenModelFiles": [],
+  "downloadsPerformed": false,
+  "deletionsPerformed": false,
+  "verified": false
+}
