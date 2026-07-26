@@ -1,0 +1,151 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-005",
+  "title": "Build independent verification framework",
+  "status": "done",
+  "phase": "workspace-bootstrap",
+  "workstream": "engineering-governance",
+  "workflowId": "codex-workspace-bootstrap",
+  "playbookId": "workspace-bootstrap",
+  "playbookMode": "shadow",
+  "businessObjective": "Establish repeatable independent verification before implementation work begins.",
+  "technicalObjective": "Add bounded verification commands, task result evidence, policy, acceptance matrix, and ownership rules.",
+  "architectureReferences": [
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/TASK_WORKFLOW.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-003",
+    "SUT-AIOS-GOV-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-005/verification.md"
+  ],
+  "assumptions": [
+    "Node and npm are the repository-standard runtime.",
+    "The finalized platform remains a read-only compatibility baseline."
+  ],
+  "acceptanceCriteria": [
+    "Verification commands only invoke detected, local, approved commands.",
+    "Task verification emits a schema-compatible machine-readable result and blocks self-verification.",
+    "Changed and protected path checks are deterministic and evidence is written outside task context.",
+    "Unavailable app checks report blocked rather than being fabricated."
+  ],
+  "allowedPaths": [
+    "scripts/verify/**",
+    "docs/verification/**",
+    "schemas/verification-result.schema.json",
+    "tasks/templates/VERIFICATION_RESULT.template.json",
+    "tasks/active/SUT-AIOS-GOV-005/**",
+    "evidence/tasks/SUT-AIOS-GOV-005/**",
+    "evidence/verification/**",
+    "package.json",
+    "package-lock.json",
+    "docs/project/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    ".codex/**",
+    ".env*",
+    "**/*secret*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-005 --verifier-agent qa-verification --verifier-model gpt-5.6-terra",
+    "git diff --check",
+    "git status --short"
+  ],
+  "requiredChecks": [
+    "Node syntax",
+    "verification fixture",
+    "fast verification",
+    "task verification",
+    "whitespace check"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "terra",
+  "defaultModel": "gpt-5.6-terra",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "A required verification check would execute external state changes.",
+    "Verification cannot establish an independent verifier or protected-path integrity."
+  ],
+  "rollbackExpectations": "Revert only this task's support files; never modify the immutable compatibility baseline.",
+  "outputSchema": "schemas/verification-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "scripts/AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-005/task.json",
+      "docs/verification/VERIFICATION_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T00:00:00.000Z",
+  "updatedDate": "2026-07-26T15:34:20.485Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-005/verification-20260726115724269.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T00:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T00:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Bootstrap scope approved."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T00:00:00.000Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implementation started."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T15:34:19.859Z",
+      "actor": "chief-orchestrator",
+      "reason": "Merged implementation and independent verification evidence reconciled from PR #1"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T15:34:20.178Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA result is pass and merged implementation is present on main"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-26T15:34:20.485Z",
+      "actor": "chief-orchestrator",
+      "reason": "Merged through PR #1; independent evidence and completion record reconciled"
+    }
+  ]
+}
