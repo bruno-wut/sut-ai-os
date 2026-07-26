@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-002",
+  "status": "fail",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T18:55:18.505Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/control-plane-schema/validate-control-plane-schema.mjs: fail",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "pending: packages/control-plane-schema/control-plane-schema-v1.json implements the closed version 1 entity and relationship design specified in docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md.",
+    "pending: tests/control-plane-schema/validate-control-plane-schema.mjs deterministically accepts the finite valid case and rejects every documented invalid case without network or external state.",
+    "pending: The exact validator command and fast governance verification pass, and independent verification confirms forbidden paths were untouched."
+  ],
+  "changedPaths": [
+    "tasks/backlog/SUT-AIOS-P1-002/task.json",
+    "tasks/ready/SUT-AIOS-P1-002/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-002/verification-20260726185518505.json"
+  ],
+  "risks": [],
+  "recommendation": "revision_required"
+}
