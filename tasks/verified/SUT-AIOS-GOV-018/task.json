@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-018",
   "title": "Admit exact P1-002 control-plane schema validator safely",
-  "status": "ready",
+  "status": "verified",
   "phase": "phase-1",
   "workstream": "verification-governance",
   "workflowId": "p1-002-verifier-admission",
@@ -21,7 +21,8 @@
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-GOV-018/verification.md",
-    "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184056943.json"
+    "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184056943.json",
+    "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184458346.json"
   ],
   "assumptions": [
     "No production, staging, database, migration, schema execution, credential, or external-service access is authorized.",
@@ -91,7 +92,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-GOV-018/task.json",
+      "tasks/verified/SUT-AIOS-GOV-018/task.json",
       "tasks/backlog/SUT-AIOS-P1-002/task.json",
       "scripts/verify/verify-cli.mjs",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -100,8 +101,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T18:38:37.570Z",
-  "updatedDate": "2026-07-26T18:39:19.889Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T18:45:32.763Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-018/verification-20260726184458346.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -116,6 +119,27 @@
       "at": "2026-07-26T18:39:19.889Z",
       "actor": "engineering-planner",
       "reason": "Owner-approved exact P1-002 validator admission is bounded, fail-closed, independently verifiable, and required before P1-002 implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T18:43:19.804Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #19 merged with passing governance CI; begin bounded fail-closed P1-002 validator-admission implementation in this isolated worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T18:44:27.675Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact P1-002 validator admission and dedicated rejection coverage implemented; deterministic checks passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T18:45:32.763Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed the exact-command mapping, fail-closed rejection coverage, deterministic checks, and machine verification."
     }
   ]
 }
