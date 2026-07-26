@@ -1,0 +1,123 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-019",
+  "title": "Plan P1-003 append-only audit verification",
+  "status": "ready",
+  "phase": "phase-1",
+  "workstream": "engineering-governance",
+  "workflowId": "p1-003-audit-verification-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make P1-003 audit contracts bounded, static, deterministic, and independently verifiable before any audit subsystem implementation.",
+  "technicalObjective": "Define a closed append-only audit-contract artifact and exact offline validator command, then amend P1-003's packet without creating an audit store or live service.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-002"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-019/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-019/verification-20260726190524109.json"
+  ],
+  "assumptions": [
+    "P1-003 produces static repository audit-contract artifacts only; it must not access an audit database, execute SQL, write live records, or invoke a service.",
+    "The append-only property is a contract-level invariant; retention, legal policy, personal-data handling, authorization, RLS, and operational deletion behavior are excluded."
+  ],
+  "acceptanceCriteria": [
+    "A durable design defines one bounded static append-only audit-contract artifact and deterministic invalid-input behavior.",
+    "P1-003 uses exact future command node tests/audit/validate-append-only-audit-contract.mjs.",
+    "P1-003's packet removes invented npm test indirection, both packets validate, and independent review confirms protected paths remain untouched."
+  ],
+  "allowedPaths": [
+    "docs/audit/**",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-019/**",
+    "tasks/backlog/SUT-AIOS-P1-003/**",
+    "evidence/tasks/SUT-AIOS-GOV-019/**",
+    "evidence/verification/SUT-AIOS-GOV-019/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "packages/audit-sdk/**",
+    "tests/audit/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-019 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "audit planning scope",
+    "P1-003 packet validation",
+    "fast governance verification",
+    "independent machine verification",
+    "independent review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any audit-store, database, migration, record-deletion, retention, legal, privacy, authentication, authorization, RLS, production-write, or live-service scope.",
+    "Any attempt to treat a static append-only contract as enforcement of a live operational record store."
+  ],
+  "rollbackExpectations": "Revert only the audit design document, P1-003 packet amendment, evidence, and this task packet; retain any historical verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/ready/SUT-AIOS-GOV-019/task.json",
+      "tasks/backlog/SUT-AIOS-P1-003/task.json",
+      "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T19:04:35.995Z",
+  "updatedDate": "2026-07-26T19:05:21.698Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T19:04:35.995Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T19:05:21.698Z",
+      "actor": "engineering-planner",
+      "reason": "P1-002 is done; the P1-003 audit-contract planning scope is static, fail-closed, independently verifiable, and owner-approved."
+    }
+  ]
+}
