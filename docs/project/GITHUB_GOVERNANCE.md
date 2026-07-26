@@ -2,7 +2,7 @@
 
 ## Local audit
 
-This independent repository currently has no configured Git remote. The GitHub CLI is authenticated as `bruno-wut` (administrator). The intended target `bruno-wut/sut-ai-os` is confirmed, but the remote is empty: it has no default branch, contents, workflows, environments, protection rulesets, or branch protection. The finalized application repositories remain out of scope.
+The GitHub CLI is authenticated as `bruno-wut` (administrator). The intended target `bruno-wut/sut-ai-os` is confirmed, and the authorized bootstrap branch `chore/codex-workspace-bootstrap` is now pushed. The remote has no protection rulesets or environments; governance remains unconfigured until a later approved action. The finalized application repositories remain out of scope.
 
 ## Pull requests and issues
 

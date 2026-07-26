@@ -164,11 +164,11 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 ### 2026-07-26 — GitHub identity and authority are unconfirmed
 
 - **Task ID:** `SUT-AIOS-GOV-008`
-- **Status:** Open / blocked pending remote initialization
+- **Status:** Open / awaiting separately approved governance configuration
 - **Severity:** High
 - **Affected scope:** Remote, branch protection, rulesets, CODEOWNERS activation, staging and production environments
-- **Evidence:** GitHub CLI `2.96.0` is authenticated as `bruno-wut` with admin permission on `bruno-wut/sut-ai-os`. The repository is empty with no `main` branch, workflows, environments, rulesets, or branch protection. The local checkout has no remote configured.
-- **Next action / owner:** Workspace owner must explicitly authorize initializing the empty remote by adding `origin` and pushing the bootstrap branch or a reviewed `main` seed. Only after a branch exists can protection be applied.
+- **Evidence:** GitHub CLI `2.96.0` is authenticated as `bruno-wut` with admin permission on `bruno-wut/sut-ai-os`. `origin` now points to the target and `chore/codex-workspace-bootstrap` is pushed. The remote still has no protection rulesets or environments.
+- **Next action / owner:** Workspace owner must separately approve any default-branch decision, branch protection, ruleset, environment, or pull-request action.
 
 ### 2026-07-26 — Independent review pending for GitHub governance
 
