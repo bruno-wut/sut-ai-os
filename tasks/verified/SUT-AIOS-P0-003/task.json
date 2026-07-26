@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-003",
   "title": "Capture finalized-platform compatibility contracts",
-  "status": "blocked",
+  "status": "verified",
   "phase": "phase-0",
   "workstream": "compatibility",
   "workflowId": "implementation-p0-003",
@@ -89,19 +89,21 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/blocked/SUT-AIOS-P0-003/task.json",
+      "tasks/verified/SUT-AIOS-P0-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T16:50:00.469Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T16:58:14.165Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P0-003/verification-20260726165800443.json"
+  ],
   "worktree": {
     "path": "C:/Users/Bruno Browny/.codex/worktrees/49fa/SUT_AI_OS-worktrees/SUT-AIOS-P0-002-worktrees/SUT-AIOS-P0-003",
     "branch": "task/SUT-AIOS-P0-003-capture-finalized-platform-compatibility-contrac",
-    "primaryBranch": "main",
+    "primaryBranch": "origin/main",
     "createdAt": "2026-07-26T16:43:43.092Z",
     "createdBy": "codex-engineering-executor"
   },
@@ -154,6 +156,27 @@
       "at": "2026-07-26T16:50:00.469Z",
       "actor": "chief-orchestrator",
       "reason": "Independent machine verification is blocked: verify:task safely admits only node scripts/... commands, not the required tests/compatibility validator; recorded local main base is stale and includes unrelated history. A separate shared-verifier remediation packet is required."
+    },
+    {
+      "from": "blocked",
+      "to": "active",
+      "at": "2026-07-26T16:57:56.249Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-014 merged exact validator admission and origin/main verification base correction resolve the recorded machine-verification blocker."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:58:14.123Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Final exact machine verification passed; independent QA evidence recorded."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:58:14.165Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA and machine verification passed contract, boundary, scope, and acceptance checks."
     }
   ]
 }

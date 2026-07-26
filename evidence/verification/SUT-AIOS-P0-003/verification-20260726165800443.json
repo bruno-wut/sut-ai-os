@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P0-003",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T16:58:00.443Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/compatibility/validate-finalized-platform-contracts.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Capture finalized-platform compatibility contracts is implemented only within the declared subsystem.",
+    "confirmed: Machine-readable contracts and deterministic failure behavior are documented.",
+    "confirmed: Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "changedPaths": [
+    "evidence/tasks/SUT-AIOS-P0-003/implementation.md",
+    "evidence/verification/SUT-AIOS-P0-003/verification-20260726164926543.json",
+    "packages/compatibility-contracts/finalized-platform-contract.json",
+    "tasks/active/SUT-AIOS-P0-003/task.json",
+    "tasks/blocked/SUT-AIOS-P0-003/task.json",
+    "tests/compatibility/validate-finalized-platform-contracts.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P0-003/verification-20260726165800443.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
