@@ -221,3 +221,22 @@ Both runs recorded independent reviewer/model identity, acceptance confirmation,
 An independent direct execution of the packet-authorized `npm audit --omit=dev` command immediately passed with exit `0` and zero vulnerabilities, confirming that the machine-verifier result is blocked by runner/packet command incompatibility rather than an audit finding. `npm run verify:fast` passed inside both machine-verifier runs.
 
 Neither generated JSON result is sufficient pass evidence for CI or a lifecycle transition. A separately approved governance remediation must make `verify:task` safely execute the packet's required audit command, or replace the required test with an equivalent safe command form that the verifier supports. Preserve both blocked JSON files as audit history, then rerun the exact verifier command and require a new result with `status: pass`, `recommendation: verified`, independent identity/model, allowed changed paths, passing required tests, untouched forbidden paths, no secret-boundary issue, and `productionEligible: false`. No implementation or lifecycle change was performed by this verifier.
+
+## Final machine-readable independent verification — 2026-07-26
+
+- Verifier agent: `qa-verification`
+- Verifier model: `gpt-5.6-sol`
+- Result: **pass**
+- Recommendation: `verified`
+- Production eligible: `false`
+- Machine result: `evidence/verification/SUT-AIOS-P0-002/verification-20260726161346223.json`
+
+After the independently reviewed GOV-012 safe audit launcher was merged into this branch, the exact owner-approved command completed with exit `0`:
+
+`npm run verify:task -- --task SUT-AIOS-P0-002 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed`
+
+The machine result records `status: pass`, independent reviewer/model identity, all acceptance criteria as confirmed, `npm audit --omit=dev: pass`, `npm run verify:fast: pass`, changed-path inspection pass, security-boundary pass, `forbiddenPathsUntouched: true`, no risks, and `productionEligible: false`. The changed paths are only the allowed task-state packet move from `blocked` to `review`.
+
+The merged launcher and verification policy admit only the exact literal `npm audit --omit=dev`, execute fixed arguments without a shell, preserve real audit exit status, fail closed when the deterministic Windows npm CLI is unavailable, and continue to reject extra arguments, shell operators, audit-fix forms, and all other npm commands. The earlier blocked JSON results remain valid historical evidence of the pre-remediation control gap and are superseded for final CI disposition by the passing result above.
+
+This Markdown evidence plus `evidence/verification/SUT-AIOS-P0-002/verification-20260726161346223.json` is sufficient for the authorized lifecycle controller and CI to treat independent verification as passed. It does not grant production eligibility or authorize this verifier to transition lifecycle state.

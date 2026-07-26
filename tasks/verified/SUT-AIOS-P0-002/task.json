@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P0-002",
   "title": "Plan dependency and security remediation",
-  "status": "blocked",
+  "status": "verified",
   "phase": "phase-0",
   "workstream": "platform-stabilization",
   "workflowId": "implementation-p0-002",
@@ -91,16 +91,17 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/blocked/SUT-AIOS-P0-002/task.json",
+      "tasks/verified/SUT-AIOS-P0-002/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T15:29:21.449Z",
+  "updatedDate": "2026-07-26T16:14:50.552Z",
   "completionEvidence": [
-    "evidence/tasks/SUT-AIOS-P0-002/verification.md"
+    "evidence/tasks/SUT-AIOS-P0-002/verification.md",
+    "evidence/verification/SUT-AIOS-P0-002/verification-20260726161346223.json"
   ],
   "stateTransitions": [
     {
@@ -249,6 +250,27 @@
       "at": "2026-07-26T15:29:21.449Z",
       "actor": "qa-verification",
       "reason": "verify:task rejects the required npm audit command; resolving this requires separately approved shared verification-control scope, and blocked JSON evidence must not be used as a false CI pass"
+    },
+    {
+      "from": "blocked",
+      "to": "active",
+      "at": "2026-07-26T16:13:16.134Z",
+      "actor": "chief-orchestrator",
+      "reason": "GOV-012 verifier remediation is merged into the task branch; resume final independent machine verification"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T16:13:16.432Z",
+      "actor": "chief-orchestrator",
+      "reason": "No implementation change; rerun independent machine verification with merged safe audit launcher"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T16:14:50.552Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed the final machine verification, acceptance, audit, path, secret-boundary, and diff checks"
     }
   ]
 }
