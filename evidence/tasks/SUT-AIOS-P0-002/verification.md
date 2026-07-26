@@ -202,3 +202,22 @@ At that QA snapshot, the evidence was insufficient for an independent pass becau
 - Evidence integrity: pass. Command outcomes, prior failure history, remediation, scope, limitations, rollback, independent verifier identity, and verifier model are durably recorded.
 
 This file is sufficient independent evidence for the authorized lifecycle controller to transition `SUT-AIOS-P0-002` from `review` to `verified`. It does not authorize a transition to `done`, satisfy the separate pull-request requirement by itself, or grant production-write/deployment authority. The verifier performed no lifecycle transition.
+
+## CI machine-verifier remediation attempt — 2026-07-26
+
+- Verifier agent: `qa-verification`
+- Verifier model: `gpt-5.6-sol`
+- Disposition: **blocked**
+- Production eligible: `false`
+- First generated result: `evidence/verification/SUT-AIOS-P0-002/verification-20260726152717886.json`
+- Confirmatory generated result: `evidence/verification/SUT-AIOS-P0-002/verification-20260726152741451.json`
+
+The owner-approved command was executed exactly twice:
+
+`npm run verify:task -- --task SUT-AIOS-P0-002 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed`
+
+Both runs recorded independent reviewer/model identity, acceptance confirmation, passing changed-path inspection, passing security-boundary inspection, untouched forbidden paths, and `productionEligible: false`. Both nevertheless returned exit `1` with machine status and recommendation `blocked` because the required test `npm audit --omit=dev` is not accepted by `verify:task`'s `safeRequiredCommand` parser. That parser supports safe direct `node scripts/**` commands, `npm run verify:fast`, and `git diff --check`, but has no accepted form for `npm audit --omit=dev`; the caught unsupported-command error is reduced to `npm audit --omit=dev: fail` in the JSON test summary.
+
+An independent direct execution of the packet-authorized `npm audit --omit=dev` command immediately passed with exit `0` and zero vulnerabilities, confirming that the machine-verifier result is blocked by runner/packet command incompatibility rather than an audit finding. `npm run verify:fast` passed inside both machine-verifier runs.
+
+Neither generated JSON result is sufficient pass evidence for CI or a lifecycle transition. A separately approved governance remediation must make `verify:task` safely execute the packet's required audit command, or replace the required test with an equivalent safe command form that the verifier supports. Preserve both blocked JSON files as audit history, then rerun the exact verifier command and require a new result with `status: pass`, `recommendation: verified`, independent identity/model, allowed changed paths, passing required tests, untouched forbidden paths, no secret-boundary issue, and `productionEligible: false`. No implementation or lifecycle change was performed by this verifier.
