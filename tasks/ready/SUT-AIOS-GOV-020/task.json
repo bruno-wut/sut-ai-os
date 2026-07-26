@@ -1,0 +1,121 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-020",
+  "title": "Admit exact P1-003 audit validator safely",
+  "status": "ready",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-003-verifier-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit independently verifiable, deterministic P1-003 audit-contract validation without broadening command-execution authority.",
+  "technicalObjective": "Extend the fail-closed verify:task parser to admit only the exact literal node tests/audit/validate-append-only-audit-contract.mjs, with shell-free fixed-argument execution and exhaustive rejection coverage for variants.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-019"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-020/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-020/verification-20260726191712353.json"
+  ],
+  "assumptions": [
+    "No production, staging, audit-store, database, migration, credential, or external-service access is authorized.",
+    "P1-003's future validator remains the only audit test path admitted by this task."
+  ],
+  "acceptanceCriteria": [
+    "verify:task accepts only the byte-for-byte literal node tests/audit/validate-append-only-audit-contract.mjs and launches node with shell false and exactly that one fixed argument.",
+    "Self-tests reject whitespace, argument, alternate-path, shell-operator, and unrelated node tests variants.",
+    "Task validation, fast governance verification, changed-path inspection, secret scan, and independent verification pass without touching forbidden paths."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-020/**",
+    "evidence/verification/SUT-AIOS-GOV-020/**",
+    "tasks/**/SUT-AIOS-GOV-020/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "packages/audit-sdk/**",
+    "tests/audit/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact-command admission and rejection coverage",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any command-admission expansion beyond the exact P1-003 validator literal.",
+    "Any shell use, dynamic path resolution, production access, credential handling, audit-store access, or protected-path change."
+  ],
+  "rollbackExpectations": "Revert the parser admission, self-tests, policy wording, task-state record, and evidence together; retain historical verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/ready/SUT-AIOS-GOV-020/task.json",
+      "tasks/backlog/SUT-AIOS-P1-003/task.json",
+      "scripts/verify/verify-cli.mjs",
+      "docs/verification/VERIFICATION_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T19:16:30.668Z",
+  "updatedDate": "2026-07-26T19:17:09.899Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T19:16:30.668Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T19:17:09.899Z",
+      "actor": "engineering-planner",
+      "reason": "P1-003 validator admission is bounded, fail-closed, independently verifiable, and required before P1-003 implementation."
+    }
+  ]
+}
