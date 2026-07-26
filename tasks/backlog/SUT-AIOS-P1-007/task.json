@@ -1,0 +1,108 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-007",
+  "title": "Implement independent kill-switch controls",
+  "status": "backlog",
+  "phase": "phase-1",
+  "workstream": "orchestrator",
+  "workflowId": "implementation-p1-007",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded orchestrator outcome.",
+  "technicalObjective": "Implement independent kill-switch controls",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P1-006"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P1-007/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Interfaces with the finalized platform use approved compatibility contracts only."
+  ],
+  "acceptanceCriteria": [
+    "Implement independent kill-switch controls is implemented only within the declared subsystem.",
+    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "services/orchestrator/src/kill-switch/**",
+    "tests/orchestrator/**",
+    "docs/orchestrator/**",
+    "evidence/tasks/SUT-AIOS-P1-007/**",
+    "tasks/**/SUT-AIOS-P1-007/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:kill-switch",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "orchestrator contract validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:kill-switch",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any required change crosses declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+  ],
+  "rollbackExpectations": "Revert the orchestrator branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P1-007/task.json",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:10:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Generated from canonical phased implementation backlog."
+    }
+  ]
+}

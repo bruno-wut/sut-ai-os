@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "technical-baseline-gate",
+  "status": "active",
+  "baseline": {
+    "path": "reference/finalized-platform/",
+    "sourceCommit": "dbce321f61144b50a94bd11a068fa5897b0f2293",
+    "immutable": true,
+    "writePolicy": "forbidden"
+  },
+  "invariants": [
+    "No changed path may match reference/finalized-platform/**.",
+    "No build, dependency installation, generated output, deployment, credential access, or live-system access may occur in the immutable baseline.",
+    "A baseline result is pass only when all available required workspace checks pass and protected paths remain untouched.",
+    "Blocked application-level checks are reported as blocked, never converted into a pass."
+  ],
+  "availableChecks": [
+    {
+      "command": "npm run verify:fast",
+      "required": true,
+      "purpose": "Validate task lifecycle, routing, worktree, and local governance controls."
+    },
+    {
+      "command": "npm run verify:full",
+      "required": true,
+      "purpose": "Run all available deterministic workspace verification and report unavailable capabilities."
+    },
+    {
+      "command": "git diff --check",
+      "required": true,
+      "purpose": "Reject whitespace errors in the task diff."
+    }
+  ],
+  "failureBehavior": {
+    "protectedPathChanged": "fail",
+    "secretPatternDetected": "fail",
+    "requiredCheckFails": "fail",
+    "applicationCapabilityUnavailable": "blocked",
+    "productionEligibility": false
+  },
+  "evidence": {
+    "taskRecord": "evidence/tasks/SUT-AIOS-P0-001/verification.md",
+    "independentResultDirectory": "evidence/verification/SUT-AIOS-P0-001/"
+  }
+}

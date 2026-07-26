@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../schemas/verification-result.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-AREA-001",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-terra",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T00:00:00.000Z",
+  "checks": [],
+  "tests": [],
+  "acceptanceCriteria": [],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [],
+  "risks": [],
+  "recommendation": "verified"
+}

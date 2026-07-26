@@ -1,0 +1,151 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-010",
+  "title": "Generate phased implementation backlog",
+  "status": "verified",
+  "phase": "workspace-bootstrap",
+  "workstream": "planning",
+  "workflowId": "implementation-backlog-planning",
+  "playbookId": "backlog-generation",
+  "playbookMode": "shadow",
+  "businessObjective": "Create an executable, dependency-aware plan for the Sri U-Thong AI Operating System without implementing product features.",
+  "technicalObjective": "Generate small canonical task packets and durable phase, dependency, milestone, and first-slice documentation.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/CURRENT_STATE.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-009"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-010/verification.md"
+  ],
+  "assumptions": [
+    "The finalized application remains an immutable compatibility baseline.",
+    "No product feature or production service change is authorized."
+  ],
+  "acceptanceCriteria": [
+    "Every phase has small dependency-aware packets with explicit scope, tests, risk, autonomy, agent/model route, escalation, rollback, and productionWritePermission false.",
+    "The dependency graph is acyclic and content-schema repair follows its control foundations.",
+    "Only genuinely unblocked packets are ready."
+  ],
+  "allowedPaths": [
+    "tasks/backlog/**",
+    "tasks/ready/**",
+    "tasks/active/SUT-AIOS-GOV-010/**",
+    "tasks/review/SUT-AIOS-GOV-010/**",
+    "tasks/verified/SUT-AIOS-GOV-010/**",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/MILESTONES.md",
+    "docs/project/FIRST_VERTICAL_SLICE.md",
+    "docs/project/BOOTSTRAP_CHANGELOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-010/**",
+    "evidence/verification/SUT-AIOS-GOV-010/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    "policies/**",
+    ".env*",
+    "**/*secret*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "all packets validate",
+    "dependency graph review",
+    "ready-state dependency review",
+    "forbidden paths untouched",
+    "whitespace check"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-terra",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any task would permit production writes, unrestricted SQL, RLS changes, payments, booking mutations, or automatic autonomy promotion.",
+    "Dependencies or source-of-truth boundaries are ambiguous."
+  ],
+  "rollbackExpectations": "Revert only generated planning packets and planning documents; preserve canonical sources and completed workspace records.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "docs/project/CURRENT_STATE.md",
+      "docs/project/ROADMAP.md",
+      "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+      "docs/architecture/source/Agent Architecture.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T13:00:00.000Z",
+  "updatedDate": "2026-07-26T12:57:21.445Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-010/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Planning task created."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T12:53:58.839Z",
+      "actor": "chief-orchestrator",
+      "reason": "Canonical sources and planning scope reviewed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T12:53:58.882Z",
+      "actor": "engineering-planner",
+      "reason": "Backlog generation started; product implementation prohibited."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T12:57:21.402Z",
+      "actor": "engineering-planner",
+      "reason": "Phased packets and planning documents submitted for independent review."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T12:57:21.445Z",
+      "actor": "qa-verification",
+      "reason": "Independent verification passed; dependency and safety invariants confirmed."
+    }
+  ]
+}

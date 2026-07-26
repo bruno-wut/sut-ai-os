@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-009",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-26T12:48:37.794Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/model-run/model-run-cli.mjs --self-test: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Schemas cover all requested model-run and task-efficiency fields with privacy constraints.",
+    "confirmed: Recording and reporting commands produce validated structured JSON without storing sensitive content.",
+    "confirmed: Reports calculate the requested metrics from durable run records.",
+    "confirmed: Routing recommendations are advisory and cannot change routing policy.",
+    "confirmed: Documentation defines metrics, privacy limits, and representative evaluation tasks."
+  ],
+  "changedPaths": [
+    "artifacts/reports/model-runs/.gitkeep",
+    "docs/model-routing/EFFICIENCY_METRICS.md",
+    "docs/model-routing/MODEL_EVALUATION.md",
+    "docs/project/BOOTSTRAP_CHANGELOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-009/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-009/verification-20260726124741943.json",
+    "evidence/verification/SUT-AIOS-GOV-009/verification-20260726124806416.json",
+    "package.json",
+    "schemas/model-run.schema.json",
+    "schemas/task-efficiency.schema.json",
+    "scripts/model-run/compare",
+    "scripts/model-run/model-run-cli.mjs",
+    "scripts/model-run/recommend-routing",
+    "scripts/model-run/record",
+    "scripts/model-run/report",
+    "tasks/verified/SUT-AIOS-GOV-009/context/artifact-index.md",
+    "tasks/verified/SUT-AIOS-GOV-009/context/decisions.md",
+    "tasks/verified/SUT-AIOS-GOV-009/context/file-map.md",
+    "tasks/verified/SUT-AIOS-GOV-009/context/known-risks.md",
+    "tasks/verified/SUT-AIOS-GOV-009/context/latest-handoff.md",
+    "tasks/verified/SUT-AIOS-GOV-009/context/task-context.md",
+    "tasks/verified/SUT-AIOS-GOV-009/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-009/verification-20260726124837794.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

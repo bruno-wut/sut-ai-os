@@ -1,0 +1,31 @@
+name: Codex task packet
+description: Propose work that can be represented by a bounded task packet.
+title: "[TASK] "
+labels: ["codex-task"]
+body:
+  - type: input
+    id: task-id
+    attributes:
+      label: Task ID
+      placeholder: SUT-AIOS-XXX-000
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Business and technical objective
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Allowed and forbidden paths, checks, and acceptance criteria
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk level
+      options: [low, medium, high, critical]
+    validations:
+      required: true

@@ -1,0 +1,166 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-011",
+  "title": "Independent workspace readiness review",
+  "status": "verified",
+  "phase": "workspace-readiness",
+  "workstream": "assurance",
+  "workflowId": "workspace-readiness-review",
+  "playbookId": "independent-workspace-review",
+  "playbookMode": "shadow",
+  "businessObjective": "Determine whether the Codex workspace is safe and ready for the first implementation task.",
+  "technicalObjective": "Audit all workspace governance, tooling, schemas, instructions, routing, GitHub, telemetry, and backlog surfaces; fix only safe workspace defects; publish an evidence-backed readiness report.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/DEFINITION_OF_DONE.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-010"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-011/verification.md"
+  ],
+  "assumptions": [
+    "Product defects and production systems remain out of scope."
+  ],
+  "acceptanceCriteria": [
+    "Every requested workspace surface is reviewed with reproducible checks.",
+    "Safe workspace defects are fixed and unresolved risks are recorded.",
+    "The readiness report contains the required classification, readiness dimensions, first task, exact command, and rollback instructions.",
+    "The bootstrap branch is pushed and an unmerged PR is opened after local verification."
+  ],
+  "allowedPaths": [
+    "AGENTS.md",
+    "agents/**",
+    "prompts/**",
+    "tasks/**",
+    "evidence/tasks/SUT-AIOS-GOV-011/**",
+    "evidence/verification/SUT-AIOS-GOV-011/**",
+    "artifacts/reports/**",
+    "docs/project/**",
+    "docs/verification/**",
+    "docs/model-routing/**",
+    "scripts/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    ".github/**",
+    ".gitignore",
+    "package.json",
+    "package-lock.json"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    ".env*",
+    "**/*secret*"
+  ],
+  "allowedCommands": [
+    "npm run task:validate -- --all",
+    "npm run verify:fast",
+    "npm run verify:full",
+    "npm run github:validate -- --task SUT-AIOS-GOV-011",
+    "npm run codex:validate",
+    "npm run worktree:doctor",
+    "npm run local-ai:health",
+    "node scripts/model-run/model-run-cli.mjs --self-test",
+    "git diff --check",
+    "git status --short"
+  ],
+  "requiredChecks": [
+    "canonical source hash match",
+    "instruction hierarchy review",
+    "JSON and YAML parsing",
+    "package-script execution",
+    "secret and forbidden-path scan",
+    "cross-platform script review",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/worktree/worktree-cli.mjs --self-test",
+    "node scripts/model-run/model-run-cli.mjs --self-test",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "qa-verification",
+  "allowedAgents": [
+    "qa-verification",
+    "engineering-planner",
+    "sol"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-terra",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any secret exposure, production access, contradictory permission, broken enforcement, or unsafe default is found.",
+    "Any fix would alter product code, canonical architecture, production state, RLS, payment, or booking behavior."
+  ],
+  "rollbackExpectations": "Revert the final readiness commit or individual safe workspace fixes; never reset or delete user work.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "docs/project/DEFINITION_OF_DONE.md",
+      "tasks/verified/SUT-AIOS-GOV-011/task.json"
+    ]
+  },
+  "owner": "qa-verification",
+  "reviewer": "engineering-planner",
+  "createdDate": "2026-07-26T12:50:00.000Z",
+  "updatedDate": "2026-07-26T13:09:33.320Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-011/verification-20260726130854628.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:20:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent workspace readiness review created."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T12:59:53.751Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent review scope and checks approved."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T12:59:53.797Z",
+      "actor": "qa-verification",
+      "reason": "Workspace readiness review started."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T13:09:33.005Z",
+      "actor": "qa-verification",
+      "reason": "Independent workspace checks and readiness report completed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T13:09:33.320Z",
+      "actor": "engineering-planner",
+      "reason": "Independent Sol verification passed all required checks."
+    }
+  ]
+}

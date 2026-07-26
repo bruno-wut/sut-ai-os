@@ -1,0 +1,115 @@
+# File map — SUT-AIOS-GOV-011
+
+Generated: 2026-07-26T13:08:22.809Z
+
+## Allowed scope
+
+- AGENTS.md
+- agents/**
+- prompts/**
+- tasks/**
+- evidence/tasks/SUT-AIOS-GOV-011/**
+- evidence/verification/SUT-AIOS-GOV-011/**
+- artifacts/reports/**
+- docs/project/**
+- docs/verification/**
+- docs/model-routing/**
+- scripts/**
+- schemas/**
+- policies/**
+- playbooks/**
+- .github/**
+- .gitignore
+- package.json
+- package-lock.json
+
+## Existing relevant files (names only)
+
+- [.github/CODEOWNERS](.github/CODEOWNERS)
+- [.github/ISSUE_TEMPLATE/config.yml](.github/ISSUE_TEMPLATE/config.yml)
+- [.github/ISSUE_TEMPLATE/task.yml](.github/ISSUE_TEMPLATE/task.yml)
+- [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)
+- [.github/workflows/validate-governance.yml](.github/workflows/validate-governance.yml)
+- [.gitignore](.gitignore)
+- [agents/ACTIVE_TEAM.md](agents/ACTIVE_TEAM.md)
+- [agents/AGENTS.md](agents/AGENTS.md)
+- [agents/assurance/.gitkeep](agents/assurance/.gitkeep)
+- [agents/assurance/qa-verification.md](agents/assurance/qa-verification.md)
+- [agents/assurance/release-deployment.md](agents/assurance/release-deployment.md)
+- [agents/command/.gitkeep](agents/command/.gitkeep)
+- [agents/command/chief-orchestrator.md](agents/command/chief-orchestrator.md)
+- [agents/execution/.gitkeep](agents/execution/.gitkeep)
+- [agents/execution/codex-content-executor.md](agents/execution/codex-content-executor.md)
+- [agents/execution/codex-engineering-executor.md](agents/execution/codex-engineering-executor.md)
+- [agents/HANDOFFS.md](agents/HANDOFFS.md)
+- [agents/intelligence/.gitkeep](agents/intelligence/.gitkeep)
+- [agents/intelligence/content-brand.md](agents/intelligence/content-brand.md)
+- [agents/intelligence/data-anomaly-analyst.md](agents/intelligence/data-anomaly-analyst.md)
+- [agents/intelligence/engineering-planner.md](agents/intelligence/engineering-planner.md)
+- [agents/intelligence/operational-incident-investigator.md](agents/intelligence/operational-incident-investigator.md)
+- [agents/intelligence/seo-strategist.md](agents/intelligence/seo-strategist.md)
+- [agents/learning/.gitkeep](agents/learning/.gitkeep)
+- [agents/learning/executive-briefing.md](agents/learning/executive-briefing.md)
+- [agents/learning/outcome-learning.md](agents/learning/outcome-learning.md)
+- [agents/optional/.gitkeep](agents/optional/.gitkeep)
+- [agents/optional/aeo-research.md](agents/optional/aeo-research.md)
+- [agents/optional/b2b-growth.md](agents/optional/b2b-growth.md)
+- [agents/optional/revenue-proposal.md](agents/optional/revenue-proposal.md)
+- [agents/PERMISSION_MATRIX.md](agents/PERMISSION_MATRIX.md)
+- [agents/REGISTRY.md](agents/REGISTRY.md)
+- [agents/ROUTING.md](agents/ROUTING.md)
+- [AGENTS.md](AGENTS.md)
+- [docs/model-routing/EFFICIENCY_METRICS.md](docs/model-routing/EFFICIENCY_METRICS.md)
+- [docs/model-routing/ESCALATION_RULES.md](docs/model-routing/ESCALATION_RULES.md)
+- [docs/model-routing/LOCAL_MODEL_POLICY.md](docs/model-routing/LOCAL_MODEL_POLICY.md)
+- [docs/model-routing/MODEL_CAPABILITY_MATRIX.md](docs/model-routing/MODEL_CAPABILITY_MATRIX.md)
+- [docs/model-routing/MODEL_EVALUATION.md](docs/model-routing/MODEL_EVALUATION.md)
+- [docs/model-routing/MODEL_ROUTING_POLICY.md](docs/model-routing/MODEL_ROUTING_POLICY.md)
+- [docs/model-routing/QWEN_ALLOWED_TASKS.md](docs/model-routing/QWEN_ALLOWED_TASKS.md)
+- [docs/model-routing/QWEN_BENCHMARK.md](docs/model-routing/QWEN_BENCHMARK.md)
+- [docs/model-routing/QWEN_SETUP.md](docs/model-routing/QWEN_SETUP.md)
+- [docs/project/AGENT_INSTRUCTION_MAP.md](docs/project/AGENT_INSTRUCTION_MAP.md)
+- [docs/project/AUTONOMY_BOUNDARIES.md](docs/project/AUTONOMY_BOUNDARIES.md)
+- [docs/project/BOOTSTRAP_CHANGELOG.md](docs/project/BOOTSTRAP_CHANGELOG.md)
+- [docs/project/CONTEXT_INDEX.md](docs/project/CONTEXT_INDEX.md)
+- [docs/project/CONTEXT_MANAGEMENT.md](docs/project/CONTEXT_MANAGEMENT.md)
+- [docs/project/CURRENT_STATE.md](docs/project/CURRENT_STATE.md)
+- [docs/project/DEFINITION_OF_DONE.md](docs/project/DEFINITION_OF_DONE.md)
+- [docs/project/DEPENDENCY_GRAPH.md](docs/project/DEPENDENCY_GRAPH.md)
+- [docs/project/ENGINEERING_PRINCIPLES.md](docs/project/ENGINEERING_PRINCIPLES.md)
+- [docs/project/FIRST_VERTICAL_SLICE.md](docs/project/FIRST_VERTICAL_SLICE.md)
+- [docs/project/GITHUB_GOVERNANCE.md](docs/project/GITHUB_GOVERNANCE.md)
+- [docs/project/GLOSSARY.md](docs/project/GLOSSARY.md)
+- [docs/project/IMPLEMENTATION_BACKLOG.md](docs/project/IMPLEMENTATION_BACKLOG.md)
+- [docs/project/ISSUES_AND_RISKS.md](docs/project/ISSUES_AND_RISKS.md)
+- [docs/project/KNOWN_RISKS.md](docs/project/KNOWN_RISKS.md)
+- [docs/project/MILESTONES.md](docs/project/MILESTONES.md)
+- [docs/project/PRODUCT.md](docs/project/PRODUCT.md)
+- [docs/project/REPOSITORY_SEPARATION.md](docs/project/REPOSITORY_SEPARATION.md)
+- [docs/project/REPOSITORY_STRUCTURE.md](docs/project/REPOSITORY_STRUCTURE.md)
+- [docs/project/ROADMAP.md](docs/project/ROADMAP.md)
+- [docs/project/SOURCE_OF_TRUTH.md](docs/project/SOURCE_OF_TRUTH.md)
+- [docs/project/SYSTEM_MAP.md](docs/project/SYSTEM_MAP.md)
+- [docs/project/TASK_WORKFLOW.md](docs/project/TASK_WORKFLOW.md)
+- [docs/project/WORKSPACE_AUDIT.md](docs/project/WORKSPACE_AUDIT.md)
+- [docs/project/WORKSPACE_READINESS_REPORT.md](docs/project/WORKSPACE_READINESS_REPORT.md)
+- [docs/project/WORKTREE_WORKFLOW.md](docs/project/WORKTREE_WORKFLOW.md)
+- [docs/verification/.gitkeep](docs/verification/.gitkeep)
+- [docs/verification/ACCEPTANCE_MATRIX.md](docs/verification/ACCEPTANCE_MATRIX.md)
+- [docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md](docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md)
+- [docs/verification/TEST_OWNERSHIP.md](docs/verification/TEST_OWNERSHIP.md)
+- [docs/verification/VERIFICATION_POLICY.md](docs/verification/VERIFICATION_POLICY.md)
+- [evidence/tasks/SUT-AIOS-GOV-011/verification.md](evidence/tasks/SUT-AIOS-GOV-011/verification.md)
+- [package-lock.json](package-lock.json)
+- [package.json](package.json)
+- [playbooks/.gitkeep](playbooks/.gitkeep)
+- [playbooks/AGENTS.md](playbooks/AGENTS.md)
+- [policies/.gitkeep](policies/.gitkeep)
+- [prompts/agents/.gitkeep](prompts/agents/.gitkeep)
+- [prompts/handoffs/IMPLEMENTER_TO_REVIEWER.md](prompts/handoffs/IMPLEMENTER_TO_REVIEWER.md)
+- [prompts/handoffs/REVIEWER_TO_REMEDIATOR.md](prompts/handoffs/REVIEWER_TO_REMEDIATOR.md)
+- [prompts/handoffs/SESSION_RESUME.md](prompts/handoffs/SESSION_RESUME.md)
+- [prompts/review/.gitkeep](prompts/review/.gitkeep)
+- [prompts/tasks/.gitkeep](prompts/tasks/.gitkeep)
+
+Protected paths are inspected by verification and never copied here.

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/model-run.schema.json",
+  "title": "Sanitized model execution record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "taskId", "agentId", "model", "startedAt", "finishedAt", "durationMs", "usage", "filesInspected", "filesChanged", "commandsRun", "checksPassed", "checksFailed", "reworkRequired", "escalationRequired", "finalTaskStatus", "independentVerificationStatus", "humanInterventionRequired"],
+  "properties": {
+    "schemaVersion": {"const": "1.0.0"},
+    "runId": {"type": "string", "pattern": "^[A-Za-z0-9._-]{8,160}$"},
+    "taskId": {"type": "string", "pattern": "^[A-Za-z0-9._-]{3,81}$"},
+    "agentId": {"type": "string", "minLength": 3, "maxLength": 120},
+    "model": {"type": "string", "minLength": 3, "maxLength": 160},
+    "reasoningLevel": {"type": ["string", "null"], "maxLength": 80},
+    "startedAt": {"type": "string", "format": "date-time"},
+    "finishedAt": {"type": "string", "format": "date-time"},
+    "durationMs": {"type": "integer", "minimum": 0},
+    "usage": {"type": "object", "additionalProperties": false, "required": ["inputTokens", "outputTokens", "cachedTokens"], "properties": {"inputTokens": {"type": ["integer", "null"], "minimum": 0}, "outputTokens": {"type": ["integer", "null"], "minimum": 0}, "cachedTokens": {"type": ["integer", "null"], "minimum": 0}}},
+    "filesInspected": {"$ref": "#/$defs/pathList"}, "filesChanged": {"$ref": "#/$defs/pathList"}, "commandsRun": {"type": "array", "maxItems": 100, "items": {"type": "string", "minLength": 1, "maxLength": 1000}},
+    "checksPassed": {"type": "array", "items": {"type": "string", "maxLength": 1000}}, "checksFailed": {"type": "array", "items": {"type": "string", "maxLength": 1000}},
+    "reworkRequired": {"type": "boolean"}, "escalationRequired": {"type": "boolean"}, "escalation": {"type": ["object", "null"], "additionalProperties": false, "required": ["fromModel", "toModel"], "properties": {"fromModel": {"type": "string"}, "toModel": {"type": "string"}}},
+    "finalTaskStatus": {"enum": ["completed", "blocked", "failed", "revision_required", "rolled_back", "in_progress"]}, "independentVerificationStatus": {"enum": ["pass", "fail", "blocked", "pending", "not_applicable"]}, "humanInterventionRequired": {"type": "boolean"},
+    "outputAccepted": {"type": ["boolean", "null"]}, "defectFoundAfterMerge": {"type": "boolean"}
+  },
+  "$defs": {"pathList": {"type": "array", "maxItems": 500, "items": {"type": "string", "minLength": 1, "maxLength": 500, "pattern": "^(?!.*(?:\\.env|secret|credential|token)).*$"}}}
+}

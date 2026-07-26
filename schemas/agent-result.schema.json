@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/agent-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "taskId", "agentId", "status", "startedAt", "finishedAt", "summary", "filesChanged", "commandsRun", "checks", "outputReferences", "confidence", "risks", "handoff"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" }, "taskId": { "type": "string" }, "agentId": { "type": "string" }, "status": { "enum": ["completed", "blocked", "needs-review", "failed"] }, "startedAt": { "type": "string", "format": "date-time" }, "finishedAt": { "type": "string", "format": "date-time" }, "summary": { "type": "string", "maxLength": 4000 }, "filesChanged": { "type": "array", "items": { "type": "string" } }, "commandsRun": { "type": "array", "items": { "type": "string", "maxLength": 1000 } }, "checks": { "type": "array", "items": { "type": "string", "maxLength": 1000 } }, "outputReferences": { "type": "array", "items": { "type": "string" } }, "confidence": { "type": "object", "additionalProperties": false, "required": ["level", "rationale"], "properties": { "level": { "enum": ["low", "medium", "high"] }, "rationale": { "type": "string", "maxLength": 1000 } } }, "risks": { "type": "array", "items": { "type": "string", "maxLength": 1000 } }, "handoff": { "type": "object", "additionalProperties": false, "required": ["required", "to", "reference"], "properties": { "required": { "type": "boolean" }, "to": { "type": "string" }, "reference": { "type": "string" } } }
+  }
+}

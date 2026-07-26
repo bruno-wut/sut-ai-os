@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/verification-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "taskId", "status", "reviewer", "reviewedAt", "checks", "tests", "acceptanceCriteria", "forbiddenPathsUntouched", "evidenceReferences", "risks", "recommendation", "productionEligible"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" }, "taskId": { "type": "string" }, "status": { "enum": ["pass", "fail", "blocked", "revision_required"] }, "reviewer": { "type": "string" }, "verifierModel": { "type": "string" }, "implementerAgent": { "type": "string" }, "reviewedAt": { "type": "string", "format": "date-time" }, "checks": { "type": "array", "items": { "type": "string" } }, "tests": { "type": "array", "items": { "type": "string" } }, "acceptanceCriteria": { "type": "array", "items": { "type": "string" } }, "changedPaths": { "type": "array", "items": { "type": "string" } }, "forbiddenPathsUntouched": { "type": "boolean" }, "productionEligible": { "type": "boolean" }, "evidenceReferences": { "type": "array", "items": { "type": "string" } }, "risks": { "type": "array", "items": { "type": "string" } }, "recommendation": { "enum": ["verified", "revision_required", "blocked"] }
+  }
+}

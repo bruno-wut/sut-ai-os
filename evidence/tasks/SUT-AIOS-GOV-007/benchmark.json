@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordedAt": "2026-07-26T12:12:33.011Z",
+  "promptVersion": "local-qwen-preprocess-v1",
+  "fixtureSet": "not-run; runtime/model unavailable",
+  "records": [
+    { "model": "qwen-local", "status": "blocked", "reason": "No runtime/model identifier available.", "tasks": ["repository summarization", "log classification", "schema comparison", "diff summarization"], "correctness": "not_run", "durationMs": 0, "verificationSuccess": false },
+    { "model": "gpt-5.6-luna", "status": "blocked", "reason": "Hosted Codex benchmark unavailable from local sidecar.", "tasks": ["repository summarization", "log classification", "schema comparison", "diff summarization"], "correctness": "not_run", "durationMs": 0, "verificationSuccess": false },
+    { "model": "gpt-5.6-terra", "status": "blocked", "reason": "Hosted Codex benchmark unavailable from local sidecar.", "tasks": ["repository summarization", "log classification", "schema comparison", "diff summarization"], "correctness": "not_run", "durationMs": 0, "verificationSuccess": false }
+  ],
+  "verified": false,
+  "productionEligible": false
+}
