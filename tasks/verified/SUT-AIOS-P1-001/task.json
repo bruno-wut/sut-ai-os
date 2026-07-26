@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-001",
   "title": "Define normalized system event contract",
-  "status": "ready",
+  "status": "verified",
   "phase": "phase-1",
   "workstream": "event-contracts",
   "workflowId": "implementation-p1-001",
@@ -38,6 +38,7 @@
     "tests/event-contracts/**",
     "docs/event-contracts/**",
     "evidence/tasks/SUT-AIOS-P1-001/**",
+    "evidence/verification/SUT-AIOS-P1-001/**",
     "tasks/**/SUT-AIOS-P1-001/**"
   ],
   "forbiddenPaths": [
@@ -53,13 +54,15 @@
   "allowedCommands": [
     "node tests/event-contracts/validate-normalized-system-event-contract.mjs",
     "npm run verify:fast",
-    "git diff --check"
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P1-001 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
   ],
   "requiredChecks": [
     "event-contracts contract validation",
     "changed-path inspection",
     "secret scan",
-    "independent verification"
+    "independent verification",
+    "independent machine verification"
   ],
   "requiredTests": [
     "node tests/event-contracts/validate-normalized-system-event-contract.mjs",
@@ -88,7 +91,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P1-001/task.json",
+      "tasks/verified/SUT-AIOS-P1-001/task.json",
       "docs/event-contracts/NORMALIZED_SYSTEM_EVENT_CONTRACT.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
@@ -96,8 +99,17 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-27T00:20:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-26T17:56:45.609Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P1-001/verification-20260726175635987.json"
+  ],
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/Documents/SUT_AI_OS-worktrees/SUT-AIOS-GOV-012-worktrees/SUT-AIOS-P1-001",
+    "branch": "task/SUT-AIOS-P1-001-define-normalized-system-event-contract",
+    "primaryBranch": "origin/main",
+    "createdAt": "2026-07-27T00:25:00.000Z",
+    "createdBy": "codex-engineering-executor"
+  },
   "stateTransitions": [
     {
       "from": null,
@@ -112,6 +124,27 @@
       "at": "2026-07-27T00:20:00.000Z",
       "actor": "engineering-planner",
       "reason": "P0-003 is done and GOV-015 defined P1-001's exact deterministic validator command and bounded static contract scope."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-26T17:44:43.442Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-001 packet is canonical, validator admission GOV-016 is merged, and isolated worktree is registered against origin/main."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-26T17:56:45.567Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent QA and final machine verification passed; prepare verified delivery."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-26T17:56:45.609Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA and machine verification passed finite contract, boundary, and acceptance checks."
     }
   ]
 }
