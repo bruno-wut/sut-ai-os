@@ -148,3 +148,10 @@ The following separation changes were made:
 - Added schemas, cross-platform model-run commands, aggregate reporting, and advisory-only routing recommendations.
 - Added privacy boundaries that prohibit prompts, model output, credentials, guest data, and raw logs from durable telemetry records.
 - Added a representative routing evaluation suite. No automatic policy, task-packet, or agent-routing change is enabled.
+
+## Phased implementation backlog
+
+- Added 33 canonical product-planning packets across Phases 0–8, each with explicit dependencies, paths, checks, tests, risk/autonomy, agent/model routing, Sol escalation, rollback, and production writes disabled.
+- Added implementation backlog, dependency graph, milestone, and first vertical-slice documents.
+- Moved only `SUT-AIOS-P0-001` to `ready`; all dependent product tasks remain in backlog.
+- No application code, production service, database, deployment, policy, or canonical architecture source was changed.

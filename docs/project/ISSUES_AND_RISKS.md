@@ -205,3 +205,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Task-packet required-test compatibility with the independent verifier
 - **Evidence:** `verification-20260726124741943.json` recorded a blocked result because `verify:task` deliberately permits only safe direct script commands and the packet used an npm indirection for task validation.
 - **Next action / owner:** Packet now uses `node scripts/task/validate --all`; QA must rerun independent verification before task completion.
+
+### 2026-07-26 — Future subsystem test commands require refinement at task start
+
+- **Task ID:** `SUT-AIOS-GOV-010`
+- **Status:** Monitoring
+- **Severity:** Low
+- **Affected scope:** Phase 1–8 backlog packets
+- **Evidence:** Packets name intended subsystem tests such as `test:event-contracts` and `test:workflow`; those package commands do not exist until their subsystem scaffold is approved and created.
+- **Next action / owner:** Engineering Planner must confirm each command against the real package manifest before moving that packet to `ready`; unavailable or invented commands block execution.

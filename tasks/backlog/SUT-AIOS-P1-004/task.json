@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-004",
+  "title": "Define deterministic authorization policies",
+  "status": "backlog",
+  "phase": "phase-1",
+  "workstream": "policy-definitions",
+  "workflowId": "implementation-p1-004",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded policy-definitions outcome.",
+  "technicalObjective": "Define deterministic authorization policies",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-001",
+    "SUT-AIOS-P1-003"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P1-004/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Interfaces with the finalized platform use approved compatibility contracts only."
+  ],
+  "acceptanceCriteria": [
+    "Define deterministic authorization policies is implemented only within the declared subsystem.",
+    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "policies/**",
+    "tests/policy-definitions/**",
+    "docs/policy-definitions/**",
+    "evidence/tasks/SUT-AIOS-P1-004/**",
+    "tasks/**/SUT-AIOS-P1-004/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "npm run policy:validate",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "policy-definitions contract validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run policy:validate",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any required change crosses declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+  ],
+  "rollbackExpectations": "Revert the policy-definitions branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P1-004/task.json",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T13:10:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:10:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Generated from canonical phased implementation backlog."
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P8-002",
+  "title": "Implement evidence-based autonomy promotion gate",
+  "status": "backlog",
+  "phase": "phase-8",
+  "workstream": "autonomy-governance",
+  "workflowId": "implementation-p8-002",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Advance Phase 8 — Proven autonomous operations through one bounded autonomy-governance outcome.",
+  "technicalObjective": "Implement evidence-based autonomy promotion gate",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P8-001",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P5-003"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P8-002/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Interfaces with the finalized platform use approved compatibility contracts only."
+  ],
+  "acceptanceCriteria": [
+    "Implement evidence-based autonomy promotion gate is implemented only within the declared subsystem.",
+    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/src/autonomy/**",
+    "tests/autonomy-governance/**",
+    "docs/autonomy-governance/**",
+    "evidence/tasks/SUT-AIOS-P8-002/**",
+    "tasks/**/SUT-AIOS-P8-002/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "npm run test:autonomy-gate",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "autonomy-governance contract validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:autonomy-gate",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "qa-verification",
+  "allowedAgents": [
+    "qa-verification",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any required change crosses declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+  ],
+  "rollbackExpectations": "Revert the autonomy-governance branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P8-002/task.json",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "qa-verification",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T13:10:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:10:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Generated from canonical phased implementation backlog."
+    }
+  ]
+}

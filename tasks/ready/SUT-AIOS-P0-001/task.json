@@ -1,0 +1,112 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P0-001",
+  "title": "Establish clean technical baseline gate",
+  "status": "ready",
+  "phase": "phase-0",
+  "workstream": "verification",
+  "workflowId": "implementation-p0-001",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Advance Phase 0 — Existing platform stabilization through one bounded verification outcome.",
+  "technicalObjective": "Establish clean technical baseline gate",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P0-001/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Interfaces with the finalized platform use approved compatibility contracts only."
+  ],
+  "acceptanceCriteria": [
+    "Establish clean technical baseline gate is implemented only within the declared subsystem.",
+    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "docs/verification/**",
+    "tests/verification/**",
+    "docs/verification/**",
+    "evidence/tasks/SUT-AIOS-P0-001/**",
+    "tasks/**/SUT-AIOS-P0-001/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run verify:full",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "verification contract validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run verify:full",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "qa-verification",
+  "allowedAgents": [
+    "qa-verification",
+    "qa-verification"
+  ],
+  "modelRoute": "terra",
+  "defaultModel": "gpt-5.6-terra",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any required change crosses declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+  ],
+  "rollbackExpectations": "Revert the verification branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P0-001/task.json",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "qa-verification",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-07-26T12:56:26.424Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:10:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-26T12:56:26.424Z",
+      "actor": "engineering-planner",
+      "reason": "No packet dependencies; technical baseline gate is the only genuinely unblocked product task."
+    }
+  ]
+}
