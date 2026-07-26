@@ -86,3 +86,11 @@ The following separation changes were made:
 - Marked the recommended first operating team active at the logical registry level, Content and Brand plus Release and Deployment staged, and all optional agents inactive.
 - Added task packet `SUT-AIOS-GOV-001`; no runtime, credential, external connector, autonomous process, deployment, or production permission was created.
 - Updated permanent memory and recorded the missing machine-readable schemas and independent-review requirement in the live risk register.
+
+## Safe Codex model routing
+
+- Backed up the existing user Codex configuration byte-for-byte outside the repository and left the original unchanged; no configuration values or secrets were copied into Git.
+- Added Sol, Terra, Luna, automatic agent, and Qwen-local launch routes using documented Codex CLI flags rather than unvalidated global profile files.
+- Added task/agent allowlisting, active-status enforcement, downgrade rejection, minimum context assembly, secret-pattern preflight, read-only default, explicit workspace-write gate, sanitized timestamps/model traces, and Qwen environment isolation.
+- Added model-routing, escalation, capability, and local-model policy documents plus npm commands and a dependency-free npm lockfile.
+- Recorded the inaccessible installed Codex executable alias, absent local provider, and pending independent wrapper review as pre-activation blockers.

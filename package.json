@@ -1,0 +1,15 @@
+{
+  "name": "sut-ai-os",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.13.0",
+  "scripts": {
+    "codex:agent": "node scripts/codex/launch.mjs --route auto",
+    "codex:sol": "node scripts/codex/launch.mjs --route sol",
+    "codex:terra": "node scripts/codex/launch.mjs --route terra",
+    "codex:luna": "node scripts/codex/launch.mjs --route luna",
+    "codex:qwen-local": "node scripts/codex/launch.mjs --route qwen-local",
+    "codex:validate": "node scripts/codex/validate-routing.mjs"
+  }
+}

@@ -79,3 +79,30 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Agent registry production readiness and any future runtime activation
 - **Evidence:** Deterministic structural and permission-boundary checks can be completed locally, but no separate reviewer has yet approved the definitions, routing, handoffs, or permission matrix.
 - **Next action / owner:** Assign an independent assurance/security reviewer; record the review in `evidence/tasks/SUT-AIOS-GOV-001/verification.md` before treating the registry as verified or provisioning tools/credentials.
+
+### 2026-07-26 — Installed Codex CLI alias is not shell-executable
+
+- **Task ID:** `SUT-AIOS-GOV-002`
+- **Status:** Blocked
+- **Severity:** High
+- **Affected scope:** Live Sol/Terra/Luna wrapper execution and installed CLI/catalog validation
+- **Evidence:** `Get-Command codex` resolves the installed Windows app alias, but `codex --version` and `codex --help` both fail before output with `Access is denied`. See `evidence/tasks/SUT-AIOS-GOV-002/verification.md`.
+- **Next action / owner:** Workspace owner should repair/install an accessible Codex CLI or app execution alias, then run the documented live validation sequence before enabling wrappers beyond dry-run.
+
+### 2026-07-26 — Local Qwen runtime is unavailable
+
+- **Task ID:** `SUT-AIOS-GOV-002`
+- **Status:** Blocked
+- **Severity:** Medium
+- **Affected scope:** `qwen-local` offline preprocessing route
+- **Evidence:** Neither Ollama nor the LM Studio CLI is installed/detected. The wrapper and isolation policy are structurally validated only.
+- **Next action / owner:** Select an approved local provider and Qwen model, verify local-only/no-egress operation, then add a Qwen-specific task packet and independent privacy/security test.
+
+### 2026-07-26 — Model-routing wrappers await independent review
+
+- **Task ID:** `SUT-AIOS-GOV-002`
+- **Status:** Blocked
+- **Severity:** Medium
+- **Affected scope:** Unattended Codex workspace-write execution
+- **Evidence:** Deterministic syntax, dry-run, route, rejection, context, trace, and secret-pattern tests pass, but no separate reviewer has approved the subprocess, environment, permission, and context-boundary design.
+- **Next action / owner:** Assign independent assurance/security review and record it in `evidence/tasks/SUT-AIOS-GOV-002/verification.md` before unattended workspace-write use.
