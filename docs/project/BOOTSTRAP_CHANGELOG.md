@@ -61,3 +61,12 @@ The following separation changes were made:
 - Returned the finalized platform workspace to `main`; its pre-existing untracked `SUT Logo.png` remains untouched.
 - Did not configure or push a remote for the AI OS repository.
 - Reused the finalized repository's existing `Developer <dev@sriuthonghotels.com>` identity as repository-local Git author configuration; no global Git configuration was changed.
+
+## Codex operating workflow support structure
+
+- Created and switched to `chore/codex-workspace-bootstrap` in the independent AI OS repository.
+- Added the tracked support taxonomy for agent definitions, prompts, task states, durable evidence, report artifacts, decisions, handoffs, verification, runbooks, agent and model-routing documentation, task/worktree/verification scripts, schemas, policies, and playbooks.
+- Added `docs/project/REPOSITORY_STRUCTURE.md` to define directory purpose, source-of-truth boundaries, tracked versus generated content, and Codex write restrictions.
+- Strengthened `AGENTS.md` with task-packet and governance-surface rules.
+- Updated `.gitignore` to exclude local worktrees, Codex transient state, local-model output, logs, raw or temporary evidence, and disposable test artifacts while retaining durable packets, policies, schemas, audit records, reports, and verification summaries.
+- Validated the copied Next.js and Astro applications in a disposable copy outside the immutable baseline. Both `npm ci` and build commands passed; warnings and dependency-audit findings are recorded in `docs/verification/COMPATIBILITY_BASELINE_BUILD_2026-07-26.md`.

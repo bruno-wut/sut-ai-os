@@ -20,10 +20,34 @@
 **/playwright-report/
 **/test-results/
 **/blob-report/
-**/artifacts/
+
+# Codex local execution state and disposable worktrees
+/.codex/
+/.codex-cache/
+/.codex-tmp/
+/.worktrees/
+/.codex-worktrees/
+
+# Generated evidence and local-model output. Durable task packets, policies,
+# schemas, audit records, and final verification reports remain tracked.
+/artifacts/test-results/**
+!/artifacts/test-results/
+!/artifacts/test-results/.gitkeep
+/artifacts/screenshots/**
+!/artifacts/screenshots/.gitkeep
+/artifacts/traces/**
+!/artifacts/traces/.gitkeep
+/artifacts/local-model-output/**
+/evidence/**/tmp/
+/evidence/**/raw/
+/evidence/**/.cache/
+*.local-model.json
+*.local-model.ndjson
 
 # Logs, caches, and local tooling
 **/*.log
+/.logs/
+**/logs/
 **/*.tsbuildinfo
 **/next-env.d.ts
 .pnpm-store/

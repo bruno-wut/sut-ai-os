@@ -25,3 +25,12 @@ Files under `docs/architecture/source/**` are canonical source documents and mus
 ## Development placement
 
 New AI OS implementation belongs outside `reference/`, following the canonical architecture. Do not reorganize or duplicate the finalized application into active development paths without an approved architecture decision.
+
+## Codex operating workflow
+
+The repository workflow is documented in `docs/project/REPOSITORY_STRUCTURE.md`.
+
+- A Codex execution must have an approved task packet that names its task ID, objective, allowed paths, forbidden paths, allowed commands, required verification, risk tier, and evidence destination.
+- Codex may write only to the task-scoped locations named by that packet, plus the corresponding task, evidence, handoff, and final report records.
+- `agents/`, `prompts/`, `schemas/`, `policies/`, `playbooks/`, shared `scripts/`, and completed/archive task records are governance surfaces. Modify them only through an explicitly approved governance task packet.
+- Never use a task packet to bypass the immutable baseline, canonical architecture sources, production safeguards, or human approval requirements.
