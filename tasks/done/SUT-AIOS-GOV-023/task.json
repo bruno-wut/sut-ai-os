@@ -1,0 +1,151 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-023",
+  "title": "Remediate P1-004 policy verification trust chain and schema",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-004-remediation-governance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Fully restore assurance integrity and semantic clarity for P1-004 deterministic authorization policy verification.",
+  "technicalObjective": "Provide independent JSON schema authority, clarify taxonomy and semantic boundaries for platform_read_only, add exhaustive mutation testing, and re-verify trust chain with passing CI.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-023/verification.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-004 policy definitions remain static repository artifacts."
+  ],
+  "acceptanceCriteria": [
+    "schemas/authorization-policy-contract.schema.json provides formal JSON schema validation for authorization policy contracts.",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md explicitly clarifies static taxonomy title and non-discretionary safety boundaries for platform_read_only.",
+    "tests/policy-definitions/validate-authorization-policies.mjs executes 108+ exhaustive negative/mutation tests.",
+    "Task validation, fast governance verification, changed-path inspection, secret scan, and independent machine verification pass with green CI."
+  ],
+  "allowedPaths": [
+    "schemas/authorization-policy-contract.schema.json",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "policies/deterministic-authorization-policies-v1.json",
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-023/**",
+    "evidence/verification/SUT-AIOS-GOV-023/**",
+    "tasks/**/SUT-AIOS-GOV-023/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-023",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exhaustive policy contract validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema, policy doc, validator, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-023/task.json",
+      "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T22:58:00.000Z",
+  "updatedDate": "2026-07-27T15:59:07.657Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-023/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T22:58:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T15:58:45.458Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004 remediation scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T15:58:50.790Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting P1-004 remediation implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T15:59:00.879Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-023 remediation implementation submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T15:59:03.887Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T15:59:07.657Z",
+      "actor": "qa-verification",
+      "reason": "Completed P1-004 remediation implementation"
+    }
+  ]
+}

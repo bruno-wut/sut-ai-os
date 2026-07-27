@@ -17,6 +17,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-27 — P1-004 policy verification trust chain and contract schema remediation
+
+- **Task ID:** `SUT-AIOS-P1-004`, `SUT-AIOS-GOV-022`
+- **Status:** Open (Revision required)
+- **Severity:** High — Governance, assurance integrity, and semantic clarity
+- **Affected scope:** `policies/deterministic-authorization-policies-v1.json`, `tests/policy-definitions/validate-authorization-policies.mjs`, `schemas/authorization-policy-contract.schema.json`, `docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md`, and verifier trust chain.
+- **Evidence:** Quality & security review finding REVISION_REQUIRED for P1-004:
+  1. Verifier admission PR #34 (GOV-022) trust chain requires clean CI verification.
+  2. Taxonomy clarification: contract represents static policy taxonomy & defaults, not an operational runtime evaluator.
+  3. Semantic safety boundary: `platform_read_only` requires explicit data classification, principal/resource class, and tenant scope constraints.
+  4. Validator requires independent JSON schema binding (`schemas/authorization-policy-contract.schema.json`).
+  5. Negative test suite requires exhaustive mutation and type testing across all fields.
+- **Next action / owner:** Engineering Planner & Codex Engineering Executor must deliver GOV-023 (schema and doc remediation) and P1-004-R1 (exhaustive validator and schema verification), re-verify cleanly, and obtain clean CI pass before completion.
+
+
 ### 2026-07-27 - P1-002 machine-verifier command admission is resolved
 
 - **Task ID:** `SUT-AIOS-GOV-018`

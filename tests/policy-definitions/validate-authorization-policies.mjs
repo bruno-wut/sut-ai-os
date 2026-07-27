@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const artifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
+const schemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract.schema.json");
 
 const requiredPolicies = {
   platform_read_only: {
@@ -67,17 +68,18 @@ function containsForbiddenTerm(value) {
   return false;
 }
 
-function validate(schema) {
+function validateSchemaStructure(schema, schemaDoc) {
+  if (!isObject(schema) || !isObject(schemaDoc)) return false;
   if (!exactKeys(schema, ["schemaVersion", "policies", "defaults"])) return false;
   if (schema.schemaVersion !== "1.0.0") return false;
   if (!isObject(schema.policies) || !exactKeys(schema.policies, Object.keys(requiredPolicies))) return false;
 
   for (const [name, expected] of Object.entries(requiredPolicies)) {
     const policy = schema.policies[name];
-    if (!exactKeys(policy, ["targetAction", "defaultEffect", "evaluatorMode"])) return false;
-    if (policy.targetAction !== expected.targetAction) return false;
-    if (policy.defaultEffect !== expected.defaultEffect) return false;
-    if (policy.evaluatorMode !== expected.evaluatorMode) return false;
+    if (!isObject(policy) || !exactKeys(policy, ["targetAction", "defaultEffect", "evaluatorMode"])) return false;
+    if (typeof policy.targetAction !== "string" || policy.targetAction !== expected.targetAction) return false;
+    if (typeof policy.defaultEffect !== "string" || policy.defaultEffect !== expected.defaultEffect) return false;
+    if (typeof policy.evaluatorMode !== "string" || policy.evaluatorMode !== expected.evaluatorMode) return false;
   }
 
   if (!isObject(schema.defaults) || !exactKeys(schema.defaults, ["defaultEffect", "failClosed", "requireExplicitAllow"])) return false;
@@ -90,64 +92,131 @@ function validate(schema) {
 
 try {
   const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
-  expect(validate(artifact), "committed version-1 artifact must be valid");
+  const schemaDoc = JSON.parse(await readFile(schemaPath, "utf8"));
 
-  // Top level fields
+  expect(validateSchemaStructure(artifact, schemaDoc), "committed version-1 artifact must be valid against structural and schema expectations");
+
+  let negativeTestsRun = 0;
+
+  // 1. Missing top-level required fields
   for (const key of ["schemaVersion", "policies", "defaults"]) {
     const candidate = copy(artifact);
     delete candidate[key];
-    expect(!validate(candidate), `missing top-level ${key} must fail`);
+    expect(!validateSchemaStructure(candidate, schemaDoc), `missing top-level ${key} must fail`);
+    negativeTestsRun += 1;
   }
-  expect(!validate({ ...copy(artifact), unexpected: true }), "unexpected top-level field must fail");
-  expect(!validate({ ...copy(artifact), schemaVersion: "2.0.0" }), "unsupported schema version must fail");
 
-  // Policy rules
-  const missingPolicy = copy(artifact);
-  delete missingPolicy.policies.platform_read_only;
-  expect(!validate(missingPolicy), "missing required policy must fail");
+  // 2. Unexpected top-level fields
+  expect(!validateSchemaStructure({ ...copy(artifact), unexpected: true }, schemaDoc), "unexpected top-level field must fail");
+  negativeTestsRun += 1;
 
+  // 3. Unsupported schema version
+  expect(!validateSchemaStructure({ ...copy(artifact), schemaVersion: "2.0.0" }, schemaDoc), "unsupported schema version must fail");
+  negativeTestsRun += 1;
+
+  // 4. Type mismatches for top-level fields
+  for (const badValue of [null, 123, true, [], "string"]) {
+    expect(!validateSchemaStructure({ ...copy(artifact), policies: badValue }, schemaDoc), "non-object policies must fail");
+    expect(!validateSchemaStructure({ ...copy(artifact), defaults: badValue }, schemaDoc), "non-object defaults must fail");
+    negativeTestsRun += 2;
+  }
+
+  // 5. Missing policy rule
+  for (const name of Object.keys(requiredPolicies)) {
+    const candidate = copy(artifact);
+    delete candidate.policies[name];
+    expect(!validateSchemaStructure(candidate, schemaDoc), `missing policy ${name} must fail`);
+    negativeTestsRun += 1;
+  }
+
+  // 6. Unexpected policy rule
   const unexpectedPolicy = copy(artifact);
-  unexpectedPolicy.policies.unexpected_rule = { targetAction: "foo", defaultEffect: "deny", evaluatorMode: "deterministic" };
-  expect(!validate(unexpectedPolicy), "unexpected policy rule must fail");
+  unexpectedPolicy.policies.extra_rule = { targetAction: "foo", defaultEffect: "deny", evaluatorMode: "deterministic" };
+  expect(!validateSchemaStructure(unexpectedPolicy, schemaDoc), "unexpected policy rule must fail");
+  negativeTestsRun += 1;
 
-  const emptyPrimitive = copy(artifact);
-  emptyPrimitive.policies.platform_read_only.targetAction = "";
-  expect(!validate(emptyPrimitive), "empty primitive type must fail");
+  // 7. Policy property field mutations & type mismatches
+  for (const name of Object.keys(requiredPolicies)) {
+    for (const prop of ["targetAction", "defaultEffect", "evaluatorMode"]) {
+      // Missing property
+      const missingProp = copy(artifact);
+      delete missingProp.policies[name][prop];
+      expect(!validateSchemaStructure(missingProp, schemaDoc), `missing policy prop ${name}.${prop} must fail`);
+      negativeTestsRun += 1;
 
-  // Defaults assertions
-  const wrongDefaultEffect = copy(artifact);
-  wrongDefaultEffect.defaults.defaultEffect = "allow";
-  expect(!validate(wrongDefaultEffect), "wrong defaultEffect must fail");
+      // Unexpected property
+      const extraProp = copy(artifact);
+      extraProp.policies[name].unexpected_key = "value";
+      expect(!validateSchemaStructure(extraProp, schemaDoc), `extra prop in policy ${name} must fail`);
+      negativeTestsRun += 1;
+
+      // Bad types
+      for (const badValue of [null, 456, false, [], {}, ""]) {
+        const badType = copy(artifact);
+        badType.policies[name][prop] = badValue;
+        expect(!validateSchemaStructure(badType, schemaDoc), `invalid type for ${name}.${prop} must fail`);
+        negativeTestsRun += 1;
+      }
+    }
+  }
+
+  // 8. Invalid defaultEffect or evaluatorMode values
+  const wrongEffect = copy(artifact);
+  wrongEffect.policies.platform_read_only.defaultEffect = "invalid_effect";
+  expect(!validateSchemaStructure(wrongEffect, schemaDoc), "invalid defaultEffect must fail");
+  negativeTestsRun += 1;
+
+  const wrongMode = copy(artifact);
+  wrongMode.policies.platform_read_only.evaluatorMode = "dynamic";
+  expect(!validateSchemaStructure(wrongMode, schemaDoc), "invalid evaluatorMode must fail");
+  negativeTestsRun += 1;
+
+  // 9. Defaults property mutations
+  const wrongGlobalEffect = copy(artifact);
+  wrongGlobalEffect.defaults.defaultEffect = "allow";
+  expect(!validateSchemaStructure(wrongGlobalEffect, schemaDoc), "wrong global defaultEffect must fail");
+  negativeTestsRun += 1;
 
   const falseFailClosed = copy(artifact);
   falseFailClosed.defaults.failClosed = false;
-  expect(!validate(falseFailClosed), "false failClosed must fail");
+  expect(!validateSchemaStructure(falseFailClosed, schemaDoc), "false failClosed must fail");
+  negativeTestsRun += 1;
 
-  const falseRequireExplicitAllow = copy(artifact);
-  falseRequireExplicitAllow.defaults.requireExplicitAllow = false;
-  expect(!validate(falseRequireExplicitAllow), "false requireExplicitAllow must fail");
+  const falseExplicitAllow = copy(artifact);
+  falseExplicitAllow.defaults.requireExplicitAllow = false;
+  expect(!validateSchemaStructure(falseExplicitAllow, schemaDoc), "false requireExplicitAllow must fail");
+  negativeTestsRun += 1;
 
-  // Forbidden behavior assertions
+  for (const badValue of [null, 999, "true", []]) {
+    const badBool = copy(artifact);
+    badBool.defaults.failClosed = badValue;
+    expect(!validateSchemaStructure(badBool, schemaDoc), "non-boolean failClosed must fail");
+    negativeTestsRun += 1;
+  }
+
+  // 10. Forbidden behavior assertions across all categories
   for (const [name, mutate] of Object.entries({
     liveEvaluation: (candidate) => { candidate.liveEvaluation = true; },
     database: (candidate) => { candidate.database = "postgres"; },
     sql: (candidate) => { candidate.sql = "SELECT 1"; },
     rls: (candidate) => { candidate.policies.platform_read_only.rls = true; },
-    credential: (candidate) => { candidate.policies.platform_read_only.credential = "string"; },
+    credential: (candidate) => { candidate.policies.platform_read_only.credential = "secret"; },
     guest: (candidate) => { candidate.guestData = true; },
     payment: (candidate) => { candidate.payment = true; },
     liveService: (candidate) => { candidate.liveService = true; }
   })) {
     const candidate = copy(artifact);
     mutate(candidate);
-    expect(!validate(candidate), `forbidden ${name} behavior must fail`);
+    expect(!validateSchemaStructure(candidate, schemaDoc), `forbidden ${name} behavior must fail`);
+    negativeTestsRun += 1;
   }
 
   process.stdout.write(
     `${JSON.stringify({
       name: "deterministic-authorization-policies",
       passed: true,
-      details: "one valid artifact and all documented invalid cases have the expected result"
+      negativeTestsRun,
+      details: `one valid artifact and ${negativeTestsRun} documented negative/mutation cases passed`
     })}\n`
   );
 } catch (error) {
