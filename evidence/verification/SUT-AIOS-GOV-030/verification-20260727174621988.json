@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-030",
+  "status": "blocked",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-27T17:46:21.988Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs: fail",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: schemas/authorization-policy-contract-v1.schema.json exists as an immutable dedicated V1 schema (schemaVersion 1.0.0).",
+    "confirmed: tests/policy-definitions/validate-authorization-policies-v1.mjs validates ONLY V1 artifact and schema with exhaustive V1 mutation coverage.",
+    "confirmed: tests/policy-definitions/validate-authorization-policies-v2.mjs validates ONLY V2 artifact and schema.",
+    "confirmed: .github/workflows/validate-governance.yml runs V1 policy contract validator, V2 policy contract validator, and policy evaluator validator in separate explicit steps.",
+    "confirmed: evidence/tasks/SUT-AIOS-P1-004/reconciliation.md is created as a superseding record binding exact commit SHAs and documenting GOV-023 timezone correction."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md",
+    "schemas/authorization-policy-contract-v1.schema.json",
+    "tasks/active/SUT-AIOS-GOV-030/task.json",
+    "tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "tests/policy-definitions/validate-authorization-policies-v2.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-030/verification-20260727174621988.json"
+  ],
+  "risks": [],
+  "recommendation": "blocked"
+}

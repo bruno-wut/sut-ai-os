@@ -1,0 +1,172 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-030",
+  "title": "Isolate and finalize P1-004 V1 policy contract assurance",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-004-v1-isolation-assurance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Isolate P1-004 V1 authorization policy contract schema and validator completely from P1-005, restoring exhaustive V1 mutation coverage, explicit CI step, and superseding reconciliation evidence.",
+  "technicalObjective": "Create schemas/authorization-policy-contract-v1.schema.json, split policy validators into validate-authorization-policies-v1.mjs and validate-authorization-policies-v2.mjs, close weakened V1 schema bypass, run exhaustive V1 mutation suite, separate CI workflow steps, update risk register, and bind reconciliation evidence.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-024",
+    "SUT-AIOS-P1-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-030/verification.md",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-004 policy contract validator tests strictly against V1 policy contract artifacts."
+  ],
+  "acceptanceCriteria": [
+    "schemas/authorization-policy-contract-v1.schema.json exists as an immutable dedicated V1 schema (schemaVersion 1.0.0).",
+    "tests/policy-definitions/validate-authorization-policies-v1.mjs validates ONLY V1 artifact and schema with exhaustive V1 mutation coverage.",
+    "tests/policy-definitions/validate-authorization-policies-v2.mjs validates ONLY V2 artifact and schema.",
+    ".github/workflows/validate-governance.yml runs V1 policy contract validator, V2 policy contract validator, and policy evaluator validator in separate explicit steps.",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md is created as a superseding record binding exact commit SHAs and documenting GOV-023 timezone correction."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/**",
+    "tests/policy-engine/**",
+    "tests/policy-definitions/**",
+    "schemas/authorization-policy-contract.schema.json",
+    "schemas/authorization-policy-contract-v1.schema.json",
+    "schemas/authorization-policy-contract-v2.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json",
+    "policies/deterministic-authorization-policies-v1.json",
+    "policies/deterministic-authorization-policies-v2.json",
+    ".github/workflows/validate-governance.yml",
+    "scripts/github/validate-governance.mjs",
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-engine/**",
+    "docs/policy-definitions/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-030/**",
+    "evidence/verification/SUT-AIOS-GOV-030/**",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "tasks/**/SUT-AIOS-GOV-030/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "node tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-030",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "V1 dedicated schema isolation",
+    "exhaustive V1 mutation testing",
+    "explicit CI step separation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema, evaluator, CI workflow, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-030/task.json",
+      "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T17:45:00.000Z",
+  "updatedDate": "2026-07-27T17:46:59.203Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-030/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T17:45:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T17:45:47.946Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004 V1 isolation assurance scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T17:45:52.740Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting GOV-030 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T17:46:53.779Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-030 V1 contract isolation and assurance implementation submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T17:46:56.732Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T17:46:59.203Z",
+      "actor": "qa-verification",
+      "reason": "Completed GOV-030 V1 contract isolation and assurance implementation"
+    }
+  ]
+}
