@@ -1,0 +1,169 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-028",
+  "title": "Finalize P1-005 V2 runtime contract and evidence integrity",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-005-v2-assurance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Fully finalize V2 runtime policy contract evaluation, schema validation integrity, anti-exploit defenses, and superseding evidence for P1-005.",
+  "technicalObjective": "Require V2 contract for runtime decisions, mandate all V2 contextual policy fields in schema, enforce strict schema loading/keyword validation, compare context directly against V2 policy authority fields, expand negative test suite to 60+ cases, and bind reconciliation evidence to exact commit SHAs.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-027",
+    "SUT-AIOS-P1-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-028/verification.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-005 runtime evaluator evaluates strictly against V2 policy contract artifacts."
+  ],
+  "acceptanceCriteria": [
+    "packages/policy-engine/src/evaluator.mjs accepts ONLY V2 policy contract (schemaVersion 2.0.0) for runtime evaluation.",
+    "schemas/authorization-policy-contract.schema.json requires targetAction, principalClass, resourceClass, dataClassification, tenantScopeRequired, approvalRequired, defaultEffect, and evaluatorMode on every V2 policy object.",
+    "evaluatePolicy fails closed with SCHEMA_VALIDATION_FAILED if policy, context, or decision schemas are missing, invalid, or contain unsupported keywords.",
+    "packages/policy-engine/src/json-schema-evaluator.mjs enforces a closed supported-keyword subset ($schema, $id, title, type, const, enum, required, properties, additionalProperties, minLength) and rejects unsupported schema keywords.",
+    "packages/policy-engine/src/evaluator.mjs compares requestContext fields directly against the matched V2 policy object fields as the actual decision authority.",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs includes explicit tests for schema omission/corruption, unsupported keywords, V2 field omissions, V1 runtime rejection, request mutations, and decision schema malformations.",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md is updated with repository-relative links and exact commit SHAs."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/**",
+    "tests/policy-engine/**",
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "schemas/authorization-policy-contract.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json",
+    "policies/deterministic-authorization-policies-v1.json",
+    "policies/deterministic-authorization-policies-v2.json",
+    ".github/workflows/validate-governance.yml",
+    "scripts/github/validate-governance.mjs",
+    "docs/policy-engine/**",
+    "docs/policy-definitions/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-028/**",
+    "evidence/verification/SUT-AIOS-GOV-028/**",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "tasks/**/SUT-AIOS-GOV-028/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-028",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "V2 schema enforcement",
+    "closed keyword set validation",
+    "V2 artifact policy authority evaluation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema, evaluator, CI workflow, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-028/task.json",
+      "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T17:31:00.000Z",
+  "updatedDate": "2026-07-27T17:32:55.283Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-028/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T17:31:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T17:31:57.337Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-005 V2 runtime contract assurance scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T17:32:03.497Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting GOV-028 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T17:32:49.899Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-028 V2 runtime contract finalization submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T17:32:52.145Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T17:32:55.283Z",
+      "actor": "qa-verification",
+      "reason": "Completed GOV-028 V2 runtime contract finalization"
+    }
+  ]
+}

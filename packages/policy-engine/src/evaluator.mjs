@@ -1,5 +1,5 @@
 /**
- * Phase 1 Deterministic Policy Evaluator Engine
+ * Phase 1 Deterministic Policy Evaluator Engine (V2 Runtime Authority)
  * Classification: Runtime Capability Evaluation Engine (Pure offline JS evaluation module)
  * Authoritative Sources of Truth:
  *   - schemas/authorization-policy-contract.schema.json
@@ -8,7 +8,7 @@
  *   - policies/deterministic-authorization-policies-v2.json
  */
 
-import { validateJsonSchema } from "./json-schema-evaluator.mjs";
+import { validateJsonSchema, validateSchemaKeywords } from "./json-schema-evaluator.mjs";
 
 const forbiddenTerms = new Set([
   "database",
@@ -47,21 +47,53 @@ function containsForbiddenTerm(value) {
 }
 
 /**
- * Validates policy contract artifact against authoritative schema.
+ * Validates a schema document node for required identity and keyword constraints.
  */
-function validateContract(contract, schemaDoc) {
-  if (!isObject(contract) || !isObject(schemaDoc)) return false;
-  if (!validateJsonSchema(contract, schemaDoc)) return false;
+function validateSchemaDoc(schemaDoc, expectedIdPattern) {
+  if (!isObject(schemaDoc)) return false;
+  if (schemaDoc.$schema !== "https://json-schema.org/draft/2020-12/schema") return false;
+  if (typeof schemaDoc.$id !== "string" || !schemaDoc.$id.includes(expectedIdPattern)) return false;
+  return validateSchemaKeywords(schemaDoc);
+}
+
+/**
+ * Validates V2 policy contract artifact against schema structure and required V2 contextual fields.
+ */
+function validateV2Contract(contract, policySchemaDoc) {
+  if (!isObject(contract) || !isObject(policySchemaDoc)) return false;
+  // Require V2 contract ONLY for P1-005 runtime evaluation
+  if (contract.schemaVersion !== "2.0.0") return false;
+  if (!validateJsonSchema(contract, policySchemaDoc)) return false;
+
+  const requiredV2PolicyFields = [
+    "targetAction",
+    "principalClass",
+    "resourceClass",
+    "dataClassification",
+    "tenantScopeRequired",
+    "approvalRequired",
+    "defaultEffect",
+    "evaluatorMode"
+  ];
+
+  if (!isObject(contract.policies)) return false;
+  for (const policyObj of Object.values(contract.policies)) {
+    if (!isObject(policyObj)) return false;
+    for (const field of requiredV2PolicyFields) {
+      if (!Object.hasOwn(policyObj, field)) return false;
+    }
+  }
+
   return !containsForbiddenTerm(contract);
 }
 
 /**
- * Evaluates an authorization request context deterministically against authoritative policy contract & schemas.
+ * Evaluates an authorization request context deterministically against authoritative V2 policy contract & mandatory schemas.
  * @param {object} requestContext - Prevalidated internal execution context object
- * @param {object} policyContractDoc - Loaded policies artifact object
- * @param {object} policySchemaDoc - Loaded schemas/authorization-policy-contract.schema.json object
- * @param {object} contextSchemaDoc - Loaded schemas/evaluation-context.schema.json object
- * @param {object} decisionSchemaDoc - Loaded schemas/evaluation-decision.schema.json object
+ * @param {object} policyContractDoc - Loaded V2 policies artifact object
+ * @param {object} policySchemaDoc - Mandatory schemas/authorization-policy-contract.schema.json object
+ * @param {object} contextSchemaDoc - Mandatory schemas/evaluation-context.schema.json object
+ * @param {object} decisionSchemaDoc - Mandatory schemas/evaluation-decision.schema.json object
  * @returns {object} Evaluation result object { decision, matchedPolicy, failClosed, reasonCode }
  */
 export function evaluatePolicy(requestContext, policyContractDoc, policySchemaDoc, contextSchemaDoc, decisionSchemaDoc) {
@@ -72,7 +104,7 @@ export function evaluatePolicy(requestContext, policyContractDoc, policySchemaDo
       failClosed: true,
       reasonCode
     };
-    if (decisionSchemaDoc && !validateJsonSchema(result, decisionSchemaDoc)) {
+    if (!decisionSchemaDoc || !validateJsonSchema(result, decisionSchemaDoc)) {
       return {
         decision: "deny",
         matchedPolicy: null,
@@ -83,94 +115,73 @@ export function evaluatePolicy(requestContext, policyContractDoc, policySchemaDo
     return result;
   };
 
-  // 1. Policy Contract & Schema Integrity Check
-  if (!validateContract(policyContractDoc, policySchemaDoc)) {
+  // 1. Mandatory Schemas Loading & Integrity Check (Fail closed if ANY schema is missing or untrusted)
+  if (
+    !validateSchemaDoc(policySchemaDoc, "authorization-policy-contract") ||
+    !validateSchemaDoc(contextSchemaDoc, "evaluation-context") ||
+    !validateSchemaDoc(decisionSchemaDoc, "evaluation-decision")
+  ) {
     return makeDecision("deny", null, "SCHEMA_VALIDATION_FAILED");
   }
 
-  // 2. Request Context Structure & Schema Validation (additionalProperties: false)
-  if (!isObject(requestContext)) {
+  // 2. Policy Contract V2 Requirement & Schema Validation
+  if (!validateV2Contract(policyContractDoc, policySchemaDoc)) {
+    return makeDecision("deny", null, "SCHEMA_VALIDATION_FAILED");
+  }
+
+  // 3. Request Context Schema Validation (additionalProperties: false)
+  if (!isObject(requestContext) || !validateJsonSchema(requestContext, contextSchemaDoc)) {
     return makeDecision("deny", null, "INVALID_REQUEST_CONTEXT");
-  }
-
-  if (contextSchemaDoc && !validateJsonSchema(requestContext, contextSchemaDoc)) {
-    return makeDecision("deny", null, "INVALID_REQUEST_CONTEXT");
-  }
-
-  // Basic property validation if schemaDoc not passed
-  const requiredContextKeys = [
-    "principalClass",
-    "resourceClass",
-    "targetAction",
-    "dataClassification",
-    "tenantScopeRequired"
-  ];
-
-  for (const key of requiredContextKeys) {
-    if (!Object.hasOwn(requestContext, key)) {
-      return makeDecision("deny", null, "INVALID_REQUEST_CONTEXT");
-    }
-  }
-
-  if (
-    typeof requestContext.principalClass !== "string" ||
-    typeof requestContext.resourceClass !== "string" ||
-    typeof requestContext.targetAction !== "string" ||
-    typeof requestContext.dataClassification !== "string" ||
-    typeof requestContext.tenantScopeRequired !== "boolean" ||
-    requestContext.principalClass.trim() === "" ||
-    requestContext.resourceClass.trim() === "" ||
-    requestContext.targetAction.trim() === ""
-  ) {
-    return makeDecision("deny", null, "INVALID_REQUEST_CONTEXT");
-  }
-
-  // 3. Principal and Resource Authorization Check
-  if (
-    requestContext.principalClass !== "bounded_agent_or_staff" ||
-    requestContext.resourceClass !== "repository_public_metadata"
-  ) {
-    return makeDecision("deny", null, "INVALID_PRINCIPAL_OR_RESOURCE");
   }
 
   // 4. Confidentiality & Non-Discretionary Security Boundary Check
   const classificationLower = requestContext.dataClassification.toLowerCase();
-  if (
-    classificationLower !== "public" ||
-    containsForbiddenTerm(requestContext)
-  ) {
+  if (classificationLower !== "public" || containsForbiddenTerm(requestContext)) {
     return makeDecision("deny", null, "CONFIDENTIAL_DATA_RESTRICTED");
   }
 
-  // 5. Policy Matching & Anti-Relabeling Exploit Defense
+  // 5. V2 Policy Artifact as Authoritative Decision Authority
   const policies = policyContractDoc.policies;
+  let matchedPolicyName = null;
+  let matchedPolicyRule = null;
 
-  // Exact rule match for platform_read_only
-  if (
-    requestContext.targetAction === "read_only_platform_inspection" &&
-    policies?.platform_read_only?.targetAction === "read_only_platform_inspection" &&
-    policies?.platform_read_only?.defaultEffect === "allow"
-  ) {
-    if (requestContext.dataClassification === "public" && requestContext.tenantScopeRequired === true) {
-      return makeDecision("allow", "platform_read_only", "EXPLICIT_ALLOW_MATCHED");
+  for (const [name, rule] of Object.entries(policies)) {
+    if (isObject(rule) && rule.targetAction === requestContext.targetAction) {
+      matchedPolicyName = name;
+      matchedPolicyRule = rule;
+      break;
     }
-    return makeDecision("deny", "platform_read_only", "READ_ONLY_SAFETY_BOUNDARY_VIOLATION");
   }
 
-  if (
-    requestContext.targetAction === "governed_configuration_change" ||
-    policies?.governance_gated_change?.targetAction === requestContext.targetAction
-  ) {
-    return makeDecision("deny", "governance_gated_change", "GOVERNANCE_GATED_DENIED");
+  if (!matchedPolicyName || !matchedPolicyRule) {
+    return makeDecision("deny", null, "DEFAULT_DENY_UNMATCHED");
   }
 
-  if (
-    requestContext.targetAction === "production_write_operation" ||
-    policies?.production_write_restricted?.targetAction === requestContext.targetAction
-  ) {
-    return makeDecision("deny", "production_write_restricted", "PRODUCTION_WRITE_RESTRICTED_DENIED");
+  // Compare request fields directly against the matched V2 policy rule fields as source of truth
+  const matchesV2Authority =
+    requestContext.principalClass === matchedPolicyRule.principalClass &&
+    requestContext.resourceClass === matchedPolicyRule.resourceClass &&
+    requestContext.dataClassification === matchedPolicyRule.dataClassification &&
+    requestContext.tenantScopeRequired === matchedPolicyRule.tenantScopeRequired;
+
+  if (!matchesV2Authority) {
+    if (matchedPolicyName === "platform_read_only") {
+      return makeDecision("deny", matchedPolicyName, "READ_ONLY_SAFETY_BOUNDARY_VIOLATION");
+    }
+    return makeDecision("deny", matchedPolicyName, "INVALID_PRINCIPAL_OR_RESOURCE");
   }
 
-  // 6. Default Deny Fallback
-  return makeDecision("deny", null, "DEFAULT_DENY_UNMATCHED");
+  if (matchedPolicyRule.defaultEffect === "allow") {
+    return makeDecision("allow", matchedPolicyName, "EXPLICIT_ALLOW_MATCHED");
+  }
+
+  if (matchedPolicyName === "governance_gated_change") {
+    return makeDecision("deny", matchedPolicyName, "GOVERNANCE_GATED_DENIED");
+  }
+
+  if (matchedPolicyName === "production_write_restricted") {
+    return makeDecision("deny", matchedPolicyName, "PRODUCTION_WRITE_RESTRICTED_DENIED");
+  }
+
+  return makeDecision("deny", matchedPolicyName, "DEFAULT_DENY_UNMATCHED");
 }
