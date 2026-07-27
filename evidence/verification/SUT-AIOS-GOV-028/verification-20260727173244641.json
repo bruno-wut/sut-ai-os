@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-028",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-27T17:32:44.641Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: packages/policy-engine/src/evaluator.mjs accepts ONLY V2 policy contract (schemaVersion 2.0.0) for runtime evaluation.",
+    "confirmed: schemas/authorization-policy-contract.schema.json requires targetAction, principalClass, resourceClass, dataClassification, tenantScopeRequired, approvalRequired, defaultEffect, and evaluatorMode on every V2 policy object.",
+    "confirmed: evaluatePolicy fails closed with SCHEMA_VALIDATION_FAILED if policy, context, or decision schemas are missing, invalid, or contain unsupported keywords.",
+    "confirmed: packages/policy-engine/src/json-schema-evaluator.mjs enforces a closed supported-keyword subset ($schema, $id, title, type, const, enum, required, properties, additionalProperties, minLength) and rejects unsupported schema keywords.",
+    "confirmed: packages/policy-engine/src/evaluator.mjs compares requestContext fields directly against the matched V2 policy object fields as the actual decision authority.",
+    "confirmed: tests/policy-engine/validate-deterministic-policy-evaluator.mjs includes explicit tests for schema omission/corruption, unsupported keywords, V2 field omissions, V1 runtime rejection, request mutations, and decision schema malformations.",
+    "confirmed: evidence/tasks/SUT-AIOS-P1-005/reconciliation.md is updated with repository-relative links and exact commit SHAs."
+  ],
+  "changedPaths": [
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "packages/policy-engine/src/evaluator.mjs",
+    "packages/policy-engine/src/json-schema-evaluator.mjs",
+    "tasks/active/SUT-AIOS-GOV-028/task.json",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-028/verification-20260727173244641.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

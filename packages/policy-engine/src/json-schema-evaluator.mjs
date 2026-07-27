@@ -1,19 +1,53 @@
 /**
- * Pure, deterministic JSON Schema Draft 2020-12 evaluator module.
- * Shared across policy contract validators and policy engine evaluators.
+ * Pure, deterministic JSON Schema evaluator module.
+ * Explicitly enforces a closed supported-keyword subset:
+ *   $schema, $id, title, type, const, enum, required, properties, additionalProperties, minLength.
+ * Rejects unknown or unsupported schema keywords to ensure fail-closed execution.
  */
+
+const supportedKeywords = new Set([
+  "$schema",
+  "$id",
+  "title",
+  "type",
+  "const",
+  "enum",
+  "required",
+  "properties",
+  "additionalProperties",
+  "minLength"
+]);
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
 /**
- * Validates an arbitrary data instance against a Draft 2020-12 JSON Schema node.
+ * Validates a schema document node for unsupported keywords.
+ * @param {object} schemaNode - Schema object to inspect
+ * @returns {boolean} true if schema node contains only supported keywords
+ */
+export function validateSchemaKeywords(schemaNode) {
+  if (!isObject(schemaNode)) return false;
+  for (const key of Object.keys(schemaNode)) {
+    if (!supportedKeywords.has(key)) return false;
+  }
+  if (isObject(schemaNode.properties)) {
+    for (const propSchema of Object.values(schemaNode.properties)) {
+      if (!validateSchemaKeywords(propSchema)) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Validates an arbitrary data instance against a closed-keyword JSON Schema node.
  * Evaluates type, const, enum, required, properties, additionalProperties, minLength.
  * @param {any} instance - Data payload to validate
- * @param {object} schemaNode - Draft 2020-12 JSON Schema object
+ * @param {object} schemaNode - Closed-keyword JSON Schema object
  * @returns {boolean} true if instance satisfies schemaNode, false otherwise
  */
 export function validateJsonSchema(instance, schemaNode) {
   if (!isObject(schemaNode)) return false;
+  if (!validateSchemaKeywords(schemaNode)) return false;
 
   // 1. type evaluation
   if (schemaNode.type) {
