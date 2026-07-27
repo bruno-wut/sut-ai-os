@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-025",
+  "status": "fail",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-27T16:25:31.097Z",
+  "checks": [
+    "changed-path-inspection: fail",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md classifies P1-005 as a runtime capability evaluation engine, defines precise scope, non-goals, security semantics, and authoritative schema source of truth.",
+    "confirmed: P1-005 task packet is updated in tasks/ready/ with exact required test command node tests/policy-engine/validate-deterministic-policy-evaluator.mjs.",
+    "confirmed: Fast governance and task packet validation pass."
+  ],
+  "changedPaths": [
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "tasks/active/SUT-AIOS-GOV-025/task.json",
+    "tasks/backlog/SUT-AIOS-P1-005/task.json",
+    "tasks/ready/SUT-AIOS-P1-005/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-025/verification-20260727162531097.json"
+  ],
+  "risks": [],
+  "recommendation": "revision_required"
+}

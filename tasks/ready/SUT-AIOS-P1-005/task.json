@@ -3,21 +3,26 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-005",
   "title": "Implement deterministic policy evaluator",
-  "status": "backlog",
+  "status": "ready",
   "phase": "phase-1",
   "workstream": "policy-engine",
   "workflowId": "implementation-p1-005",
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded policy-engine outcome.",
-  "technicalObjective": "Implement deterministic policy evaluator",
+  "technicalObjective": "Implement deterministic policy evaluator engine in packages/policy-engine/ evaluated against schemas/authorization-policy-contract.schema.json and policies/deterministic-authorization-policies-v1.json.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
-    "docs/project/IMPLEMENTATION_BACKLOG.md"
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "schemas/authorization-policy-contract.schema.json"
   ],
   "dependencies": [
-    "SUT-AIOS-P1-004"
+    "SUT-AIOS-P1-004",
+    "SUT-AIOS-GOV-024",
+    "SUT-AIOS-GOV-025"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P1-005/verification.md"
@@ -27,26 +32,33 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement deterministic policy evaluator is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "packages/policy-engine/src/evaluator.mjs evaluates request contexts against schemas/authorization-policy-contract.schema.json and policies/deterministic-authorization-policies-v1.json.",
+    "Fail-closed evaluation posture returns explicit deny for missing fields, bad types, unapproved actions, or confidential data classifications.",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs systematically tests valid and negative evaluation context cases.",
+    "npm run verify:fast passes and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
     "packages/policy-engine/**",
     "tests/policy-engine/**",
     "docs/policy-engine/**",
     "evidence/tasks/SUT-AIOS-P1-005/**",
+    "evidence/verification/SUT-AIOS-P1-005/**",
     "tasks/**/SUT-AIOS-P1-005/**"
   ],
   "forbiddenPaths": [
     "reference/finalized-platform/**",
     "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
     ".env*",
     "**/*secret*",
     "**/*credential*"
   ],
   "allowedCommands": [
-    "npm run test:policy-engine",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
     "npm run verify:fast",
     "git diff --check"
   ],
@@ -57,7 +69,7 @@
     "independent verification"
   ],
   "requiredTests": [
-    "npm run test:policy-engine",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -83,14 +95,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P1-005/task.json",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
+      "tasks/ready/SUT-AIOS-P1-005/task.json",
+      "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-27T16:25:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -99,6 +111,13 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T16:25:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "GOV-025 completed design spec and exact validator command specification."
     }
   ]
 }
