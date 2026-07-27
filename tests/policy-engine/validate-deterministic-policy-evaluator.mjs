@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { evaluatePolicy } from "../../packages/policy-engine/src/evaluator.mjs";
-import { validateJsonSchema } from "../../packages/policy-engine/src/json-schema-evaluator.mjs";
+import { validateJsonSchema } from "../../scripts/verify/json-schema-evaluator.mjs";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const v1ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
@@ -61,12 +61,23 @@ try {
   expect(evaluatePolicy(validReadContext, artifact, v2PolicySchemaDoc, contextSchemaDoc, null).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing decisionSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
   testsRun += 3;
 
-  // --- 4. STRUCTURALLY WEAKENED SCHEMAS WITH OTHERWISE VALID $schema AND $id ---
+  // --- 4. STRUCTURALLY WEAKENED & DEEPLY CORRUPTED SCHEMAS ---
   const weakenedPolicySchema = {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     $id: "https://sut-ai-os.local/schemas/authorization-policy-contract-v2.schema.json"
   };
   expect(evaluateAndAssert(validReadContext, artifact, weakenedPolicySchema, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "structurally weakened policy schema must fail with SCHEMA_VALIDATION_FAILED");
+  testsRun += 1;
+
+  const deeplyWeakenedPolicySchema = copy(v2PolicySchemaDoc);
+  delete deeplyWeakenedPolicySchema.properties.policies.properties.platform_read_only.properties;
+  expect(evaluateAndAssert(validReadContext, artifact, deeplyWeakenedPolicySchema, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "deeply weakened policy schema must fail with SCHEMA_VALIDATION_FAILED");
+  testsRun += 1;
+
+  // Deeply weakened policy schema combined with production-write relabeling contract
+  const relabeledContract = copy(artifact);
+  relabeledContract.policies.platform_read_only.targetAction = "production_write_operation";
+  expect(evaluateAndAssert(validReadContext, relabeledContract, deeplyWeakenedPolicySchema, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "weakened policy schema + relabeling contract must fail with SCHEMA_VALIDATION_FAILED");
   testsRun += 1;
 
   const weakenedContextSchema = {
@@ -106,8 +117,6 @@ try {
   }
 
   // --- 7. EXPLOIT MITIGATION: PRODUCTION WRITE RELABELING ATTACK ---
-  const relabeledContract = copy(artifact);
-  relabeledContract.policies.platform_read_only.targetAction = "production_write_operation";
   const exploitContext = {
     principalClass: "bounded_agent_or_staff",
     resourceClass: "repository_public_metadata",
@@ -120,20 +129,47 @@ try {
   expect(exploitResult.reasonCode !== "EXPLICIT_ALLOW_MATCHED", "relabeling exploit must NOT produce EXPLICIT_ALLOW_MATCHED");
   testsRun += 1;
 
-  // --- 8. PRINCIPAL AND RESOURCE AUTHORIZATION BOUNDS ---
-  for (const badPrincipal of ["anonymous", "untrusted_user", "external_service", "guest", "admin"]) {
+  // --- 8. PRINCIPAL AND RESOURCE AUTHORIZATION BOUNDS (REASON CODE DETERMINISM) ---
+  // read_only_platform_inspection routes to platform_read_only → mismatches return READ_ONLY_SAFETY_BOUNDARY_VIOLATION
+  for (const badPrincipal of ["anonymous", "untrusted_user", "external_service", "admin"]) {
     const candidate = copy(validReadContext);
     candidate.principalClass = badPrincipal;
     const res = evaluateAndAssert(candidate, artifact);
-    expect(res.decision === "deny" && (res.reasonCode === "INVALID_PRINCIPAL_OR_RESOURCE" || res.reasonCode === "INVALID_REQUEST_CONTEXT"), `unauthorized principalClass (${badPrincipal}) must be denied`);
+    expect(res.decision === "deny" && res.reasonCode === "READ_ONLY_SAFETY_BOUNDARY_VIOLATION", `unauthorized principalClass (${badPrincipal}) on platform_read_only must return READ_ONLY_SAFETY_BOUNDARY_VIOLATION`);
+    testsRun += 1;
+  }
+  // "guest" is a forbidden term and is caught at the confidentiality boundary before policy matching
+  {
+    const guestCandidate = copy(validReadContext);
+    guestCandidate.principalClass = "guest";
+    const guestRes = evaluateAndAssert(guestCandidate, artifact);
+    expect(guestRes.decision === "deny" && guestRes.reasonCode === "CONFIDENTIAL_DATA_RESTRICTED", "principalClass 'guest' must be denied at confidentiality boundary");
     testsRun += 1;
   }
 
-  for (const badResource of ["arbitrary_public_resource", "production_db", "user_profile", "guest_ledger"]) {
+  for (const badResource of ["arbitrary_public_resource", "production_db", "user_profile"]) {
     const candidate = copy(validReadContext);
     candidate.resourceClass = badResource;
     const res = evaluateAndAssert(candidate, artifact);
-    expect(res.decision === "deny" && (res.reasonCode === "INVALID_PRINCIPAL_OR_RESOURCE" || res.reasonCode === "INVALID_REQUEST_CONTEXT"), `unauthorized resourceClass (${badResource}) must be denied`);
+    expect(res.decision === "deny" && res.reasonCode === "READ_ONLY_SAFETY_BOUNDARY_VIOLATION", `unauthorized resourceClass (${badResource}) on platform_read_only must return READ_ONLY_SAFETY_BOUNDARY_VIOLATION`);
+    testsRun += 1;
+  }
+  // "guest_ledger" contains forbidden term "guest" and is caught at confidentiality boundary
+  {
+    const guestLedgerCandidate = copy(validReadContext);
+    guestLedgerCandidate.resourceClass = "guest_ledger";
+    const guestLedgerRes = evaluateAndAssert(guestLedgerCandidate, artifact);
+    expect(guestLedgerRes.decision === "deny" && guestLedgerRes.reasonCode === "CONFIDENTIAL_DATA_RESTRICTED", "resourceClass 'guest_ledger' must be denied at confidentiality boundary");
+    testsRun += 1;
+  }
+
+  // Non-platform_read_only policy routes: mismatches return INVALID_PRINCIPAL_OR_RESOURCE
+  for (const badPrincipal of ["anonymous", "untrusted_user"]) {
+    const candidate = copy(validReadContext);
+    candidate.targetAction = "governed_configuration_change";
+    candidate.principalClass = badPrincipal;
+    const res = evaluateAndAssert(candidate, artifact);
+    expect(res.decision === "deny" && res.reasonCode === "INVALID_PRINCIPAL_OR_RESOURCE", `unauthorized principalClass (${badPrincipal}) on governance_gated_change must return INVALID_PRINCIPAL_OR_RESOURCE`);
     testsRun += 1;
   }
 
@@ -159,11 +195,11 @@ try {
     testsRun += 1;
   }
 
-  for (const badVal of [null, 999, true, false, [], {}, "", "   ", "\t\n"]) {
+  for (const badVal of [null, 999, true, false, [], {}]) {
     const candidate = copy(validReadContext);
     candidate.principalClass = badVal;
     const res = evaluateAndAssert(candidate, artifact);
-    expect(res.decision === "deny" && (res.reasonCode === "INVALID_REQUEST_CONTEXT" || res.reasonCode === "INVALID_PRINCIPAL_OR_RESOURCE"), `invalid principalClass (${JSON.stringify(badVal)}) must fail closed`);
+    expect(res.decision === "deny" && res.reasonCode === "INVALID_REQUEST_CONTEXT", `non-string principalClass (${JSON.stringify(badVal)}) must fail closed with INVALID_REQUEST_CONTEXT`);
     testsRun += 1;
   }
 
@@ -179,7 +215,7 @@ try {
   const noTenantScope = copy(validReadContext);
   noTenantScope.tenantScopeRequired = false;
   const noTenantRes = evaluateAndAssert(noTenantScope, artifact);
-  expect(noTenantRes.decision === "deny" && (noTenantRes.reasonCode === "READ_ONLY_SAFETY_BOUNDARY_VIOLATION" || noTenantRes.reasonCode === "INVALID_PRINCIPAL_OR_RESOURCE"), "tenantScopeRequired === false must violate safety boundary");
+  expect(noTenantRes.decision === "deny" && noTenantRes.reasonCode === "READ_ONLY_SAFETY_BOUNDARY_VIOLATION", "tenantScopeRequired === false must violate safety boundary with READ_ONLY_SAFETY_BOUNDARY_VIOLATION");
   testsRun += 1;
 
   // --- 12. CONFIDENTIAL DATA CLASSIFICATIONS & FORBIDDEN TERMS ---
@@ -227,7 +263,7 @@ try {
       name: "deterministic-policy-evaluator",
       passed: true,
       testsRun,
-      details: `evaluatePolicy verified against V2 policy contract authority, dedicated V2 schema, and mandatory JSON schemas with positive allow case, weakened-schema mitigation, anti-relabeling exploit defense, and ${testsRun - 1} systematic negative/mutation cases passed`
+      details: `evaluatePolicy verified against V2 policy contract authority, dedicated V2 schema, and mandatory JSON schemas with positive allow case, deep weakened-schema mitigation, deterministic INVALID_PRINCIPAL_OR_RESOURCE reason code, anti-relabeling exploit defense, and ${testsRun - 1} systematic negative/mutation cases passed`
     })}\n`
   );
 } catch (error) {

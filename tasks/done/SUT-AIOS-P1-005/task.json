@@ -10,14 +10,14 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded policy-engine outcome.",
-  "technicalObjective": "Implement deterministic policy evaluator engine in packages/policy-engine/ evaluated against schemas/authorization-policy-contract.schema.json and policies/deterministic-authorization-policies-v1.json.",
+  "technicalObjective": "Implement deterministic policy evaluator engine in packages/policy-engine/ evaluated against schemas/authorization-policy-contract-v2.schema.json and policies/deterministic-authorization-policies-v2.json. [Superseded by GOV-031: evaluator now uses V2-only policy contract authority, dedicated V2 schema, neutral shared scripts/verify/json-schema-evaluator.mjs, and type-only context schema for deterministic INVALID_PRINCIPAL_OR_RESOURCE reason codes.]",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md",
     "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
     "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
-    "schemas/authorization-policy-contract.schema.json"
+    "schemas/authorization-policy-contract-v2.schema.json"
   ],
   "dependencies": [
     "SUT-AIOS-P1-004",
@@ -149,5 +149,7 @@
       "actor": "qa-verification",
       "reason": "Completed P1-005 deterministic policy evaluator implementation"
     }
-  ]
+  ],
+  "supersededBy": "SUT-AIOS-GOV-031",
+  "supersessionNote": "GOV-031 supersession: technicalObjective and architectureReferences updated to V2-only authority. V1 contract and old combined schema no longer referenced. Evaluator uses dedicated V2 schema, neutral shared json-schema-evaluator.mjs, and type-only context schema."
 }

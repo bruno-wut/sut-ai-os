@@ -1,5 +1,5 @@
 /**
- * Phase 1 Deterministic Policy Evaluator Engine (V2 Runtime Authority & Hardened Schema Trust)
+ * Phase 1 Deterministic Policy Evaluator Engine (V2 Runtime Authority & Hardened Deep Schema Trust)
  * Classification: Runtime Capability Evaluation Engine (Pure offline JS evaluation module)
  * Authoritative Sources of Truth:
  *   - schemas/authorization-policy-contract-v2.schema.json
@@ -8,7 +8,7 @@
  *   - policies/deterministic-authorization-policies-v2.json
  */
 
-import { validateJsonSchema, validateSchemaKeywords } from "./json-schema-evaluator.mjs";
+import { validateJsonSchema, validateSchemaKeywords } from "../../../scripts/verify/json-schema-evaluator.mjs";
 
 const forbiddenTerms = new Set([
   "database",
@@ -47,7 +47,7 @@ function containsForbiddenTerm(value) {
 }
 
 /**
- * Validates a schema document node for exact identity, mandatory structure, and keyword constraints.
+ * Validates a schema document node for exact identity, deep structural constraints, and keyword safety.
  */
 function validateSchemaDoc(schemaDoc, expectedExactId, mandatoryRequiredFields, checkAdditionalPropsFalse = false) {
   if (!isObject(schemaDoc)) return false;
@@ -60,9 +60,21 @@ function validateSchemaDoc(schemaDoc, expectedExactId, mandatoryRequiredFields, 
   for (const field of mandatoryRequiredFields) {
     if (!schemaDoc.required.includes(field)) return false;
     if (!Object.hasOwn(schemaDoc.properties, field)) return false;
+    if (!isObject(schemaDoc.properties[field])) return false;
   }
 
   if (checkAdditionalPropsFalse && schemaDoc.additionalProperties !== false) return false;
+
+  // Deep structural verification of nested property schemas
+  if (expectedExactId.includes("authorization-policy-contract-v2")) {
+    const policiesProp = schemaDoc.properties.policies;
+    if (!isObject(policiesProp.properties)) return false;
+    for (const policyName of ["platform_read_only", "governance_gated_change", "production_write_restricted"]) {
+      const pNode = policiesProp.properties[policyName];
+      if (!isObject(pNode) || !isObject(pNode.properties) || !Array.isArray(pNode.required)) return false;
+      if (!pNode.required.includes("targetAction") || !pNode.required.includes("defaultEffect")) return false;
+    }
+  }
 
   return validateSchemaKeywords(schemaDoc);
 }
@@ -74,6 +86,26 @@ function validateV2Contract(contract, policySchemaDoc) {
   if (!isObject(contract) || !isObject(policySchemaDoc)) return false;
   if (contract.schemaVersion !== "2.0.0") return false;
   if (!validateJsonSchema(contract, policySchemaDoc)) return false;
+
+  const requiredV2PolicyFields = [
+    "targetAction",
+    "principalClass",
+    "resourceClass",
+    "dataClassification",
+    "tenantScopeRequired",
+    "approvalRequired",
+    "defaultEffect",
+    "evaluatorMode"
+  ];
+
+  if (!isObject(contract.policies)) return false;
+  for (const policyObj of Object.values(contract.policies)) {
+    if (!isObject(policyObj)) return false;
+    for (const field of requiredV2PolicyFields) {
+      if (!Object.hasOwn(policyObj, field)) return false;
+    }
+  }
+
   return !containsForbiddenTerm(contract);
 }
 
@@ -113,7 +145,7 @@ export function evaluatePolicy(requestContext, policyContractDoc, policySchemaDo
     return result;
   };
 
-  // 1. Mandatory Schemas Identity & Structural Integrity Check (Fail closed if ANY schema is missing, weakened, or untrusted)
+  // 1. Mandatory Schemas Identity & Deep Structural Integrity Check (Fail closed if ANY schema is missing, weakened, or untrusted)
   const isPolicySchemaTrusted = validateSchemaDoc(
     policySchemaDoc,
     "https://sut-ai-os.local/schemas/authorization-policy-contract-v2.schema.json",

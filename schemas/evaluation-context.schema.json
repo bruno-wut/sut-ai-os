@@ -14,15 +14,11 @@
   "properties": {
     "principalClass": {
       "type": "string",
-      "enum": [
-        "bounded_agent_or_staff"
-      ]
+      "minLength": 1
     },
     "resourceClass": {
       "type": "string",
-      "enum": [
-        "repository_public_metadata"
-      ]
+      "minLength": 1
     },
     "targetAction": {
       "type": "string",

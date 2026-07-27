@@ -1,45 +1,55 @@
-# P1-005 Final Assurance Reconciliation & Superseding Record (Hardened Schema Trust)
+# P1-005 Final V2 Runtime Evaluator Reconciliation & Superseding Record
 
 ## Task & Workflow Lineage
 
 - **Primary Task ID**: `SUT-AIOS-P1-005` (*"Implement deterministic policy evaluator"*)
-- **Governance Planning Task 1**: `SUT-AIOS-GOV-025` (*"Plan executable P1-005 policy-engine verification"*)
-- **Verifier Admission Task**: `SUT-AIOS-GOV-026` (*"Admit exact P1-005 policy-engine validator safely"*)
-- **Remediation & Assurance Task 1**: `SUT-AIOS-GOV-027` (*"Harden and reconcile P1-005 policy evaluator assurance"*)
-- **V2 Runtime Contract Finalization**: `SUT-AIOS-GOV-028` (*"Finalize P1-005 V2 runtime contract and evidence integrity"*)
-- **Schema Trust & Final Evidence Assurance**: `SUT-AIOS-GOV-029` (*"Close P1-005 schema trust and final evidence assurance"*)
+- **Governance Planning Tasks**: `SUT-AIOS-GOV-025`, `SUT-AIOS-GOV-026`, `SUT-AIOS-GOV-027`, `SUT-AIOS-GOV-028`, `SUT-AIOS-GOV-029`, `SUT-AIOS-GOV-031`
+- **Final Assurance Closure**: `SUT-AIOS-GOV-031` (*"Finalize P1-004/P1-005 schema trust, canonical contracts, and evidence closure"*)
+
+## Supersession Summary
+
+GOV-031 delivers the following corrections to P1-005's assurance chain:
+
+1. **V2-Only Runtime Authority**: The evaluator (`packages/policy-engine/src/evaluator.mjs`) strictly requires `schemaVersion: "2.0.0"` policy contracts. V1 contracts are rejected with `SCHEMA_VALIDATION_FAILED`.
+2. **Neutral Shared JSON Schema Evaluator**: The schema evaluation module has been moved from `packages/policy-engine/src/json-schema-evaluator.mjs` to `scripts/verify/json-schema-evaluator.mjs`. The policy-engine module re-exports from the neutral location. This ensures P1-004 and P1-005 validators share an identical schema evaluator without cross-task coupling.
+3. **Deep Structural Schema Validation**: `validateSchemaDoc()` now verifies exact `$id` identity, root type, mandatory required fields, `properties` object presence, AND nested policy property definitions (checking that each policy node contains `properties`, `required`, `targetAction`, and `defaultEffect`). A correctly named schema with empty nested definitions is now rejected.
+4. **Deterministic Reason-Code Semantics**: The context schema (`schemas/evaluation-context.schema.json`) uses `type: "string", minLength: 1` (type-only) for `principalClass` and `resourceClass` instead of `enum`. This makes `INVALID_PRINCIPAL_OR_RESOURCE` deterministically reachable: invalid non-string types fail at context validation with `INVALID_REQUEST_CONTEXT`, while valid strings that don't match the V2 policy rule return `READ_ONLY_SAFETY_BOUNDARY_VIOLATION` (for `platform_read_only`) or `INVALID_PRINCIPAL_OR_RESOURCE` (for other policies).
+5. **Canonical Task Packet Updated**: P1-005 `technicalObjective` and `architectureReferences` amended via formal `done → done` supersession record to reference `schemas/authorization-policy-contract-v2.schema.json` and V2-only authority.
+6. **Design Document Updated**: `docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md` updated to reference V2 schema, neutral shared evaluator, and deterministic reason-code semantics.
 
 ## Contract Lineage & Authoritative Artifacts
 
-1. **Shared Draft 2020-12 Schema Evaluator (Closed Keyword Set)**: [packages/policy-engine/src/json-schema-evaluator.mjs](../../packages/policy-engine/src/json-schema-evaluator.mjs)
-   - Evaluates closed keyword subset (`$schema`, `$id`, `title`, `type`, `const`, `enum`, `required`, `properties`, `additionalProperties`, `minLength`) and rejects unknown keywords.
-2. **Authoritative JSON Schemas**:
-   - V2 Policy Contract Schema: [schemas/authorization-policy-contract-v2.schema.json](../../schemas/authorization-policy-contract-v2.schema.json)
-   - V1 Policy Contract Schema: [schemas/authorization-policy-contract.schema.json](../../schemas/authorization-policy-contract.schema.json)
-   - Evaluation Context Schema (`additionalProperties: false`): [schemas/evaluation-context.schema.json](../../schemas/evaluation-context.schema.json)
-   - Evaluation Decision Schema: [schemas/evaluation-decision.schema.json](../../schemas/evaluation-decision.schema.json)
-3. **Policy Contract Artifacts**:
-   - Version 2 Contract (V2 Runtime Authority with all 8 contextual fields): [policies/deterministic-authorization-policies-v2.json](../../policies/deterministic-authorization-policies-v2.json)
-   - Version 1 Contract (Historical Compatibility Snapshot): [policies/deterministic-authorization-policies-v1.json](../../policies/deterministic-authorization-policies-v1.json)
-4. **Policy Evaluator Engine**: [packages/policy-engine/src/evaluator.mjs](../../packages/policy-engine/src/evaluator.mjs)
-   - Core function: `evaluatePolicy(requestContext, policyContractDoc, policySchemaDoc, contextSchemaDoc, decisionSchemaDoc)`.
-   - Requires dedicated V2 policy schema and V2 contract strictly for runtime decisions. Mandates exact `$id` identity and mandatory structural properties for all 3 schemas. Compares request fields directly against V2 policy authority fields.
-5. **Deterministic Test Validator**: [tests/policy-engine/validate-deterministic-policy-evaluator.mjs](../../tests/policy-engine/validate-deterministic-policy-evaluator.mjs)
-   - Runs 67 positive, negative, and systematic mutation cases including weakened-schema mitigations, unconditional decision assertions, anti-relabeling exploit defense, and schema keyword validation.
+1. **V2 Policy Contract Schema**: [schemas/authorization-policy-contract-v2.schema.json](../../schemas/authorization-policy-contract-v2.schema.json)
+2. **Evaluation Context Schema**: [schemas/evaluation-context.schema.json](../../schemas/evaluation-context.schema.json) (type-only `principalClass` and `resourceClass`)
+3. **Evaluation Decision Schema**: [schemas/evaluation-decision.schema.json](../../schemas/evaluation-decision.schema.json)
+4. **V2 Policy Contract Artifact**: [policies/deterministic-authorization-policies-v2.json](../../policies/deterministic-authorization-policies-v2.json)
+5. **Neutral Shared Schema Evaluator**: [scripts/verify/json-schema-evaluator.mjs](../../scripts/verify/json-schema-evaluator.mjs)
+6. **Runtime Evaluator**: [packages/policy-engine/src/evaluator.mjs](../../packages/policy-engine/src/evaluator.mjs)
 
-## Reproducible Machine Evidence & Commit Binding
+## Commit & CI Binding
 
-- **GOV-028 PR #44 Head Commit SHA**: `2c67bb3de4c523b8852ff3d587701417e903f6b0`
-- **GOV-028 PR #44 Merge Commit SHA**: `a8d8c9c6c08a1b37c168cbe4d663d0b8c540fabd`
-- **Workflow Run ID**: `30289748887`
-- **Job ID**: `90056330195`
-- **Exact Policy Evaluator Validator Output**:
-  ```json
-  {"name":"deterministic-policy-evaluator","passed":true,"testsRun":67,"details":"evaluatePolicy verified against V2 policy contract authority, dedicated V2 schema, and mandatory JSON schemas with positive allow case, weakened-schema mitigation, anti-relabeling exploit defense, and 66 systematic negative/mutation cases passed"}
+### GOV-029 (Schema Trust & Evidence Assurance)
+- **Head SHA**: `5c1b435ed6270ba15b5a6da3d4f68b31033e18fd`
+- **Merge SHA**: `b588b264ede58c3ab2e8f303e5dfcfe1cf3a61c7`
+- **Workflow Run**: `30290437960`
+- **Job**: `90058631804`
+- **Tests Passed**: 67 evaluator tests, 225 policy-definitions tests
+
+### GOV-030 (V1 Contract Isolation)
+- **Head SHA**: `29db415cc981832d5153b5f5915c69097d4c294f`
+- **Merge SHA**: `4f5cac983f803950955d0aa50910800be828f939`
+- **Workflow Run**: `30290810526`
+- **Job**: `90059845674`
+- **Regression**: All three final validators executed successfully (167 V1 tests, 207 V2 tests, 67 evaluator tests)
+
+## Reproducible Machine Evidence
+
+- **Policy Evaluator Validator Command**:
+  ```text
+  node tests/policy-engine/validate-deterministic-policy-evaluator.mjs
   ```
-- **Exact Policy Contract Validator Output**:
+- **Exact Evaluator Validator Output (GOV-031)**:
   ```json
-  {"name":"deterministic-authorization-policies","passed":true,"schemaAuthoritative":true,"negativeTestsRun":225,"details":"v1 and v2 artifacts verified against dedicated v1 and v2 Draft 2020-12 JSON Schema evaluators and 225 systematic schema/artifact mutation cases passed"}
+  {"name":"deterministic-policy-evaluator","passed":true,"testsRun":68,"details":"evaluatePolicy verified against V2 policy contract authority, dedicated V2 schema, and mandatory JSON schemas with positive allow case, deep weakened-schema mitigation, deterministic INVALID_PRINCIPAL_OR_RESOURCE reason code, anti-relabeling exploit defense, and 67 systematic negative/mutation cases passed"}
   ```
 - **GitHub Actions CI Workflow**: [.github/workflows/validate-governance.yml](../../.github/workflows/validate-governance.yml) (Explicit step: *Run P1-005 policy evaluator validator*)
-- **Final QA Decision**: **APPROVED & Verified Completion** (`status: pass`, `productionEligible: false`).

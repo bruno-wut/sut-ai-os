@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-031",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-27T18:05:59.876Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs: pass",
+    "node tests/policy-definitions/validate-authorization-policies-v2.mjs: pass",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: scripts/verify/json-schema-evaluator.mjs provides neutral shared Draft 2020-12 schema evaluation.",
+    "confirmed: tests/policy-definitions/validate-authorization-policies.mjs is a clean V1 compatibility wrapper delegating to validate-authorization-policies-v1.mjs.",
+    "confirmed: evaluator.mjs and V1/V2 validators enforce deep structural schema validation, rejecting deeply weakened schemas.",
+    "confirmed: schemas/evaluation-context.schema.json defines type-only string constraints for principalClass and resourceClass, making INVALID_PRINCIPAL_OR_RESOURCE deterministically reachable.",
+    "confirmed: tests/policy-engine/validate-deterministic-policy-evaluator.mjs includes nested schema corruption tests.",
+    "confirmed: evidence/tasks/SUT-AIOS-P1-004/reconciliation.md and evidence/tasks/SUT-AIOS-P1-005/reconciliation.md bind exact head, merge, workflow run, and job IDs."
+  ],
+  "changedPaths": [
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "packages/policy-engine/src/evaluator.mjs",
+    "packages/policy-engine/src/json-schema-evaluator.mjs",
+    "schemas/evaluation-context.schema.json",
+    "scripts/verify/json-schema-evaluator.mjs",
+    "tasks/active/SUT-AIOS-GOV-031/task.json",
+    "tasks/done/SUT-AIOS-P1-005/task.json",
+    "tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-031/verification-20260727180559876.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
