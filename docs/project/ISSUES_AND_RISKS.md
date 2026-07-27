@@ -39,9 +39,10 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 ### 2026-07-27 — P1-004 policy verification trust chain and contract schema remediation
 
 - **Task ID:** `SUT-AIOS-P1-004`, `SUT-AIOS-GOV-023`, `SUT-AIOS-GOV-030`
-- **Status:** In Remediation (SUT-AIOS-GOV-030)
+- **Status:** Resolved
 - **Severity:** High — Governance, assurance integrity, and contract isolation
 - **Affected scope:** `policies/deterministic-authorization-policies-v1.json`, `tests/policy-definitions/validate-authorization-policies-v1.mjs`, `schemas/authorization-policy-contract-v1.schema.json`, `docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md`.
+
 
 - **Evidence:** Remediation delivered via GOV-023 in PR #36 with 100% green GitHub Actions CI (`Governance / validate` pass):
   1. Formal JSON schema authority created at `schemas/authorization-policy-contract.schema.json`.
