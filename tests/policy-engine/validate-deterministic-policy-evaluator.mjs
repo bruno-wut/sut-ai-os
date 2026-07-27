@@ -7,7 +7,7 @@ import { validateJsonSchema } from "../../packages/policy-engine/src/json-schema
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const v1ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
 const v2ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v2.json");
-const policySchemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract.schema.json");
+const v2PolicySchemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract-v2.schema.json");
 const contextSchemaPath = path.join(repositoryRoot, "schemas/evaluation-context.schema.json");
 const decisionSchemaPath = path.join(repositoryRoot, "schemas/evaluation-decision.schema.json");
 
@@ -19,23 +19,22 @@ const expect = (condition, description) => {
 try {
   const v1Artifact = JSON.parse(await readFile(v1ArtifactPath, "utf8"));
   const v2Artifact = JSON.parse(await readFile(v2ArtifactPath, "utf8"));
-  const policySchemaDoc = JSON.parse(await readFile(policySchemaPath, "utf8"));
+  const v2PolicySchemaDoc = JSON.parse(await readFile(v2PolicySchemaPath, "utf8"));
   const contextSchemaDoc = JSON.parse(await readFile(contextSchemaPath, "utf8"));
   const decisionSchemaDoc = JSON.parse(await readFile(decisionSchemaPath, "utf8"));
 
   let testsRun = 0;
   const artifact = v2Artifact;
 
-  // Helper assertion wrapper verifying exact decision schema compliance
-  const evaluateAndAssert = (context, contractDoc, pSchemaDoc = policySchemaDoc, cSchemaDoc = contextSchemaDoc, dSchemaDoc = decisionSchemaDoc) => {
+  // Unconditional decision assertion test helper
+  const evaluateAndAssert = (context, contractDoc, pSchemaDoc = v2PolicySchemaDoc, cSchemaDoc = contextSchemaDoc, dSchemaDoc = decisionSchemaDoc) => {
     const res = evaluatePolicy(context, contractDoc, pSchemaDoc, cSchemaDoc, dSchemaDoc);
-    if (dSchemaDoc && validateJsonSchema(res, dSchemaDoc)) {
-      expect(validateJsonSchema(res, dSchemaDoc), `decision object ${JSON.stringify(res)} must strictly satisfy decisionSchemaDoc`);
-    }
+    // Unconditional assertion against trusted decisionSchemaDoc
+    expect(validateJsonSchema(res, decisionSchemaDoc), `decision object ${JSON.stringify(res)} must strictly satisfy decisionSchemaDoc`);
     return res;
   };
 
-  // --- 1. POSITIVE ALLOW TEST CASE (V2 CONTRACT AUTHORITY) ---
+  // --- 1. POSITIVE ALLOW TEST CASE (V2 CONTRACT AUTHORITY & DEDICATED V2 SCHEMA) ---
   const validReadContext = {
     principalClass: "bounded_agent_or_staff",
     resourceClass: "repository_public_metadata",
@@ -56,25 +55,47 @@ try {
   expect(v1Rejection.decision === "deny" && v1Rejection.reasonCode === "SCHEMA_VALIDATION_FAILED", "V1 policy contract must be rejected in P1-005 runtime evaluation with SCHEMA_VALIDATION_FAILED");
   testsRun += 1;
 
-  // --- 3. MISSING OR UNTRUSTED MANDATORY SCHEMAS ---
-  expect(evaluateAndAssert(validReadContext, artifact, null, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing policySchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
-  expect(evaluateAndAssert(validReadContext, artifact, policySchemaDoc, null, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing contextSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
-  expect(evaluateAndAssert(validReadContext, artifact, policySchemaDoc, contextSchemaDoc, null).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing decisionSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
+  // --- 3. MISSING MANDATORY SCHEMAS ---
+  expect(evaluateAndAssert(validReadContext, artifact, null, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing v2PolicySchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
+  expect(evaluateAndAssert(validReadContext, artifact, v2PolicySchemaDoc, null, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing contextSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
+  expect(evaluatePolicy(validReadContext, artifact, v2PolicySchemaDoc, contextSchemaDoc, null).reasonCode === "SCHEMA_VALIDATION_FAILED", "missing decisionSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
   testsRun += 3;
 
-  // Empty or structurally weakened schemas
-  expect(evaluateAndAssert(validReadContext, artifact, {}, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "empty policySchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
-  expect(evaluateAndAssert(validReadContext, artifact, policySchemaDoc, {}, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "empty contextSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
-  expect(evaluateAndAssert(validReadContext, artifact, policySchemaDoc, contextSchemaDoc, {}).reasonCode === "SCHEMA_VALIDATION_FAILED", "empty decisionSchemaDoc must fail with SCHEMA_VALIDATION_FAILED");
-  testsRun += 3;
+  // --- 4. STRUCTURALLY WEAKENED SCHEMAS WITH OTHERWISE VALID $schema AND $id ---
+  const weakenedPolicySchema = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://sut-ai-os.local/schemas/authorization-policy-contract-v2.schema.json"
+  };
+  expect(evaluateAndAssert(validReadContext, artifact, weakenedPolicySchema, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "structurally weakened policy schema must fail with SCHEMA_VALIDATION_FAILED");
+  testsRun += 1;
 
-  // --- 4. UNSUPPORTED SCHEMA KEYWORDS ---
-  const unsupportedKeywordSchema = copy(policySchemaDoc);
+  const weakenedContextSchema = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://sut-ai-os.local/schemas/evaluation-context.schema.json"
+  };
+  expect(evaluateAndAssert(validReadContext, artifact, v2PolicySchemaDoc, weakenedContextSchema, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "structurally weakened context schema must fail with SCHEMA_VALIDATION_FAILED");
+  testsRun += 1;
+
+  const weakenedDecisionSchema = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://sut-ai-os.local/schemas/evaluation-decision.schema.json"
+  };
+  expect(evaluatePolicy(validReadContext, artifact, v2PolicySchemaDoc, contextSchemaDoc, weakenedDecisionSchema).reasonCode === "SCHEMA_VALIDATION_FAILED", "structurally weakened decision schema must fail with SCHEMA_VALIDATION_FAILED");
+  testsRun += 1;
+
+  // Wrong $id schema identity test
+  const wrongIdPolicySchema = copy(v2PolicySchemaDoc);
+  wrongIdPolicySchema.$id = "https://sut-ai-os.local/schemas/wrong-policy-id.json";
+  expect(evaluateAndAssert(validReadContext, artifact, wrongIdPolicySchema, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "schema with wrong $id must fail with SCHEMA_VALIDATION_FAILED");
+  testsRun += 1;
+
+  // --- 5. UNSUPPORTED SCHEMA KEYWORDS ---
+  const unsupportedKeywordSchema = copy(v2PolicySchemaDoc);
   unsupportedKeywordSchema.unsupportedKeyword = true;
   expect(evaluateAndAssert(validReadContext, artifact, unsupportedKeywordSchema, contextSchemaDoc, decisionSchemaDoc).reasonCode === "SCHEMA_VALIDATION_FAILED", "schema with unsupported keyword must fail with SCHEMA_VALIDATION_FAILED");
   testsRun += 1;
 
-  // --- 5. V2 CONTRACTS MISSING CONTEXTUAL FIELDS ---
+  // --- 6. V2 CONTRACTS MISSING CONTEXTUAL FIELDS ---
   const v2ContextualFields = ["principalClass", "resourceClass", "dataClassification", "tenantScopeRequired", "approvalRequired"];
   for (const field of v2ContextualFields) {
     const candidate = copy(artifact);
@@ -84,7 +105,7 @@ try {
     testsRun += 1;
   }
 
-  // --- 6. EXPLOIT MITIGATION: PRODUCTION WRITE RELABELING ATTACK ---
+  // --- 7. EXPLOIT MITIGATION: PRODUCTION WRITE RELABELING ATTACK ---
   const relabeledContract = copy(artifact);
   relabeledContract.policies.platform_read_only.targetAction = "production_write_operation";
   const exploitContext = {
@@ -99,7 +120,7 @@ try {
   expect(exploitResult.reasonCode !== "EXPLICIT_ALLOW_MATCHED", "relabeling exploit must NOT produce EXPLICIT_ALLOW_MATCHED");
   testsRun += 1;
 
-  // --- 7. PRINCIPAL AND RESOURCE AUTHORIZATION BOUNDS ---
+  // --- 8. PRINCIPAL AND RESOURCE AUTHORIZATION BOUNDS ---
   for (const badPrincipal of ["anonymous", "untrusted_user", "external_service", "guest", "admin"]) {
     const candidate = copy(validReadContext);
     candidate.principalClass = badPrincipal;
@@ -116,14 +137,14 @@ try {
     testsRun += 1;
   }
 
-  // --- 8. UNEXPECTED REQUEST FIELDS (additionalProperties: false) ---
+  // --- 9. UNEXPECTED REQUEST FIELDS (additionalProperties: false) ---
   const extraFieldCandidate = copy(validReadContext);
   extraFieldCandidate.unexpectedProperty = "unauthorized_payload";
   const extraRes = evaluateAndAssert(extraFieldCandidate, artifact);
   expect(extraRes.decision === "deny" && extraRes.reasonCode === "INVALID_REQUEST_CONTEXT", "unexpected context properties must fail closed with INVALID_REQUEST_CONTEXT");
   testsRun += 1;
 
-  // --- 9. MUTATIONS OF EVERY REQUEST-CONTEXT FIELD & INVALID TYPES ---
+  // --- 10. MUTATIONS OF EVERY REQUEST-CONTEXT FIELD & INVALID TYPES ---
   for (const badContext of [null, undefined, 123, "context_string", true, false, []]) {
     const res = evaluateAndAssert(badContext, artifact);
     expect(res.decision === "deny" && res.reasonCode === "INVALID_REQUEST_CONTEXT", `non-object requestContext (${JSON.stringify(badContext)}) must fail closed`);
@@ -154,14 +175,14 @@ try {
     testsRun += 1;
   }
 
-  // --- 10. SAFETY BOUNDARY: tenantScopeRequired === false ---
+  // --- 11. SAFETY BOUNDARY: tenantScopeRequired === false ---
   const noTenantScope = copy(validReadContext);
   noTenantScope.tenantScopeRequired = false;
   const noTenantRes = evaluateAndAssert(noTenantScope, artifact);
   expect(noTenantRes.decision === "deny" && (noTenantRes.reasonCode === "READ_ONLY_SAFETY_BOUNDARY_VIOLATION" || noTenantRes.reasonCode === "INVALID_PRINCIPAL_OR_RESOURCE"), "tenantScopeRequired === false must violate safety boundary");
   testsRun += 1;
 
-  // --- 11. CONFIDENTIAL DATA CLASSIFICATIONS & FORBIDDEN TERMS ---
+  // --- 12. CONFIDENTIAL DATA CLASSIFICATIONS & FORBIDDEN TERMS ---
   for (const confidentialClass of ["confidential", "restricted", "guest_pii", "payment_metadata"]) {
     const candidate = copy(validReadContext);
     candidate.dataClassification = confidentialClass;
@@ -178,7 +199,7 @@ try {
     testsRun += 1;
   }
 
-  // --- 12. GOVERNED & PRODUCTION WRITE DENIALS ---
+  // --- 13. GOVERNED & PRODUCTION WRITE DENIALS ---
   const governedContext = {
     principalClass: "bounded_agent_or_staff",
     resourceClass: "repository_public_metadata",
@@ -206,7 +227,7 @@ try {
       name: "deterministic-policy-evaluator",
       passed: true,
       testsRun,
-      details: `evaluatePolicy verified against V2 policy contract authority and mandatory JSON schemas with positive allow case, anti-relabeling exploit defense, and ${testsRun - 1} systematic negative/mutation cases passed`
+      details: `evaluatePolicy verified against V2 policy contract authority, dedicated V2 schema, and mandatory JSON schemas with positive allow case, weakened-schema mitigation, anti-relabeling exploit defense, and ${testsRun - 1} systematic negative/mutation cases passed`
     })}\n`
   );
 } catch (error) {

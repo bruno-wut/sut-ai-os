@@ -1,8 +1,8 @@
 /**
- * Phase 1 Deterministic Policy Evaluator Engine (V2 Runtime Authority)
+ * Phase 1 Deterministic Policy Evaluator Engine (V2 Runtime Authority & Hardened Schema Trust)
  * Classification: Runtime Capability Evaluation Engine (Pure offline JS evaluation module)
  * Authoritative Sources of Truth:
- *   - schemas/authorization-policy-contract.schema.json
+ *   - schemas/authorization-policy-contract-v2.schema.json
  *   - schemas/evaluation-context.schema.json
  *   - schemas/evaluation-decision.schema.json
  *   - policies/deterministic-authorization-policies-v2.json
@@ -47,43 +47,33 @@ function containsForbiddenTerm(value) {
 }
 
 /**
- * Validates a schema document node for required identity and keyword constraints.
+ * Validates a schema document node for exact identity, mandatory structure, and keyword constraints.
  */
-function validateSchemaDoc(schemaDoc, expectedIdPattern) {
+function validateSchemaDoc(schemaDoc, expectedExactId, mandatoryRequiredFields, checkAdditionalPropsFalse = false) {
   if (!isObject(schemaDoc)) return false;
   if (schemaDoc.$schema !== "https://json-schema.org/draft/2020-12/schema") return false;
-  if (typeof schemaDoc.$id !== "string" || !schemaDoc.$id.includes(expectedIdPattern)) return false;
+  if (schemaDoc.$id !== expectedExactId) return false;
+  if (schemaDoc.type !== "object") return false;
+  if (!isObject(schemaDoc.properties)) return false;
+  if (!Array.isArray(schemaDoc.required)) return false;
+
+  for (const field of mandatoryRequiredFields) {
+    if (!schemaDoc.required.includes(field)) return false;
+    if (!Object.hasOwn(schemaDoc.properties, field)) return false;
+  }
+
+  if (checkAdditionalPropsFalse && schemaDoc.additionalProperties !== false) return false;
+
   return validateSchemaKeywords(schemaDoc);
 }
 
 /**
- * Validates V2 policy contract artifact against schema structure and required V2 contextual fields.
+ * Validates V2 policy contract artifact against V2 schema structure.
  */
 function validateV2Contract(contract, policySchemaDoc) {
   if (!isObject(contract) || !isObject(policySchemaDoc)) return false;
-  // Require V2 contract ONLY for P1-005 runtime evaluation
   if (contract.schemaVersion !== "2.0.0") return false;
   if (!validateJsonSchema(contract, policySchemaDoc)) return false;
-
-  const requiredV2PolicyFields = [
-    "targetAction",
-    "principalClass",
-    "resourceClass",
-    "dataClassification",
-    "tenantScopeRequired",
-    "approvalRequired",
-    "defaultEffect",
-    "evaluatorMode"
-  ];
-
-  if (!isObject(contract.policies)) return false;
-  for (const policyObj of Object.values(contract.policies)) {
-    if (!isObject(policyObj)) return false;
-    for (const field of requiredV2PolicyFields) {
-      if (!Object.hasOwn(policyObj, field)) return false;
-    }
-  }
-
   return !containsForbiddenTerm(contract);
 }
 
@@ -91,7 +81,7 @@ function validateV2Contract(contract, policySchemaDoc) {
  * Evaluates an authorization request context deterministically against authoritative V2 policy contract & mandatory schemas.
  * @param {object} requestContext - Prevalidated internal execution context object
  * @param {object} policyContractDoc - Loaded V2 policies artifact object
- * @param {object} policySchemaDoc - Mandatory schemas/authorization-policy-contract.schema.json object
+ * @param {object} policySchemaDoc - Mandatory schemas/authorization-policy-contract-v2.schema.json object
  * @param {object} contextSchemaDoc - Mandatory schemas/evaluation-context.schema.json object
  * @param {object} decisionSchemaDoc - Mandatory schemas/evaluation-decision.schema.json object
  * @returns {object} Evaluation result object { decision, matchedPolicy, failClosed, reasonCode }
@@ -104,7 +94,15 @@ export function evaluatePolicy(requestContext, policyContractDoc, policySchemaDo
       failClosed: true,
       reasonCode
     };
-    if (!decisionSchemaDoc || !validateJsonSchema(result, decisionSchemaDoc)) {
+    if (
+      !validateSchemaDoc(
+        decisionSchemaDoc,
+        "https://sut-ai-os.local/schemas/evaluation-decision.schema.json",
+        ["decision", "matchedPolicy", "failClosed", "reasonCode"],
+        true
+      ) ||
+      !validateJsonSchema(result, decisionSchemaDoc)
+    ) {
       return {
         decision: "deny",
         matchedPolicy: null,
@@ -115,13 +113,34 @@ export function evaluatePolicy(requestContext, policyContractDoc, policySchemaDo
     return result;
   };
 
-  // 1. Mandatory Schemas Loading & Integrity Check (Fail closed if ANY schema is missing or untrusted)
-  if (
-    !validateSchemaDoc(policySchemaDoc, "authorization-policy-contract") ||
-    !validateSchemaDoc(contextSchemaDoc, "evaluation-context") ||
-    !validateSchemaDoc(decisionSchemaDoc, "evaluation-decision")
-  ) {
-    return makeDecision("deny", null, "SCHEMA_VALIDATION_FAILED");
+  // 1. Mandatory Schemas Identity & Structural Integrity Check (Fail closed if ANY schema is missing, weakened, or untrusted)
+  const isPolicySchemaTrusted = validateSchemaDoc(
+    policySchemaDoc,
+    "https://sut-ai-os.local/schemas/authorization-policy-contract-v2.schema.json",
+    ["schemaVersion", "policies", "defaults"]
+  );
+
+  const isContextSchemaTrusted = validateSchemaDoc(
+    contextSchemaDoc,
+    "https://sut-ai-os.local/schemas/evaluation-context.schema.json",
+    ["principalClass", "resourceClass", "targetAction", "dataClassification", "tenantScopeRequired"],
+    true
+  );
+
+  const isDecisionSchemaTrusted = validateSchemaDoc(
+    decisionSchemaDoc,
+    "https://sut-ai-os.local/schemas/evaluation-decision.schema.json",
+    ["decision", "matchedPolicy", "failClosed", "reasonCode"],
+    true
+  );
+
+  if (!isPolicySchemaTrusted || !isContextSchemaTrusted || !isDecisionSchemaTrusted) {
+    return {
+      decision: "deny",
+      matchedPolicy: null,
+      failClosed: true,
+      reasonCode: "SCHEMA_VALIDATION_FAILED"
+    };
   }
 
   // 2. Policy Contract V2 Requirement & Schema Validation

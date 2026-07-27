@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/authorization-policy-contract-v2.schema.json",
+  "title": "Version 2 Static Authorization Policy Contract Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "policies",
+    "defaults"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "2.0.0"
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform_read_only",
+        "governance_gated_change",
+        "production_write_restricted"
+      ],
+      "properties": {
+        "platform_read_only": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetAction",
+            "principalClass",
+            "resourceClass",
+            "dataClassification",
+            "tenantScopeRequired",
+            "approvalRequired",
+            "defaultEffect",
+            "evaluatorMode"
+          ],
+          "properties": {
+            "targetAction": {
+              "const": "read_only_platform_inspection"
+            },
+            "principalClass": {
+              "const": "bounded_agent_or_staff"
+            },
+            "resourceClass": {
+              "const": "repository_public_metadata"
+            },
+            "dataClassification": {
+              "const": "public"
+            },
+            "tenantScopeRequired": {
+              "const": true
+            },
+            "approvalRequired": {
+              "const": false
+            },
+            "defaultEffect": {
+              "const": "allow"
+            },
+            "evaluatorMode": {
+              "const": "deterministic"
+            }
+          }
+        },
+        "governance_gated_change": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetAction",
+            "principalClass",
+            "resourceClass",
+            "dataClassification",
+            "tenantScopeRequired",
+            "approvalRequired",
+            "defaultEffect",
+            "evaluatorMode"
+          ],
+          "properties": {
+            "targetAction": {
+              "const": "governed_configuration_change"
+            },
+            "principalClass": {
+              "const": "bounded_agent_or_staff"
+            },
+            "resourceClass": {
+              "const": "repository_public_metadata"
+            },
+            "dataClassification": {
+              "const": "public"
+            },
+            "tenantScopeRequired": {
+              "const": true
+            },
+            "approvalRequired": {
+              "const": true
+            },
+            "defaultEffect": {
+              "const": "deny"
+            },
+            "evaluatorMode": {
+              "const": "deterministic"
+            }
+          }
+        },
+        "production_write_restricted": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetAction",
+            "principalClass",
+            "resourceClass",
+            "dataClassification",
+            "tenantScopeRequired",
+            "approvalRequired",
+            "defaultEffect",
+            "evaluatorMode"
+          ],
+          "properties": {
+            "targetAction": {
+              "const": "production_write_operation"
+            },
+            "principalClass": {
+              "const": "bounded_agent_or_staff"
+            },
+            "resourceClass": {
+              "const": "repository_public_metadata"
+            },
+            "dataClassification": {
+              "const": "public"
+            },
+            "tenantScopeRequired": {
+              "const": true
+            },
+            "approvalRequired": {
+              "const": true
+            },
+            "defaultEffect": {
+              "const": "deny"
+            },
+            "evaluatorMode": {
+              "const": "deterministic"
+            }
+          }
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultEffect",
+        "failClosed",
+        "requireExplicitAllow"
+      ],
+      "properties": {
+        "defaultEffect": {
+          "const": "deny"
+        },
+        "failClosed": {
+          "const": true
+        },
+        "requireExplicitAllow": {
+          "const": true
+        }
+      }
+    }
+  }
+}
