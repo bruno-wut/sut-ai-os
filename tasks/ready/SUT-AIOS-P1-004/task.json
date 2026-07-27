@@ -3,17 +3,18 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-004",
   "title": "Define deterministic authorization policies",
-  "status": "backlog",
+  "status": "ready",
   "phase": "phase-1",
   "workstream": "policy-definitions",
   "workflowId": "implementation-p1-004",
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded policy-definitions outcome.",
-  "technicalObjective": "Define deterministic authorization policies",
+  "technicalObjective": "Create the version 1 static authorization-policy artifact and deterministic offline validator exactly as defined in docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
@@ -24,19 +25,21 @@
     "evidence/tasks/SUT-AIOS-P1-004/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
+    "No production write, deployment, live credential access, database access, migration execution, RLS, queue, or external service access is authorized.",
+    "The contract and validator are static repository artifacts; the validator uses Node built-ins only and must not install packages.",
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Define deterministic authorization policies is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "policies/deterministic-authorization-policies-v1.json implements the closed version 1 authorization policy design specified in docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md.",
+    "tests/policy-definitions/validate-authorization-policies.mjs deterministically accepts the finite valid artifact and rejects every documented invalid case without network or external state.",
+    "The exact validator command and fast governance verification pass, and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
     "policies/**",
     "tests/policy-definitions/**",
     "docs/policy-definitions/**",
     "evidence/tasks/SUT-AIOS-P1-004/**",
+    "evidence/verification/SUT-AIOS-P1-004/**",
     "tasks/**/SUT-AIOS-P1-004/**"
   ],
   "forbiddenPaths": [
@@ -44,10 +47,13 @@
     "docs/architecture/source/**",
     ".env*",
     "**/*secret*",
-    "**/*credential*"
+    "**/*credential*",
+    "supabase/**",
+    "migrations/**",
+    "apps/**"
   ],
   "allowedCommands": [
-    "npm run policy:validate",
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
     "npm run verify:fast",
     "git diff --check"
   ],
@@ -55,10 +61,11 @@
     "policy-definitions contract validation",
     "changed-path inspection",
     "secret scan",
-    "independent verification"
+    "independent verification",
+    "independent machine verification"
   ],
   "requiredTests": [
-    "npm run policy:validate",
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -78,20 +85,21 @@
     "Any required change crosses declared subsystem or protected paths.",
     "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
   ],
-  "rollbackExpectations": "Revert the policy-definitions branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert the static policy contract, validator, task-state record, and evidence together; preserve audit and verification evidence.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P1-004/task.json",
+      "tasks/ready/SUT-AIOS-P1-004/task.json",
+      "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-27T22:43:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -100,6 +108,13 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T15:43:16.228Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Dependencies P1-001 and P1-003 are satisfied"
     }
   ]
 }

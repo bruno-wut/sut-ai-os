@@ -1,0 +1,151 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-021",
+  "title": "Plan P1-004 deterministic authorization policy verification",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "engineering-governance",
+  "workflowId": "p1-004-policy-verification-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make P1-004 authorization policies bounded, static, deterministic, and independently verifiable before any policy engine or evaluator implementation.",
+  "technicalObjective": "Define a closed authorization-policy contract artifact and exact offline validator command, then amend P1-004's packet without creating a live policy engine or evaluator service.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-021/verification.md"
+  ],
+  "assumptions": [
+    "P1-004 produces static repository policy-definition artifacts only; it must not access a database, execute SQL, or invoke a live evaluation engine.",
+    "Deterministic policy structure is a schema-level invariant; runtime decision evaluation and dynamic PDP/PEP service delivery are excluded."
+  ],
+  "acceptanceCriteria": [
+    "A durable design defines one bounded static authorization-policy contract artifact and deterministic invalid-input behavior.",
+    "P1-004 uses exact future command node tests/policy-definitions/validate-authorization-policies.mjs.",
+    "P1-004's packet removes invented npm test indirection, both packets validate, and independent review confirms protected paths remain untouched."
+  ],
+  "allowedPaths": [
+    "docs/policy-definitions/**",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-021/**",
+    "tasks/ready/SUT-AIOS-P1-004/**",
+    "tasks/backlog/SUT-AIOS-P1-004/**",
+    "evidence/tasks/SUT-AIOS-GOV-021/**",
+    "evidence/verification/SUT-AIOS-GOV-021/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "policies/**",
+    "tests/policy-definitions/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-021 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "policy planning scope",
+    "P1-004 packet validation",
+    "fast governance verification",
+    "independent machine verification",
+    "independent review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "codex-engineering-executor"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert only the policy design document, P1-004 packet amendment, evidence, and this task packet; retain any historical verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-021/task.json",
+      "tasks/ready/SUT-AIOS-P1-004/task.json"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T22:43:00.000Z",
+  "updatedDate": "2026-07-27T15:44:10.028Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-021/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T22:43:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T15:43:45.468Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-003 is done; P1-004 planning scope is bounded, static, and independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T15:43:50.704Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting P1-004 policy verification planning"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T15:44:04.660Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004 policy verification planning completed"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T15:44:07.164Z",
+      "actor": "qa-verification",
+      "reason": "Independent review passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T15:44:10.028Z",
+      "actor": "qa-verification",
+      "reason": "Completed P1-004 policy verification planning"
+    }
+  ]
+}
