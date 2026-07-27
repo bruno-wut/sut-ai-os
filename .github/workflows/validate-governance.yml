@@ -28,3 +28,6 @@ jobs:
         run: npm run task:validate -- --all
       - name: Run repository fast verification
         run: npm run verify:fast
+      - name: Run policy contract validator
+        run: node tests/policy-definitions/validate-authorization-policies.mjs
+
