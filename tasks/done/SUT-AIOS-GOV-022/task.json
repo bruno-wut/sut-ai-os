@@ -1,0 +1,149 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-022",
+  "title": "Admit exact P1-004 policy validator safely",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-004-verifier-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit independently verifiable, deterministic P1-004 policy validation without broadening command-execution authority.",
+  "technicalObjective": "Extend the fail-closed verify:task parser to admit only the exact literal node tests/policy-definitions/validate-authorization-policies.mjs, with shell-free fixed-argument execution and exhaustive rejection coverage for variants.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-021"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-022/verification.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-004's future validator remains the only policy test path admitted by this task."
+  ],
+  "acceptanceCriteria": [
+    "verify:task accepts only the byte-for-byte literal node tests/policy-definitions/validate-authorization-policies.mjs and launches node with shell false and exactly that one fixed argument.",
+    "Self-tests reject whitespace, argument, alternate-path, shell-operator, and unrelated node tests variants.",
+    "Task validation, fast governance verification, changed-path inspection, secret scan, and independent verification pass without touching forbidden paths."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-022/**",
+    "evidence/verification/SUT-AIOS-GOV-022/**",
+    "tasks/**/SUT-AIOS-GOV-022/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "policies/**",
+    "tests/policy-definitions/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact-command admission and rejection coverage",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any command-admission expansion beyond the exact P1-004 validator literal.",
+    "Any shell use, dynamic path resolution, production access, credential handling, or protected-path change."
+  ],
+  "rollbackExpectations": "Revert the parser admission, self-tests, policy wording, task-state record, and evidence together; retain historical verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-022/task.json",
+      "scripts/verify/verify-cli.mjs",
+      "docs/verification/VERIFICATION_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T22:44:00.000Z",
+  "updatedDate": "2026-07-27T15:45:15.496Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-022/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T22:44:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T15:44:46.550Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004 validator admission is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T15:44:50.708Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting P1-004 validator admission"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T15:45:10.109Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004 validator admission implemented"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T15:45:12.821Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T15:45:15.496Z",
+      "actor": "qa-verification",
+      "reason": "Completed P1-004 validator admission"
+    }
+  ]
+}
