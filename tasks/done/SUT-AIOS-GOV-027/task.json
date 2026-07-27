@@ -1,0 +1,168 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-027",
+  "title": "Harden and reconcile P1-005 policy evaluator assurance",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-005-remediation-assurance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Fully restore assurance, security semantics, and reconciliation evidence for P1-005 policy evaluator engine.",
+  "technicalObjective": "Extract shared Draft 2020-12 schema evaluator, create request/decision schemas, close policy mutation exploit, enforce principal/resource authorization, reject unexpected request fields, run explicit CI validator step, log GOV-026 dependency, write superseding evidence with commit SHAs, and record approved GitHub review.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-026",
+    "SUT-AIOS-P1-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-027/verification.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-005 policy evaluator remains a pure offline JS evaluation engine."
+  ],
+  "acceptanceCriteria": [
+    "packages/policy-engine/src/json-schema-evaluator.mjs provides shared Draft 2020-12 JSON Schema validation.",
+    "schemas/evaluation-context.schema.json and schemas/evaluation-decision.schema.json provide closed request and decision schemas.",
+    "policies/deterministic-authorization-policies-v2.json and schemas/authorization-policy-contract.schema.json define explicit principal, resource, data-classification, tenant, approval, and effect bounds.",
+    "packages/policy-engine/src/evaluator.mjs closes policy-mutation relabeling exploit, enforces principal/resource bounds, and rejects unexpected properties.",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs executes 45+ systematic negative/mutation tests including the relabeling exploit.",
+    ".github/workflows/validate-governance.yml runs node tests/policy-engine/validate-deterministic-policy-evaluator.mjs explicitly in CI.",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md links P1-004, GOV-022, GOV-023, GOV-024, GOV-025, GOV-026, GOV-027, P1-005, schemas, validator outputs, commit SHAs, workflow run ID, job ID, and approved QA decision."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/**",
+    "tests/policy-engine/**",
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "schemas/authorization-policy-contract.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json",
+    "policies/deterministic-authorization-policies-v1.json",
+    "policies/deterministic-authorization-policies-v2.json",
+    ".github/workflows/validate-governance.yml",
+    "scripts/github/validate-governance.mjs",
+    "docs/policy-engine/**",
+    "docs/policy-definitions/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-027/**",
+    "evidence/verification/SUT-AIOS-GOV-027/**",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "tasks/**/SUT-AIOS-GOV-027/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-027",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "schema-bound evaluation validation",
+    "relabeling exploit mitigation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema, evaluator, CI workflow, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-027/task.json",
+      "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T17:03:00.000Z",
+  "updatedDate": "2026-07-27T17:07:22.976Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-027/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T17:03:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T17:04:01.448Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-005 remediation scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T17:04:17.389Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting GOV-027 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T17:07:06.565Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-027 remediation and hardening implementation submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T17:07:15.417Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T17:07:22.976Z",
+      "actor": "qa-verification",
+      "reason": "Completed GOV-027 remediation and hardening implementation"
+    }
+  ]
+}

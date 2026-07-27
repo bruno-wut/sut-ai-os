@@ -1,9 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateJsonSchema } from "../../packages/policy-engine/src/json-schema-evaluator.mjs";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const artifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
+const v1ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
+const v2ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v2.json");
 const schemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract.schema.json");
 
 const forbiddenTerms = new Set([
@@ -46,93 +48,24 @@ function containsForbiddenTerm(value) {
   return false;
 }
 
-/**
- * Pure, deterministic JSON Schema Draft 2020-12 evaluator for policy contracts.
- * Evaluates type, const, enum, required, properties, additionalProperties, minLength.
- */
-function validateAgainstJsonSchema(instance, schemaNode) {
-  if (!isObject(schemaNode)) return false;
-
-  // 1. type evaluation
-  if (schemaNode.type) {
-    if (schemaNode.type === "object" && (!isObject(instance) || Array.isArray(instance))) return false;
-    if (schemaNode.type === "string" && typeof instance !== "string") return false;
-    if (schemaNode.type === "boolean" && typeof instance !== "boolean") return false;
-    if (schemaNode.type === "integer" && !Number.isInteger(instance)) return false;
-    if (schemaNode.type === "number" && typeof instance !== "number") return false;
-    if (schemaNode.type === "array" && !Array.isArray(instance)) return false;
-  }
-
-  // 2. const evaluation
-  if (Object.hasOwn(schemaNode, "const")) {
-    if (instance !== schemaNode.const) return false;
-  }
-
-  // 3. enum evaluation
-  if (Array.isArray(schemaNode.enum)) {
-    if (!schemaNode.enum.includes(instance)) return false;
-  }
-
-  // 4. minLength evaluation
-  if (typeof schemaNode.minLength === "number" && typeof instance === "string") {
-    if (instance.length < schemaNode.minLength) return false;
-  }
-
-  // 5. required properties evaluation
-  if (Array.isArray(schemaNode.required) && isObject(instance)) {
-    for (const reqKey of schemaNode.required) {
-      if (!Object.hasOwn(instance, reqKey)) return false;
-    }
-  }
-
-  // 6. additionalProperties evaluation
-  if (schemaNode.additionalProperties === false && isObject(instance)) {
-    const allowedProps = new Set(schemaNode.properties ? Object.keys(schemaNode.properties) : []);
-    for (const key of Object.keys(instance)) {
-      if (!allowedProps.has(key)) return false;
-    }
-  }
-
-  // 7. properties recursive evaluation against schema properties
-  if (isObject(schemaNode.properties) && isObject(instance)) {
-    for (const [propName, propSchema] of Object.entries(schemaNode.properties)) {
-      if (Object.hasOwn(instance, propName)) {
-        if (!validateAgainstJsonSchema(instance[propName], propSchema)) return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-/**
- * Validates the schema document structure itself before using it as authoritative source.
- */
-function validateSchemaDocSelf(schemaDoc) {
-  if (!isObject(schemaDoc)) return false;
-  if (schemaDoc.$schema !== "https://json-schema.org/draft/2020-12/schema") return false;
-  if (schemaDoc.type !== "object") return false;
-  if (!isObject(schemaDoc.properties)) return false;
-  if (!isObject(schemaDoc.properties.policies)) return false;
-  if (!isObject(schemaDoc.properties.defaults)) return false;
-  return true;
-}
-
 function fullValidate(artifact, schemaDoc) {
-  if (!validateSchemaDocSelf(schemaDoc)) return false;
-  if (!validateAgainstJsonSchema(artifact, schemaDoc)) return false;
+  if (!isObject(schemaDoc) || schemaDoc.$schema !== "https://json-schema.org/draft/2020-12/schema") return false;
+  if (!validateJsonSchema(artifact, schemaDoc)) return false;
   if (containsForbiddenTerm(artifact)) return false;
   return true;
 }
 
 try {
-  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  const v1Artifact = JSON.parse(await readFile(v1ArtifactPath, "utf8"));
+  const v2Artifact = JSON.parse(await readFile(v2ArtifactPath, "utf8"));
   const schemaDoc = JSON.parse(await readFile(schemaPath, "utf8"));
 
-  // Primary assertion: validate artifact strictly against schemaDoc
-  expect(fullValidate(artifact, schemaDoc), "committed version-1 artifact must be valid against authoritative JSON schemaDoc");
+  // Primary assertions: validate both v1 and v2 artifacts against authoritative JSON schemaDoc
+  expect(fullValidate(v1Artifact, schemaDoc), "committed version-1 artifact must be valid against authoritative JSON schemaDoc");
+  expect(fullValidate(v2Artifact, schemaDoc), "committed version-2 artifact must be valid against authoritative JSON schemaDoc");
 
   let negativeTestsRun = 0;
+  const artifact = v2Artifact;
 
   // --- CATEGORY 1: Corrupted or mutated schema documents ---
   const badSchemaDraft = copy(schemaDoc);
@@ -258,14 +191,14 @@ try {
 
   // --- CATEGORY 8: Systematic forbidden terms assertions ---
   for (const [name, mutate] of Object.entries({
-    liveEvaluation: (candidate) => { candidate.liveEvaluation = true; },
-    database: (candidate) => { candidate.database = "postgres"; },
-    sql: (candidate) => { candidate.sql = "SELECT 1"; },
-    rls: (candidate) => { candidate.policies.platform_read_only.rls = true; },
-    credential: (candidate) => { candidate.policies.platform_read_only.credential = "secret"; },
-    guest: (candidate) => { candidate.guestData = true; },
-    payment: (candidate) => { candidate.payment = true; },
-    liveService: (candidate) => { candidate.liveService = true; }
+    liveEvaluation: (c) => { c.liveEvaluation = true; },
+    database: (c) => { c.database = "postgres"; },
+    sql: (c) => { c.sql = "SELECT 1"; },
+    rls: (c) => { c.policies.platform_read_only.rls = true; },
+    credential: (c) => { c.policies.platform_read_only.credential = "secret"; },
+    guest: (c) => { c.guestData = true; },
+    payment: (c) => { c.payment = true; },
+    liveService: (c) => { c.liveService = true; }
   })) {
     const candidate = copy(artifact);
     mutate(candidate);
@@ -279,7 +212,7 @@ try {
       passed: true,
       schemaAuthoritative: true,
       negativeTestsRun,
-      details: `one valid artifact verified against authoritative JSON Schema and ${negativeTestsRun} systematic schema/artifact mutation cases passed`
+      details: `v1 and v2 artifacts verified against shared Draft 2020-12 JSON Schema evaluator and ${negativeTestsRun} systematic schema/artifact mutation cases passed`
     })}\n`
   );
 } catch (error) {

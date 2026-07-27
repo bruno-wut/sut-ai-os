@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-027",
+  "status": "fail",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-27T17:06:23.889Z",
+  "checks": [
+    "changed-path-inspection: fail",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: packages/policy-engine/src/json-schema-evaluator.mjs provides shared Draft 2020-12 JSON Schema validation.",
+    "confirmed: schemas/evaluation-context.schema.json and schemas/evaluation-decision.schema.json provide closed request and decision schemas.",
+    "confirmed: policies/deterministic-authorization-policies-v2.json and schemas/authorization-policy-contract.schema.json define explicit principal, resource, data-classification, tenant, approval, and effect bounds.",
+    "confirmed: packages/policy-engine/src/evaluator.mjs closes policy-mutation relabeling exploit, enforces principal/resource bounds, and rejects unexpected properties.",
+    "confirmed: tests/policy-engine/validate-deterministic-policy-evaluator.mjs executes 45+ systematic negative/mutation tests including the relabeling exploit.",
+    "confirmed: .github/workflows/validate-governance.yml runs node tests/policy-engine/validate-deterministic-policy-evaluator.mjs explicitly in CI.",
+    "confirmed: evidence/tasks/SUT-AIOS-P1-005/reconciliation.md links P1-004, GOV-022, GOV-023, GOV-024, GOV-025, GOV-026, GOV-027, P1-005, schemas, validator outputs, commit SHAs, workflow run ID, job ID, and approved QA decision."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "packages/policy-engine/src/evaluator.mjs",
+    "packages/policy-engine/src/json-schema-evaluator.mjs",
+    "policies/deterministic-authorization-policies-v2.json",
+    "schemas/authorization-policy-contract.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json",
+    "tasks/active/SUT-AIOS-GOV-027/task.json",
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-027/verification-20260727170623889.json"
+  ],
+  "risks": [],
+  "recommendation": "revision_required"
+}

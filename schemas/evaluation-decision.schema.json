@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/evaluation-decision.schema.json",
+  "title": "Evaluation Decision Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision",
+    "matchedPolicy",
+    "failClosed",
+    "reasonCode"
+  ],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny"
+      ]
+    },
+    "matchedPolicy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "platform_read_only",
+        "governance_gated_change",
+        "production_write_restricted",
+        null
+      ]
+    },
+    "failClosed": {
+      "type": "boolean",
+      "const": true
+    },
+    "reasonCode": {
+      "type": "string",
+      "enum": [
+        "EXPLICIT_ALLOW_MATCHED",
+        "READ_ONLY_SAFETY_BOUNDARY_VIOLATION",
+        "GOVERNANCE_GATED_DENIED",
+        "PRODUCTION_WRITE_RESTRICTED_DENIED",
+        "CONFIDENTIAL_DATA_RESTRICTED",
+        "INVALID_PRINCIPAL_OR_RESOURCE",
+        "INVALID_REQUEST_CONTEXT",
+        "SCHEMA_VALIDATION_FAILED",
+        "DEFAULT_DENY_UNMATCHED"
+      ]
+    }
+  }
+}
