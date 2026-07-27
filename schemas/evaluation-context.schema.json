@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/evaluation-context.schema.json",
+  "title": "Evaluation Context Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "principalClass",
+    "resourceClass",
+    "targetAction",
+    "dataClassification",
+    "tenantScopeRequired"
+  ],
+  "properties": {
+    "principalClass": {
+      "type": "string",
+      "enum": [
+        "bounded_agent_or_staff"
+      ]
+    },
+    "resourceClass": {
+      "type": "string",
+      "enum": [
+        "repository_public_metadata"
+      ]
+    },
+    "targetAction": {
+      "type": "string",
+      "enum": [
+        "read_only_platform_inspection",
+        "governed_configuration_change",
+        "production_write_operation"
+      ]
+    },
+    "dataClassification": {
+      "type": "string",
+      "enum": [
+        "public",
+        "confidential",
+        "restricted",
+        "guest_pii",
+        "payment_metadata"
+      ]
+    },
+    "tenantScopeRequired": {
+      "type": "boolean"
+    }
+  }
+}

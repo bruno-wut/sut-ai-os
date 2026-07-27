@@ -11,7 +11,10 @@
   ],
   "properties": {
     "schemaVersion": {
-      "const": "1.0.0"
+      "enum": [
+        "1.0.0",
+        "2.0.0"
+      ]
     },
     "policies": {
       "type": "object",
@@ -34,6 +37,21 @@
             "targetAction": {
               "const": "read_only_platform_inspection"
             },
+            "principalClass": {
+              "const": "bounded_agent_or_staff"
+            },
+            "resourceClass": {
+              "const": "repository_public_metadata"
+            },
+            "dataClassification": {
+              "const": "public"
+            },
+            "tenantScopeRequired": {
+              "const": true
+            },
+            "approvalRequired": {
+              "const": false
+            },
             "defaultEffect": {
               "const": "allow"
             },
@@ -54,6 +72,21 @@
             "targetAction": {
               "const": "governed_configuration_change"
             },
+            "principalClass": {
+              "const": "bounded_agent_or_staff"
+            },
+            "resourceClass": {
+              "const": "repository_public_metadata"
+            },
+            "dataClassification": {
+              "const": "public"
+            },
+            "tenantScopeRequired": {
+              "const": true
+            },
+            "approvalRequired": {
+              "const": true
+            },
             "defaultEffect": {
               "const": "deny"
             },
@@ -73,6 +106,21 @@
           "properties": {
             "targetAction": {
               "const": "production_write_operation"
+            },
+            "principalClass": {
+              "const": "bounded_agent_or_staff"
+            },
+            "resourceClass": {
+              "const": "repository_public_metadata"
+            },
+            "dataClassification": {
+              "const": "public"
+            },
+            "tenantScopeRequired": {
+              "const": true
+            },
+            "approvalRequired": {
+              "const": true
             },
             "defaultEffect": {
               "const": "deny"

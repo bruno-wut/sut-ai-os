@@ -30,4 +30,7 @@ jobs:
         run: npm run verify:fast
       - name: Run policy contract validator
         run: node tests/policy-definitions/validate-authorization-policies.mjs
+      - name: Run P1-005 policy evaluator validator
+        run: node tests/policy-engine/validate-deterministic-policy-evaluator.mjs
+
 
