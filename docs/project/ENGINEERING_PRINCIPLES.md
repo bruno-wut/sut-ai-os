@@ -8,6 +8,8 @@
 6. Design for auditability: inputs, decisions, commands, outputs, evidence, and outcomes must be reconstructable.
 7. Protect guest data, payment state, inventory, and financial decisions through least privilege and human gates.
 8. Escalate uncertainty rather than hiding it behind confident language.
+9. **Security & Governance Task Assurance**: Security and governance tasks are not complete when their files look correct. They are complete only when the intended security meaning is explicit, the implementation is checked against an independent authority, negative cases are systematically tested, and evidence is bound to an exact commit and authenticated review. Before implementation, classify the task (design contract, runtime capability, or governance control), define precise scope, non-goals, security semantics, and authoritative source of truth. The task-specific validator must execute the authoritative contract, systematically reject invalid mutations, run explicitly in CI, and produce evidence bound to the exact reviewed commit.
+
 
 ## Model routing
 
