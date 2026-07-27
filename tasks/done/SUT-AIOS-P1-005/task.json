@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-005",
   "title": "Implement deterministic policy evaluator",
-  "status": "ready",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "policy-engine",
   "workflowId": "implementation-p1-005",
@@ -95,15 +95,17 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P1-005/task.json",
+      "tasks/done/SUT-AIOS-P1-005/task.json",
       "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-27T16:25:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-27T16:32:55.359Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-P1-005/verification.md"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -118,6 +120,34 @@
       "at": "2026-07-27T16:25:00.000Z",
       "actor": "chief-orchestrator",
       "reason": "GOV-025 completed design spec and exact validator command specification."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T16:32:10.251Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Prerequisites GOV-025 and GOV-026 merged, starting P1-005 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T16:32:49.767Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-005 deterministic policy evaluator implementation submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T16:32:52.467Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T16:32:55.359Z",
+      "actor": "qa-verification",
+      "reason": "Completed P1-005 deterministic policy evaluator implementation"
     }
   ]
 }
