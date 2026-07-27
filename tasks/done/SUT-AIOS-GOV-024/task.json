@@ -1,0 +1,157 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-024",
+  "title": "Finalize P1-004 schema-bound assurance",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-004-schema-bound-assurance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Establish authoritative schema-bound validation, systematic mutation testing, direct CI execution, and complete reproducible evidence for P1-004.",
+  "technicalObjective": "Implement genuine JSON Schema validation in the validator, expand systematic schema/artifact mutation tests, add direct validator execution to GitHub Actions CI, record exact commit SHAs in evidence, log GOV-023 timestamp chronology correction, and create P1-004 final reconciliation record.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-023"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-024/verification.md",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-004 policy definitions remain static repository artifacts."
+  ],
+  "acceptanceCriteria": [
+    "tests/policy-definitions/validate-authorization-policies.mjs evaluates policies/deterministic-authorization-policies-v1.json directly against schemas/authorization-policy-contract.schema.json rules (type, const, enum, required, properties, additionalProperties).",
+    "Mutation test suite systematically mutates schema nodes and artifact paths across all field types, missing/extra properties, bad defaults, and forbidden terms.",
+    ".github/workflows/validate-governance.yml runs node tests/policy-definitions/validate-authorization-policies.mjs explicitly in CI.",
+    "evidence/tasks/SUT-AIOS-GOV-024/verification.md records head commit SHA, base SHA, workflow run ID, job ID, and exact validator output.",
+    "GOV-023 timestamp chronology correction is logged.",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md links P1-004, GOV-022, GOV-023, GOV-024, policy artifact, schema-bound validator, CI run, and QA decision."
+  ],
+  "allowedPaths": [
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "schemas/authorization-policy-contract.schema.json",
+    ".github/workflows/validate-governance.yml",
+    "scripts/github/validate-governance.mjs",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-024/**",
+    "evidence/verification/SUT-AIOS-GOV-024/**",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md",
+    "tasks/**/SUT-AIOS-GOV-024/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-024",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "authoritative schema validation",
+    "systematic mutation testing",
+    "CI workflow policy execution",
+    "commit SHA evidence binding",
+    "reconciliation record"
+  ],
+  "requiredTests": [
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema validator, CI workflow change, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-024/task.json",
+      "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T16:19:40.000Z",
+  "updatedDate": "2026-07-27T16:20:48.128Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-024/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T16:19:40.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T16:19:50.656Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004 assurance finalizing scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T16:19:56.366Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting GOV-024 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T16:20:42.011Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-024 schema-bound assurance implementation submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T16:20:45.250Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T16:20:48.128Z",
+      "actor": "qa-verification",
+      "reason": "Completed GOV-024 schema-bound assurance implementation"
+    }
+  ]
+}
