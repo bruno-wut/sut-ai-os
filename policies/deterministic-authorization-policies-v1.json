@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "policies": {
+    "platform_read_only": {
+      "targetAction": "read_only_platform_inspection",
+      "defaultEffect": "allow",
+      "evaluatorMode": "deterministic"
+    },
+    "governance_gated_change": {
+      "targetAction": "governed_configuration_change",
+      "defaultEffect": "deny",
+      "evaluatorMode": "deterministic"
+    },
+    "production_write_restricted": {
+      "targetAction": "production_write_operation",
+      "defaultEffect": "deny",
+      "evaluatorMode": "deterministic"
+    }
+  },
+  "defaults": {
+    "defaultEffect": "deny",
+    "failClosed": true,
+    "requireExplicitAllow": true
+  }
+}
