@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "record": {
+    "fields": {
+      "id": "string",
+      "correlationId": "string",
+      "recordedAt": "string",
+      "actorType": "string",
+      "actorId": "string",
+      "actionType": "string",
+      "outcome": "string",
+      "previousHash": "string",
+      "recordHash": "string"
+    }
+  },
+  "appendOnly": {
+    "insertOnly": true,
+    "immutableFields": [
+      "id",
+      "correlationId",
+      "recordedAt",
+      "actorType",
+      "actorId",
+      "actionType",
+      "outcome",
+      "previousHash",
+      "recordHash"
+    ],
+    "chain": {
+      "previousField": "previousHash",
+      "hashField": "recordHash",
+      "firstRecordPreviousHash": null
+    }
+  }
+}
