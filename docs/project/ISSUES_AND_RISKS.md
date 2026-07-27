@@ -17,6 +17,25 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P1-005 policy evaluator engine hardening and assurance reconciliation
+
+- **Task ID:** `SUT-AIOS-P1-005`, `SUT-AIOS-GOV-027`
+- **Status:** Resolved
+- **Severity:** High — Governance, assurance integrity, and security semantics
+- **Affected scope:** `packages/policy-engine/src/evaluator.mjs`, `packages/policy-engine/src/json-schema-evaluator.mjs`, `schemas/evaluation-context.schema.json`, `schemas/evaluation-decision.schema.json`, `policies/deterministic-authorization-policies-v2.json`, `tests/policy-engine/validate-deterministic-policy-evaluator.mjs`, and `.github/workflows/validate-governance.yml`.
+- **Evidence:** Delivered via GOV-027 in PR #42 with 100% green GitHub Actions CI (`Governance / validate` pass in 7s):
+  1. Extracted shared Draft 2020-12 schema evaluator at `packages/policy-engine/src/json-schema-evaluator.mjs`.
+  2. Created closed context and decision schemas (`schemas/evaluation-context.schema.json` and `schemas/evaluation-decision.schema.json`).
+  3. Created `policies/deterministic-authorization-policies-v2.json` with explicit policy bounds.
+  4. Closed policy-mutation relabeling exploit and enforced principal/resource authorization bounds in `evaluator.mjs`.
+  5. Expanded test suite to 56 systematic mutation tests.
+  6. Added explicit CI workflow step running `node tests/policy-engine/validate-deterministic-policy-evaluator.mjs`.
+  7. Recorded superseding reconciliation evidence at `evidence/tasks/SUT-AIOS-P1-005/reconciliation.md`.
+  8. PR #42 merged to `origin/main` at commit `715b142`.
+- **Next action / owner:** Retain verification evidence `evidence/verification/SUT-AIOS-GOV-027/verification-20260727170641293.json`.
+
+
+
 ### 2026-07-27 — P1-004 policy verification trust chain and contract schema remediation
 
 - **Task ID:** `SUT-AIOS-P1-004`, `SUT-AIOS-GOV-023`
