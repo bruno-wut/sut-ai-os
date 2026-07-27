@@ -1,0 +1,168 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-029",
+  "title": "Close P1-005 schema trust and final evidence assurance",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-005-schema-trust-finalization",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Close weakened-schema vulnerability, create dedicated V2 policy schema requiring all contextual fields, fix decision assertion helper, and bind reconciliation evidence to exact GOV-028 commit SHAs.",
+  "technicalObjective": "Create schemas/authorization-policy-contract-v2.schema.json requiring all 8 V2 policy fields, enforce exact schema $id matching and structural constraint validation in evaluator, fix test assertion helper to evaluate decision schemas unconditionally, expand test suite to cover structurally weakened schemas with valid IDs, and update reconciliation evidence.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-028",
+    "SUT-AIOS-P1-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-029/verification.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-005 runtime evaluator evaluates strictly against V2 policy contract artifacts and V2 policy schema."
+  ],
+  "acceptanceCriteria": [
+    "schemas/authorization-policy-contract-v2.schema.json exists and strictly requires all 8 contextual policy fields on every V2 policy object.",
+    "packages/policy-engine/src/evaluator.mjs validates exact schema $id identity and structural constraints, rejecting structurally empty or weakened schemas.",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs asserts decision schema validity unconditionally without conditional guards.",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs includes explicit tests for structurally empty/weakened schemas with valid IDs.",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md binds evidence to head SHA 2c67bb3de4c523b8852ff3d587701417e903f6b0, merge SHA a8d8c9c6c08a1b37c168cbe4d663d0b8c540fabd, workflow run 30289748887, and job 90056330195."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/**",
+    "tests/policy-engine/**",
+    "tests/policy-definitions/validate-authorization-policies.mjs",
+    "schemas/authorization-policy-contract.schema.json",
+    "schemas/authorization-policy-contract-v2.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json",
+    "policies/deterministic-authorization-policies-v1.json",
+    "policies/deterministic-authorization-policies-v2.json",
+    ".github/workflows/validate-governance.yml",
+    "scripts/github/validate-governance.mjs",
+    "docs/policy-engine/**",
+    "docs/policy-definitions/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-029/**",
+    "evidence/verification/SUT-AIOS-GOV-029/**",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "tasks/**/SUT-AIOS-GOV-029/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-029",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "V2 dedicated schema enforcement",
+    "weakened-schema structural validation",
+    "unconditional decision assertion",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema, evaluator, CI workflow, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-029/task.json",
+      "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T17:39:00.000Z",
+  "updatedDate": "2026-07-27T17:41:51.750Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-029/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T17:39:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T17:39:46.061Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-005 schema trust and final evidence assurance scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T17:40:00.448Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting GOV-029 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T17:41:36.823Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-029 schema trust and evidence finalization submitted"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T17:41:45.057Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T17:41:51.750Z",
+      "actor": "qa-verification",
+      "reason": "Completed GOV-029 schema trust and evidence finalization"
+    }
+  ]
+}

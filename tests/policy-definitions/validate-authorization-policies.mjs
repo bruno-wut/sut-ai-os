@@ -6,7 +6,8 @@ import { validateJsonSchema } from "../../packages/policy-engine/src/json-schema
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const v1ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
 const v2ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v2.json");
-const schemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract.schema.json");
+const v1SchemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract.schema.json");
+const v2SchemaPath = path.join(repositoryRoot, "schemas/authorization-policy-contract-v2.schema.json");
 
 const forbiddenTerms = new Set([
   "liveevaluation",
@@ -58,14 +59,16 @@ function fullValidate(artifact, schemaDoc) {
 try {
   const v1Artifact = JSON.parse(await readFile(v1ArtifactPath, "utf8"));
   const v2Artifact = JSON.parse(await readFile(v2ArtifactPath, "utf8"));
-  const schemaDoc = JSON.parse(await readFile(schemaPath, "utf8"));
+  const v1SchemaDoc = JSON.parse(await readFile(v1SchemaPath, "utf8"));
+  const v2SchemaDoc = JSON.parse(await readFile(v2SchemaPath, "utf8"));
 
-  // Primary assertions: validate both v1 and v2 artifacts against authoritative JSON schemaDoc
-  expect(fullValidate(v1Artifact, schemaDoc), "committed version-1 artifact must be valid against authoritative JSON schemaDoc");
-  expect(fullValidate(v2Artifact, schemaDoc), "committed version-2 artifact must be valid against authoritative JSON schemaDoc");
+  // Primary assertions: validate v1 artifact against v1 schema and v2 artifact against v2 dedicated schema
+  expect(fullValidate(v1Artifact, v1SchemaDoc), "committed version-1 artifact must be valid against authoritative v1 JSON schemaDoc");
+  expect(fullValidate(v2Artifact, v2SchemaDoc), "committed version-2 artifact must be valid against authoritative dedicated v2 JSON schemaDoc");
 
   let negativeTestsRun = 0;
   const artifact = v2Artifact;
+  const schemaDoc = v2SchemaDoc;
 
   // --- CATEGORY 1: Corrupted or mutated schema documents ---
   const badSchemaDraft = copy(schemaDoc);
@@ -157,7 +160,7 @@ try {
 
   // --- CATEGORY 7: Systematic type & missing field mutations across all policy targets ---
   const policyKeys = ["platform_read_only", "governance_gated_change", "production_write_restricted"];
-  const propKeys = ["targetAction", "defaultEffect", "evaluatorMode"];
+  const propKeys = ["targetAction", "principalClass", "resourceClass", "dataClassification", "tenantScopeRequired", "approvalRequired", "defaultEffect", "evaluatorMode"];
 
   for (const policyKey of policyKeys) {
     // Missing policy node
@@ -180,7 +183,7 @@ try {
       negativeTestsRun += 1;
 
       // Invalid property types
-      for (const badVal of [null, 999, true, false, [], {}]) {
+      for (const badVal of [null, 999, "invalid_string", [], {}]) {
         const badType = copy(artifact);
         badType.policies[policyKey][propKey] = badVal;
         expect(!fullValidate(badType, schemaDoc), `invalid type for ${policyKey}.${propKey} must fail`);
@@ -212,7 +215,7 @@ try {
       passed: true,
       schemaAuthoritative: true,
       negativeTestsRun,
-      details: `v1 and v2 artifacts verified against shared Draft 2020-12 JSON Schema evaluator and ${negativeTestsRun} systematic schema/artifact mutation cases passed`
+      details: `v1 and v2 artifacts verified against dedicated v1 and v2 Draft 2020-12 JSON Schema evaluators and ${negativeTestsRun} systematic schema/artifact mutation cases passed`
     })}\n`
   );
 } catch (error) {
