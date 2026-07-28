@@ -1,0 +1,173 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-005-R01",
+  "title": "Remediate P1 policy authority isolation defects",
+  "status": "verified",
+  "phase": "phase-1",
+  "workstream": "policy-engine-remediation",
+  "workflowId": "p1-policy-authority-isolation-remediation",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Close independently verified Phase 1 policy-authority isolation defects before any P1-004/P1-005 delivery is considered mergeable.",
+  "technicalObjective": "Correct only the mutable shared JSON authority bypass, P1-004's transitive dependency on P1-005 runtime code, and vacuous dependency-injection regressions identified against e605162. This packet is an explicit follow-on exception that continues on unmerged PR #48; it must not alter terminal packets or historical evidence.",
+  "architectureReferences": [
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/verification/VERIFICATION_POLICY.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-004",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-GOV-031"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P1-005-R01/verification.md"
+  ],
+  "assumptions": [
+    "The existing PR #48 remains unmerged and is the approved delivery vehicle for this follow-on remediation.",
+    "No production, staging, database, SQL, migration, RLS, credential, network, guest-data, payment, booking, inventory, or pricing access is authorized.",
+    "Existing validator commands are already admitted; no verifier-admission or workflow change is authorized."
+  ],
+  "acceptanceCriteria": [
+    "The evaluator reads and parses the four committed V2 authority files into private runtime state and cannot be redirected by mutation of separately imported JSON-module objects.",
+    "Authority-load, parse, or validation failure returns deterministic SCHEMA_VALIDATION_FAILED without throwing from import or evaluation.",
+    "evaluatePolicy(requestContext) remains the ordinary public interface and never accepts caller-provided authority.",
+    "Any retained test-only dependency path meaningfully validates values against private canonical authority and rejects weakened, relabelled, malformed, and V1 dependencies.",
+    "Focused regressions prove shared-module mutation plus production-write relabelling cannot allow, weakened context dependencies cannot throw or authorize, every malformed input returns a schema-valid deny, and V1 is rejected by the V2 boundary.",
+    "The V1 validator has no import from packages/policy-engine or scripts/verify and remains a self-contained Node-built-in static-contract validator.",
+    "CI retains explicit V1, V2, and policy-evaluator validator steps; no policy artifact, schema, historical evidence, terminal packet, dependency, or verifier-admission change occurs."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/src/evaluator.mjs",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-P1-005-R01/**",
+    "evidence/tasks/SUT-AIOS-P1-005-R01/**",
+    "evidence/verification/SUT-AIOS-P1-005-R01/**"
+  ],
+  "forbiddenPaths": [
+    "tasks/done/**",
+    "evidence/tasks/SUT-AIOS-P1-004/**",
+    "evidence/tasks/SUT-AIOS-P1-005/**",
+    "evidence/tasks/SUT-AIOS-GOV-031/**",
+    "evidence/verification/SUT-AIOS-P1-004/**",
+    "evidence/verification/SUT-AIOS-P1-005/**",
+    "evidence/verification/SUT-AIOS-GOV-031/**",
+    "policies/**",
+    "schemas/**",
+    "scripts/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "**/*migration*",
+    "**/*.sql",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "node tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "node scripts/github/validate-governance.mjs",
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P1-005-R01 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
+  ],
+  "requiredChecks": [
+    "shared JSON module mutation exploit reproduction and closure",
+    "runtime authority isolation",
+    "V1 validator isolation",
+    "changed-path inspection",
+    "secret scan",
+    "independent Sol QA",
+    "machine verification evidence"
+  ],
+  "requiredTests": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "node tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Authorization authority, mutable module state, dependency injection, verifier isolation, or any request to widen scope."
+  ],
+  "rollbackExpectations": "Revert only this packet's evaluator, focused validators/tests, risk entry, packet, and evidence changes from unmerged PR #48; preserve e605162, all terminal packets, historical evidence, schemas, policies, and the immutable baseline.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-P1-005-R01/task.json",
+      "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+      "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T07:15:22.972Z",
+  "updatedDate": "2026-07-28T07:23:41.266Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-P1-005-R01/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T07:15:22.972Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T07:16:13.354Z",
+      "actor": "chief-orchestrator",
+      "reason": "Dependencies are terminal with evidence; remediation scope, paths, commands, and rollback are bounded."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T07:16:13.401Z",
+      "actor": "chief-orchestrator",
+      "reason": "Authorized follow-on remediation of independently verified authority-isolation defects on unmerged PR #48."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T07:23:41.219Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implementation submitted for independent Sol QA review."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T07:23:41.266Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA and machine verification passed; no critical or high bounded defect remains."
+    }
+  ]
+}

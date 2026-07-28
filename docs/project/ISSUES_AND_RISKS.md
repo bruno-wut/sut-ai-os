@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P1-005 shared JSON authority mutation bypass
+
+- **Task ID:** `SUT-AIOS-P1-005-R01`
+- **Status:** Open
+- **Severity:** Critical
+- **Affected scope:** `packages/policy-engine/src/evaluator.mjs`, the V1 validator isolation boundary, and focused evaluator regressions on unmerged PR #48.
+- **Evidence:** Independent QA reproduced an in-process authorization bypass against commit `e605162`: mutation of shared JSON-module policy and schema objects could relabel the read-only allow rule as a production-write action. QA also confirmed that the V1 validator transitively imported runtime/verification logic and that dependency-injection assertions rejected object identity without exercising weakened dependency values. The bounded remediation now parses the four V2 authorities into private deeply frozen state, makes the V1 validator self-contained, and adds direct exploit-path regressions; independent final-head verification is still required.
+- **Next action / owner:** Independent Sol QA must inspect the final diff, rerun the packet checks including machine verification, and close this entry only if PR #48's final head is green and the bypass remains denied.
+
 ### 2026-07-28 — P1-005 policy evaluator engine hardening and assurance reconciliation
 
 - **Task ID:** `SUT-AIOS-P1-005`, `SUT-AIOS-GOV-027`

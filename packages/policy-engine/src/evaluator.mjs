@@ -1,17 +1,39 @@
 /** Phase 1 deterministic evaluator. Its authority is committed and internal. */
-import policyContract from "../../../policies/deterministic-authorization-policies-v2.json" with { type: "json" };
-import policySchema from "../../../schemas/authorization-policy-contract-v2.schema.json" with { type: "json" };
-import contextSchema from "../../../schemas/evaluation-context.schema.json" with { type: "json" };
-import decisionSchema from "../../../schemas/evaluation-decision.schema.json" with { type: "json" };
+import { readFileSync } from "node:fs";
+import { isDeepStrictEqual } from "node:util";
 import { validateJsonSchema, validateSchemaKeywords } from "./json-schema-evaluator.mjs";
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const deny = (reasonCode, matchedPolicy = null) => ({ decision: "deny", matchedPolicy, failClosed: true, reasonCode });
+
+function deepFreeze(value) {
+  if (!isObject(value) && !Array.isArray(value)) return value;
+  for (const child of Object.values(value)) deepFreeze(child);
+  return Object.freeze(value);
+}
+
+function loadPrivateAuthority(relativePath) {
+  try {
+    return deepFreeze(JSON.parse(readFileSync(new URL(relativePath, import.meta.url), "utf8")));
+  } catch {
+    return null;
+  }
+}
+
+// Parse separate private values rather than sharing mutable JSON-module objects with callers.
+const policyContract = loadPrivateAuthority("../../../policies/deterministic-authorization-policies-v2.json");
+const policySchema = loadPrivateAuthority("../../../schemas/authorization-policy-contract-v2.schema.json");
+const contextSchema = loadPrivateAuthority("../../../schemas/evaluation-context.schema.json");
+const decisionSchema = loadPrivateAuthority("../../../schemas/evaluation-decision.schema.json");
 const canonicalDependencies = Object.freeze({ policyContract, policySchema, contextSchema, decisionSchema });
 
 function canonicalAuthoritiesAreValid() {
-  return validateSchemaKeywords(policySchema) && validateSchemaKeywords(contextSchema) && validateSchemaKeywords(decisionSchema) &&
-    validateJsonSchema(policyContract, policySchema);
+  try {
+    return validateSchemaKeywords(policySchema) && validateSchemaKeywords(contextSchema) && validateSchemaKeywords(decisionSchema) &&
+      validateJsonSchema(policyContract, policySchema);
+  } catch {
+    return false;
+  }
 }
 
 function evaluate(requestContext) {
@@ -47,8 +69,25 @@ export function evaluatePolicy(requestContext) {
   }
 }
 
-/** Test-only guard: dependency injection is accepted only by exact canonical identity. */
+function dependenciesMatchCanonical(dependencies) {
+  try {
+    if (!isObject(dependencies)) return false;
+    const expectedKeys = Object.keys(canonicalDependencies);
+    if (Object.keys(dependencies).length !== expectedKeys.length) return false;
+    if (expectedKeys.some((key) => !Object.hasOwn(dependencies, key))) return false;
+    if (!canonicalAuthoritiesAreValid()) return false;
+    if (!validateSchemaKeywords(dependencies.policySchema)) return false;
+    if (!validateSchemaKeywords(dependencies.contextSchema)) return false;
+    if (!validateSchemaKeywords(dependencies.decisionSchema)) return false;
+    if (!validateJsonSchema(dependencies.policyContract, dependencies.policySchema)) return false;
+    return expectedKeys.every((key) => isDeepStrictEqual(dependencies[key], canonicalDependencies[key]));
+  } catch {
+    return false;
+  }
+}
+
+/** Test-only guard: supplied values are checked against private canonical authority and never used to evaluate. */
 export function evaluatePolicyWithDependencies(requestContext, dependencies) {
-  if (dependencies !== canonicalDependencies) return deny("SCHEMA_VALIDATION_FAILED");
+  if (!dependenciesMatchCanonical(dependencies)) return deny("SCHEMA_VALIDATION_FAILED");
   return evaluatePolicy(requestContext);
 }

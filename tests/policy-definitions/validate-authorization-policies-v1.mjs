@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateJsonSchema, validateSchemaKeywords } from "../../scripts/verify/json-schema-evaluator.mjs";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const v1ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
@@ -26,6 +25,49 @@ const copy = (value) => JSON.parse(JSON.stringify(value));
 const expect = (condition, description) => {
   if (!condition) throw new Error(description);
 };
+
+const supportedSchemaKeywords = new Set([
+  "$schema", "$id", "title", "type", "const", "enum", "required",
+  "properties", "additionalProperties", "minLength"
+]);
+
+function validateSchemaKeywords(schemaNode) {
+  if (!isObject(schemaNode)) return false;
+  if (Object.keys(schemaNode).some((key) => !supportedSchemaKeywords.has(key))) return false;
+  return !isObject(schemaNode.properties) || Object.values(schemaNode.properties).every(validateSchemaKeywords);
+}
+
+function validateJsonSchema(instance, schemaNode) {
+  if (!isObject(schemaNode) || !validateSchemaKeywords(schemaNode)) return false;
+
+  if (schemaNode.type) {
+    const types = Array.isArray(schemaNode.type) ? schemaNode.type : [schemaNode.type];
+    const matchesType = types.some((type) => (
+      (type === "null" && instance === null) ||
+      (type === "object" && isObject(instance)) ||
+      (type === "string" && typeof instance === "string") ||
+      (type === "boolean" && typeof instance === "boolean") ||
+      (type === "integer" && Number.isInteger(instance)) ||
+      (type === "number" && typeof instance === "number") ||
+      (type === "array" && Array.isArray(instance))
+    ));
+    if (!matchesType) return false;
+  }
+  if (Object.hasOwn(schemaNode, "const") && instance !== schemaNode.const) return false;
+  if (Array.isArray(schemaNode.enum) && !schemaNode.enum.includes(instance)) return false;
+  if (typeof schemaNode.minLength === "number" && typeof instance === "string" && instance.length < schemaNode.minLength) return false;
+  if (Array.isArray(schemaNode.required) && isObject(instance) && schemaNode.required.some((key) => !Object.hasOwn(instance, key))) return false;
+  if (schemaNode.additionalProperties === false && isObject(instance)) {
+    const allowed = new Set(Object.keys(schemaNode.properties ?? {}));
+    if (Object.keys(instance).some((key) => !allowed.has(key))) return false;
+  }
+  if (isObject(schemaNode.properties) && isObject(instance)) {
+    return Object.entries(schemaNode.properties).every(([key, propertySchema]) => (
+      !Object.hasOwn(instance, key) || validateJsonSchema(instance[key], propertySchema)
+    ));
+  }
+  return true;
+}
 
 function containsForbiddenTerm(value) {
   if (typeof value === "string") {

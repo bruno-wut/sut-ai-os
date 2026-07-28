@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
+import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharedPolicyContract from "../../policies/deterministic-authorization-policies-v2.json" with { type: "json" };
+import sharedPolicySchema from "../../schemas/authorization-policy-contract-v2.schema.json" with { type: "json" };
 import { evaluatePolicy, evaluatePolicyWithDependencies } from "../../packages/policy-engine/src/evaluator.mjs";
 import { validateJsonSchema } from "../../packages/policy-engine/src/json-schema-evaluator.mjs";
 
@@ -41,7 +44,25 @@ try {
     expect(result.decision === "deny" && result.reasonCode === reasonCode, `expected ${reasonCode}`);
   }
 
-  // Public runtime ignores contracts entirely; test-only DI refuses all replacement authorities.
+  const canonicalDependencyValues = { policyContract: v2Artifact, policySchema: v2Schema, contextSchema, decisionSchema };
+  result = evaluatePolicyWithDependencies(validReadContext, canonicalDependencyValues);
+  expect(result.decision === "allow" && result.reasonCode === "EXPLICIT_ALLOW_MATCHED", "test-only dependency guard must accept canonical values"); testsRun += 1;
+
+  // The historical exploit mutated shared JSON-module objects and relabelled the allow rule.
+  // The evaluator's separately parsed private authority must remain unchanged.
+  const originalSharedRule = copy(sharedPolicyContract.policies.platform_read_only);
+  const originalSharedTargetSchema = copy(sharedPolicySchema.properties.policies.properties.platform_read_only.properties.targetAction);
+  try {
+    sharedPolicyContract.policies.platform_read_only.targetAction = "production_write_operation";
+    sharedPolicySchema.properties.policies.properties.platform_read_only.properties.targetAction = { type: "string" };
+    result = assertDecision({ ...validReadContext, targetAction: "production_write_operation" }, "shared-module mutation exploit");
+    expect(result.decision === "deny" && result.reasonCode === "PRODUCTION_WRITE_RESTRICTED_DENIED", "shared-module mutation must not relabel production write as allow");
+  } finally {
+    sharedPolicyContract.policies.platform_read_only = originalSharedRule;
+    sharedPolicySchema.properties.policies.properties.platform_read_only.properties.targetAction = originalSharedTargetSchema;
+  }
+
+  // Test-only dependencies are validated by value against private canonical authority.
   const relabelledContract = copy(v2Artifact);
   relabelledContract.policies.platform_read_only.targetAction = "production_write_operation";
   const weakenedPolicySchema = copy(v2Schema);
@@ -57,9 +78,22 @@ try {
   result = evaluatePolicyWithDependencies(validReadContext, { policyContract: v1Artifact, policySchema: v2Schema, contextSchema, decisionSchema });
   expect(result.decision === "deny" && result.reasonCode === "SCHEMA_VALIDATION_FAILED", "V1 artifact must be rejected by V2 runtime"); testsRun += 1;
 
-  for (const malformed of [null, undefined, 0, true, "request", [], {}, { ...validReadContext, dataClassification: 8 }, { ...validReadContext, extra: true }, { ...validReadContext, principalClass: [] }]) {
-    result = assertDecision(malformed, `malformed input ${JSON.stringify(malformed)}`);
-    expect(result.decision === "deny", "all malformed inputs must deny");
+  const throwingGetter = { ...validReadContext };
+  Object.defineProperty(throwingGetter, "dataClassification", { enumerable: true, get() { throw new Error("malformed getter"); } });
+  const throwingProxy = new Proxy({}, { ownKeys() { throw new Error("malformed proxy"); } });
+  const circular = { ...validReadContext, extra: true };
+  circular.self = circular;
+  const malformedInputs = [
+    ["null", null], ["undefined", undefined], ["number", 0], ["boolean", true], ["string", "request"],
+    ["array", []], ["empty object", {}], ["non-string classification", { ...validReadContext, dataClassification: 8 }],
+    ["additional property", { ...validReadContext, extra: true }], ["array principal", { ...validReadContext, principalClass: [] }],
+    ["throwing getter", throwingGetter], ["throwing proxy", throwingProxy], ["circular object", circular]
+  ];
+  for (const [label, malformed] of malformedInputs) {
+    result = assertDecision(malformed, `malformed input: ${label}`);
+    expect(result.decision === "deny", `${label} must deny`);
+    const repeated = assertDecision(malformed, `repeated malformed input: ${label}`);
+    expect(isDeepStrictEqual(repeated, result), `${label} must return a deterministic deny`);
   }
 
   process.stdout.write(`${JSON.stringify({ name: "deterministic-policy-evaluator", passed: true, testsRun, details: "Canonical V2 runtime authority, closed dependency injection, V1 rejection, malformed-input fail-closed behavior, and focused relabelling regressions passed" })}\n`);
