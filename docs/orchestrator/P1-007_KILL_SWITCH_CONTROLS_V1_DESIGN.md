@@ -2,13 +2,13 @@
 
 ## Purpose and authority
 
-P1-007 will implement one repository-local, deterministic safety boundary for
+P1-007 implements one repository-local, deterministic safety boundary for
 Phase 1. It is a deny-only Tier 0 control. It is not an authorization engine,
 approval service, workflow engine, mutable control plane, executor, dispatcher,
 deployment system, rollback service, notification service, or production
 integration.
 
-The V1 authorities will be:
+The V1 authorities are:
 
 - `services/orchestrator/src/kill-switch/evaluator.mjs` — the runtime-safe
   module containing the private committed authority and the sole public
@@ -16,7 +16,7 @@ The V1 authorities will be:
 - `tests/orchestrator/validate-kill-switch-controls-v1.mjs` — the deterministic
   validator for the committed module and its finite behavior.
 
-The exact validator command will be:
+The exact validator command is:
 
 ```text
 node tests/orchestrator/validate-kill-switch-controls-v1.mjs
@@ -184,20 +184,20 @@ P1-007 must add an explicit non-deploying CI step that runs the exact Node
 validator in addition to `npm run verify:fast`. CI visibility does not itself
 admit the command to the independent task verifier.
 
-Before P1-007 independent machine verification, a separate approved governance
-packet must admit only this byte-for-byte command:
+`SUT-AIOS-GOV-035` admitted only this byte-for-byte command before P1-007
+implementation and independent machine verification:
 
 ```text
 node tests/orchestrator/validate-kill-switch-controls-v1.mjs
 ```
 
-Admission must preserve `shell: false`, the repository Node executable, and one
+The admission preserves `shell: false`, the repository Node executable, and one
 fixed repository-relative argument. Its self-tests must accept only the exact
 literal and reject whitespace changes, alternate or sibling paths, extra
 arguments, shell operators, redirects, chaining, substitutions, and traversal.
 Generic `node tests/orchestrator/**` or arbitrary command execution remains
-forbidden. P1-007 must not enter independent machine verification or
-`verified` until that separate admission is merged and independently verified.
+forbidden. The separately verified GOV-035 admission is merged on `main` and
+does not grant this product task production eligibility.
 
 ## P1-007 implementation boundary
 
