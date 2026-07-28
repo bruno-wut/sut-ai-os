@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/deterministic-analytics-calculator-request-v1.schema.json",
+  "title": "Deterministic Analytics Calculator Request V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metricId",
+    "segmentId",
+    "aggregation",
+    "currentPeriod",
+    "baselinePeriod",
+    "currentObservations",
+    "baselineObservations",
+    "context"
+  ],
+  "properties": {
+    "metricId": {
+      "type": "string",
+      "enum": ["event-count", "event-value-sum", "event-value-mean", "event-rate"]
+    },
+    "segmentId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "aggregation": {
+      "type": "string",
+      "enum": ["sum", "mean", "rate"]
+    },
+    "currentPeriod": { "$ref": "#/$defs/period" },
+    "baselinePeriod": { "$ref": "#/$defs/period" },
+    "currentObservations": { "$ref": "#/$defs/observations" },
+    "baselineObservations": { "$ref": "#/$defs/observations" },
+    "context": { "$ref": "#/$defs/context" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "metricId": { "enum": ["event-count", "event-value-sum"] } }, "required": ["metricId"] },
+      "then": { "properties": { "aggregation": { "const": "sum" } } }
+    },
+    {
+      "if": { "properties": { "metricId": { "const": "event-value-mean" } }, "required": ["metricId"] },
+      "then": { "properties": { "aggregation": { "const": "mean" } } }
+    },
+    {
+      "if": { "properties": { "metricId": { "const": "event-rate" } }, "required": ["metricId"] },
+      "then": { "properties": { "aggregation": { "const": "rate" } } }
+    }
+  ],
+  "$defs": {
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "end": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 366,
+      "items": {
+        "type": "number",
+        "minimum": -1000000000,
+        "maximum": 1000000000
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anomalyDurationDays",
+        "correlatedDeploymentIds",
+        "correlatedCampaignIds",
+        "seasonalityStatus"
+      ],
+      "properties": {
+        "anomalyDurationDays": { "type": "integer", "minimum": 0, "maximum": 366 },
+        "correlatedDeploymentIds": { "$ref": "#/$defs/correlationIds" },
+        "correlatedCampaignIds": { "$ref": "#/$defs/correlationIds" },
+        "seasonalityStatus": { "type": "string", "enum": ["not-evaluated", "caller-declared"] }
+      }
+    },
+    "correlationIds": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" }
+    }
+  }
+}
