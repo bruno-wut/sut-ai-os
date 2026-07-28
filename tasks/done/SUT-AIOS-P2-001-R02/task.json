@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-001-R02",
   "title": "Remediate P2-001 schema assurance and semantic ordering",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-2",
   "workstream": "analytics",
   "workflowId": "remediation-p2-001-schema-assurance",
@@ -120,7 +120,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P2-001-R02/task.json",
+      "tasks/done/SUT-AIOS-P2-001-R02/task.json",
       "tasks/done/SUT-AIOS-P2-001/task.json",
       "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md",
       "tests/analytics/validate-deterministic-analytics-calculators-v1.mjs"
@@ -129,9 +129,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T15:56:51.414Z",
-  "updatedDate": "2026-07-28T16:06:08.177Z",
+  "updatedDate": "2026-07-28T16:08:54.252Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-P2-001-R02/verification-20260728160536785.json"
+    "evidence/verification/SUT-AIOS-P2-001-R02/verification-20260728160536785.json",
+    "evidence/tasks/SUT-AIOS-P2-001-R02/verification.md"
   ],
   "stateTransitions": [
     {
@@ -168,6 +169,13 @@
       "at": "2026-07-28T16:06:08.177Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed Draft 2020-12 compilation, canonical request decisions, schema-valid exactly-one generated result variants, semantic correlation ordering, deep-module authority boundaries, scope, rollback, and the monitored development-only advisory."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T16:08:54.252Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #78 merged at b5f7339."
     }
   ]
 }
