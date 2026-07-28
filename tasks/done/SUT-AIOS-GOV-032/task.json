@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-032",
   "title": "Adopt provider-neutral Mac Mini Pi Codex runtime roadmap",
-  "status": "verified",
+  "status": "done",
   "phase": "workspace-runtime-planning",
   "workstream": "architecture-roadmap",
   "workflowId": "mac-mini-pi-codex-runtime-roadmap",
@@ -142,7 +142,7 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/project/CONTEXT_INDEX.md",
-      "tasks/verified/SUT-AIOS-GOV-032/task.json",
+      "tasks/done/SUT-AIOS-GOV-032/task.json",
       "docs/project/ROADMAP.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "docs/project/DEPENDENCY_GRAPH.md",
@@ -153,9 +153,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T09:04:22.324Z",
-  "updatedDate": "2026-07-28T09:36:34.345Z",
+  "updatedDate": "2026-07-28T09:42:03.212Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-032/verification-20260728093604851.json"
+    "evidence/verification/SUT-AIOS-GOV-032/verification-20260728093604851.json",
+    "evidence/tasks/SUT-AIOS-GOV-032/verification.md"
   ],
   "stateTransitions": [
     {
@@ -213,6 +214,13 @@
       "at": "2026-07-28T09:36:34.345Z",
       "actor": "qa-verification",
       "reason": "Machine verification passed after bounded PR #51 architecture and CI remediation; human feedback is retained in the implementation evidence."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T09:42:03.212Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #51 merged at 2a4e608 after final-head CI run 30347385047 passed; retained machine evidence confirms the verified roadmap update."
     }
   ]
 }
