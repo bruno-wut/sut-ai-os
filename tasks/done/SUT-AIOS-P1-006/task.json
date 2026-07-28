@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-006",
   "title": "Define static Playbook Registry V1 contract",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "playbooks",
   "workflowId": "implementation-p1-006",
@@ -117,7 +117,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P1-006/task.json",
+      "tasks/done/SUT-AIOS-P1-006/task.json",
       "docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "docs/project/AUTONOMY_BOUNDARIES.md",
@@ -128,7 +128,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T10:23:08.752Z",
+  "updatedDate": "2026-07-28T10:26:30.275Z",
   "completionEvidence": [
     "evidence/tasks/SUT-AIOS-P1-006/verification.md"
   ],
@@ -167,6 +167,13 @@
       "at": "2026-07-28T10:23:08.752Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA accepted the finite static registry contract and machine verification passed at evidence/verification/SUT-AIOS-P1-006/verification-20260728102248219.json."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T10:26:30.275Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #56 merged at 9462acf after final-head CI run 30350673889 passed; independent verification evidence is retained."
     }
   ]
 }
