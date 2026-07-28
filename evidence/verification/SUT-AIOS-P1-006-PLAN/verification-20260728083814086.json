@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-006-PLAN",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-28T08:38:14.086Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design specifies one closed V1 playbook-registry schema authority, one finite shadow-only registry artifact, and one deterministic Node validator with documented failure behavior.",
+    "confirmed: The design defines stable identity, version, owner, Tier 0/shadow mode, production-write prohibition, trigger/evidence requirements, P1-004 policy reference, permitted paths/tools, required checks, approval, retry, and rollback fields without live command execution or credentials.",
+    "confirmed: The P1-006 backlog packet is amended only to the designed static-contract scope and replaces the nonexistent npm validator with the exact future Node validator command.",
+    "confirmed: The design states that a separate verifier-admission packet must admit only the exact future validator command with shell disabled and near-miss rejection coverage.",
+    "confirmed: Independent QA confirms that no registry implementation, schema, validator, verifier change, runtime capability, protected path, or historical evidence was altered."
+  ],
+  "changedPaths": [
+    "docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md",
+    "evidence/tasks/SUT-AIOS-P1-006-PLAN/verification.md",
+    "evidence/verification/SUT-AIOS-P1-006-PLAN/verification-20260728083358616.json",
+    "tasks/backlog/SUT-AIOS-P1-006/task.json",
+    "tasks/review/SUT-AIOS-P1-006-PLAN/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-006-PLAN/verification-20260728083814086.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

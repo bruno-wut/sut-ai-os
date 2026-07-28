@@ -1,0 +1,210 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-006-PLAN",
+  "title": "Define executable P1-006 playbook registry contract",
+  "status": "verified",
+  "phase": "phase-1",
+  "workstream": "playbooks",
+  "workflowId": "p1-006-registry-contract-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prepare one bounded, static, shadow-only playbook-registry contract so P1-006 can later be implemented and independently verified without enabling runtime execution.",
+  "technicalObjective": "Define the finite V1 registry artifact, schema authority, exact validator command, failure behavior, documentation, and corrected P1-006 packet scope; do not implement the schema, artifact, validator, or verifier admission.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-004",
+    "SUT-AIOS-P1-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P1-006-PLAN/verification.md"
+  ],
+  "assumptions": [
+    "P1-006 remains a static repository contract in Tier 0 shadow mode; no runtime runner, service, database, external call, credential, activation, or promotion is authorized.",
+    "The existing P1-006 packet is incomplete because its named validator does not exist and is not admitted by the independent verifier.",
+    "Exact validator admission must remain a separate future governance action after the planned validator exists."
+  ],
+  "acceptanceCriteria": [
+    "A durable design specifies one closed V1 playbook-registry schema authority, one finite shadow-only registry artifact, and one deterministic Node validator with documented failure behavior.",
+    "The design defines stable identity, version, owner, Tier 0/shadow mode, production-write prohibition, trigger/evidence requirements, P1-004 policy reference, permitted paths/tools, required checks, approval, retry, and rollback fields without live command execution or credentials.",
+    "The P1-006 backlog packet is amended only to the designed static-contract scope and replaces the nonexistent npm validator with the exact future Node validator command.",
+    "The design states that a separate verifier-admission packet must admit only the exact future validator command with shell disabled and near-miss rejection coverage.",
+    "Independent QA confirms that no registry implementation, schema, validator, verifier change, runtime capability, protected path, or historical evidence was altered."
+  ],
+  "allowedPaths": [
+    "docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md",
+    "tasks/backlog/SUT-AIOS-P1-006/task.json",
+    "tasks/**/SUT-AIOS-P1-006-PLAN/**",
+    "evidence/tasks/SUT-AIOS-P1-006-PLAN/**",
+    "evidence/verification/SUT-AIOS-P1-006-PLAN/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "schemas/**",
+    "playbooks/**",
+    "tests/**",
+    "scripts/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P1-006-PLAN --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite contract-design review",
+    "P1-006 packet scope review",
+    "exact future validator-command review",
+    "changed-path inspection",
+    "independent QA",
+    "machine verification evidence"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal to add runtime execution, activation, policy authority, external access, credentials, production writes, authorization behavior, payments, booking, RLS, migrations, or workflow correctness.",
+    "Any ambiguity about registry authority or exact verifier admission."
+  ],
+  "rollbackExpectations": "Revert only this planning document, P1-006 packet amendment, planning-task state, and its evidence; preserve completed records, canonical architecture sources, and all product/runtime surfaces.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/verified/SUT-AIOS-P1-006-PLAN/task.json",
+      "tasks/backlog/SUT-AIOS-P1-006/task.json",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/project/DEFINITION_OF_DONE.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T07:57:41.829Z",
+  "updatedDate": "2026-07-28T08:38:37.001Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P1-006-PLAN/verification-20260728083814086.json"
+  ],
+  "worktree": {
+    "path": "C:\\Users\\Bruno Browny\\.codex\\worktrees\\fbec\\SUT_AI_OS-p1-006-plan",
+    "branch": "task/SUT-AIOS-P1-006-PLAN-define-registry-contract",
+    "primaryBranch": "main",
+    "createdAt": "2026-07-28T07:56:52.000Z",
+    "createdBy": "chief-orchestrator"
+  },
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T07:57:41.829Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T07:58:36.521Z",
+      "actor": "chief-orchestrator",
+      "reason": "Approved bounded planning scope defines a finite static registry design and defers implementation and verifier admission."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T07:58:50.283Z",
+      "actor": "chief-orchestrator",
+      "reason": "Approved static-contract planning scope, isolated worktree, exact paths, and deterministic checks are ready."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T08:04:57.197Z",
+      "actor": "engineering-planner",
+      "reason": "Finite V1 registry design, corrected P1-006 packet, implementer checks, and planning evidence are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T08:27:20.550Z",
+      "actor": "qa-verification",
+      "reason": "Canonical Playbook Registry section 12.8 requires historical success and rollback rates; add both as finite null/not-recorded V1 fields with negative cases and no telemetry or runtime capability."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T08:28:25.454Z",
+      "actor": "engineering-planner",
+      "reason": "Apply bounded QA correction for canonical historical success and rollback rate fields as null/not-recorded V1 metadata only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T08:29:17.372Z",
+      "actor": "engineering-planner",
+      "reason": "Bounded QA correction adds canonical historical success and rollback rates as required null/not-recorded V1 fields with finite schema and negative-case requirements; planning checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T08:34:50.123Z",
+      "actor": "qa-verification",
+      "reason": "Retained machine verification failed changed-path inspection because local main was stale at 5ccceaa while origin/main and task HEAD were f6c93e4; reconcile the base ref before fresh independent QA."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T08:36:44.547Z",
+      "actor": "chief-orchestrator",
+      "reason": "The stale local main reference was safely aligned to origin/main; resume only to resubmit the unchanged accepted planning design for independent machine verification."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T08:37:26.981Z",
+      "actor": "engineering-planner",
+      "reason": "Resubmit the unchanged accepted planning design after primary main was reconciled to f6c93e4; packet-authorized local checks pass and failed machine evidence is retained."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T08:38:37.001Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA passed after local main was aligned to origin/main; bounded design, accepted correction, allowed paths, security boundaries, required tests, and machine verification all pass."
+    }
+  ]
+}
