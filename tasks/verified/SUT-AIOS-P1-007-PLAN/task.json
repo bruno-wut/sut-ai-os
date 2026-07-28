@@ -1,0 +1,194 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-007-PLAN",
+  "title": "Define executable P1-007 kill-switch contract",
+  "status": "verified",
+  "phase": "phase-1",
+  "workstream": "orchestrator",
+  "workflowId": "p1-007-kill-switch-contract-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prepare one bounded, static, deny-only Phase 1 kill-switch contract before critical-control implementation.",
+  "technicalObjective": "Specify the finite private V1 authority, public evaluator API, reason precedence, malformed-input boundary, exact future paths and validator command; do not implement the evaluator, validator, CI step, runtime controls, or verifier admission.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P1-006"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P1-007-PLAN/verification.md"
+  ],
+  "assumptions": [
+    "P1-007 V1 is a static Tier 0 deny-only repository contract with no mutable switch state, live runtime, service, database, external call, credential, production write, activation, or promotion.",
+    "The future public evaluator has one ordinary request argument and obtains its finite authority only from a private recursively frozen committed literal.",
+    "The exact future validator requires a separate verifier-admission governance task before P1-007 independent machine verification."
+  ],
+  "acceptanceCriteria": [
+    "A durable design defines one private recursively frozen committed V1 authority, one normal evaluateKillSwitch(requestContext) interface, and a closed decision whose decision is always deny.",
+    "The design fixes the exact global, playbook, executor, Codex-dispatch, pending-action, and outbound-notification controls, request contract, control and reason identifiers, deterministic precedence, internal-authority failure, malformed-input denial, and valid no-match fail-closed behavior.",
+    "The design requires caller authority, schema, dependency, path, environment, extra-argument, mutation, proxy, getter, cyclic, and malformed-input regressions without attempting exhaustive schema-keyword mutation.",
+    "The P1-007 backlog packet is amended only to the exact future evaluator, validator, design, CI, task-state, and evidence paths and replaces the nonexistent npm command with node tests/orchestrator/validate-kill-switch-controls-v1.mjs.",
+    "The design states that a separate governance packet must admit only the exact future validator command with shell disabled and near-miss rejection coverage before P1-007 machine verification.",
+    "Independent QA confirms that no evaluator, validator, CI step, verifier admission, mutable state, runtime service, external behavior, protected path, or historical evidence was implemented or altered."
+  ],
+  "allowedPaths": [
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+    "tasks/backlog/SUT-AIOS-P1-007/task.json",
+    "tasks/**/SUT-AIOS-P1-007-PLAN/**",
+    "evidence/tasks/SUT-AIOS-P1-007-PLAN/**",
+    "evidence/verification/SUT-AIOS-P1-007-PLAN/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "services/**",
+    "packages/**",
+    "tests/**",
+    "scripts/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "apps/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P1-007-PLAN --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite authority and deny-only contract design review",
+    "P1-007 packet scope review",
+    "exact future validator-command review",
+    "malformed-input and authority-isolation regression design review",
+    "changed-path inspection",
+    "independent Sol QA",
+    "machine verification evidence"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal to add an allow result, caller-supplied authority, mutable control state, live runtime, external access, credentials, production writes, authorization, payments, booking, RLS, migrations, or workflow correctness.",
+    "Any ambiguity about finite authority isolation, fail-closed reason precedence, or exact verifier admission."
+  ],
+  "rollbackExpectations": "Revert only this planning document, P1-007 packet amendment, planning-task state, and planning evidence; preserve completed records, canonical architecture sources, the immutable compatibility snapshot, and every product/runtime surface.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/verified/SUT-AIOS-P1-007-PLAN/task.json",
+      "tasks/backlog/SUT-AIOS-P1-007/task.json",
+      "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md",
+      "docs/project/ENGINEERING_PRINCIPLES.md",
+      "docs/project/DEFINITION_OF_DONE.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T10:35:00.546Z",
+  "updatedDate": "2026-07-28T10:49:37.450Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P1-007-PLAN/verification-20260728104910792.json"
+  ],
+  "worktree": {
+    "path": "C:\\Users\\Bruno Browny\\.codex\\worktrees\\fbec\\SUT_AI_OS-p1-007-plan",
+    "branch": "task/SUT-AIOS-P1-007-PLAN-define-kill-switch-contract",
+    "primaryBranch": "main",
+    "createdAt": "2026-07-28T10:35:30.000Z",
+    "createdBy": "chief-orchestrator"
+  },
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T10:35:00.546Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T10:35:30.443Z",
+      "actor": "chief-orchestrator",
+      "reason": "Bounded static kill-switch planning scope is defined."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T10:35:30.485Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with critical-control design only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T10:42:39.365Z",
+      "actor": "engineering-planner",
+      "reason": "Finite V1 deny-only kill-switch design, exact future P1-007 packet, planning evidence, and authorized deterministic checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T10:47:24.357Z",
+      "actor": "qa-verification",
+      "reason": "Retained machine verification failed changed-path inspection because local main was stale at f6c93e4 while origin/main and the task base were 1fa70d7; reconcile the base ref before a fresh independent QA cycle."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T10:48:14.934Z",
+      "actor": "chief-orchestrator",
+      "reason": "Clean main ref is aligned; resubmit unchanged accepted planning design after retained stale-base verification failure."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T10:48:14.982Z",
+      "actor": "engineering-planner",
+      "reason": "No design change; fresh independent QA requested after environment-only recovery."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T10:49:37.450Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA passed after local main, HEAD, and origin/main aligned at 1fa70d7; retained stale-base failure and accepted unchanged bounded design."
+    }
+  ]
+}

@@ -2,19 +2,21 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-007",
-  "title": "Implement independent kill-switch controls",
+  "title": "Implement static deny-only kill-switch controls V1",
   "status": "backlog",
   "phase": "phase-1",
   "workstream": "orchestrator",
   "workflowId": "implementation-p1-007",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded orchestrator outcome.",
-  "technicalObjective": "Implement independent kill-switch controls",
+  "businessObjective": "Add one independent, repository-local Phase 1 safety boundary that can only deny and cannot authorize or execute an action.",
+  "technicalObjective": "Implement the finite Kill-Switch Controls V1 design as a runtime-safe pure evaluator with private frozen committed authority, deterministic fail-closed decisions, focused validation, and no live control-plane behavior.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
-    "docs/project/IMPLEMENTATION_BACKLOG.md"
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md"
   ],
   "dependencies": [
     "SUT-AIOS-P1-005",
@@ -24,45 +26,62 @@
     "evidence/tasks/SUT-AIOS-P1-007/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
-    "Interfaces with the finalized platform use approved compatibility contracts only."
+    "V1 is a static Tier 0 deny-only safety contract; it has no mutable state, administrative endpoint, runtime service, external dependency, or production effect.",
+    "The private committed authority is internal to the evaluator, recursively frozen, independently self-checked, and cannot be supplied or replaced by an ordinary caller.",
+    "The exact validator command requires a separate bounded verifier-admission governance task before independent machine verification."
   ],
   "acceptanceCriteria": [
-    "Implement independent kill-switch controls is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "services/orchestrator/src/kill-switch/evaluator.mjs exports the normal one-argument evaluateKillSwitch(requestContext) interface and keeps the exact V1 authority private, recursively frozen, repository-committed, and independent of tests, scripts, mutable JSON imports, environment values, or caller-supplied schemas, contracts, authorities, dependencies, paths, or options.",
+    "The exact ordered V1 controls are global-autonomous-actions, playbook-content-schema-repair-shadow, executor-codex-content-executor, codex-dispatch, pending-actions, and outbound-notifications, with the identifiers, scopes, target actions, engaged states, and reason codes fixed by docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md.",
+    "Every public evaluation returns a newly allocated deeply frozen closed V1 object whose decision is deny; exact deterministic precedence covers internal-authority failure, malformed request, all six control matches, and valid no-match fail-closed outcomes, and no input can produce allow or throw.",
+    "The focused validator proves authority isolation, exact control and reason behavior, no-match denial, attempted caller authority/schema/dependency replacement, prior-decision mutation resistance, throwing proxies/getters, cyclic and malformed values, and valid deterministic deny decisions for every case without attempting exhaustive JSON Schema mutation.",
+    "The exact command node tests/orchestrator/validate-kill-switch-controls-v1.mjs runs explicitly in CI and passes with npm run verify:fast and git diff --check after a separate governance task admits that byte-for-byte command for independent machine verification.",
+    "No server, queue, scheduler, mutable switch store, Staff OS view, authorization grant, approval, executor, notification, deployment, rollback, audit backend, database, credential, network, guest-data, booking, payment, inventory, pricing, or production behavior is added."
   ],
   "allowedPaths": [
-    "services/orchestrator/src/kill-switch/**",
-    "tests/orchestrator/**",
-    "docs/orchestrator/**",
+    "services/orchestrator/src/kill-switch/evaluator.mjs",
+    "tests/orchestrator/validate-kill-switch-controls-v1.mjs",
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+    ".github/workflows/validate-governance.yml",
     "evidence/tasks/SUT-AIOS-P1-007/**",
+    "evidence/verification/SUT-AIOS-P1-007/**",
     "tasks/**/SUT-AIOS-P1-007/**"
   ],
   "forbiddenPaths": [
     "reference/finalized-platform/**",
     "docs/architecture/source/**",
+    "scripts/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    "packages/**",
+    "package.json",
+    "package-lock.json",
+    "apps/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
     ".env*",
     "**/*secret*",
-    "**/*credential*",
-    "supabase/migrations/**",
-    "apps/ibe/src/payments/**",
-    "apps/ibe/src/inventory/**"
+    "**/*credential*"
   ],
   "allowedCommands": [
-    "npm run test:kill-switch",
+    "node tests/orchestrator/validate-kill-switch-controls-v1.mjs",
     "npm run verify:fast",
     "git diff --check"
   ],
   "requiredChecks": [
-    "orchestrator contract validation",
+    "private frozen authority and dependency-direction inspection",
+    "deny-only and exact reason-precedence validation",
+    "malformed-input and caller-authority replacement regression validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
   ],
   "requiredTests": [
-    "npm run test:kill-switch",
-    "npm run verify:fast"
+    "node tests/orchestrator/validate-kill-switch-controls-v1.mjs",
+    "npm run verify:fast",
+    "git diff --check"
   ],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
@@ -78,23 +97,26 @@
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
   "solEscalationTriggers": [
-    "Any required change crosses declared subsystem or protected paths.",
-    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+    "Any required change crosses the exact evaluator, validator, design, CI, task-state, or evidence paths.",
+    "Any proposal adds mutable control state, runtime service behavior, caller-supplied authority, an allow outcome, external access, credentials, production writes, authorization, payments, booking, RLS, migrations, or workflow correctness."
   ],
-  "rollbackExpectations": "Revert the orchestrator branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert only the P1-007 evaluator, validator, design document, explicit CI step, task-state changes, and task evidence; preserve P1-004 through P1-006 authorities and evidence, canonical architecture sources, the immutable compatibility snapshot, and all external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P1-007/task.json",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
+      "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md",
+      "docs/project/DEFINITION_OF_DONE.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T10:35:30.485Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

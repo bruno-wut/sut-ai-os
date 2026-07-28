@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-007-PLAN",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-28T10:49:10.792Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design defines one private recursively frozen committed V1 authority, one normal evaluateKillSwitch(requestContext) interface, and a closed decision whose decision is always deny.",
+    "confirmed: The design fixes the exact global, playbook, executor, Codex-dispatch, pending-action, and outbound-notification controls, request contract, control and reason identifiers, deterministic precedence, internal-authority failure, malformed-input denial, and valid no-match fail-closed behavior.",
+    "confirmed: The design requires caller authority, schema, dependency, path, environment, extra-argument, mutation, proxy, getter, cyclic, and malformed-input regressions without attempting exhaustive schema-keyword mutation.",
+    "confirmed: The P1-007 backlog packet is amended only to the exact future evaluator, validator, design, CI, task-state, and evidence paths and replaces the nonexistent npm command with node tests/orchestrator/validate-kill-switch-controls-v1.mjs.",
+    "confirmed: The design states that a separate governance packet must admit only the exact future validator command with shell disabled and near-miss rejection coverage before P1-007 machine verification.",
+    "confirmed: Independent QA confirms that no evaluator, validator, CI step, verifier admission, mutable state, runtime service, external behavior, protected path, or historical evidence was implemented or altered."
+  ],
+  "changedPaths": [
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+    "evidence/tasks/SUT-AIOS-P1-007-PLAN/verification.md",
+    "evidence/verification/SUT-AIOS-P1-007-PLAN/verification-20260728104650134.json",
+    "tasks/backlog/SUT-AIOS-P1-007/task.json",
+    "tasks/review/SUT-AIOS-P1-007-PLAN/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-007-PLAN/verification-20260728104910792.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
