@@ -1,0 +1,119 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P4-006",
+  "title": "Implement supervised Mac Mini worker runtime",
+  "status": "backlog",
+  "phase": "phase-4",
+  "workstream": "mac-mini-worker",
+  "workflowId": "implementation-p4-006",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Operate a continuously available, bounded AI worker while Pi retains durable control-plane state and the worker or Codex gains no such authority.",
+  "technicalObjective": "Implement the supervised Mac Mini worker consumer co-located with the Pi orchestration service and its durable state, with restart recovery, isolated task workspaces, bounded concurrency, task timeouts, cancellation, safe cleanup, and health reporting.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P3-002",
+    "SUT-AIOS-P3-003",
+    "SUT-AIOS-P4-005",
+    "SUT-AIOS-P1-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P4-006/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Pi orchestration runs locally on the initial Mac Mini and retains logical ownership of durable scheduling, queue, retry, dead-letter, cancellation, and recovery state.",
+    "The initial Mac Mini co-locates Pi, durable state, worker, and adapter and is a potential single point of failure."
+  ],
+  "acceptanceCriteria": [
+    "The worker consumes only bounded task envelopes and creates one collision-resistant isolated workspace per task.",
+    "Concurrency limits, task timeouts, cancellation, disk limits, and cleanup eligibility are enforced outside the model.",
+    "Process exit, device sleep, reboot, network loss, storage pressure, stale workspace, and worker unavailability preserve durable task state and fail closed to safe requeue or dead letter.",
+    "Pi queue and workflow records survive Pi-service, worker-process, and device restarts and are never stored as Codex process, session, output, or isolated-workspace state.",
+    "Supervision restarts the worker after reboot without automatically resuming an unverified production-impacting command.",
+    "Worker health reports sanitized provider and capacity state without exposing subscription or repository credentials.",
+    "Tier 0/shadow operation permits investigation, drafts, tests, branches, and authorized pull requests only; it cannot merge or deploy."
+  ],
+  "allowedPaths": [
+    "services/mac-mini-worker/**",
+    "tests/mac-mini-worker/**",
+    "docs/mac-mini-worker/**",
+    "evidence/tasks/SUT-AIOS-P4-006/**",
+    "tasks/**/SUT-AIOS-P4-006/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:mac-mini-worker",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "supervision reboot sleep and process-failure recovery",
+    "workspace isolation collision retention and cleanup",
+    "concurrency timeout cancellation and storage bounds",
+    "no-secret health reporting",
+    "changed-path inspection",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:mac-mini-worker",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any ambiguity affects process supervision, reboot recovery, concurrency, timeout, cancellation, workspace isolation, cleanup, secrets, or durable task ownership.",
+    "Any request adds production execution, deployment, database, payment, booking, RLS, migration, or external side effects."
+  ],
+  "rollbackExpectations": "Disable the worker consumer and revert its branch; preserve durable queue state, isolated workspace recovery data, and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P4-006/task.json",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+      "docs/project/WORKTREE_WORKFLOW.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-28T09:32:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:15:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Added by GOV-032 to isolate the continuously available worker from durable orchestration and authority."
+    }
+  ]
+}

@@ -2,15 +2,15 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-002",
-  "title": "Define structured AI analysis contracts",
+  "title": "Define provider-neutral structured intelligence contracts",
   "status": "backlog",
   "phase": "phase-2",
   "workstream": "ai-analysis",
   "workflowId": "implementation-p2-002",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 2 — Intelligence and executive reporting through one bounded ai-analysis outcome.",
-  "technicalObjective": "Define structured AI analysis contracts",
+  "businessObjective": "Establish provider-neutral, schema-valid intelligence inputs and outputs for bounded technical, operational, SEO, and commercial analysis.",
+  "technicalObjective": "Define IntelligenceProvider request and response contracts for evidence references, likely-cause explanations, ranked hypotheses, intervention selection, confidence, provider identity, and deterministic failure results without implementing a provider.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
@@ -25,11 +25,14 @@
   ],
   "assumptions": [
     "No production write, deployment, or live credential access is authorized.",
-    "Interfaces with the finalized platform use approved compatibility contracts only."
+    "Interfaces with the finalized platform use approved compatibility contracts only.",
+    "Codex, OpenAI API, local models, and other future providers must implement the same contract and cannot authorize an intervention."
   ],
   "acceptanceCriteria": [
-    "Define structured AI analysis contracts is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Schema-valid requests reference prepared evidence and bounded task purpose, data classification, requested analysis, and allowed context.",
+    "Schema-valid responses explain likely causes, rank hypotheses, select an intervention, estimate confidence, cite evidence, identify the provider/model, and distinguish insufficient evidence from provider failure.",
+    "The finite contract is provider-neutral and gives IntelligenceProvider no scheduling, workflow, policy, authorization, execution, or audit authority.",
+    "Malformed or incomplete requests and responses fail deterministic validation.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -55,7 +58,7 @@
     "git diff --check"
   ],
   "requiredChecks": [
-    "ai-analysis contract validation",
+    "provider-neutral intelligence contract validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
@@ -94,7 +97,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

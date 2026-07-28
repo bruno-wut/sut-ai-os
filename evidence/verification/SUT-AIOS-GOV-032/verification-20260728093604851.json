@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-032",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-28T09:36:04.851Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A derived ADR states provider-neutral interfaces, the Mac Mini/Pi/Codex first implementation, Codex non-authorities, Tier 0/shadow bounds, and future provider migration.",
+    "confirmed: Roadmap and future packets define IntelligenceProvider, ProposalGenerator, ExecutorAdapter, and VerificationProvider boundaries; AI cannot authorize its own proposal.",
+    "confirmed: Future packets cover structured intelligence and intervention proposals, Pi-to-Codex adapter, Mac Mini worker/supervision/workspaces/concurrency/timeouts, durable scheduling/queue/DLQ/requeue, subscription health/capacity states, provider-neutral dispatch, audit attribution, independent verification, and fallback qualification.",
+    "confirmed: A distinct future P4-007 packet implements the Codex repository ExecutorAdapter for bounded analysis, code/content changes, tests, branches, pull requests, and repair preparation without policy, approval, scheduling, workflow, or audit authority.",
+    "confirmed: The initial co-located Mac Mini deployment keeps Pi orchestration, durable queue and workflow state, the supervised worker, and the Codex CLI adapter logically separate; durable state survives Pi-service, worker-process, and device restarts and is never Codex ephemeral state.",
+    "confirmed: All exact provider states available, busy, rate_limited, capacity_exhausted, authentication_required, temporarily_unavailable, and disabled fail closed with pause or requeue, evidence, and appropriate notification; no production action occurs.",
+    "confirmed: Only backlog packets and permitted project documents change; completed, active, and P1-006 records, source architecture, runtime code, verifier, schemas, policies, and production surfaces remain untouched.",
+    "confirmed: Affected Phase 2–5 dependency changes are acyclic and documented."
+  ],
+  "changedPaths": [
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "docs/project/CURRENT_FOCUS.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/FIRST_VERTICAL_SLICE.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/project/KNOWN_RISKS.md",
+    "docs/project/MILESTONES.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/SYSTEM_MAP.md",
+    "evidence/tasks/SUT-AIOS-GOV-032/verification.md",
+    "tasks/backlog/SUT-AIOS-P4-002/task.json",
+    "tasks/backlog/SUT-AIOS-P4-003/task.json",
+    "tasks/backlog/SUT-AIOS-P4-005/task.json",
+    "tasks/backlog/SUT-AIOS-P4-006/task.json",
+    "tasks/backlog/SUT-AIOS-P4-007/task.json",
+    "tasks/review/SUT-AIOS-GOV-032/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-032/verification-20260728093604851.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

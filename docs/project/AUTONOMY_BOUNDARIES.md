@@ -4,6 +4,20 @@
 
 Start new playbooks in Tier 0: observe, measure, diagnose, recommend, draft, or prepare a pull request. No production alteration occurs by default.
 
+For the provider-neutral Mac Mini/Pi runtime, the AI may investigate, explain,
+rank hypotheses, recommend, draft, and prepare an authorized branch or pull
+request. It cannot authorize its own intervention proposal. Codex and any future
+provider remain subordinate to deterministic policy, authenticated approval,
+durable workflow, bounded executor capabilities, independent verification, and
+audit.
+
+Every provider state other than `available` fails closed: pause or safely requeue
+the task, record the reason, notify staff where appropriate, and perform no
+production-impacting action. A configured fallback does not bypass policy or
+increase autonomy.
+
+> AI may investigate broadly, but it may act only narrowly.
+
 | Tier | Meaning | Minimum condition |
 | --- | --- | --- |
 | 0 | Observe and recommend | Evidence and draft only |

@@ -1,0 +1,113 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-004",
+  "title": "Define the intervention proposal contract",
+  "status": "backlog",
+  "phase": "phase-2",
+  "workstream": "intervention-proposals",
+  "workflowId": "implementation-p2-004",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Convert grounded intelligence into a controlled, reviewable proposal without granting AI authorization authority.",
+  "technicalObjective": "Define a finite ProposalGenerator contract for diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, and expected outcome.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-002",
+    "SUT-AIOS-P1-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P2-004/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Proposal generation is logically separate from deterministic policy, approval, execution, verification, and audit."
+  ],
+  "acceptanceCriteria": [
+    "The schema requires diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, and expected outcome.",
+    "The contract distinguishes no-action, more-evidence, recommendation, draft, branch-or-PR preparation, and escalation outcomes.",
+    "A proposal cannot represent itself as approved, authorized, verified, executed, or production-eligible.",
+    "Malformed, incomplete, unknown-capability, or internally inconsistent proposals fail deterministic validation.",
+    "Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "packages/intervention-proposal-contracts/**",
+    "tests/intervention-proposals/**",
+    "docs/intervention-proposals/**",
+    "evidence/tasks/SUT-AIOS-P2-004/**",
+    "tasks/**/SUT-AIOS-P2-004/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:intervention-proposals",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "intervention proposal contract validation",
+    "self-authorization rejection",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:intervention-proposals",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal field would imply policy, approval, execution, or audit authority.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, or workflow-correctness ambiguity arises."
+  ],
+  "rollbackExpectations": "Revert the intervention-proposal branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P2-004/task.json",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:15:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Added by GOV-032 to separate structured intelligence from non-authoritative intervention proposals."
+    }
+  ]
+}

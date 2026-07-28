@@ -1,0 +1,117 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P4-007",
+  "title": "Implement Codex repository ExecutorAdapter",
+  "status": "backlog",
+  "phase": "phase-4",
+  "workstream": "codex-repository-executor",
+  "workflowId": "implementation-p4-007",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Use Codex for approved bounded repository preparation without granting it orchestration, policy, authorization, verification, or audit authority.",
+  "technicalObjective": "Implement the Codex repository ExecutorAdapter for repository analysis, bounded code and content changes, approved tests, branch and pull-request preparation, and repair-task preparation through canonical task envelopes and structured results.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P4-005",
+    "SUT-AIOS-P4-006"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P4-007/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, merge, or live credential access is authorized.",
+    "Deterministic policy, authenticated approval, durable workflow, dispatch, and independent verification occur outside this adapter.",
+    "The Pi service, worker, Codex CLI adapter, and durable state are initially co-located on the Mac Mini but remain separate logical components."
+  ],
+  "acceptanceCriteria": [
+    "The implementation conforms to the ExecutorAdapter boundary and consumes only canonical approved task envelopes; caller or model input cannot redefine paths, commands, capabilities, policy, or approval authority.",
+    "Supported work is limited to repository analysis, bounded code or content changes, approved tests, branch and pull-request preparation, and bounded repair-task preparation.",
+    "The adapter returns schema-valid structured results for success, denial, provider unavailability, timeout, cancellation, malformed input, and execution failure without claiming authorization or verification.",
+    "It cannot schedule work, own durable workflow or queue state, authorize or approve a proposal, modify policy, verify itself as sole completion authority, merge, deploy, or become the audit source of truth.",
+    "Tier 0/shadow output stops at evidence, a bounded local change, or an authorized branch or draft pull request and performs no production-impacting action.",
+    "Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "services/codex-repository-executor/**",
+    "tests/codex-repository-executor/**",
+    "docs/codex-repository-executor/**",
+    "evidence/tasks/SUT-AIOS-P4-007/**",
+    "tasks/**/SUT-AIOS-P4-007/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:codex-repository-executor",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "ExecutorAdapter contract validation",
+    "caller-authority and scope-escalation rejection",
+    "Tier 0 branch and pull-request boundary",
+    "provider failure timeout cancellation and malformed-input handling",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:codex-repository-executor",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any executor behavior would add policy, authorization, approval, scheduling, durable workflow, audit, merge, deployment, credential, or production authority.",
+    "Any repository scope, command, workspace isolation, timeout, cancellation, privacy, or independent-verification ambiguity arises."
+  ],
+  "rollbackExpectations": "Disable and revert the Codex repository adapter branch; preserve the durable task, provider-state, execution-result, and independent verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P4-007/task.json",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:32:00.000Z",
+  "updatedDate": "2026-07-28T09:32:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:32:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Added by GOV-032 remediation to separate the bounded Codex repository executor from provider transport and dispatcher authority."
+    }
+  ]
+}

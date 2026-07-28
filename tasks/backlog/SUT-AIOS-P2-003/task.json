@@ -19,6 +19,7 @@
   "dependencies": [
     "SUT-AIOS-P2-001",
     "SUT-AIOS-P2-002",
+    "SUT-AIOS-P2-004",
     "SUT-AIOS-P1-008"
   ],
   "evidence": [
@@ -29,7 +30,8 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Generate observe-only executive briefing is implemented only within the declared subsystem.",
+    "The observe-only briefing consumes validated deterministic metrics, structured intelligence, and intervention proposals without authorizing or executing them.",
+    "Provider unavailability, insufficient evidence, and approval requirements are surfaced truthfully rather than converted into an allow or production action.",
     "Machine-readable contracts and deterministic failure behavior are documented.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
@@ -95,7 +97,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

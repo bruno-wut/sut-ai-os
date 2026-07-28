@@ -17,6 +17,25 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — Mac Mini and subscription-backed provider operational risks
+
+- **Task ID:** `SUT-AIOS-GOV-032`
+- **Status:** Open
+- **Severity:** High
+- **Affected scope:** Future `IntelligenceProvider`, Pi-to-Codex adapter, Mac
+  Mini host, co-located Pi durable orchestration, supervised worker, Codex
+  repository adapter, isolated workspaces, and audit evidence.
+- **Evidence:** The derived decision
+  `docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md` identifies unresolved
+  subscription-session persistence and terms, uncertain usage-limit/capacity
+  signals, authentication renewal, worker sleep/reboot/network and
+  single-point-of-failure behavior, concurrency/timeouts, workspace cleanup, and
+  audit-data privacy. No provider or worker runtime is implemented by GOV-032.
+- **Next action / owner:** Engineering Planner must preserve these as acceptance
+  and negative-test requirements in `P4-005`, `P4-006`, `P5-002`, and `P5-004`.
+  Sol and independent QA must verify fail-closed provider-state behavior before
+  any runtime activation.
+
 ### 2026-07-28 — P1-005 shared JSON authority mutation bypass
 
 - **Task ID:** `SUT-AIOS-P1-005-R01`

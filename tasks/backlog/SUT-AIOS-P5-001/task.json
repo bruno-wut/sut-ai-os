@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P5-001",
-  "title": "Implement independent verification service",
+  "title": "Implement provider-neutral independent verification",
   "status": "backlog",
   "phase": "phase-5",
   "workstream": "verification",
@@ -10,14 +10,15 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 5 — Independent verification through one bounded verification outcome.",
-  "technicalObjective": "Implement independent verification service",
+  "technicalObjective": "Implement a provider-neutral VerificationProvider that independently checks executor results, task bounds, deterministic tests, and fail-closed outcomes.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
-    "SUT-AIOS-P4-003"
+    "SUT-AIOS-P4-003",
+    "SUT-AIOS-P4-004"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P5-001/verification.md"
@@ -27,8 +28,10 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement independent verification service is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "VerificationProvider accepts structured task, execution, and evidence references without trusting the executor's completion claim.",
+    "Verifier identity and execution are independent from the implementer/provider being reviewed.",
+    "Malformed, incomplete, timed-out, unavailable, or policy-inconsistent results fail closed and cannot become merge- or production-eligible.",
+    "The interface permits separately approved deterministic, hosted, or local verification implementations without changing completion authority.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -54,7 +57,7 @@
     "git diff --check"
   ],
   "requiredChecks": [
-    "verification contract validation",
+    "provider-neutral verification contract validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
@@ -93,7 +96,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
