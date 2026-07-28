@@ -10,7 +10,7 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 3 — Durable event and workflow layer through one bounded workflow-runtime outcome.",
-  "technicalObjective": "Implement durable workflow state machine",
+  "technicalObjective": "Implement a durable workflow state machine with explicit analysis, proposal, policy, approval, provider-wait, timeout, cancellation, recovery, execution, verification, and outcome states.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
@@ -19,7 +19,8 @@
   "dependencies": [
     "SUT-AIOS-P3-002",
     "SUT-AIOS-P1-006",
-    "SUT-AIOS-P1-007"
+    "SUT-AIOS-P1-007",
+    "SUT-AIOS-P2-004"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P3-003/verification.md"
@@ -29,8 +30,10 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement durable workflow state machine is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "The workflow persists proposal, policy, approval, provider-wait, execution, verification, timeout, cancellation, recovery, and terminal states independently of the provider process.",
+    "Every provider state available, busy, rate_limited, capacity_exhausted, authentication_required, temporarily_unavailable, and disabled has deterministic fail-closed transition behavior.",
+    "Non-available providers pause or safely requeue work, record the reason, and never authorize or execute production changes.",
+    "The AI provider cannot advance policy or approval state.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -53,7 +56,7 @@
     "git diff --check"
   ],
   "requiredChecks": [
-    "workflow-runtime contract validation",
+    "durable workflow and provider-state transition validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
@@ -92,7 +95,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

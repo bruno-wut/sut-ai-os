@@ -9,8 +9,8 @@
   "workflowId": "implementation-p4-003",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 4 — Codex execution platform through one bounded execution outcome.",
-  "technicalObjective": "Implement isolated executor result and PR flow",
+  "businessObjective": "Advance Phase 4 provider-neutral bounded execution through one isolated result and pull-request outcome.",
+  "technicalObjective": "Implement isolated task-workspace execution, structured results, branches, and pull-request-only delivery for approved ExecutorAdapter work.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
@@ -18,6 +18,8 @@
   ],
   "dependencies": [
     "SUT-AIOS-P4-002",
+    "SUT-AIOS-P4-001",
+    "SUT-AIOS-P4-006",
     "SUT-AIOS-GOV-005"
   ],
   "evidence": [
@@ -28,8 +30,10 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement isolated executor result and PR flow is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Each execution uses one bounded isolated workspace with collision prevention, deterministic cleanup eligibility, and evidence-preserving failure recovery.",
+    "Structured results record requested capabilities, commands, changed paths, tests, unresolved risks, branch, and pull-request reference.",
+    "Concurrency and timeout enforcement remain outside the model; timeout or worker loss fails closed and safely requeues or dead-letters through the workflow.",
+    "Tier 0 delivery stops at an authorized branch or draft pull request and cannot deploy or merge.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -94,7 +98,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:32:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

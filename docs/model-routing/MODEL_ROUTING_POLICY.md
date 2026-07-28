@@ -4,6 +4,31 @@
 
 Route each approved task to the least costly capable model without weakening permissions, verification, or specialist review. Model selection is not authorization.
 
+## Future provider-neutral runtime boundary
+
+The repository's `sol`, `terra`, and `luna` development routes do not make Codex
+the future product workflow engine. The Phase 2–5 runtime will expose
+`IntelligenceProvider`, `ProposalGenerator`, `ExecutorAdapter`, and
+`VerificationProvider` boundaries.
+
+The first supported runtime path is a 24/7 Mac Mini host running the Pi
+orchestration service and durable state → supervised worker → Codex CLI adapter
+→ Codex CLI with ChatGPT subscription authentication. These components are
+co-located initially but remain logically separate; Pi state survives service,
+worker-process, and device restarts and is never Codex ephemeral state. A
+distinct Codex repository `ExecutorAdapter` handles only approved repository
+preparation. Codex is never the scheduler, durable workflow, policy engine,
+authorization authority, or audit source of truth. Separately approved OpenAI
+API, local-model, or other adapters may later implement the same contracts.
+
+Runtime adapters must report `available`, `busy`, `rate_limited`,
+`capacity_exhausted`, `authentication_required`, `temporarily_unavailable`, or
+`disabled`. Every non-`available` state pauses or safely requeues the task,
+records the reason, notifies staff where appropriate, and prevents production
+action. Fallback routing is disabled unless a provider is explicitly configured,
+data-policy eligible, and independently qualified. Model output cannot authorize
+its own intervention proposal.
+
 ## Supported hosted routes
 
 | Route | Codex model ID | Default role |

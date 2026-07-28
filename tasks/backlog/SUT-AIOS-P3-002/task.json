@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-002",
-  "title": "Implement queue retry and dead-letter delivery",
+  "title": "Implement durable scheduling, queue, retry, and dead-letter delivery",
   "status": "backlog",
   "phase": "phase-3",
   "workstream": "event-delivery",
@@ -10,7 +10,7 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 3 — Durable event and workflow layer through one bounded event-delivery outcome.",
-  "technicalObjective": "Implement queue retry and dead-letter delivery",
+  "technicalObjective": "Implement durable scheduling and queue consumption with bounded retry, safe requeue, dead-letter handling, deduplication, and recorded failure reasons independent of any AI provider.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
@@ -27,8 +27,9 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement queue retry and dead-letter delivery is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Scheduled checks and normalized events produce durable, deduplicated queue work without relying on Codex or a model as scheduler.",
+    "Retry, safe requeue, exhaustion, and dead-letter transitions are bounded, deterministic, observable, and preserve task and failure reason.",
+    "Unavailable providers cannot drop work, bypass policy, or cause production execution.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -54,7 +55,7 @@
     "git diff --check"
   ],
   "requiredChecks": [
-    "event-delivery contract validation",
+    "durable scheduling and event-delivery validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
@@ -93,7 +94,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

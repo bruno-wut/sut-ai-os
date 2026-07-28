@@ -2,15 +2,15 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P4-002",
-  "title": "Implement policy-gated Codex dispatcher",
+  "title": "Implement policy-gated provider-neutral executor dispatch",
   "status": "backlog",
   "phase": "phase-4",
-  "workstream": "codex-dispatch",
+  "workstream": "executor-dispatch",
   "workflowId": "implementation-p4-002",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 4 — Codex execution platform through one bounded codex-dispatch outcome.",
-  "technicalObjective": "Implement policy-gated Codex dispatcher",
+  "businessObjective": "Dispatch approved bounded work to the correct provider-neutral executor without granting the provider workflow, policy, authorization, or audit authority.",
+  "technicalObjective": "Implement policy-gated selection and dispatch to registered ExecutorAdapter implementations, including the separate Codex repository adapter and specialized deterministic GitHub, Cloudflare, CMS, notification, and approved-service adapters.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
@@ -19,6 +19,9 @@
   "dependencies": [
     "SUT-AIOS-P3-003",
     "SUT-AIOS-P4-001",
+    "SUT-AIOS-P4-004",
+    "SUT-AIOS-P4-006",
+    "SUT-AIOS-P4-007",
     "SUT-AIOS-GOV-003",
     "SUT-AIOS-GOV-004"
   ],
@@ -27,17 +30,20 @@
   ],
   "assumptions": [
     "No production write, deployment, or live credential access is authorized.",
-    "Interfaces with the finalized platform use approved compatibility contracts only."
+    "Interfaces with the finalized platform use approved compatibility contracts only.",
+    "The P4-007 Codex repository adapter uses the supervised Mac Mini worker and P4-005 provider transport; deterministic executors are preferred when reasoning is unnecessary."
   ],
   "acceptanceCriteria": [
-    "Implement policy-gated Codex dispatcher is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "ExecutorAdapter selection is provider-neutral, capability-based, and occurs only after deterministic policy and approval evaluation.",
+    "Codex repository work is delegated only through the separately verified P4-007 ExecutorAdapter and its bounded task envelope.",
+    "GitHub, Cloudflare, CMS, notification, and approved-service operations use bounded deterministic adapters when AI reasoning is unnecessary.",
+    "No executor can expand capabilities, authorize its own proposal, bypass a kill switch, or become the audit source of truth.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
-    "services/orchestrator/src/codex/**",
-    "tests/codex-dispatch/**",
-    "docs/codex-dispatch/**",
+    "services/orchestrator/src/executors/**",
+    "tests/executor-dispatch/**",
+    "docs/executor-dispatch/**",
     "evidence/tasks/SUT-AIOS-P4-002/**",
     "tasks/**/SUT-AIOS-P4-002/**"
   ],
@@ -52,18 +58,18 @@
     "apps/ibe/src/inventory/**"
   ],
   "allowedCommands": [
-    "npm run test:codex-dispatch",
+    "npm run test:executor-dispatch",
     "npm run verify:fast",
     "git diff --check"
   ],
   "requiredChecks": [
-    "codex-dispatch contract validation",
+    "provider-neutral executor dispatch validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
   ],
   "requiredTests": [
-    "npm run test:codex-dispatch",
+    "npm run test:executor-dispatch",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -83,7 +89,7 @@
     "Any required change crosses declared subsystem or protected paths.",
     "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
   ],
-  "rollbackExpectations": "Revert the codex-dispatch branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert the executor-dispatch branch and generated artifacts; preserve audit and verification evidence.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
@@ -96,7 +102,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:32:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

@@ -1,0 +1,118 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P5-004",
+  "title": "Qualify provider portability and fallback",
+  "status": "backlog",
+  "phase": "phase-5",
+  "workstream": "provider-portability",
+  "workflowId": "implementation-p5-004",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit future API, local-model, or other providers without weakening policy, data controls, evidence, or availability handling.",
+  "technicalObjective": "Define and verify provider conformance, capability, structured-output, data-classification, provider-state, failure, audit, and fallback-eligibility tests against the canonical provider-neutral interfaces.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P4-004",
+    "SUT-AIOS-P4-005",
+    "SUT-AIOS-P5-001",
+    "SUT-AIOS-P5-002"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P5-004/verification.md"
+  ],
+  "assumptions": [
+    "No provider fallback is enabled merely by completing qualification.",
+    "OpenAI API, local-model, and other providers require separate approved adapter and credential tasks.",
+    "No production write, deployment, or live credential access is authorized."
+  ],
+  "acceptanceCriteria": [
+    "A conformance suite evaluates IntelligenceProvider, ProposalGenerator, ExecutorAdapter where applicable, and VerificationProvider compatibility without provider-specific authority.",
+    "Qualification covers schema validity, deterministic malformed-output rejection, capability declarations, data-classification eligibility, timeout/cancellation, audit attribution, and all canonical provider states.",
+    "Fallback remains disabled unless explicitly configured and policy-authorized for the task, data, requested capabilities, and independent verification route.",
+    "Unavailable or failed primary and fallback providers pause or safely requeue, preserve both reasons, notify staff where appropriate, and cannot trigger production changes.",
+    "No provider can verify its own execution as the sole completion authority."
+  ],
+  "allowedPaths": [
+    "packages/provider-conformance/**",
+    "tests/provider-portability/**",
+    "docs/provider-portability/**",
+    "evidence/tasks/SUT-AIOS-P5-004/**",
+    "tasks/**/SUT-AIOS-P5-004/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:provider-portability",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "provider conformance and malformed-output rejection",
+    "data-classification and capability eligibility",
+    "all provider-state and double-failure behavior",
+    "independent-verifier separation",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:provider-portability",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any provider or fallback would receive broader data, capabilities, credentials, execution rights, or authority than the primary contract permits.",
+    "Any production access, privacy, authentication, authorization, payment, booking, RLS, migration, or independent-verification ambiguity arises."
+  ],
+  "rollbackExpectations": "Disable fallback configuration and revert the provider-conformance branch; preserve qualification and failure evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P5-004/task.json",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+      "docs/model-routing/MODEL_ROUTING_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:15:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Added by GOV-032 to make provider migration and fallback explicit, qualified, and fail closed."
+    }
+  ]
+}

@@ -2,8 +2,12 @@
 
 ## Workspace
 
-- Repository: independent AI OS workspace on `main`, with the bootstrap workspace and `SUT-AIOS-P0-001` merged in merge commit `90a18765d986e96ad8f90a30188c5b46ff3fd234`.
-- Active code: no AI OS product services yet. The repository contains the governed workspace, permanent memory, completed baseline-gate evidence, and a read-only compatibility baseline.
+- Repository: independent AI OS workspace on `main`; Phase 0 and
+  `SUT-AIOS-P1-001` through `SUT-AIOS-P1-005` have merged completion records.
+- Active code: no deployed AI OS product services. The repository contains the
+  governed workspace, permanent memory, Phase 1 static contracts and local
+  deterministic policy evaluator, retained verification evidence, and a
+  read-only compatibility baseline.
 - Compatibility baseline: `reference/finalized-platform/`, exported from finalized-platform commit `dbce321f61144b50a94bd11a068fa5897b0f2293`.
 - Boundary: never edit, install into, build in, or generate into the baseline. The upstream finalized platform remains separate.
 
@@ -17,10 +21,18 @@
 - Repository boundaries, issue/risk register, validation record, and permanent-memory documents.
 - The technical baseline gate is complete at `docs/verification/technical-baseline-gate.json` with independent evidence under `evidence/verification/SUT-AIOS-P0-001/`.
 - The task worktree for `SUT-AIOS-P0-001` was clean, merged, and removed after reconciliation.
+- The derived provider-neutral Mac Mini/Pi/Codex deployment option is proposed
+  in `docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md`; it adds no runtime
+  capability.
 
 ## What does not exist yet
 
-- Active AI OS services, full agent-specific input/output schemas, a shell-executable Codex CLI, an approved local Qwen provider/model, policy engine, workflow engine, scoped executor, GitHub App integration, deployment gate, or production integration. Governance CI exists, but it is not a production deployment gate.
+- Active AI OS services, full agent-specific input/output schemas, durable
+  workflow/queue services, a provider-neutral invocation gateway, Pi-to-Codex
+  subscription adapter, supervised Mac Mini worker, Codex repository
+  ExecutorAdapter, scoped dispatch, independent verification service, approved
+  fallback provider, deployment gate, or production integration. Governance CI
+  exists, but it is not a production deployment gate.
 
 ## Compatibility baseline validation
 
@@ -28,4 +40,8 @@ Root Next.js and Astro builds passed in an isolated disposable copy. Warnings, d
 
 ## Immediate constraint
 
-This remains a workspace setup and control-foundation phase. Build the control foundation before attempting application integration, autonomous execution, remote access, or deployment. Production writes and autonomous operation remain disabled.
+This remains the control-foundation phase. `SUT-AIOS-P1-006` is the next product
+task, but remains backlog until its exact static contract and validator path are
+approved. The future Mac Mini worker starts at Tier 0/shadow and cannot
+substitute for policy, approval, workflow, verification, or audit. Production
+writes and autonomous operation remain disabled.

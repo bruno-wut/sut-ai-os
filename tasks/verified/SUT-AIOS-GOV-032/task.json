@@ -1,0 +1,218 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-032",
+  "title": "Adopt provider-neutral Mac Mini Pi Codex runtime roadmap",
+  "status": "verified",
+  "phase": "workspace-runtime-planning",
+  "workstream": "architecture-roadmap",
+  "workflowId": "mac-mini-pi-codex-runtime-roadmap",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make the Mac Mini, Pi orchestration platform, and replaceable Codex subscription runtime a first-class future deployment option while retaining Tier 0 safety and human authorization.",
+  "technicalObjective": "Create a derived deployment decision, reconcile permanent roadmap memory, and revise only future backlog packets for provider-neutral intelligence, proposals, worker runtime, executor dispatch, verification, audit, and portability; implement no runtime capability.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-032/verification.md"
+  ],
+  "assumptions": [
+    "Pi denotes the logical orchestration platform and initially runs as a local service on the same 24/7 Mac Mini host as the supervised worker; Codex owns no durable state.",
+    "The first supported provider path is Pi to Codex CLI using ChatGPT subscription authentication; API, local, and other providers remain future disabled alternatives.",
+    "The immutable architecture sources remain authoritative and are not edited; this task records a derived deployment decision aligned to them."
+  ],
+  "acceptanceCriteria": [
+    "A derived ADR states provider-neutral interfaces, the Mac Mini/Pi/Codex first implementation, Codex non-authorities, Tier 0/shadow bounds, and future provider migration.",
+    "Roadmap and future packets define IntelligenceProvider, ProposalGenerator, ExecutorAdapter, and VerificationProvider boundaries; AI cannot authorize its own proposal.",
+    "Future packets cover structured intelligence and intervention proposals, Pi-to-Codex adapter, Mac Mini worker/supervision/workspaces/concurrency/timeouts, durable scheduling/queue/DLQ/requeue, subscription health/capacity states, provider-neutral dispatch, audit attribution, independent verification, and fallback qualification.",
+    "A distinct future P4-007 packet implements the Codex repository ExecutorAdapter for bounded analysis, code/content changes, tests, branches, pull requests, and repair preparation without policy, approval, scheduling, workflow, or audit authority.",
+    "The initial co-located Mac Mini deployment keeps Pi orchestration, durable queue and workflow state, the supervised worker, and the Codex CLI adapter logically separate; durable state survives Pi-service, worker-process, and device restarts and is never Codex ephemeral state.",
+    "All exact provider states available, busy, rate_limited, capacity_exhausted, authentication_required, temporarily_unavailable, and disabled fail closed with pause or requeue, evidence, and appropriate notification; no production action occurs.",
+    "Only backlog packets and permitted project documents change; completed, active, and P1-006 records, source architecture, runtime code, verifier, schemas, policies, and production surfaces remain untouched.",
+    "Affected Phase 2–5 dependency changes are acyclic and documented."
+  ],
+  "allowedPaths": [
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/MILESTONES.md",
+    "docs/project/SYSTEM_MAP.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/CURRENT_FOCUS.md",
+    "docs/project/FIRST_VERTICAL_SLICE.md",
+    "docs/project/KNOWN_RISKS.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "tasks/backlog/SUT-AIOS-P2-002/task.json",
+    "tasks/backlog/SUT-AIOS-P2-003/task.json",
+    "tasks/backlog/SUT-AIOS-P3-002/task.json",
+    "tasks/backlog/SUT-AIOS-P3-003/task.json",
+    "tasks/backlog/SUT-AIOS-P4-002/task.json",
+    "tasks/backlog/SUT-AIOS-P4-003/task.json",
+    "tasks/backlog/SUT-AIOS-P5-001/task.json",
+    "tasks/backlog/SUT-AIOS-P5-002/task.json",
+    "tasks/backlog/SUT-AIOS-P5-003/task.json",
+    "tasks/backlog/SUT-AIOS-P2-004/**",
+    "tasks/backlog/SUT-AIOS-P4-004/**",
+    "tasks/backlog/SUT-AIOS-P4-005/**",
+    "tasks/backlog/SUT-AIOS-P4-006/**",
+    "tasks/backlog/SUT-AIOS-P4-007/**",
+    "tasks/backlog/SUT-AIOS-P5-004/**",
+    "tasks/**/SUT-AIOS-GOV-032/**",
+    "evidence/tasks/SUT-AIOS-GOV-032/**",
+    "evidence/verification/SUT-AIOS-GOV-032/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tasks/active/**",
+    "tasks/**/SUT-AIOS-P1-006/**",
+    "evidence/tasks/SUT-AIOS-P1-006/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    "scripts/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:task -- --task SUT-AIOS-GOV-032 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "provider-state completeness",
+    "dependency acyclicity review",
+    "completed/active/P1-006 isolation",
+    "immutable-source confirmation",
+    "independent Sol QA",
+    "machine verification evidence"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "node scripts/github/validate-governance.mjs",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any request to implement provider, worker, scheduler, queue, executor, policy, authorization, production access, secret handling, payment, RLS, migration, or runtime capability.",
+    "Any contradiction with immutable architecture source or authority boundary."
+  ],
+  "rollbackExpectations": "Revert only this task's ADR, project roadmap documents, future backlog packets, task state, and evidence; preserve all completed/current records, immutable sources, and runtime surfaces.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/verified/SUT-AIOS-GOV-032/task.json",
+      "docs/project/ROADMAP.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/DEPENDENCY_GRAPH.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md",
+      "docs/model-routing/MODEL_ROUTING_POLICY.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:04:22.324Z",
+  "updatedDate": "2026-07-28T09:36:34.345Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-032/verification-20260728093604851.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:04:22.324Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T09:05:06.363Z",
+      "actor": "chief-orchestrator",
+      "reason": "User-approved derived deployment-roadmap scope is bounded to future packets and permanent memory; immutable source and current work remain isolated."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T09:05:06.405Z",
+      "actor": "chief-orchestrator",
+      "reason": "Approved Sol roadmap packet, isolated worktree, explicit paths, and deterministic checks are ready."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T09:18:28.228Z",
+      "actor": "engineering-planner",
+      "reason": "Derived ADR, roadmap memory, dependency graph, and future Phase 2-5 packets pass all packet-authorized local checks; submit for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T09:29:35.215Z",
+      "actor": "chief-orchestrator",
+      "reason": "User feedback requires a distinct Codex repository ExecutorAdapter task, corrected co-located Pi/Mac Mini deployment wording, and machine verification evidence to resolve CI."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T09:29:35.263Z",
+      "actor": "chief-orchestrator",
+      "reason": "Resume for bounded PR #51 architecture and CI remediation only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T09:34:54.849Z",
+      "actor": "engineering-planner",
+      "reason": "PR #51 remediation adds distinct P4-007 repository ExecutorAdapter, corrects co-located Pi/Mac Mini durable-state wording, and passes all packet-authorized local checks; return for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T09:36:34.345Z",
+      "actor": "qa-verification",
+      "reason": "Machine verification passed after bounded PR #51 architecture and CI remediation; human feedback is retained in the implementation evidence."
+    }
+  ]
+}

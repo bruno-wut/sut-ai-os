@@ -1,0 +1,117 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P4-004",
+  "title": "Implement provider-neutral intelligence invocation gateway",
+  "status": "backlog",
+  "phase": "phase-4",
+  "workstream": "intelligence-gateway",
+  "workflowId": "implementation-p4-004",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Invoke approved intelligence providers through one fail-closed boundary without coupling orchestration or authority to Codex.",
+  "technicalObjective": "Implement the IntelligenceProvider gateway with canonical request/response validation, provider capability selection, exact provider states, bounded timeouts, and audit correlation.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-002",
+    "SUT-AIOS-P2-004",
+    "SUT-AIOS-P3-003",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P1-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P4-004/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "The gateway receives durable workflow work; it is not the scheduler, workflow engine, policy engine, authorization authority, or audit source of truth."
+  ],
+  "acceptanceCriteria": [
+    "The gateway validates canonical IntelligenceProvider requests and responses and rejects provider-supplied authority.",
+    "It represents exactly available, busy, rate_limited, capacity_exhausted, authentication_required, temporarily_unavailable, and disabled.",
+    "Every non-available state fails closed, returns a durable reason for pause or safe requeue, and cannot cause production action.",
+    "Fallback selection is disabled unless a separately qualified, configured, data-policy-eligible provider is available.",
+    "Provider capability, model identity, request correlation, timeout, and outcome are emitted for audit without secrets."
+  ],
+  "allowedPaths": [
+    "packages/intelligence-provider/**",
+    "services/intelligence-gateway/**",
+    "tests/intelligence-gateway/**",
+    "docs/intelligence-gateway/**",
+    "evidence/tasks/SUT-AIOS-P4-004/**",
+    "tasks/**/SUT-AIOS-P4-004/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:intelligence-gateway",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "provider-state completeness and negative cases",
+    "fail-closed fallback behavior",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:intelligence-gateway",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any provider can affect scheduling, workflow, policy, authorization, approval, audit authority, production state, or fallback eligibility.",
+    "Any authentication, data-classification, privacy, timeout, concurrency, or provider-state ambiguity arises."
+  ],
+  "rollbackExpectations": "Revert the intelligence-gateway branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P4-004/task.json",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:15:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Added by GOV-032 as the provider-neutral intelligence invocation boundary."
+    }
+  ]
+}

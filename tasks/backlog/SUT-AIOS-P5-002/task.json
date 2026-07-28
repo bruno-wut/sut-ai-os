@@ -10,14 +10,16 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 5 — Independent verification through one bounded preview-verification outcome.",
-  "technicalObjective": "Implement preview and evidence capture",
+  "technicalObjective": "Implement preview and durable audit evidence capture that attributes provider, model, sanitized prompt or classified prompt artifact reference, prompt/playbook integrity reference, task, requested capabilities, provider states, commands, changed artifacts, verification, and outcome.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
-    "SUT-AIOS-P5-001"
+    "SUT-AIOS-P5-001",
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P4-006"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P5-002/verification.md"
@@ -27,8 +29,10 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement preview and evidence capture is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "Evidence correlates task, provider, model, provider state, sanitized prompt or classified prompt artifact reference, prompt/playbook version or integrity reference, requested capabilities, commands, changed artifacts, policy and approval results, independent verification, and outcome.",
+    "Authentication material, secrets, raw sensitive prompts, and unapproved guest data are excluded from ordinary repository evidence.",
+    "Preview or evidence failure blocks eligibility and preserves a deterministic reason without enabling production action.",
+    "Retention and cleanup preserve the append-only audit boundary and failed-attempt history.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -54,7 +58,7 @@
     "git diff --check"
   ],
   "requiredChecks": [
-    "preview-verification contract validation",
+    "preview and audit-attribution validation",
     "changed-path inspection",
     "secret scan",
     "independent verification"
@@ -93,7 +97,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T09:15:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

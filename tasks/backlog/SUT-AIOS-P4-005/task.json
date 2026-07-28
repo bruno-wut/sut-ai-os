@@ -1,0 +1,114 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P4-005",
+  "title": "Implement Pi-to-Codex CLI subscription adapter",
+  "status": "backlog",
+  "phase": "phase-4",
+  "workstream": "codex-cli-adapter",
+  "workflowId": "implementation-p4-005",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Provide the first replaceable Codex provider transport for the Pi orchestration platform without combining it with repository executor authority.",
+  "technicalObjective": "Implement a Pi-to-Codex CLI adapter using ChatGPT subscription authentication with conservative authentication-health, usage-limit, capacity, timeout, cancellation, and provider-state mapping.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P4-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P4-005/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Subscription authentication remains in the approved host credential store and never enters Git, task packets, prompts, or evidence.",
+    "The Pi service and adapter initially run on the same Mac Mini host as the supervised worker while Pi retains logical ownership of durable workflow and queue state.",
+    "Provider terms and available health or usage signals must be verified at implementation time rather than assumed by this roadmap packet."
+  ],
+  "acceptanceCriteria": [
+    "The adapter implements the canonical IntelligenceProvider boundary without redefining its schemas, policies, contracts, or authority.",
+    "It maps observed conditions to exactly available, busy, rate_limited, capacity_exhausted, authentication_required, temporarily_unavailable, or disabled and maps uncertainty fail closed.",
+    "Authentication expiry, interactive reauthentication, rate limit, capacity exhaustion, timeout, cancellation, process failure, and malformed output cannot throw open or cause production action.",
+    "Non-available work is returned to durable orchestration with a sanitized reason for pause, safe requeue, dead-lettering, and appropriate staff notification.",
+    "The adapter contains no scheduler, durable workflow, approval, policy, audit-source-of-truth, or automatic fallback responsibility."
+  ],
+  "allowedPaths": [
+    "services/intelligence-gateway/src/providers/codex-cli/**",
+    "tests/codex-cli-adapter/**",
+    "docs/codex-cli-adapter/**",
+    "evidence/tasks/SUT-AIOS-P4-005/**",
+    "tasks/**/SUT-AIOS-P4-005/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/migrations/**",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm run test:codex-cli-adapter",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "subscription authentication health and no-secret validation",
+    "all provider states and uncertain-signal fail-closed tests",
+    "timeout cancellation requeue and dead-letter tests",
+    "changed-path inspection",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "npm run test:codex-cli-adapter",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Subscription terms, unattended authentication, session persistence, signal semantics, secret handling, or provider-state mapping is uncertain.",
+    "Any request would make Codex the scheduler, workflow engine, policy engine, authorization authority, or audit source of truth."
+  ],
+  "rollbackExpectations": "Disable and revert the Codex CLI adapter branch; retain sanitized provider-state and verification evidence without credentials.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P4-005/task.json",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+      "docs/model-routing/MODEL_ROUTING_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-28T09:32:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:15:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Added by GOV-032 as the first provider-specific implementation behind the neutral gateway."
+    }
+  ]
+}
