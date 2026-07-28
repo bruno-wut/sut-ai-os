@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-001",
   "title": "Implement deterministic analytics calculators",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-2",
   "workstream": "analytics",
   "workflowId": "implementation-p2-001",
@@ -109,16 +109,17 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P2-001/task.json",
+      "tasks/done/SUT-AIOS-P2-001/task.json",
       "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T15:18:41.373Z",
+  "updatedDate": "2026-07-28T15:50:48.440Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-P2-001/verification-20260728151835393.json"
+    "evidence/verification/SUT-AIOS-P2-001/verification-20260728151835393.json",
+    "evidence/tasks/SUT-AIOS-P2-001/verification.md"
   ],
   "stateTransitions": [
     {
@@ -155,6 +156,13 @@
       "at": "2026-07-28T15:18:41.373Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the finite V1 contract, deep-module and hexagonal boundaries, fail-closed malformed-input behavior, exact admitted validator, required checks, rollback, and non-production scope."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T15:50:48.440Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #76 merged at f570e1e."
     }
   ]
 }
