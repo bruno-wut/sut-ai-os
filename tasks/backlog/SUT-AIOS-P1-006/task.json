@@ -2,19 +2,22 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-006",
-  "title": "Implement versioned playbook registry",
+  "title": "Define static Playbook Registry V1 contract",
   "status": "backlog",
   "phase": "phase-1",
   "workstream": "playbooks",
   "workflowId": "implementation-p1-006",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded playbooks outcome.",
-  "technicalObjective": "Implement versioned playbook registry",
+  "businessObjective": "Establish one bounded, versioned playbook registry contract for a future content-schema-repair shadow workflow without enabling execution or production mutation.",
+  "technicalObjective": "Implement the closed Playbook Registry V1 schema, one finite Tier 0 shadow artifact, and its deterministic Node validator exactly as defined in docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
-    "docs/project/IMPLEMENTATION_BACKLOG.md"
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md",
+    "policies/deterministic-authorization-policies-v1.json",
+    "schemas/authorization-policy-contract-v1.schema.json"
   ],
   "dependencies": [
     "SUT-AIOS-P1-004"
@@ -23,44 +26,71 @@
     "evidence/tasks/SUT-AIOS-P1-006/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
-    "Interfaces with the finalized platform use approved compatibility contracts only."
+    "P1-006 is a repository-only static contract in Tier 0 shadow mode; it grants no runtime authority and cannot execute a tool or alter a file.",
+    "The registry contains exactly one disabled content-schema-repair-shadow V1 entry with empty permitted tool and path lists.",
+    "The required historical success and rollback rates are each null, meaning not recorded for the disabled V1 shadow entry; no telemetry, calculator, runtime storage, or external data is authorized.",
+    "The P1-004 reference supplies static taxonomy and deny defaults only; any future runtime authorization remains a separately governed P1-005 V2 concern.",
+    "No production write, deployment, database, network, external service, live credential, guest-data, booking, payment, inventory, or pricing access is authorized.",
+    "A separate governance packet must admit the exact Node validator command after the validator exists and before independent machine verification."
   ],
   "acceptanceCriteria": [
-    "Implement versioned playbook registry is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "schemas/playbook-registry-v1.schema.json is the closed Draft 2020-12 structural authority for the documented finite V1 registry and accepts no extra properties.",
+    "playbooks/playbook-registry-v1.json contains exactly the documented registry identity, P1-004 deny-taxonomy reference, and one disabled Tier 0 shadow content-schema-repair entry.",
+    "The single entry has productionWritePermission false, empty permittedTools and permittedPaths, exact fixture-only trigger and evidence requirements, exact deterministic check identifiers, no activation approval, zero retries, and no-mutation rollback.",
+    "The single entry requires historicalSuccessRate and historicalRollbackRate, each exactly null/not-recorded; omission or any non-null value is rejected without calculating or retrieving a rate.",
+    "node tests/playbooks/validate-playbook-registry-v1.mjs loads only the committed canonical schema and artifact, validates the finite contract, and rejects the focused mutations defined by the design.",
+    "Malformed JSON, altered authority, unexpected fields or values, activation, production-write permission, tools, paths, retries, or mutation-capable rollback fail deterministically with a nonzero exit.",
+    "P1-006 adds no runtime runner, dispatcher, evaluator dependency, service, command execution, telemetry, rate calculator, runtime metric storage, external data, database, network call, credential access, production behavior, or package restructuring.",
+    "The exact validator runs explicitly in CI, and independent QA confirms forbidden paths were untouched after separate exact-command verifier admission is merged."
   ],
   "allowedPaths": [
-    "playbooks/**",
-    "tests/playbooks/**",
-    "docs/playbooks/**",
+    "playbooks/playbook-registry-v1.json",
+    "schemas/playbook-registry-v1.schema.json",
+    "tests/playbooks/validate-playbook-registry-v1.mjs",
+    "docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md",
+    ".github/workflows/validate-governance.yml",
     "evidence/tasks/SUT-AIOS-P1-006/**",
+    "evidence/verification/SUT-AIOS-P1-006/**",
     "tasks/**/SUT-AIOS-P1-006/**"
   ],
   "forbiddenPaths": [
     "reference/finalized-platform/**",
     "docs/architecture/source/**",
+    "packages/**",
+    "apps/**",
+    "services/**",
+    "scripts/**",
+    "package.json",
+    "package-lock.json",
     ".env*",
     "**/*secret*",
     "**/*credential*",
-    "supabase/migrations/**",
-    "apps/ibe/src/payments/**",
-    "apps/ibe/src/inventory/**"
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    "policies/**",
+    "schemas/authorization-policy-contract-v1.schema.json",
+    "schemas/authorization-policy-contract-v2.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json"
   ],
   "allowedCommands": [
-    "npm run playbook:validate",
+    "node tests/playbooks/validate-playbook-registry-v1.mjs",
     "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P1-006 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
     "git diff --check"
   ],
   "requiredChecks": [
-    "playbooks contract validation",
+    "finite V1 registry contract validation",
+    "focused negative and mutation cases",
     "changed-path inspection",
-    "secret scan",
-    "independent verification"
+    "secret and protected-boundary inspection",
+    "explicit CI command inspection",
+    "independent Sol verification",
+    "machine verification evidence after exact-command admission"
   ],
   "requiredTests": [
-    "npm run playbook:validate",
+    "node tests/playbooks/validate-playbook-registry-v1.mjs",
     "npm run verify:fast"
   ],
   "productionWritePermission": false,
@@ -77,23 +107,28 @@
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
   "solEscalationTriggers": [
+    "Any proposal broadens the finite registry, permits a tool or path, enables a playbook, adds runtime execution, or treats the P1-004 reference as an allow decision.",
     "Any required change crosses declared subsystem or protected paths.",
     "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
   ],
-  "rollbackExpectations": "Revert the playbooks branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert only the P1-006 registry artifact, schema, validator, design document, task-state changes, and task evidence; preserve P1-004/P1-005 authorities, historical evidence, canonical architecture, the immutable compatibility snapshot, and all external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P1-006/task.json",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
+      "docs/playbooks/P1-006_PLAYBOOK_REGISTRY_DESIGN.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md",
+      "policies/deterministic-authorization-policies-v1.json",
+      "schemas/authorization-policy-contract-v1.schema.json"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T08:00:41.114Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
