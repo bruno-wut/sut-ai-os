@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-008",
   "title": "Create observe-only Staff OS control views",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "staff-os",
   "workflowId": "implementation-p1-008",
@@ -117,7 +117,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P1-008/task.json",
+      "tasks/done/SUT-AIOS-P1-008/task.json",
       "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
       "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
       "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
@@ -130,9 +130,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T12:02:32.121Z",
+  "updatedDate": "2026-07-28T12:06:16.186Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-P1-008/verification-20260728120223645.json"
+    "evidence/verification/SUT-AIOS-P1-008/verification-20260728120223645.json",
+    "evidence/tasks/SUT-AIOS-P1-008/verification.md"
   ],
   "stateTransitions": [
     {
@@ -169,6 +170,13 @@
       "at": "2026-07-28T12:02:32.121Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the closed three-view metadata-only contract, canonical source references, fixed P1-007 observe denial, focused fail-closed mutations, explicit CI command, and bounded no-runtime scope; machine verification passed."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T12:06:16.186Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #70 merged to origin/main at 2f2fe36; completion reconciliation recorded."
     }
   ]
 }
