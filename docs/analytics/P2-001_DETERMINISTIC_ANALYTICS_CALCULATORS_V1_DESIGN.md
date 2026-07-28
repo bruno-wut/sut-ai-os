@@ -52,6 +52,14 @@ same segment expression), and `seasonalityStatus` (`not-evaluated` or
 `caller-declared`). Context is display-only and never changes results or
 confidence.
 
+Draft 2020-12 expresses the correlation-array shape, item bound, identifier
+pattern, and uniqueness, but it cannot express lexicographic array ordering.
+The request schema therefore accepts an otherwise structurally valid unsorted
+array, while the deterministic calculator enforces ascending order as semantic
+validation and returns `INVALID_CONTEXT`. This documented semantic layer is
+part of the V1 request contract; schema-valid does not by itself mean the
+request is semantically valid for calculation.
+
 Each nested `currentPeriod`, `baselinePeriod`, and `context` object is closed.
 Any missing, unknown, or wrong-typed nested field is `MALFORMED_REQUEST`, not
 `INVALID_PERIOD` or `INVALID_CONTEXT`; its semantic checks are then suppressed.
@@ -136,7 +144,11 @@ node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs
 
 It must test all table rules, variants, output bounds, rounding edges, repeated
 never-throw behavior, authority replacement rejection, sole public API, and no
-infrastructure imports. A separate governance task must admit only this literal
+infrastructure imports. It also compiles both authorities through a
+standards-compliant Draft 2020-12 validator, exercises canonical valid and
+invalid requests, validates every generated result, rejects malformed result
+variants, and proves each generated result matches exactly one declared
+variant. A separate governance task must admit only this literal
 with `shell: false`, fixed path argument, and near-miss rejection tests. P2-001
 then needs independent Sol QA, machine evidence, final-head CI, and rollback of
 only its product paths/state/evidence.

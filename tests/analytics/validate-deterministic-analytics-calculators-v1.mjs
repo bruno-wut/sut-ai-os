@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const requestSchemaPath = path.join(root, "schemas/deterministic-analytics-calculator-request-v1.schema.json");
@@ -22,6 +23,7 @@ const INVALID_CODES = [
   "INVALID_PERIOD", "EMPTY_OBSERVATIONS", "OBSERVATION_LIMIT_EXCEEDED",
   "NON_FINITE_OBSERVATION", "INVALID_CONTEXT", "NUMERIC_OVERFLOW"
 ];
+const RESULT_VARIANTS = ["okSum", "okMeanOrRate", "nonComparableSum", "nonComparableMeanOrRate", "invalid"];
 
 const baseRequest = () => ({
   metricId: "event-count",
@@ -66,6 +68,29 @@ function assertSchemaAuthorities(requestSchema, resultSchema) {
   assertClosedObjectSchemas(resultSchema, "resultSchema");
 }
 
+function compileSchemaAuthorities(requestSchema, resultSchema) {
+  const ajv = new Ajv2020({ allErrors: true, strict: true, strictTypes: false });
+  expect(ajv.validateSchema(requestSchema), `request schema must satisfy Draft 2020-12 metaschema: ${ajv.errorsText(ajv.errors)}`);
+  expect(ajv.validateSchema(resultSchema), `result schema must satisfy Draft 2020-12 metaschema: ${ajv.errorsText(ajv.errors)}`);
+
+  const validateRequest = ajv.compile(requestSchema);
+  const validateResult = ajv.compile(resultSchema);
+  const variantValidators = RESULT_VARIANTS.map((name) => ({
+    name,
+    validate: ajv.compile({
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $ref: `#/$defs/${name}`,
+      $defs: resultSchema.$defs
+    })
+  }));
+  return { ajv, validateRequest, validateResult, variantValidators };
+}
+
+function assertSchemaDecision(validate, value, expected, label, ajv) {
+  const actual = validate(value);
+  expect(actual === expected, `${label}: expected schema validation ${expected}, received ${actual}${actual ? "" : ` (${ajv.errorsText(validate.errors)})`}`);
+}
+
 function assertResult(result, label) {
   expect(exactKeys(result, RESULT_KEYS), `${label}: result fields must be exact`);
   expect(result.schemaVersion === "1.0.0", `${label}: schema version must be fixed`);
@@ -103,6 +128,21 @@ try {
   const requestSchema = JSON.parse(requestText);
   const resultSchema = JSON.parse(resultText);
   assertSchemaAuthorities(requestSchema, resultSchema);
+  const { ajv, validateRequest, validateResult, variantValidators } = compileSchemaAuthorities(requestSchema, resultSchema);
+
+  assertSchemaDecision(validateRequest, baseRequest(), true, "canonical request", ajv);
+  for (const [mutate, label] of [
+    [(request) => { request.extra = true; }, "request with unknown field"],
+    [(request) => { delete request.context; }, "request missing required field"],
+    [(request) => { request.segmentId = "Bad Segment"; }, "request with invalid identifier"],
+    [(request) => { request.aggregation = "rate"; }, "request with invalid metric mapping"],
+    [(request) => { request.currentObservations = []; }, "request with empty observations"],
+    [(request) => { request.context.correlatedDeploymentIds = ["deploy-a", "deploy-a"]; }, "request with duplicate correlation IDs"]
+  ]) {
+    const request = baseRequest();
+    mutate(request);
+    assertSchemaDecision(validateRequest, request, false, label, ajv);
+  }
 
   expect(!/^\s*import\s/m.test(moduleText), "calculator core must not import infrastructure or providers");
   expect(!/(readFile|fetch\s*\(|process\.env|Date\.now|new Date|database|queue|provider sdk)/i.test(moduleText), "calculator core must not read mutable infrastructure authority");
@@ -111,10 +151,15 @@ try {
   const { calculateMetricComparison } = calculatorModule;
 
   let testsRun = 0;
+  const observedVariants = new Set();
   const calculate = (request, label) => {
     let result;
     try { result = calculateMetricComparison(request); } catch (error) { throw new Error(`${label}: threw ${error.message}`); }
     assertResult(result, label);
+    assertSchemaDecision(validateResult, result, true, `${label}: generated result`, ajv);
+    const matchingVariants = variantValidators.filter(({ validate }) => validate(result)).map(({ name }) => name);
+    expect(matchingVariants.length === 1, `${label}: generated result must match exactly one variant, matched ${JSON.stringify(matchingVariants)}`);
+    observedVariants.add(matchingVariants[0]);
     testsRun += 1;
     return result;
   };
@@ -132,6 +177,7 @@ try {
     const request = baseRequest();
     request.metricId = metricId;
     request.aggregation = aggregation;
+    assertSchemaDecision(validateRequest, request, true, `canonical request mapping ${metricId}`, ajv);
     result = calculate(request, `mapping ${metricId}`);
     expect(result.status === "ok", `${metricId} mapping must be accepted`);
   }
@@ -157,6 +203,13 @@ try {
   zero.baselineObservations = [0.0000001];
   result = calculate(zero, "rounded zero baseline");
   expect(result.status === "non-comparable" && result.baselineValue === 0 && result.percentageMovement === null, "rounded zero baseline must be non-comparable");
+
+  const zeroMean = baseRequest();
+  zeroMean.metricId = "event-value-mean";
+  zeroMean.aggregation = "mean";
+  zeroMean.baselineObservations = [0];
+  result = calculate(zeroMean, "mean zero baseline variant");
+  expect(result.status === "non-comparable", "mean zero baseline must be non-comparable");
 
   const overflow = baseRequest();
   overflow.currentObservations = [1_000_000_000];
@@ -195,7 +248,8 @@ try {
   const malformedContext = baseRequest(); malformedContext.context.anomalyDurationDays = "2";
   expectReasons(malformedContext, ["MALFORMED_REQUEST"], "malformed nested context");
   const invalidContext = baseRequest(); invalidContext.context.correlatedDeploymentIds = ["deploy-b", "deploy-a"];
-  expectReasons(invalidContext, ["INVALID_CONTEXT"], "unsorted context IDs");
+  assertSchemaDecision(validateRequest, invalidContext, true, "unsorted context IDs remain structurally schema-valid", ajv);
+  expectReasons(invalidContext, ["INVALID_CONTEXT"], "unsorted context IDs fail semantic validation");
   const duplicateContext = baseRequest(); duplicateContext.context.correlatedCampaignIds = ["campaign-a", "campaign-a"];
   expectReasons(duplicateContext, ["INVALID_CONTEXT"], "duplicate context IDs");
 
@@ -236,7 +290,30 @@ try {
     expect(first.status === "invalid" && JSON.stringify(first) === JSON.stringify(second), `malformed input ${index} must deterministically fail closed`);
   }
 
-  process.stdout.write(`${JSON.stringify({ name: "deterministic-analytics-calculators-v1", passed: true, testsRun, details: "Closed V1 authorities, pure stable API, finite mappings, ordered validation, deterministic arithmetic, fail-closed malformed input, and authority replacement rejection passed" })}\n`);
+  expect(
+    RESULT_VARIANTS.every((name) => observedVariants.has(name)),
+    `canonical calculator cases must satisfy every result variant; observed ${JSON.stringify([...observedVariants])}`
+  );
+
+  const canonicalOk = calculate(baseRequest(), "malformed result fixture source ok");
+  const canonicalNonComparable = calculate(zero, "malformed result fixture source non-comparable");
+  const canonicalInvalid = calculate(null, "malformed result fixture source invalid");
+  for (const [source, mutate, label] of [
+    [canonicalOk, (candidate) => { candidate.reasonCodes = ["ZERO_BASELINE"]; }, "ok result with a reason"],
+    [canonicalOk, (candidate) => { candidate.currentValue = 366_000_000_001; }, "ok result beyond numeric bound"],
+    [canonicalOk, (candidate) => { candidate.extra = true; }, "result with unknown field"],
+    [canonicalNonComparable, (candidate) => { candidate.percentageMovement = 0; }, "non-comparable result with percentage"],
+    [canonicalInvalid, (candidate) => { candidate.metricId = "event-count"; }, "invalid result leaking identity"],
+    [canonicalInvalid, (candidate) => { candidate.reasonCodes = []; }, "invalid result without reason"]
+  ]) {
+    const malformedResult = copy(source);
+    mutate(malformedResult);
+    assertSchemaDecision(validateResult, malformedResult, false, label, ajv);
+    const matches = variantValidators.filter(({ validate }) => validate(malformedResult)).length;
+    expect(matches === 0, `${label}: malformed result must match no committed variant, matched ${matches}`);
+  }
+
+  process.stdout.write(`${JSON.stringify({ name: "deterministic-analytics-calculators-v1", passed: true, testsRun, details: "Draft 2020-12 metaschema and compilation, structural request behavior, exactly-one result variants, generated-result validation, semantic ordering, deterministic arithmetic, fail-closed malformed input, and private authority passed" })}\n`);
 } catch (error) {
   process.stdout.write(`${JSON.stringify({ name: "deterministic-analytics-calculators-v1", passed: false, details: error.message })}\n`);
   process.exitCode = 1;

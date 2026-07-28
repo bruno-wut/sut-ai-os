@@ -17,6 +17,40 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P2-001 schema assurance gaps require independent remediation review
+
+- **Task ID:** `SUT-AIOS-P2-001-R02`
+- **Status:** Monitoring
+- **Severity:** Medium
+- **Affected scope:** P2-001 request/result authorities, deterministic validator,
+  and downstream analytics or intelligence consumers.
+- **Evidence:** Post-completion review found that the original validator manually
+  inspected selected schema properties without standards-based Draft 2020-12
+  compilation and that the schema did not explain the runtime-only lexical
+  ordering rule for correlation identifiers. R02 now pins Ajv 8.17.1 as a
+  development-only validator, compiles both committed authorities, exercises
+  canonical request decisions, validates every generated result against exactly
+  one declared variant, rejects focused malformed results, and proves unsorted
+  identifiers are structurally schema-valid but return `INVALID_CONTEXT` from
+  the calculator. The admitted validator and all fast checks pass locally.
+- **Next action / owner:** Independent Sol QA must review the final R02 diff and
+  run the single machine verification cycle before downstream P2-002 work.
+
+### 2026-07-28 — R02 install reports one moderate development-only advisory
+
+- **Task ID:** `SUT-AIOS-P2-001-R02`
+- **Status:** Monitoring
+- **Severity:** Low
+- **Affected scope:** Root development dependency used only by the local P2-001
+  contract validator.
+- **Evidence:** Installing pinned `ajv@8.17.1` completed successfully and reported
+  one moderate npm advisory across development dependencies. Ajv is not imported
+  by the pure analytics runtime, receives only committed repository schemas, and
+  introduces no production capability. No audit fix or dependency expansion was
+  attempted.
+- **Next action / owner:** QA should confirm the development-only boundary; any
+  upgrade or advisory remediation requires a separately approved dependency task.
+
 ### 2026-07-28 — P2-001 must remain a local deterministic measurement boundary
 
 - **Task ID:** `SUT-AIOS-GOV-038`, `SUT-AIOS-GOV-039`, `SUT-AIOS-P2-001`

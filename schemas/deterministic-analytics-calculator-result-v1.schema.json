@@ -31,6 +31,7 @@
       }
     },
     "correlationIds": {
+      "description": "Values emitted from a valid request are unique and lexicographically ascending. Draft 2020-12 validates structure and uniqueness; the deterministic calculator enforces ordering before producing this result context.",
       "type": "array",
       "minItems": 0,
       "maxItems": 20,

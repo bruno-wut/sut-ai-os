@@ -1,0 +1,173 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-001-R02",
+  "title": "Remediate P2-001 schema assurance and semantic ordering",
+  "status": "verified",
+  "phase": "phase-2",
+  "workstream": "analytics",
+  "workflowId": "remediation-p2-001-schema-assurance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Close the two contract-assurance gaps identified after P2-001 completion before downstream analytics or intelligence relies on its V1 authorities.",
+  "technicalObjective": "Use a bounded standards-compliant Draft 2020-12 validator to compile and exercise the committed request and result schemas, prove generated results satisfy exactly one variant, and document correlation-ID ordering as deterministic semantic validation beyond JSON Schema.",
+  "architectureReferences": [
+    "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md",
+    "docs/analytics/DETERMINISTIC_ANALYTICS_CALCULATORS_V1.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-001"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P2-001-R02/verification.md"
+  ],
+  "assumptions": [
+    "The existing exact validator command remains admitted; this remediation does not add or alter a verifier command path.",
+    "Draft 2020-12 cannot express lexicographic array ordering, so the committed schema remains the structural authority and the pure calculator enforces the documented ordering semantic.",
+    "No production write, deployment, credential, live data, database, provider, report, recommendation, or action is authorized."
+  ],
+  "acceptanceCriteria": [
+    "A bounded standards-compliant Draft 2020-12 validator dependency is declared in the root manifest and lockfile and the existing analytics validator compiles both committed schemas against the Draft 2020-12 metaschema before exercising them.",
+    "The validator accepts canonical structurally valid requests, rejects canonical structurally invalid requests, validates every calculator result it generates against the committed result schema, and rejects focused malformed result variants.",
+    "The validator proves each canonical result is accepted by exactly one of the five committed result variants and covers satisfiable `ok`, `non-comparable`, and `invalid` outcomes without broad theoretical keyword mutation.",
+    "The request schema and both analytics documents explicitly state that correlation identifiers must be unique and lexicographically ascending and that Draft 2020-12 validates their structure and uniqueness while the deterministic calculator enforces ordering semantically.",
+    "A focused regression proves the committed request schema accepts an otherwise valid request with unsorted correlation IDs while `calculateMetricComparison` deterministically returns the schema-valid `INVALID_CONTEXT` deny-style invalid result without throwing.",
+    "The calculator retains one stable public function, accepts no caller-supplied schema or dependency authority, imports no infrastructure, and all malformed inputs continue to return deterministic schema-valid invalid results without throwing.",
+    "Independent Sol QA confirms the standards-based assertions, exact-one variant behavior, semantic-ordering boundary, allowed paths, deterministic checks, evidence, and rollback before verification."
+  ],
+  "allowedPaths": [
+    "package.json",
+    "package-lock.json",
+    "packages/analytics-sdk/src/deterministic-analytics-calculators-v1.mjs",
+    "schemas/deterministic-analytics-calculator-request-v1.schema.json",
+    "schemas/deterministic-analytics-calculator-result-v1.schema.json",
+    "tests/analytics/validate-deterministic-analytics-calculators-v1.mjs",
+    "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md",
+    "docs/analytics/DETERMINISTIC_ANALYTICS_CALCULATORS_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P2-001-R02/**",
+    "evidence/verification/SUT-AIOS-P2-001-R02/**",
+    "tasks/**/SUT-AIOS-P2-001-R02/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "tasks/done/SUT-AIOS-P2-001/**",
+    "evidence/tasks/SUT-AIOS-P2-001/**",
+    "evidence/verification/SUT-AIOS-P2-001/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**"
+  ],
+  "allowedCommands": [
+    "npm install --save-dev ajv@8.17.1",
+    "node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P2-001-R02 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
+  ],
+  "requiredChecks": [
+    "Draft 2020-12 metaschema compilation",
+    "canonical request schema acceptance and rejection",
+    "generated result schema validation",
+    "exactly-one result variant validation",
+    "semantic correlation-ordering regression",
+    "malformed-input never-throw regression",
+    "deep-module and no-infrastructure-import boundary",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-terra",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any change to calculator arithmetic, reason precedence, public API, or caller authority.",
+    "Any live data, provider, report, recommendation, authorization, approval, execution, production write, payment, booking, inventory, database, RLS, migration, or workflow proposal.",
+    "Any dependency or schema behavior beyond the two identified finite remediation findings."
+  ],
+  "rollbackExpectations": "Revert only the R02 dependency declaration/lock entries, focused schema descriptions, analytics validator assertions, documentation, risk entry, task state, and R02 evidence; preserve the completed P2-001 packet and historical evidence unchanged.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-P2-001-R02/task.json",
+      "tasks/done/SUT-AIOS-P2-001/task.json",
+      "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md",
+      "tests/analytics/validate-deterministic-analytics-calculators-v1.mjs"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T15:56:51.414Z",
+  "updatedDate": "2026-07-28T16:06:08.177Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P2-001-R02/verification-20260728160536785.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T15:56:51.414Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T15:58:56.972Z",
+      "actor": "chief-orchestrator",
+      "reason": "Approved bounded remediation for P2-001 schema assurance and semantic ordering before downstream dependence."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T15:58:57.010Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin exact R02 schema-assurance remediation in the approved isolated worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T16:03:44.770Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Pinned standards-based Draft 2020-12 validation, focused request/result assertions, exact-one variant proof, semantic ordering documentation/regression, risk record, and implementation evidence pass all authorized local checks and are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T16:06:08.177Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed Draft 2020-12 compilation, canonical request decisions, schema-valid exactly-one generated result variants, semantic correlation ordering, deep-module authority boundaries, scope, rollback, and the monitored development-only advisory."
+    }
+  ]
+}
