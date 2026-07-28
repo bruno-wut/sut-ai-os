@@ -17,14 +17,14 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
-### 2026-07-28 — P1-008 Staff OS validator admission is a future prerequisite
+### 2026-07-28 — P1-008 Staff OS validator admission remains exact and fail-closed
 
-- **Task ID:** `SUT-AIOS-GOV-036`, `SUT-AIOS-P1-008`
+- **Task ID:** `SUT-AIOS-GOV-036`, `SUT-AIOS-GOV-037`, `SUT-AIOS-P1-008`
 - **Status:** Monitoring
 - **Severity:** High
 - **Affected scope:** Future `tests/staff-os/validate-observe-only-control-views-v1.mjs` independent machine verification and the safe required-command parser.
-- **Evidence:** GOV-036 defines the byte-for-byte future command `node tests/staff-os/validate-observe-only-control-views-v1.mjs`, but no validator or verifier admission exists yet. The planned P1-008 view set is static Tier 0 contract metadata only and must not be treated as a live Staff OS control surface.
-- **Next action / owner:** After P1-008 implements its validator, create a separately approved governance task that admits only this exact shell-free fixed-argument command with near-miss rejection coverage. Independent Sol QA must verify it before P1-008 runs machine verification or becomes verified.
+- **Evidence:** GOV-036 defines the byte-for-byte future command `node tests/staff-os/validate-observe-only-control-views-v1.mjs`. GOV-037 admits only that literal, maps it to `node` with one fixed repository-relative path argument through the existing `shell: false` runner, and self-tests reject whitespace, argument, chaining, operator, redirect, substitution, alternate, sibling, dot-path, traversal, and backslash variants. Independent Sol QA passed once at `evidence/verification/SUT-AIOS-GOV-037/verification-20260728115053566.json`. The product validator remains absent and was not executed by this governance task; the planned P1-008 view set remains static Tier 0 contract metadata only and is not a live Staff OS control surface.
+- **Next action / owner:** Retain the exact admission and machine evidence for P1-008 implementation. P1-008 cannot become verified until its own independent machine verification passes. Any further test-path admission requires a separate approved governance task.
 
 ### 2026-07-28 — P1-007 validator admission remains exact and fail-closed
 
