@@ -9,100 +9,36 @@
   "workflowId": "implementation-p2-001",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Advance Phase 2 — Intelligence and executive reporting through one bounded analytics outcome.",
-  "technicalObjective": "Implement deterministic analytics calculators",
-  "architectureReferences": [
-    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
-    "docs/architecture/source/Agent Architecture.md",
-    "docs/project/IMPLEMENTATION_BACKLOG.md"
-  ],
-  "dependencies": [
-    "SUT-AIOS-P1-001",
-    "SUT-AIOS-P1-003"
-  ],
-  "evidence": [
-    "evidence/tasks/SUT-AIOS-P2-001/verification.md"
-  ],
-  "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
-    "Interfaces with the finalized platform use approved compatibility contracts only."
-  ],
-  "acceptanceCriteria": [
-    "Implement deterministic analytics calculators is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
-  ],
-  "allowedPaths": [
-    "packages/analytics-sdk/**",
-    "tests/analytics/**",
-    "docs/analytics/**",
-    "evidence/tasks/SUT-AIOS-P2-001/**",
-    "tasks/**/SUT-AIOS-P2-001/**"
-  ],
-  "forbiddenPaths": [
-    "reference/finalized-platform/**",
-    "docs/architecture/source/**",
-    ".env*",
-    "**/*secret*",
-    "**/*credential*",
-    "supabase/migrations/**",
-    "apps/ibe/src/payments/**",
-    "apps/ibe/src/inventory/**"
-  ],
-  "allowedCommands": [
-    "npm run test:analytics",
-    "npm run verify:fast",
-    "git diff --check"
-  ],
-  "requiredChecks": [
-    "analytics contract validation",
-    "changed-path inspection",
-    "secret scan",
-    "independent verification"
-  ],
-  "requiredTests": [
-    "npm run test:analytics",
-    "npm run verify:fast"
-  ],
+  "businessObjective": "Provide deterministic measurement input for later intelligence without live analytics ingestion, reporting, provider invocation, or operational action.",
+  "technicalObjective": "Implement exactly the V1 local schemas, pure calculator, validator, documentation, state, and evidence defined by GOV-038.",
+  "architectureReferences": ["docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md", "docs/architecture/source/Agent Architecture.md", "docs/project/IMPLEMENTATION_BACKLOG.md", "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md"],
+  "dependencies": ["SUT-AIOS-P1-001", "SUT-AIOS-P1-003", "SUT-AIOS-GOV-038"],
+  "evidence": ["evidence/tasks/SUT-AIOS-P2-001/verification.md"],
+  "assumptions": ["No production write, deployment, credentials, or live data access is authorized.", "Callers supply prepared finite observations; P2-001 does not query, persist, mutate, or redefine P1 authorities.", "A separate governance task must admit the exact validator before independent machine verification."],
+  "acceptanceCriteria": ["Exactly two closed Draft 2020-12 authorities exist: `schemas/deterministic-analytics-calculator-request-v1.schema.json` and `schemas/deterministic-analytics-calculator-result-v1.schema.json`; every object sets `additionalProperties: false` and implements the exact V1 fields, types, bounds, and variants in the GOV-038 design.", "Exactly one pure public function, `calculateMetricComparison(request)`, exists at `packages/analytics-sdk/src/deterministic-analytics-calculators-v1.mjs`; its stable public API hides validation, rounding, reason-code, and confidence internals, reads no files, environment, network, database, clock, or mutable external state, and never throws for malformed input.", "The core follows ports-and-adapters boundaries: it imports no infrastructure or provider-specific dependency; prepared observations are its input port and deterministic result its output port. Any future source, report, or provider integration is a separately approved adapter outside the core.", "Only `event-count -> sum`, `event-value-sum -> sum`, `event-value-mean -> mean`, and `event-rate -> rate` are valid metric/aggregation mappings. The schemas and module enforce the exact identifier expression, date-only real-calendar and ordered/non-overlapping periods, 1-366 bounded finite observations, and exact context enums/array bounds from the design.", "The result schema has only `ok`, `non-comparable`, and `invalid` variants. It implements their exact null/non-null fields, confidence labels, fixed safe invalid identity/context, complete reason-code set, and fixed error precedence in the GOV-038 design. Invalid input never throws; zero baseline yields only `non-comparable` with `ZERO_BASELINE`, never Infinity, action, recommendation, authorization, approval, or execution.", "`tests/analytics/validate-deterministic-analytics-calculators-v1.mjs` loads committed V1 authority and calculator code, verifies every canonical table rule, variant, reason-code precedence, repeated never-throw behavior, authority replacement rejection, and private-boundary/no-infrastructure-import rule, and runs as `node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs`.", "Documentation states correlation and seasonality are caller-declared context or `not-evaluated`; P2-001 does not infer causes, process guest data, ingest external analytics, invoke AI, render a report, or authorize intervention.", "Independent QA confirms allowed paths, human-approval boundary, fail-closed behavior, exact admission, required tests, CI, rollback, and retained machine-readable evidence."],
+  "allowedPaths": ["packages/analytics-sdk/**", "schemas/deterministic-analytics-calculator-request-v1.schema.json", "schemas/deterministic-analytics-calculator-result-v1.schema.json", "tests/analytics/**", "docs/analytics/**", "evidence/tasks/SUT-AIOS-P2-001/**", "tasks/**/SUT-AIOS-P2-001/**"],
+  "forbiddenPaths": ["reference/finalized-platform/**", "docs/architecture/source/**", "apps/**", "services/**", "scripts/**", ".github/**", "policies/**", "playbooks/**", ".env*", "**/*secret*", "**/*credential*", "supabase/**", "**/*.sql", "**/*migration*", "apps/ibe/src/payments/**", "apps/ibe/src/inventory/**"],
+  "allowedCommands": ["node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs", "npm run verify:fast", "git diff --check"],
+  "requiredChecks": ["analytics contract validation", "pure deterministic-output validation", "malformed-input never-throw validation", "zero-baseline validation", "exact-command admission", "changed-path inspection", "secret scan", "independent verification"],
+  "requiredTests": ["node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs", "npm run verify:fast"],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
   "riskLevel": "medium",
   "autonomyTier": "tier-0",
   "defaultAgent": "codex-engineering-executor",
-  "allowedAgents": [
-    "codex-engineering-executor",
-    "qa-verification"
-  ],
+  "allowedAgents": ["codex-engineering-executor", "qa-verification"],
   "modelRoute": "terra",
   "defaultModel": "gpt-5.6-terra",
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
-  "solEscalationTriggers": [
-    "Any required change crosses declared subsystem or protected paths.",
-    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
-  ],
-  "rollbackExpectations": "Revert the analytics branch and generated artifacts; preserve audit and verification evidence.",
+  "solEscalationTriggers": ["Any live data, provider, report, recommendation, authorization, approval, execution, production write, payment, booking, RLS, migration, concurrency, or workflow proposal.", "Any ambiguity in numerical semantics, schema authority, invalid-input behavior, or safe admission."],
+  "rollbackExpectations": "Revert only P2-001 schemas, module, validator, documentation, state, and evidence; preserve P1 authorities, completed records, snapshot, and external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
-  "contextBudget": {
-    "maxBytes": 262144,
-    "includedPaths": [
-      "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-001/task.json",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
-    ]
-  },
+  "contextBudget": {"maxBytes": 262144, "includedPaths": ["AGENTS.md", "tasks/backlog/SUT-AIOS-P2-001/task.json", "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md"]},
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-28T12:24:00.000Z",
   "completionEvidence": [],
-  "stateTransitions": [
-    {
-      "from": null,
-      "to": "backlog",
-      "at": "2026-07-26T13:10:00.000Z",
-      "actor": "engineering-planner",
-      "reason": "Generated from canonical phased implementation backlog."
-    }
-  ]
+  "stateTransitions": [{"from": null, "to": "backlog", "at": "2026-07-26T13:10:00.000Z", "actor": "engineering-planner", "reason": "Generated from canonical phased implementation backlog."}]
 }

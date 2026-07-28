@@ -1,0 +1,224 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-038",
+  "title": "Plan executable P2-001 deterministic analytics verification",
+  "status": "verified",
+  "phase": "phase-2",
+  "workstream": "analytics",
+  "workflowId": "p2-001-analytics-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prepare a bounded local deterministic analytics-calculator contract before any intelligence, reporting, ingestion, or operational capability is introduced.",
+  "technicalObjective": "Define the finite V1 schemas, pure calculator API, exact validator, failure behavior, documentation, and corrected P2-001 packet; do not implement product code, schemas, validation, admission, or runtime capability.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-001",
+    "SUT-AIOS-P1-003"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-038/verification.md"
+  ],
+  "assumptions": [
+    "P2-001 accepts only prepared finite numeric observations and neither obtains nor persists them.",
+    "P1-001 and P1-003 may establish future provenance but must not be queried, mutated, or redefined.",
+    "Exact verifier admission remains a separate governance action."
+  ],
+  "acceptanceCriteria": [
+    "A durable design specifies exactly two closed V1 schemas, one pure calculator module, and one deterministic Node validator with fail-closed malformed-input behavior.",
+    "The design fixes a finite metric-comparison request and result including current/baseline values, movement, sample sizes, bounded confidence, and non-inferential context.",
+    "The P2-001 packet is amended only to the designed static scope and names its exact future Node validator command.",
+    "The design requires separately approved exact shell-free verifier admission with near-miss rejection coverage.",
+    "Independent QA can confirm no product implementation, schema, test, verifier, CI, runtime, protected path, or historical evidence was altered."
+  ],
+  "allowedPaths": [
+    "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P2-001/task.json",
+    "tasks/**/SUT-AIOS-GOV-038/**",
+    "evidence/tasks/SUT-AIOS-GOV-038/**",
+    "evidence/verification/SUT-AIOS-GOV-038/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "schemas/**",
+    "packages/**",
+    "tests/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite deterministic-calculator design review",
+    "P2-001 packet scope and dependency review",
+    "exact future validator admission review",
+    "changed-path inspection",
+    "independent Sol QA"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live data, database, provider, report, recommendation, authorization, approval, execution, production write, payment, booking, RLS, migration, concurrency, or workflow proposal.",
+    "Any ambiguity about numerical semantics, authority, malformed-input behavior, or verifier admission."
+  ],
+  "rollbackExpectations": "Revert only this planning document, P2-001 packet amendment, GOV-038 state, risk entry, and evidence; preserve completed records, canonical sources, P1 authorities, and runtime surfaces.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/verified/SUT-AIOS-GOV-038/task.json",
+      "tasks/backlog/SUT-AIOS-P2-001/task.json",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/TASK_WORKFLOW.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T12:07:42.127Z",
+  "updatedDate": "2026-07-28T14:50:25.358Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-038/verification-20260728145020191.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T12:07:42.127Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T14:36:27.361Z",
+      "actor": "chief-orchestrator",
+      "reason": "Dependencies are done and the bounded P2-001 deterministic analytics planning scope, paths, and checks are specified."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T14:36:27.407Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Begin approved P2-001 planning in the isolated GOV-038 worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T14:36:44.026Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Finite P2-001 V1 plan, corrected backlog packet, architecture-boundary guidance, risk entry, planning evidence, and packet-authorized checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T14:38:13.392Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA found the planned V1 contract under-specified: exact request/result fields, metric and aggregation authority, validation bounds, context semantics, reason codes, and closed fail-closed result shapes must be fixed before implementation can proceed."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T14:39:40.398Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply bounded QA correction: finite executable V1 request/result authority, metric mapping, result variants, and deterministic reason-code precedence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T14:39:42.784Z",
+      "actor": "codex-engineering-executor",
+      "reason": "QA correction defines finite executable authority, exact request/result variants, and deterministic error precedence; planning checks pass and resubmission is ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T14:42:03.660Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA found remaining executable-contract ambiguity: valid result-number bounds conflict with valid sums and movements, the promised six-decimal rounding algorithm is unspecified, and malformed field shapes are not totally mapped to deterministic ordered reason-code combinations."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T14:44:08.479Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply bounded QA correction: exact output bounds, ECMAScript six-place rounding, and complete closed validation/suppression precedence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T14:44:11.342Z",
+      "actor": "codex-engineering-executor",
+      "reason": "QA correction defines output bounds, deterministic rounding, and complete validation condition-to-code suppression and combination rules; planning checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T14:46:58.817Z",
+      "actor": "qa-verification",
+      "reason": "Final independent Sol QA found the claimed total malformed mapping still omits nested period/context structural defects, while IEEE-754 accumulation order and raw-result versus internal-accumulator overflow checks remain ambiguous."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T14:47:27.770Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply final bounded QA correction: nested-shape classification, left-to-right accumulation, and returned-field-only bounds."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T14:47:30.172Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Final bounded correction resolves nested-shape, accumulation-order, and output-bound semantics; planning checks pass."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T14:50:25.358Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed the finite deterministic analytics plan, nested malformed-input mapping, left-to-right ECMAScript accumulation, returned-field-only numeric bounds, architecture boundaries, and all required checks."
+    }
+  ]
+}
