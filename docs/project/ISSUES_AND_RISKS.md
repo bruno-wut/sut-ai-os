@@ -17,6 +17,26 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P2-002 validator admission remains exact and fail-closed
+
+- **Task ID:** `SUT-AIOS-GOV-041`, `SUT-AIOS-P2-002`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Future
+  `tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs`
+  independent machine verification and the safe required-command parser.
+- **Evidence:** GOV-040 fixes the future command byte for byte. GOV-041 adds
+  only that exact literal, maps it to `node` with one fixed repository-relative
+  path argument through the existing `shell: false` runner, and rejects focused
+  whitespace, argument, operator, redirect, substitution, alternate-path,
+  dot-path, traversal, and Windows-separator near misses. This governance task
+  does not create or execute the P2-002 validator or introduce intelligence
+  schemas, contract logic, provider invocation, proposals, workflows, execution,
+  live data access, or production behavior.
+- **Next action / owner:** Independent Sol QA must verify GOV-041 before P2-002
+  can move to ready. Retain exact-command admission and machine evidence for the
+  later product task; any command expansion requires a separate approved packet.
+
 ### 2026-07-28 — P2-001 schema assurance gaps require independent remediation review
 
 - **Task ID:** `SUT-AIOS-P2-001-R02`

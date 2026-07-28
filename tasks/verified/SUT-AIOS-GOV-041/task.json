@@ -1,0 +1,161 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-041",
+  "title": "Admit exact P2-002 intelligence-contract validator",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "verification-admission",
+  "workflowId": "p2-002-validator-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Admit only the planned P2-002 intelligence-contract validator without broadening command execution or implementing intelligence product scope.",
+  "technicalObjective": "Add one shell-free exact mapping for node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs, focused near-miss rejection coverage, and accurate verifier policy documentation; do not implement or execute the P2-002 product validator.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-040"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-041/verification.md"
+  ],
+  "assumptions": [
+    "The approved P2-002 design fixes one byte-for-byte future validator command; the validator and intelligence product artifacts remain absent and outside this governance task.",
+    "The existing verifier process runner already uses shell: false; this task may add only one fixed Node argument mapping and self-test coverage.",
+    "No product implementation, schema, contract module, provider invocation, live data access, proposal, workflow, execution, runtime, production operation, external access, or generic command execution is authorized."
+  ],
+  "acceptanceCriteria": [
+    "Only the exact literal node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs is newly admitted and maps to node with exactly one fixed repository-relative path argument through the existing shell-free runner.",
+    "Self-tests accept the exact literal and reject leading, doubled, or trailing whitespace; extra arguments; chaining or shell operators; redirects; command substitution; alternate and sibling paths; dot-path forms; traversal forms; and Windows path separators.",
+    "No generic node tests/ai-analysis pattern, arbitrary argument parsing, shell execution, product validator, intelligence schema, contract module, provider call, proposal, workflow, executor, live data access, or production behavior is introduced.",
+    "Verification policy and the durable risk entry accurately identify the exact admission, its non-product scope, and the remaining P2-002 implementation and independent-verification boundary.",
+    "Packet-authorized deterministic checks pass and implementation evidence is ready for separate independent Sol QA; the implementer does not run verify:task or act as completion authority."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-041/**",
+    "evidence/tasks/SUT-AIOS-GOV-041/**",
+    "evidence/verification/SUT-AIOS-GOV-041/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tests/**",
+    "apps/**",
+    "schemas/**",
+    "packages/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-041 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact literal mapping inspection",
+    "fixed argument and shell-free process inspection",
+    "focused near-miss rejection coverage",
+    "changed-path and forbidden-boundary inspection",
+    "independent Sol review",
+    "machine verification evidence"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic or pattern-based command admission, arbitrary argument parsing, shell execution, mutation-capable command, P2-002 implementation, live data access, provider call, proposal, workflow, execution, or scope outside the exact verifier mapping requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the exact P2-002 validator mapping, its self-tests, verification-policy statement, GOV-041 risk update, lifecycle record, and GOV-041 evidence; preserve the P2-002 design and packet, completed records, product paths, canonical architecture sources, immutable compatibility snapshot, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-041/task.json",
+      "tasks/backlog/SUT-AIOS-P2-002/task.json",
+      "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "docs/project/ISSUES_AND_RISKS.md",
+      "scripts/verify/verify-cli.mjs"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T16:22:46.546Z",
+  "updatedDate": "2026-07-28T16:27:01.817Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-041/verification-20260728162654001.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T16:22:46.546Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T16:24:02.071Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact P2-002 validator admission scope, boundaries, checks, evidence, and Sol route are approved."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T16:24:02.112Z",
+      "actor": "engineering-planner",
+      "reason": "Proceed with the bounded shell-free exact P2-002 intelligence-contract validator admission."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T16:26:06.622Z",
+      "actor": "engineering-planner",
+      "reason": "Exact shell-free P2-002 validator admission, 15 focused near-miss rejection cases, policy update, monitored risk record, implementation evidence, and packet-authorized checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T16:27:01.817Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed the exact one-argument shell-free mapping, all 15 focused near-miss rejections, bounded changed paths, and passing deterministic verification."
+    }
+  ]
+}
