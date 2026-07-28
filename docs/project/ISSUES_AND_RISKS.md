@@ -17,6 +17,37 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P2-001 must remain a local deterministic measurement boundary
+
+- **Task ID:** `SUT-AIOS-GOV-038`, `SUT-AIOS-P2-001`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Future P2-001 schemas, calculator core, validator, and
+  downstream intelligence input.
+- **Evidence:** GOV-038 fixes a pure, stable `calculateMetricComparison`
+  boundary with no infrastructure imports, no live data, and fail-closed
+  invalid/non-comparable results. Correlation and seasonality are context or
+  not evaluated, never causal inference. The future exact validator is not yet
+  admitted by the independent verifier. Fresh independent QA on 2026-07-28
+  found the revised design still ambiguous about valid result-number bounds and
+  its six-decimal rounding algorithm, and did not provide a total mapping from
+  malformed field shapes to ordered reason-code combinations. Machine
+  verification was therefore not run. A later correction fixed the declared
+  output bounds and rounding rule, but final fresh QA found nested
+  period/context structural failures, IEEE-754 accumulation order, and the
+  boundary between result-field overflow checks and internal mean/rate
+  accumulators still under-specified. The final bounded correction now maps
+  those nested structural failures to `MALFORMED_REQUEST`, fixes supplied-order
+  left-to-right ECMAScript Number accumulation, and restricts declared numeric
+  bounds to raw and rounded externally returned fields while requiring private
+  accumulators to remain finite. Fresh independent Sol QA accepted the corrected
+  plan and released it for machine verification; the earlier failed reviews
+  remain recorded above.
+- **Next action / owner:** Implement only the approved V1 contract after a
+  separate exact-command admission task. Sol QA must verify core/adapter
+  separation, human approval boundaries, CI/evidence, and rollback before any
+  downstream intelligence use.
+
 ### 2026-07-28 — P1-008 Staff OS validator admission remains exact and fail-closed
 
 - **Task ID:** `SUT-AIOS-GOV-036`, `SUT-AIOS-GOV-037`, `SUT-AIOS-P1-008`
