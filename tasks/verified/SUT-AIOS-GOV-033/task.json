@@ -1,0 +1,143 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-033",
+  "title": "Support bounded task-ID suffixes in governance validation",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "governance-validation",
+  "workflowId": "task-id-suffix-validation",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Allow governed planning follow-on packets to pass CI without weakening task identity enforcement.",
+  "technicalObjective": "Recognize one optional bounded task-ID suffix in governance branch extraction while retaining exact packet identity matching and rejection behavior.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/verification/VERIFICATION_POLICY.md"
+  ],
+  "dependencies": [],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-033/verification.md"
+  ],
+  "assumptions": [
+    "SUT-AIOS-P1-006-PLAN is a valid existing planning packet whose suffix is currently rejected."
+  ],
+  "acceptanceCriteria": [
+    "Recognize exactly one optional hyphen plus alphanumeric suffix after a canonical three-digit task ID.",
+    "Unsuffixed IDs remain unchanged and malformed, doubled, punctuation, or additional suffix forms remain rejected.",
+    "CI binds P1-006-PLAN to its exact existing packet/evidence without substituting P1-006 product evidence.",
+    "Machine verification passes and forbidden paths remain untouched."
+  ],
+  "allowedPaths": [
+    "scripts/github/validate-governance.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-033/**",
+    "evidence/tasks/SUT-AIOS-GOV-033/**",
+    "evidence/verification/SUT-AIOS-GOV-033/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "policies/**",
+    "schemas/**",
+    "playbooks/**",
+    "package.json",
+    "apps/**",
+    "supabase/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/github/validate-governance.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-033 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "suffix acceptance/rejection coverage",
+    "exact identity binding",
+    "machine verification"
+  ],
+  "requiredTests": [
+    "node scripts/github/validate-governance.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic parser admission, identity ambiguity, command admission, or scope expansion."
+  ],
+  "rollbackExpectations": "Revert only parser, policy, task and evidence; restore suffix rejection.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-033/task.json",
+      "scripts/github/validate-governance.mjs",
+      "docs/verification/VERIFICATION_POLICY.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T09:46:16.900Z",
+  "updatedDate": "2026-07-28T09:58:45.863Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-033/verification-20260728095821799.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T09:46:16.900Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T09:48:46.045Z",
+      "actor": "chief-orchestrator",
+      "reason": "Bounded suffix parser remediation defined."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T09:48:46.092Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with exact governance validation remediation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T09:55:32.500Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded exact task-ID suffix parser, rejection coverage, policy note, risk record, and implementer evidence are ready for independent QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T09:58:45.863Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed exact existing task-ID binding, bounded suffix grammar, negative rejection coverage, allowed paths, and passing machine verification."
+    }
+  ]
+}

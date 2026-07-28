@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-033",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-28T09:58:21.799Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/github/validate-governance.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Recognize exactly one optional hyphen plus alphanumeric suffix after a canonical three-digit task ID.",
+    "confirmed: Unsuffixed IDs remain unchanged and malformed, doubled, punctuation, or additional suffix forms remain rejected.",
+    "confirmed: CI binds P1-006-PLAN to its exact existing packet/evidence without substituting P1-006 product evidence.",
+    "confirmed: Machine verification passes and forbidden paths remain untouched."
+  ],
+  "changedPaths": [
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-033/verification.md",
+    "scripts/github/validate-governance.mjs",
+    "tasks/review/SUT-AIOS-GOV-033/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-033/verification-20260728095821799.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

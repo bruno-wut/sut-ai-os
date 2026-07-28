@@ -7,6 +7,9 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const ci = process.env.CI === "true" || process.env.CI === "1";
+const taskStates = ["backlog", "ready", "active", "blocked", "review", "revision-required", "verified", "done", "cancelled", "archived"];
+const governedTaskId = /^SUT-AIOS-[A-Z0-9]+-[0-9]{3}(?:-[A-Z0-9]{1,16})?$/;
+const branchSlug = /^-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const requiredFrontmatter = ["id", "name", "version", "status", "category", "runtime", "default_model", "fallback_model", "risk_classes", "input_schema", "output_schema"];
 const requestedTask = process.argv.includes("--task") ? process.argv[process.argv.indexOf("--task") + 1] : null;
 const forbidden = ["docs/architecture/source/**", "reference/finalized-platform/**", ".codex/**", ".env*", "**/*secret*", "supabase/**"];
@@ -19,9 +22,15 @@ const matches = (file, patterns) => patterns.some((p) => glob(p).test(file));
 function eventPayload() { const file = process.env.GITHUB_EVENT_PATH; if (!file || !fs.existsSync(file)) return null; try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; } }
 const event = eventPayload();
 function changedPaths() { const base = event?.pull_request?.base?.sha; const committed = base ? git(["diff", "--name-only", `${base}...HEAD`]) : ""; return [...new Set(`${committed}\n${git(["diff", "--name-only"])}\n${git(["diff", "--cached", "--name-only"])}\n${git(["ls-files", "--others", "--exclude-standard"])}`.split(/\r?\n/).filter(Boolean).map(slash))].sort(); }
-function taskIdFromBranch(branch) { const m = branch.match(/^task\/(SUT-AIOS-[A-Za-z0-9]+-[0-9]{3})(?:-|$)/i); return m?.[1] ?? null; }
+function taskRecords() { return taskStates.flatMap((s) => { const d = path.join(root, "tasks", s); if (!fs.existsSync(d)) return []; return fs.readdirSync(d, { withFileTypes: true }).filter((x) => x.isDirectory()).map((x) => path.join(d, x.name, "task.json")); }).filter(fs.existsSync).map((f) => ({ file: f, packet: JSON.parse(fs.readFileSync(f, "utf8")) })); }
+function taskIdFromBranch(branch, taskIds = taskRecords().map(({ packet }) => packet.taskId)) {
+  if (!branch.startsWith("task/")) return null;
+  const value = branch.slice("task/".length);
+  const candidates = taskIds.filter((id) => governedTaskId.test(id) && (value === id || (value.startsWith(`${id}-`) && branchSlug.test(value.slice(id.length))))).sort((a, b) => b.length - a.length);
+  return candidates[0] ?? null;
+}
 function taskIdFromEvent() { const text = `${event?.pull_request?.title ?? ""}\n${event?.pull_request?.body ?? ""}`; return text.match(/\bSUT-AIOS-[A-Za-z0-9]+-[0-9]{3}\b/i)?.[0] ?? null; }
-function activeTask(id) { const states = ["backlog", "ready", "active", "blocked", "review", "revision-required", "verified", "done", "cancelled", "archived"]; const files = states.flatMap((s) => { const d = path.join(root, "tasks", s); if (!fs.existsSync(d)) return []; return fs.readdirSync(d, { withFileTypes: true }).filter((x) => x.isDirectory()).map((x) => path.join(d, x.name, "task.json")); }).filter(fs.existsSync); const found = files.map((f) => ({ file: f, packet: JSON.parse(fs.readFileSync(f, "utf8")) })).filter((x) => !id || x.packet.taskId === id); if (found.length === 1) return found[0]; const changed = changedPaths(); const scoped = found.filter((x) => x.packet.status === "active" && changed.every((p) => (x.packet.allowedPaths ?? []).some((pattern) => matches(p, [pattern])))); return scoped.length === 1 ? scoped[0] : null; }
+function activeTask(id) { const found = taskRecords().filter((x) => !id || x.packet.taskId === id); if (found.length === 1) return found[0]; const changed = changedPaths(); const scoped = found.filter((x) => x.packet.status === "active" && changed.every((p) => (x.packet.allowedPaths ?? []).some((pattern) => matches(p, [pattern])))); return scoped.length === 1 ? scoped[0] : null; }
 function checkTask() { const branch = process.env.GITHUB_HEAD_REF || event?.pull_request?.head?.ref || git(["branch", "--show-current"]); const branchId = taskIdFromBranch(branch); const id = branchId ?? requestedTask ?? taskIdFromEvent() ?? activeTask()?.packet.taskId; const rec = activeTask(id); const branchMatch = Boolean(branchId && id && branchId.toLowerCase() === id.toLowerCase()); const bootstrapException = branch === "chore/codex-workspace-bootstrap" && /^SUT-AIOS-GOV-/.test(id ?? ""); return { result: { name: "valid-task-packet", passed: Boolean(rec) && (branchMatch || bootstrapException || !ci), taskId: id, branchTaskId: branchId, branchMatch, bootstrapException, details: rec ? slash(path.relative(root, rec.file)) : "No unique task packet found." }, branch, id }; }
 function checkSchemas() { const dir = path.join(root, "schemas"); const bad = []; for (const f of fs.existsSync(dir) ? fs.readdirSync(dir).filter((x) => x.endsWith(".json")) : []) { try { JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { bad.push(`schemas/${f}`); } } return { name: "schemas-valid", passed: bad.length === 0, invalid: bad }; }
 function checkPolicies() { const validatorScript = path.join(root, "tests/policy-definitions/validate-authorization-policies.mjs"); if (fs.existsSync(validatorScript)) { const res = run("node", ["tests/policy-definitions/validate-authorization-policies.mjs"]); return { name: "policies-valid", passed: res.passed, details: res.output.trim() }; } const dir = path.join(root, "policies"); const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((x) => /\.(json|ya?ml|md)$/.test(x)) : []; return { name: "policies-valid", passed: true, details: files.length ? `${files.length} policy file(s) present.` : "No policy files present; no policy syntax to validate." }; }
@@ -30,6 +39,26 @@ function checkPaths(paths) { const bad = paths.filter((p) => matches(p, forbidde
 function checkSecrets(paths) { const hits = []; for (const p of paths) { const f = path.join(root, p); if (!fs.existsSync(f) || fs.statSync(f).size > 1048576) continue; if (secretPattern.test(fs.readFileSync(f, "utf8"))) hits.push(p); } return { name: "no-secrets-added", passed: hits.length === 0, matches: hits }; }
 function checkPrMetadata(id) { if (!event) return { name: "pr-metadata", passed: !ci, details: ci ? "CI event payload missing or invalid." : "Not applicable outside GitHub Actions." }; const body = `${event.pull_request?.title ?? ""}\n${event.pull_request?.body ?? ""}`; return { name: "pr-metadata", passed: Boolean(id && body.includes(id)), taskId: id, details: id ? "Task ID appears in PR title/body." : "Task ID unavailable." }; }
 function checkVerification(id) { if (!id) return { name: "verification-result", passed: !ci, details: "No task ID available." }; const d = path.join(root, "evidence", "verification", id); const files = fs.existsSync(d) ? fs.readdirSync(d).filter((x) => x.endsWith(".json")) : []; if (!files.length) return { name: "verification-result", passed: !ci, details: ci ? "No machine-readable verification result found." : "Verification result pending for local task." }; const bad = files.filter((f) => { try { const x = JSON.parse(fs.readFileSync(path.join(d, f), "utf8")); return x.taskId !== id || !x.status || x.productionEligible === undefined; } catch { return true; } }); return { name: "verification-result", passed: bad.length === 0, files: files.map((f) => `evidence/verification/${id}/${f}`), invalid: bad }; }
-function selfTest() { const checks = [matches(".env.local", [".env*"]), matches("supabase/x.sql", ["supabase/**"]), !matches("docs/project/x.md", forbidden)]; const result = { status: checks.every(Boolean) ? "passed" : "failed", checks: checks.length }; process.stdout.write(`${JSON.stringify(result, null, 2)}\n`); if (!checks.every(Boolean)) process.exitCode = 1; }
+function selfTest() {
+  const ids = ["SUT-AIOS-P1-006", "SUT-AIOS-P1-006-PLAN", "SUT-AIOS-GOV-033"];
+  const checks = [
+    matches(".env.local", [".env*"]),
+    matches("supabase/x.sql", ["supabase/**"]),
+    !matches("docs/project/x.md", forbidden),
+    taskIdFromBranch("task/SUT-AIOS-P1-006", ids) === "SUT-AIOS-P1-006",
+    taskIdFromBranch("task/SUT-AIOS-P1-006-define-static-registry", ids) === "SUT-AIOS-P1-006",
+    taskIdFromBranch("task/SUT-AIOS-P1-006-PLAN", ids) === "SUT-AIOS-P1-006-PLAN",
+    taskIdFromBranch("task/SUT-AIOS-P1-006-PLAN-define-static-registry", ids) === "SUT-AIOS-P1-006-PLAN",
+    taskIdFromBranch("task/SUT-AIOS-P1-006-UNKNOWN-define-static-registry", ids) === null,
+    taskIdFromBranch("task/SUT-AIOS-P1-006-PLAN-EXTRA", ids) === null,
+    taskIdFromBranch("task/SUT-AIOS-P1-006--PLAN", ids) === null,
+    taskIdFromBranch("task/SUT-AIOS-P1-006-PLAN_extra", ids) === null,
+    taskIdFromBranch("task/SUT-AIOS-P1-006-PLAN!", ids) === null,
+    taskIdFromBranch(`task/SUT-AIOS-P1-006-${"A".repeat(17)}`, [...ids, `SUT-AIOS-P1-006-${"A".repeat(17)}`]) === null,
+  ];
+  const result = { status: checks.every(Boolean) ? "passed" : "failed", checks: checks.length };
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  if (!checks.every(Boolean)) process.exitCode = 1;
+}
 function main() { if (process.argv.includes("--self-test")) return selfTest(); const paths = changedPaths(); const task = checkTask(); const checks = [task.result, checkPrMetadata(task.id), checkVerification(task.id), checkPaths(paths), checkSecrets(paths), checkSchemas(), checkPolicies(), checkAgents()]; const failures = checks.filter((x) => !x.passed); const result = { status: failures.length ? "fail" : "pass", branch: task.branch, taskId: task.id, ci, checks, changedPaths: paths, remote: git(["remote", "-v"]) || "none" }; process.stdout.write(`${JSON.stringify(result, null, 2)}\n`); if (failures.length) process.exitCode = 1; }
 main();
