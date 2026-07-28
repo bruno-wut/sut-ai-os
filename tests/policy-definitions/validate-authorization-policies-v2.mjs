@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateJsonSchema, validateSchemaKeywords } from "../../packages/policy-engine/src/json-schema-evaluator.mjs";
+import { validateJsonSchema, validateSchemaKeywords } from "../../scripts/verify/json-schema-evaluator.mjs";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const v2ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v2.json");
@@ -56,6 +56,16 @@ function fullValidateV2(artifact, schemaDoc) {
   for (const field of ["schemaVersion", "policies", "defaults"]) {
     if (!schemaDoc.required.includes(field) || !Object.hasOwn(schemaDoc.properties, field)) return false;
   }
+
+  // Deep structural verification of nested policy schemas for V2
+  const policiesProp = schemaDoc.properties.policies;
+  if (!isObject(policiesProp) || !isObject(policiesProp.properties)) return false;
+  for (const policyName of ["platform_read_only", "governance_gated_change", "production_write_restricted"]) {
+    const pNode = policiesProp.properties[policyName];
+    if (!isObject(pNode) || !isObject(pNode.properties) || !Array.isArray(pNode.required)) return false;
+    if (!pNode.required.includes("targetAction") || !pNode.required.includes("defaultEffect")) return false;
+  }
+
   if (!validateSchemaKeywords(schemaDoc)) return false;
   if (!validateJsonSchema(artifact, schemaDoc)) return false;
   if (containsForbiddenTerm(artifact)) return false;
@@ -110,6 +120,12 @@ try {
     $id: "https://sut-ai-os.local/schemas/authorization-policy-contract-v2.schema.json"
   };
   expect(!fullValidateV2(artifact, weakenedSchema), "structurally weakened schema with valid $schema and $id must fail");
+  negativeTestsRun += 1;
+
+  // Deeply weakened schema with valid root shape but empty nested property definitions
+  const deeplyWeakenedSchema = copy(schemaDoc);
+  delete deeplyWeakenedSchema.properties.policies.properties.platform_read_only.properties;
+  expect(!fullValidateV2(artifact, deeplyWeakenedSchema), "deeply weakened schema with empty nested property definitions must fail");
   negativeTestsRun += 1;
 
   // --- CATEGORY 2: Non-string and empty/whitespace schemaVersion values ---

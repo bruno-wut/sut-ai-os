@@ -1,0 +1,179 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-031",
+  "title": "Finalize P1-004/P1-005 schema trust, canonical contracts, and evidence closure",
+  "status": "done",
+  "phase": "phase-1",
+  "workstream": "verification-governance",
+  "workflowId": "p1-004-p1-005-final-assurance-closure",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Complete final schema trust, deep structural validation, neutral validator module isolation, reason-code determinism, and commit-bound evidence closure for P1-004 and P1-005.",
+  "technicalObjective": "Move JSON schema evaluator to scripts/verify/json-schema-evaluator.mjs, make validate-authorization-policies.mjs a V1 wrapper, perform deep structural schema validation in evaluator and V1/V2 validators, make evaluation-context schema type-only for principal/resource to guarantee deterministic INVALID_PRINCIPAL_OR_RESOURCE reason code, update canonical task packets/docs, and bind reconciliation evidence to exact SHAs.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
+    "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-030",
+    "SUT-AIOS-P1-004",
+    "SUT-AIOS-P1-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-031/verification.md",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md"
+  ],
+  "assumptions": [
+    "No production, staging, database, migration, credential, or external-service access is authorized.",
+    "P1-004 and P1-005 validators run pure offline JS evaluation."
+  ],
+  "acceptanceCriteria": [
+    "scripts/verify/json-schema-evaluator.mjs provides neutral shared Draft 2020-12 schema evaluation.",
+    "tests/policy-definitions/validate-authorization-policies.mjs is a clean V1 compatibility wrapper delegating to validate-authorization-policies-v1.mjs.",
+    "evaluator.mjs and V1/V2 validators enforce deep structural schema validation, rejecting deeply weakened schemas.",
+    "schemas/evaluation-context.schema.json defines type-only string constraints for principalClass and resourceClass, making INVALID_PRINCIPAL_OR_RESOURCE deterministically reachable.",
+    "tests/policy-engine/validate-deterministic-policy-evaluator.mjs includes nested schema corruption tests.",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md and evidence/tasks/SUT-AIOS-P1-005/reconciliation.md bind exact head, merge, workflow run, and job IDs."
+  ],
+  "allowedPaths": [
+    "packages/policy-engine/**",
+    "tests/policy-engine/**",
+    "tests/policy-definitions/**",
+    "schemas/authorization-policy-contract.schema.json",
+    "schemas/authorization-policy-contract-v1.schema.json",
+    "schemas/authorization-policy-contract-v2.schema.json",
+    "schemas/evaluation-context.schema.json",
+    "schemas/evaluation-decision.schema.json",
+    "policies/deterministic-authorization-policies-v1.json",
+    "policies/deterministic-authorization-policies-v2.json",
+    ".github/workflows/validate-governance.yml",
+    "scripts/github/validate-governance.mjs",
+    "scripts/verify/**",
+    "docs/policy-engine/**",
+    "docs/policy-definitions/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-031/**",
+    "evidence/verification/SUT-AIOS-GOV-031/**",
+    "evidence/tasks/SUT-AIOS-P1-004/reconciliation.md",
+    "evidence/tasks/SUT-AIOS-P1-005/reconciliation.md",
+    "tasks/**/SUT-AIOS-P1-005/task.json",
+    "tasks/**/SUT-AIOS-GOV-031/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "supabase/**",
+    "migrations/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "node tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "node tests/policy-definitions/validate-authorization-policies.mjs",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run github:validate -- --task SUT-AIOS-GOV-031",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "neutral validator module isolation",
+    "deep structural schema validation",
+    "reason-code determinism",
+    "changed-path inspection",
+    "secret scan",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node tests/policy-definitions/validate-authorization-policies-v1.mjs",
+    "node tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live evaluation engine, database, migration, RLS, credential, or production-write scope."
+  ],
+  "rollbackExpectations": "Revert schema, evaluator, CI workflow, task-state record, and evidence together; retain historical evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/done/SUT-AIOS-GOV-031/task.json",
+      "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-27T17:58:00.000Z",
+  "updatedDate": "2026-07-27T18:06:21.511Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-031/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-27T17:58:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-27T17:58:40.105Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-004/P1-005 final assurance closure scope is bounded, fail-closed, independently verifiable"
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-27T17:58:55.995Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and checks approved, starting GOV-031 implementation"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-27T18:06:07.484Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-031 implementation submitted for independent review"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-27T18:06:14.092Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA review and deterministic machine verification passed"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-27T18:06:21.511Z",
+      "actor": "qa-verification",
+      "reason": "Completed GOV-031 P1-004/P1-005 final schema trust and evidence closure"
+    }
+  ]
+}

@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateJsonSchema, validateSchemaKeywords } from "../../packages/policy-engine/src/json-schema-evaluator.mjs";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const v1ArtifactPath = path.join(repositoryRoot, "policies/deterministic-authorization-policies-v1.json");
@@ -26,6 +25,49 @@ const copy = (value) => JSON.parse(JSON.stringify(value));
 const expect = (condition, description) => {
   if (!condition) throw new Error(description);
 };
+
+const supportedSchemaKeywords = new Set([
+  "$schema", "$id", "title", "type", "const", "enum", "required",
+  "properties", "additionalProperties", "minLength"
+]);
+
+function validateSchemaKeywords(schemaNode) {
+  if (!isObject(schemaNode)) return false;
+  if (Object.keys(schemaNode).some((key) => !supportedSchemaKeywords.has(key))) return false;
+  return !isObject(schemaNode.properties) || Object.values(schemaNode.properties).every(validateSchemaKeywords);
+}
+
+function validateJsonSchema(instance, schemaNode) {
+  if (!isObject(schemaNode) || !validateSchemaKeywords(schemaNode)) return false;
+
+  if (schemaNode.type) {
+    const types = Array.isArray(schemaNode.type) ? schemaNode.type : [schemaNode.type];
+    const matchesType = types.some((type) => (
+      (type === "null" && instance === null) ||
+      (type === "object" && isObject(instance)) ||
+      (type === "string" && typeof instance === "string") ||
+      (type === "boolean" && typeof instance === "boolean") ||
+      (type === "integer" && Number.isInteger(instance)) ||
+      (type === "number" && typeof instance === "number") ||
+      (type === "array" && Array.isArray(instance))
+    ));
+    if (!matchesType) return false;
+  }
+  if (Object.hasOwn(schemaNode, "const") && instance !== schemaNode.const) return false;
+  if (Array.isArray(schemaNode.enum) && !schemaNode.enum.includes(instance)) return false;
+  if (typeof schemaNode.minLength === "number" && typeof instance === "string" && instance.length < schemaNode.minLength) return false;
+  if (Array.isArray(schemaNode.required) && isObject(instance) && schemaNode.required.some((key) => !Object.hasOwn(instance, key))) return false;
+  if (schemaNode.additionalProperties === false && isObject(instance)) {
+    const allowed = new Set(Object.keys(schemaNode.properties ?? {}));
+    if (Object.keys(instance).some((key) => !allowed.has(key))) return false;
+  }
+  if (isObject(schemaNode.properties) && isObject(instance)) {
+    return Object.entries(schemaNode.properties).every(([key, propertySchema]) => (
+      !Object.hasOwn(instance, key) || validateJsonSchema(instance[key], propertySchema)
+    ));
+  }
+  return true;
+}
 
 function containsForbiddenTerm(value) {
   if (typeof value === "string") {
@@ -56,6 +98,16 @@ function fullValidateV1(artifact, schemaDoc) {
   for (const field of ["schemaVersion", "policies", "defaults"]) {
     if (!schemaDoc.required.includes(field) || !Object.hasOwn(schemaDoc.properties, field)) return false;
   }
+
+  // Deep structural verification of nested policy schemas for V1
+  const policiesProp = schemaDoc.properties.policies;
+  if (!isObject(policiesProp) || !isObject(policiesProp.properties)) return false;
+  for (const policyName of ["platform_read_only", "governance_gated_change", "production_write_restricted"]) {
+    const pNode = policiesProp.properties[policyName];
+    if (!isObject(pNode) || !isObject(pNode.properties) || !Array.isArray(pNode.required)) return false;
+    if (!pNode.required.includes("targetAction") || !pNode.required.includes("defaultEffect")) return false;
+  }
+
   if (!validateSchemaKeywords(schemaDoc)) return false;
   if (!validateJsonSchema(artifact, schemaDoc)) return false;
   if (containsForbiddenTerm(artifact)) return false;
@@ -104,12 +156,10 @@ try {
   expect(!fullValidateV1(artifact, corruptedSchemaFailClosed), "corrupted schema failClosed const must fail");
   negativeTestsRun += 1;
 
-  // Structurally weakened schema with valid $schema and $id
-  const weakenedSchema = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://sut-ai-os.local/schemas/authorization-policy-contract-v1.schema.json"
-  };
-  expect(!fullValidateV1(artifact, weakenedSchema), "structurally weakened schema with valid $schema and $id must fail");
+  // Deeply weakened schema with valid root shape and valid $schema/$id but empty nested properties
+  const deeplyWeakenedSchema = copy(schemaDoc);
+  delete deeplyWeakenedSchema.properties.policies.properties.platform_read_only.properties;
+  expect(!fullValidateV1(artifact, deeplyWeakenedSchema), "deeply weakened schema with empty nested property definitions must fail");
   negativeTestsRun += 1;
 
   // --- CATEGORY 2: Missing top-level required fields ---
@@ -253,7 +303,7 @@ try {
       passed: true,
       schemaAuthoritative: true,
       negativeTestsRun,
-      details: `V1 policy artifact verified against dedicated V1 Draft 2020-12 JSON Schema evaluator and ${negativeTestsRun} exhaustive V1 mutation cases passed`
+      details: `V1 policy artifact verified against isolated V1 Draft 2020-12 JSON Schema evaluator and ${negativeTestsRun} exhaustive V1 mutation cases passed`
     })}\n`
   );
 } catch (error) {

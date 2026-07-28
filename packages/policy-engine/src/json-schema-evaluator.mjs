@@ -1,108 +1,49 @@
 /**
- * Pure, deterministic JSON Schema evaluator module.
- * Explicitly enforces a closed supported-keyword subset:
- *   $schema, $id, title, type, const, enum, required, properties, additionalProperties, minLength.
- * Rejects unknown or unsupported schema keywords to ensure fail-closed execution.
+ * Small, runtime-safe JSON Schema subset used by the Phase 1 policy engine.
+ * It deliberately accepts only the keywords used by the committed contracts.
  */
-
 const supportedKeywords = new Set([
-  "$schema",
-  "$id",
-  "title",
-  "type",
-  "const",
-  "enum",
-  "required",
-  "properties",
-  "additionalProperties",
-  "minLength"
+  "$schema", "$id", "title", "type", "const", "enum", "required",
+  "properties", "additionalProperties", "minLength"
 ]);
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
-/**
- * Validates a schema document node for unsupported keywords.
- * @param {object} schemaNode - Schema object to inspect
- * @returns {boolean} true if schema node contains only supported keywords
- */
 export function validateSchemaKeywords(schemaNode) {
   if (!isObject(schemaNode)) return false;
-  for (const key of Object.keys(schemaNode)) {
-    if (!supportedKeywords.has(key)) return false;
-  }
-  if (isObject(schemaNode.properties)) {
-    for (const propSchema of Object.values(schemaNode.properties)) {
-      if (!validateSchemaKeywords(propSchema)) return false;
-    }
-  }
-  return true;
+  if (Object.keys(schemaNode).some((key) => !supportedKeywords.has(key))) return false;
+  return !isObject(schemaNode.properties) || Object.values(schemaNode.properties).every(validateSchemaKeywords);
 }
 
-/**
- * Validates an arbitrary data instance against a closed-keyword JSON Schema node.
- * Evaluates type, const, enum, required, properties, additionalProperties, minLength.
- * @param {any} instance - Data payload to validate
- * @param {object} schemaNode - Closed-keyword JSON Schema object
- * @returns {boolean} true if instance satisfies schemaNode, false otherwise
- */
 export function validateJsonSchema(instance, schemaNode) {
-  if (!isObject(schemaNode)) return false;
-  if (!validateSchemaKeywords(schemaNode)) return false;
+  if (!isObject(schemaNode) || !validateSchemaKeywords(schemaNode)) return false;
 
-  // 1. type evaluation
   if (schemaNode.type) {
     const types = Array.isArray(schemaNode.type) ? schemaNode.type : [schemaNode.type];
-    const satisfiesType = types.some((t) => {
-      if (t === "null") return instance === null;
-      if (t === "object") return isObject(instance);
-      if (t === "string") return typeof instance === "string";
-      if (t === "boolean") return typeof instance === "boolean";
-      if (t === "integer") return Number.isInteger(instance);
-      if (t === "number") return typeof instance === "number";
-      if (t === "array") return Array.isArray(instance);
-      return false;
-    });
-    if (!satisfiesType) return false;
+    const matchesType = types.some((type) => (
+      (type === "null" && instance === null) ||
+      (type === "object" && isObject(instance)) ||
+      (type === "string" && typeof instance === "string") ||
+      (type === "boolean" && typeof instance === "boolean") ||
+      (type === "integer" && Number.isInteger(instance)) ||
+      (type === "number" && typeof instance === "number") ||
+      (type === "array" && Array.isArray(instance))
+    ));
+    if (!matchesType) return false;
   }
+  if (Object.hasOwn(schemaNode, "const") && instance !== schemaNode.const) return false;
+  if (Array.isArray(schemaNode.enum) && !schemaNode.enum.includes(instance)) return false;
+  if (typeof schemaNode.minLength === "number" && typeof instance === "string" && instance.length < schemaNode.minLength) return false;
 
-  // 2. const evaluation
-  if (Object.hasOwn(schemaNode, "const")) {
-    if (instance !== schemaNode.const) return false;
-  }
-
-  // 3. enum evaluation
-  if (Array.isArray(schemaNode.enum)) {
-    if (!schemaNode.enum.includes(instance)) return false;
-  }
-
-  // 4. minLength evaluation
-  if (typeof schemaNode.minLength === "number" && typeof instance === "string") {
-    if (instance.length < schemaNode.minLength) return false;
-  }
-
-  // 5. required properties evaluation
-  if (Array.isArray(schemaNode.required) && isObject(instance)) {
-    for (const reqKey of schemaNode.required) {
-      if (!Object.hasOwn(instance, reqKey)) return false;
-    }
-  }
-
-  // 6. additionalProperties evaluation
+  if (Array.isArray(schemaNode.required) && isObject(instance) && schemaNode.required.some((key) => !Object.hasOwn(instance, key))) return false;
   if (schemaNode.additionalProperties === false && isObject(instance)) {
-    const allowedProps = new Set(schemaNode.properties ? Object.keys(schemaNode.properties) : []);
-    for (const key of Object.keys(instance)) {
-      if (!allowedProps.has(key)) return false;
-    }
+    const allowed = new Set(Object.keys(schemaNode.properties ?? {}));
+    if (Object.keys(instance).some((key) => !allowed.has(key))) return false;
   }
-
-  // 7. properties recursive evaluation against schema properties
   if (isObject(schemaNode.properties) && isObject(instance)) {
-    for (const [propName, propSchema] of Object.entries(schemaNode.properties)) {
-      if (Object.hasOwn(instance, propName)) {
-        if (!validateJsonSchema(instance[propName], propSchema)) return false;
-      }
-    }
+    return Object.entries(schemaNode.properties).every(([key, propertySchema]) => (
+      !Object.hasOwn(instance, key) || validateJsonSchema(instance[key], propertySchema)
+    ));
   }
-
   return true;
 }
