@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-035",
   "title": "Admit exact P1-007 kill-switch validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p1-007-validator-admission",
@@ -92,9 +92,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T11:00:35.936Z",
-  "updatedDate": "2026-07-28T11:12:19.760Z",
+  "updatedDate": "2026-07-28T11:14:38.304Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-035/verification-20260728111144993.json"
+    "evidence/verification/SUT-AIOS-GOV-035/verification-20260728111144993.json",
+    "evidence/tasks/SUT-AIOS-GOV-035/verification.md"
   ],
   "stateTransitions": [
     {
@@ -131,6 +132,13 @@
       "at": "2026-07-28T11:12:19.760Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed exact shell-free mapping, near-miss rejection coverage, scope boundaries, and passing machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T11:14:38.304Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #60 merged to origin/main at 1e7a59d; completion reconciliation recorded."
     }
   ]
 }
