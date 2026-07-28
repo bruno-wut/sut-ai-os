@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/playbook-registry-v1.schema.json",
+  "title": "Playbook Registry V1 Shadow Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "registryId",
+    "registryMode",
+    "productionWritePermission",
+    "policyReference",
+    "playbooks"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "registryId": { "const": "sut-aios-playbook-registry" },
+    "registryMode": { "const": "shadow" },
+    "productionWritePermission": { "const": false },
+    "policyReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "schema", "policyKey", "targetAction", "defaultEffect"],
+      "properties": {
+        "artifact": { "const": "policies/deterministic-authorization-policies-v1.json" },
+        "schema": { "const": "schemas/authorization-policy-contract-v1.schema.json" },
+        "policyKey": { "const": "governance_gated_change" },
+        "targetAction": { "const": "governed_configuration_change" },
+        "defaultEffect": { "const": "deny" }
+      }
+    },
+    "playbooks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "playbookId",
+          "version",
+          "owner",
+          "autonomyTier",
+          "mode",
+          "enabled",
+          "productionWritePermission",
+          "trigger",
+          "evidenceRequirements",
+          "permittedTools",
+          "permittedPaths",
+          "requiredChecks",
+          "approvalPolicy",
+          "retryPolicy",
+          "rollbackPolicy",
+          "historicalSuccessRate",
+          "historicalRollbackRate"
+        ],
+        "properties": {
+          "playbookId": { "const": "content-schema-repair-shadow" },
+          "version": { "const": "1.0.0" },
+          "owner": { "const": "codex-content-executor" },
+          "autonomyTier": { "const": "tier-0" },
+          "mode": { "const": "shadow" },
+          "enabled": { "const": false },
+          "productionWritePermission": { "const": false },
+          "trigger": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "eventType", "source"],
+            "properties": {
+              "type": { "const": "sanitized_fixture" },
+              "eventType": { "const": "content_schema_validation_failed" },
+              "source": { "const": "repository_fixture_only" }
+            }
+          },
+          "evidenceRequirements": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "prefixItems": [
+              { "const": "sanitized_failure_fixture" },
+              { "const": "deterministic_validation_result" },
+              { "const": "correlation_id" }
+            ],
+            "items": false
+          },
+          "permittedTools": { "type": "array", "maxItems": 0 },
+          "permittedPaths": { "type": "array", "maxItems": 0 },
+          "requiredChecks": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "prefixItems": [
+              { "const": "registry_contract_validation" },
+              { "const": "changed_path_inspection" },
+              { "const": "secret_boundary_inspection" },
+              { "const": "independent_verification" }
+            ],
+            "items": false
+          },
+          "approvalPolicy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mode", "activationAllowed"],
+            "properties": {
+              "mode": { "const": "not_applicable_observe_only" },
+              "activationAllowed": { "const": false }
+            }
+          },
+          "retryPolicy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["maxAttempts", "strategy"],
+            "properties": {
+              "maxAttempts": { "const": 0 },
+              "strategy": { "const": "none" }
+            }
+          },
+          "rollbackPolicy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["strategy", "mutationAllowed"],
+            "properties": {
+              "strategy": { "const": "not_applicable_no_mutation" },
+              "mutationAllowed": { "const": false }
+            }
+          },
+          "historicalSuccessRate": { "const": null },
+          "historicalRollbackRate": { "const": null }
+        }
+      }
+    }
+  }
+}

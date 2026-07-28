@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryId": "sut-aios-playbook-registry",
+  "registryMode": "shadow",
+  "productionWritePermission": false,
+  "policyReference": {
+    "artifact": "policies/deterministic-authorization-policies-v1.json",
+    "schema": "schemas/authorization-policy-contract-v1.schema.json",
+    "policyKey": "governance_gated_change",
+    "targetAction": "governed_configuration_change",
+    "defaultEffect": "deny"
+  },
+  "playbooks": [
+    {
+      "playbookId": "content-schema-repair-shadow",
+      "version": "1.0.0",
+      "owner": "codex-content-executor",
+      "autonomyTier": "tier-0",
+      "mode": "shadow",
+      "enabled": false,
+      "productionWritePermission": false,
+      "trigger": {
+        "type": "sanitized_fixture",
+        "eventType": "content_schema_validation_failed",
+        "source": "repository_fixture_only"
+      },
+      "evidenceRequirements": [
+        "sanitized_failure_fixture",
+        "deterministic_validation_result",
+        "correlation_id"
+      ],
+      "permittedTools": [],
+      "permittedPaths": [],
+      "requiredChecks": [
+        "registry_contract_validation",
+        "changed_path_inspection",
+        "secret_boundary_inspection",
+        "independent_verification"
+      ],
+      "approvalPolicy": {
+        "mode": "not_applicable_observe_only",
+        "activationAllowed": false
+      },
+      "retryPolicy": {
+        "maxAttempts": 0,
+        "strategy": "none"
+      },
+      "rollbackPolicy": {
+        "strategy": "not_applicable_no_mutation",
+        "mutationAllowed": false
+      },
+      "historicalSuccessRate": null,
+      "historicalRollbackRate": null
+    }
+  ]
+}
