@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-005-R01",
   "title": "Remediate P1 policy authority isolation defects",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "policy-engine-remediation",
   "workflowId": "p1-policy-authority-isolation-remediation",
@@ -120,7 +120,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P1-005-R01/task.json",
+      "tasks/done/SUT-AIOS-P1-005-R01/task.json",
       "docs/policy-engine/DETERMINISTIC_POLICY_EVALUATOR.md",
       "docs/policy-definitions/DETERMINISTIC_AUTHORIZATION_POLICIES.md",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -129,7 +129,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T07:15:22.972Z",
-  "updatedDate": "2026-07-28T07:23:41.266Z",
+  "updatedDate": "2026-07-28T07:30:43.201Z",
   "completionEvidence": [
     "evidence/tasks/SUT-AIOS-P1-005-R01/verification.md"
   ],
@@ -168,6 +168,13 @@
       "at": "2026-07-28T07:23:41.266Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA and machine verification passed; no critical or high bounded defect remains."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T07:30:43.201Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #48 merged at 170be25 after final-head CI run 30338285897 succeeded; independent Sol QA evidence is retained."
     }
   ]
 }
