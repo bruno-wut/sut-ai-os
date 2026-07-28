@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-040",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-28T16:18:04.660Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design specifies exactly two closed V1 JSON Schema authorities, the small conceptual IntelligenceProvider port, and one deterministic Node validator.",
+    "confirmed: Prepared analytics evidence can cite P2-001 results only after the canonical P2-001 public function and its R02-assured structural-plus-semantic boundary produced a valid result; P2-002 neither revalidates through weaker replacement schemas nor reinterprets calculator semantics.",
+    "confirmed: The design fixes finite request and result variants, fields, enums, bounds, evidence-reference rules, confidence semantics, provider states, reason codes, and validation precedence.",
+    "confirmed: The boundary is provider-neutral, fail closed, and non-authoritative; it contains no provider SDK, storage locator, scheduler, workflow, policy, approval, execution, verification, or audit-source-of-truth interface.",
+    "confirmed: The P2-002 packet is amended only to the designed static-contract scope and names its exact future Node validator command.",
+    "confirmed: The design requires separately approved exact shell-free verifier admission with near-miss rejection coverage.",
+    "confirmed: Independent QA can confirm no product implementation, schema, validator, verifier, CI, runtime, protected path, or historical evidence was altered."
+  ],
+  "changedPaths": [
+    "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
+    "evidence/tasks/SUT-AIOS-GOV-040/verification.md",
+    "tasks/backlog/SUT-AIOS-P2-002/task.json",
+    "tasks/review/SUT-AIOS-GOV-040/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-040/verification-20260728161804660.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
