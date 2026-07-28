@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-039",
   "title": "Admit exact P2-001 analytics validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-001-validator-admission",
@@ -106,7 +106,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-039/task.json",
+      "tasks/done/SUT-AIOS-GOV-039/task.json",
       "tasks/backlog/SUT-AIOS-P2-001/task.json",
       "docs/analytics/P2-001_DETERMINISTIC_ANALYTICS_CALCULATORS_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -117,9 +117,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T14:54:18.534Z",
-  "updatedDate": "2026-07-28T15:00:13.015Z",
+  "updatedDate": "2026-07-28T15:02:10.184Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-039/verification-20260728150005506.json"
+    "evidence/verification/SUT-AIOS-GOV-039/verification-20260728150005506.json",
+    "evidence/tasks/SUT-AIOS-GOV-039/verification.md"
   ],
   "stateTransitions": [
     {
@@ -156,6 +157,13 @@
       "at": "2026-07-28T15:00:13.015Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the exact one-argument shell-free P2-001 validator mapping, all 15 focused near-miss rejections, bounded documentation, clean path scope, and passing deterministic machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T15:02:10.184Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #74 merged at 08df05c."
     }
   ]
 }
