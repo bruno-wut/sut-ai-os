@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-006-PLAN",
   "title": "Define executable P1-006 playbook registry contract",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "playbooks",
   "workflowId": "p1-006-registry-contract-planning",
@@ -107,7 +107,7 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/project/CONTEXT_INDEX.md",
-      "tasks/verified/SUT-AIOS-P1-006-PLAN/task.json",
+      "tasks/done/SUT-AIOS-P1-006-PLAN/task.json",
       "tasks/backlog/SUT-AIOS-P1-006/task.json",
       "docs/project/TASK_WORKFLOW.md",
       "docs/project/DEFINITION_OF_DONE.md",
@@ -117,9 +117,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T07:57:41.829Z",
-  "updatedDate": "2026-07-28T08:38:37.001Z",
+  "updatedDate": "2026-07-28T10:02:16.112Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-P1-006-PLAN/verification-20260728083814086.json"
+    "evidence/verification/SUT-AIOS-P1-006-PLAN/verification-20260728083814086.json",
+    "evidence/tasks/SUT-AIOS-P1-006-PLAN/verification.md"
   ],
   "worktree": {
     "path": "C:\\Users\\Bruno Browny\\.codex\\worktrees\\fbec\\SUT_AI_OS-p1-006-plan",
@@ -205,6 +206,13 @@
       "at": "2026-07-28T08:38:37.001Z",
       "actor": "qa-verification",
       "reason": "Fresh independent Sol QA passed after local main was aligned to origin/main; bounded design, accepted correction, allowed paths, security boundaries, required tests, and machine verification all pass."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T10:02:16.112Z",
+      "actor": "chief-orchestrator",
+      "reason": "PR #50 merged at a2dab36 after final-head CI run 30349003250 passed; independent verification evidence is retained."
     }
   ]
 }
