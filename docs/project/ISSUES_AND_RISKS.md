@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P1-007 validator admission remains exact and fail-closed
+
+- **Task ID:** `SUT-AIOS-GOV-035`, `SUT-AIOS-P1-007`
+- **Status:** Resolved
+- **Severity:** High
+- **Affected scope:** `scripts/verify/verify-cli.mjs` safe required-command parser and future P1-007 machine verification.
+- **Evidence:** GOV-035 admits only the byte-for-byte literal `node tests/orchestrator/validate-kill-switch-controls-v1.mjs`, maps it to `node` with one fixed path argument and `shell: false`, and self-tests reject whitespace, argument, alternate-path, sibling-path, and shell-operator variants. Independent Sol QA passed once at `evidence/verification/SUT-AIOS-GOV-035/verification-20260728111144993.json`. The product validator does not yet exist and was not executed by this governance task.
+- **Next action / owner:** Retain the exact admission and machine evidence for P1-007 implementation. Any future test-path admission requires a separate approved governance task.
+
 ### 2026-07-28 — P1-006 validator admission remains exact and fail-closed
 
 - **Task ID:** `SUT-AIOS-GOV-034`, `SUT-AIOS-P1-006`
