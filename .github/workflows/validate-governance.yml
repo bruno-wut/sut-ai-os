@@ -38,6 +38,8 @@ jobs:
         run: node tests/playbooks/validate-playbook-registry-v1.mjs
       - name: Run P1-007 kill-switch controls validator
         run: node tests/orchestrator/validate-kill-switch-controls-v1.mjs
+      - name: Run P1-008 observe-only Staff OS control views validator
+        run: node tests/staff-os/validate-observe-only-control-views-v1.mjs
 
 
 

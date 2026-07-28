@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P1-008",
   "title": "Create observe-only Staff OS control views",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-1",
   "workstream": "staff-os",
   "workflowId": "implementation-p1-008",
@@ -24,7 +24,8 @@
     "SUT-AIOS-P1-002",
     "SUT-AIOS-P1-003",
     "SUT-AIOS-P1-007",
-    "SUT-AIOS-GOV-036"
+    "SUT-AIOS-GOV-036",
+    "SUT-AIOS-GOV-037"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P1-008/verification.md"
@@ -116,7 +117,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P1-008/task.json",
+      "tasks/verified/SUT-AIOS-P1-008/task.json",
       "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
       "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
       "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
@@ -129,8 +130,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-28T12:02:32.121Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P1-008/verification-20260728120223645.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -138,6 +141,34 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T11:56:07.453Z",
+      "actor": "chief-orchestrator",
+      "reason": "Dependencies P1-002, P1-003, P1-007, GOV-036, and GOV-037 are complete."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T11:56:07.496Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with approved static observe-only control-view contract."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T11:59:48.584Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Static observe-only Staff OS Control Views V1 implementation and deterministic checks complete; submitted for independent Sol review."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T12:02:32.121Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed the closed three-view metadata-only contract, canonical source references, fixed P1-007 observe denial, focused fail-closed mutations, explicit CI command, and bounded no-runtime scope; machine verification passed."
     }
   ]
 }

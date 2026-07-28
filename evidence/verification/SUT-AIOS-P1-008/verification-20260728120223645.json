@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-008",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-28T12:02:23.645Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/staff-os/validate-observe-only-control-views-v1.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: schemas/staff-os-control-views-v1.schema.json is the closed Draft 2020-12 structural authority for the documented finite V1 view set and accepts no extra properties.",
+    "confirmed: apps/staff-os/staff-os-control-views-v1.json contains exactly the documented identity, Tier 0 observe-only mode, production-write prohibition, and three static contract-reference views: workflow-control-plane, append-only-audit-record, and deny-only-kill-switch-decision.",
+    "confirmed: Each V1 view is contract metadata only: it has an exact canonical source reference, fixed display fields, the sole permitted action observe, and a no-live-data state; it contains no endpoint, query, credential, command, executable callback, action control, authorization, approval, or mutable configuration.",
+    "confirmed: The workflow view references only the P1-002 workflow_runs fields id, correlationId, status, and triggerEventId; the audit view references only the P1-003 record fields id, correlationId, recordedAt, actorType, actionType, and outcome; and the kill-switch view references only the P1-007 public observe request and closed deny decision fields schemaVersion, decision, reasonCode, and controlId.",
+    "confirmed: node tests/staff-os/validate-observe-only-control-views-v1.mjs loads the committed canonical schema and artifact from repository-relative paths, verifies the finite V1 contract and static P1-007 observe decision, and rejects focused mutations without caller-supplied replacement authority, live access, writes, or network activity.",
+    "confirmed: Malformed JSON, altered source references, unexpected fields or views, any non-observe action, live-data claim, action endpoint, query, command, enabled write, approval, authorization, execution, or changed finite field list fail deterministically with a nonzero exit.",
+    "confirmed: P1-008 adds no UI runtime, API, server, database, data fetch, audit writer, policy evaluator, approval workflow, executor, notification, queue, scheduler, deployment, credential, network, guest-data, booking, payment, inventory, pricing, or production behavior.",
+    "confirmed: The exact validator runs explicitly in CI, and independent QA confirms forbidden paths were untouched after a separate exact-command verifier admission is merged."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "apps/staff-os/staff-os-control-views-v1.json",
+    "evidence/tasks/SUT-AIOS-P1-008/verification.md",
+    "schemas/staff-os-control-views-v1.schema.json",
+    "tasks/backlog/SUT-AIOS-P1-008/task.json",
+    "tasks/review/SUT-AIOS-P1-008/task.json",
+    "tests/staff-os/validate-observe-only-control-views-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-008/verification-20260728120223645.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

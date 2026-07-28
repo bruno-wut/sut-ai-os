@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0.0",
+  "viewSetId": "sut-aios-staff-os-control-views",
+  "mode": "observe-only",
+  "productionWritePermission": false,
+  "views": [
+    {
+      "viewId": "workflow-control-plane",
+      "title": "Workflow control-plane",
+      "source": {
+        "authorityPath": "packages/control-plane-schema/control-plane-schema-v1.json",
+        "authorityType": "static_control_plane_contract",
+        "entity": "workflow_runs"
+      },
+      "displayFields": ["id", "correlationId", "status", "triggerEventId"],
+      "permittedActions": ["observe"],
+      "noLiveDataState": "static_contract_only"
+    },
+    {
+      "viewId": "append-only-audit-record",
+      "title": "Append-only audit record",
+      "source": {
+        "authorityPath": "packages/audit-sdk/append-only-audit-contract-v1.json",
+        "authorityType": "static_append_only_audit_contract",
+        "entity": "record"
+      },
+      "displayFields": ["id", "correlationId", "recordedAt", "actorType", "actionType", "outcome"],
+      "permittedActions": ["observe"],
+      "noLiveDataState": "static_contract_only"
+    },
+    {
+      "viewId": "deny-only-kill-switch-decision",
+      "title": "Deny-only kill-switch decision",
+      "source": {
+        "authorityPath": "services/orchestrator/src/kill-switch/evaluator.mjs",
+        "authorityType": "deny_only_kill_switch_evaluator",
+        "publicInterface": "evaluateKillSwitch",
+        "fixedRequest": {
+          "targetAction": "observe"
+        },
+        "expectedDecision": {
+          "schemaVersion": "1.0.0",
+          "decision": "deny",
+          "reasonCode": "KILL_SWITCH_NO_MATCH_FAIL_CLOSED",
+          "controlId": null
+        }
+      },
+      "displayFields": ["schemaVersion", "decision", "reasonCode", "controlId"],
+      "permittedActions": ["observe"],
+      "noLiveDataState": "static_contract_only"
+    }
+  ]
+}
