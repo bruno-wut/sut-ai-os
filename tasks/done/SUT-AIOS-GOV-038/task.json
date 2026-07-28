@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-038",
   "title": "Plan executable P2-001 deterministic analytics verification",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-2",
   "workstream": "analytics",
   "workflowId": "p2-001-analytics-planning",
@@ -108,7 +108,7 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/project/CONTEXT_INDEX.md",
-      "tasks/verified/SUT-AIOS-GOV-038/task.json",
+      "tasks/done/SUT-AIOS-GOV-038/task.json",
       "tasks/backlog/SUT-AIOS-P2-001/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "docs/project/TASK_WORKFLOW.md"
@@ -117,9 +117,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T12:07:42.127Z",
-  "updatedDate": "2026-07-28T14:50:25.358Z",
+  "updatedDate": "2026-07-28T14:52:30.942Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-038/verification-20260728145020191.json"
+    "evidence/verification/SUT-AIOS-GOV-038/verification-20260728145020191.json",
+    "evidence/tasks/SUT-AIOS-GOV-038/verification.md"
   ],
   "stateTransitions": [
     {
@@ -219,6 +220,13 @@
       "at": "2026-07-28T14:50:25.358Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the finite deterministic analytics plan, nested malformed-input mapping, left-to-right ECMAScript accumulation, returned-field-only numeric bounds, architecture boundaries, and all required checks."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T14:52:30.942Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #72 merged to origin/main at 2386053; completion reconciliation recorded."
     }
   ]
 }
