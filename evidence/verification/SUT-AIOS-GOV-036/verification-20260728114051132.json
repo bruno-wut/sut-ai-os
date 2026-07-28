@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-036",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-28T11:40:51.132Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A durable design specifies exactly one closed V1 Staff OS control-view schema authority, one finite static artifact, and one deterministic Node validator with fail-closed malformed or mutated-artifact behavior.",
+    "confirmed: The design fixes a Tier 0 observe-only view set that references only the static P1-002 control-plane contract, P1-003 append-only audit contract, and P1-007 deny-only kill-switch decision boundary; it introduces no live records, queries, data collection, or execution controls.",
+    "confirmed: The P1-008 backlog packet is amended only to the designed static-contract scope and names the exact future Node validator command rather than the nonexistent npm test command.",
+    "confirmed: The design states that a separate verifier-admission governance packet must admit only the exact future validator command with shell disabled and near-miss rejection coverage after implementation exists.",
+    "confirmed: Independent QA can confirm that no Staff OS implementation, schema, artifact, validator, verifier change, CI workflow, runtime capability, protected path, or historical evidence was altered by this planning task."
+  ],
+  "changedPaths": [
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
+    "evidence/tasks/SUT-AIOS-GOV-036/verification.md",
+    "tasks/backlog/SUT-AIOS-P1-008/task.json",
+    "tasks/review/SUT-AIOS-GOV-036/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-036/verification-20260728114051132.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

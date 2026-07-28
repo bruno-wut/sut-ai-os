@@ -1,0 +1,156 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-036",
+  "title": "Plan executable P1-008 Staff OS control-view verification",
+  "status": "verified",
+  "phase": "phase-1",
+  "workstream": "staff-os",
+  "workflowId": "p1-008-control-view-planning",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prepare one bounded, static, Tier 0 Staff OS control-view contract so P1-008 can be implemented and independently verified without creating a live Staff OS service, data integration, or production action.",
+  "technicalObjective": "Define the finite V1 Staff OS control-view schema authority, committed artifact, exact validator command, failure behavior, documentation, and corrected P1-008 packet scope; do not implement any schema, artifact, validator, verifier admission, UI, or runtime capability.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
+    "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-002",
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P1-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-036/verification.md"
+  ],
+  "assumptions": [
+    "P1-008 remains a static, repository-local Tier 0 observe-only contract; it has no live data source, server, UI runtime, database, network access, credential, production write, workflow execution, authorization, approval, or audit-store behavior.",
+    "P1-002, P1-003, and P1-007 are completed finite authorities that P1-008 may reference but must not redefine, mutate, or treat as a production data source.",
+    "The existing P1-008 packet is not executable because its subsystem command and finite contract are unspecified; a separate governance packet must admit the exact future validator command only after the validator exists."
+  ],
+  "acceptanceCriteria": [
+    "A durable design specifies exactly one closed V1 Staff OS control-view schema authority, one finite static artifact, and one deterministic Node validator with fail-closed malformed or mutated-artifact behavior.",
+    "The design fixes a Tier 0 observe-only view set that references only the static P1-002 control-plane contract, P1-003 append-only audit contract, and P1-007 deny-only kill-switch decision boundary; it introduces no live records, queries, data collection, or execution controls.",
+    "The P1-008 backlog packet is amended only to the designed static-contract scope and names the exact future Node validator command rather than the nonexistent npm test command.",
+    "The design states that a separate verifier-admission governance packet must admit only the exact future validator command with shell disabled and near-miss rejection coverage after implementation exists.",
+    "Independent QA can confirm that no Staff OS implementation, schema, artifact, validator, verifier change, CI workflow, runtime capability, protected path, or historical evidence was altered by this planning task."
+  ],
+  "allowedPaths": [
+    "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P1-008/task.json",
+    "tasks/**/SUT-AIOS-GOV-036/**",
+    "evidence/tasks/SUT-AIOS-GOV-036/**",
+    "evidence/verification/SUT-AIOS-GOV-036/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "schemas/**",
+    "apps/**",
+    "tests/**",
+    "services/**",
+    "packages/**",
+    "scripts/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "policies/**",
+    "playbooks/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite static contract-design review",
+    "P1-008 packet scope and dependency review",
+    "exact future validator-command and verifier-admission review",
+    "changed-path inspection",
+    "independent Sol QA"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal to add a live Staff OS UI, service, data query, data store, workflow behavior, mutable state, action control, authorization, approval, execution, external access, credential, production write, payment, booking, RLS, migration, or concurrency behavior.",
+    "Any ambiguity about the finite V1 authority, source-contract reference, or exact verifier admission."
+  ],
+  "rollbackExpectations": "Revert only this planning document, the P1-008 backlog packet amendment, the GOV-036 lifecycle change, its risk entry, and its evidence; preserve completed records, canonical architecture sources, all P1-002/P1-003/P1-007 authorities, and all product/runtime surfaces.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": []
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T11:32:17.107Z",
+  "updatedDate": "2026-07-28T11:41:03.229Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-036/verification-20260728114051132.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T11:32:17.107Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T11:34:46.655Z",
+      "actor": "chief-orchestrator",
+      "reason": "Dependencies are done and the bounded static planning scope, paths, and checks are now specified."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T11:34:46.705Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Begin approved P1-008 static control-view planning in the isolated GOV-036 worktree."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T11:39:19.110Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Finite P1-008 V1 design, corrected backlog packet, risk entry, planning evidence, and packet-authorized local checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T11:41:03.229Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed the bounded static P1-008 plan, exact authority references, deferred exact-command admission, and all packet checks."
+    }
+  ]
+}
