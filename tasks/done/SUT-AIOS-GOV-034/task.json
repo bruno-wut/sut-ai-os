@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-034",
   "title": "Admit exact P1-006 playbook registry validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p1-006-validator-admission",
@@ -91,14 +91,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-034/task.json",
+      "tasks/done/SUT-AIOS-GOV-034/task.json",
       "scripts/verify/verify-cli.mjs"
     ]
   },
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T10:03:36.429Z",
-  "updatedDate": "2026-07-28T10:14:02.289Z",
+  "updatedDate": "2026-07-28T11:30:32.439Z",
   "completionEvidence": [
     "evidence/tasks/SUT-AIOS-GOV-034/verification.md"
   ],
@@ -137,6 +137,13 @@
       "at": "2026-07-28T10:14:02.289Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed exact shell-free admission, six near-miss rejections, and passing machine evidence."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T11:30:32.439Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #55 merged to origin/main at cd12340; completion reconciliation recorded."
     }
   ]
 }
