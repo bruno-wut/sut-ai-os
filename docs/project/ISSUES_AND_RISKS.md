@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P1-008 Staff OS validator admission is a future prerequisite
+
+- **Task ID:** `SUT-AIOS-GOV-036`, `SUT-AIOS-P1-008`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Future `tests/staff-os/validate-observe-only-control-views-v1.mjs` independent machine verification and the safe required-command parser.
+- **Evidence:** GOV-036 defines the byte-for-byte future command `node tests/staff-os/validate-observe-only-control-views-v1.mjs`, but no validator or verifier admission exists yet. The planned P1-008 view set is static Tier 0 contract metadata only and must not be treated as a live Staff OS control surface.
+- **Next action / owner:** After P1-008 implements its validator, create a separately approved governance task that admits only this exact shell-free fixed-argument command with near-miss rejection coverage. Independent Sol QA must verify it before P1-008 runs machine verification or becomes verified.
+
 ### 2026-07-28 — P1-007 validator admission remains exact and fail-closed
 
 - **Task ID:** `SUT-AIOS-GOV-035`, `SUT-AIOS-P1-007`

@@ -10,33 +10,47 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded staff-os outcome.",
-  "technicalObjective": "Create observe-only Staff OS control views",
+  "technicalObjective": "Create the finite Staff OS Control Views V1 schema, static view-set artifact, and deterministic offline validator exactly as defined in docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
-    "docs/project/IMPLEMENTATION_BACKLOG.md"
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
+    "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
+    "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md"
   ],
   "dependencies": [
     "SUT-AIOS-P1-002",
     "SUT-AIOS-P1-003",
-    "SUT-AIOS-P1-007"
+    "SUT-AIOS-P1-007",
+    "SUT-AIOS-GOV-036"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P1-008/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
-    "Interfaces with the finalized platform use approved compatibility contracts only."
+    "P1-008 is a static repository contract in Tier 0 observe-only mode; it must not create a live Staff OS UI, API, service, data query, data store, queue, workflow, mutable state, or production integration.",
+    "The only V1 source authorities are the completed P1-002 control-plane contract, P1-003 append-only audit contract, and P1-007 deny-only kill-switch decision boundary; P1-008 may reference their finite metadata but may not redefine or treat them as live data sources.",
+    "No production write, deployment, database, network, external service, credential, guest-data, booking, payment, inventory, pricing, authorization, approval, execution, or audit-store access is authorized.",
+    "A separate governance packet must admit the exact future validator command after the validator exists and before P1-008 independent machine verification."
   ],
   "acceptanceCriteria": [
-    "Create observe-only Staff OS control views is implemented only within the declared subsystem.",
-    "Machine-readable contracts and deterministic failure behavior are documented.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "schemas/staff-os-control-views-v1.schema.json is the closed Draft 2020-12 structural authority for the documented finite V1 view set and accepts no extra properties.",
+    "apps/staff-os/staff-os-control-views-v1.json contains exactly the documented identity, Tier 0 observe-only mode, production-write prohibition, and three static contract-reference views: workflow-control-plane, append-only-audit-record, and deny-only-kill-switch-decision.",
+    "Each V1 view is contract metadata only: it has an exact canonical source reference, fixed display fields, the sole permitted action observe, and a no-live-data state; it contains no endpoint, query, credential, command, executable callback, action control, authorization, approval, or mutable configuration.",
+    "The workflow view references only the P1-002 workflow_runs fields id, correlationId, status, and triggerEventId; the audit view references only the P1-003 record fields id, correlationId, recordedAt, actorType, actionType, and outcome; and the kill-switch view references only the P1-007 public observe request and closed deny decision fields schemaVersion, decision, reasonCode, and controlId.",
+    "node tests/staff-os/validate-observe-only-control-views-v1.mjs loads the committed canonical schema and artifact from repository-relative paths, verifies the finite V1 contract and static P1-007 observe decision, and rejects focused mutations without caller-supplied replacement authority, live access, writes, or network activity.",
+    "Malformed JSON, altered source references, unexpected fields or views, any non-observe action, live-data claim, action endpoint, query, command, enabled write, approval, authorization, execution, or changed finite field list fail deterministically with a nonzero exit.",
+    "P1-008 adds no UI runtime, API, server, database, data fetch, audit writer, policy evaluator, approval workflow, executor, notification, queue, scheduler, deployment, credential, network, guest-data, booking, payment, inventory, pricing, or production behavior.",
+    "The exact validator runs explicitly in CI, and independent QA confirms forbidden paths were untouched after a separate exact-command verifier admission is merged."
   ],
   "allowedPaths": [
-    "apps/staff-os/**",
-    "tests/staff-os/**",
-    "docs/staff-os/**",
+    "apps/staff-os/staff-os-control-views-v1.json",
+    "schemas/staff-os-control-views-v1.schema.json",
+    "tests/staff-os/validate-observe-only-control-views-v1.mjs",
+    "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
+    ".github/workflows/validate-governance.yml",
     "evidence/tasks/SUT-AIOS-P1-008/**",
     "tasks/**/SUT-AIOS-P1-008/**"
   ],
@@ -48,48 +62,68 @@
     "**/*credential*",
     "supabase/migrations/**",
     "apps/ibe/src/payments/**",
-    "apps/ibe/src/inventory/**"
+    "apps/ibe/src/inventory/**",
+    "services/**",
+    "packages/**",
+    "scripts/**",
+    "policies/**",
+    "playbooks/**",
+    "package.json",
+    "package-lock.json"
   ],
   "allowedCommands": [
-    "npm run test:staff-os",
+    "node tests/staff-os/validate-observe-only-control-views-v1.mjs",
+    "npm run verify:fast",
+    "git diff --check",
+    "npm run verify:task -- --task SUT-AIOS-P1-008 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed"
+  ],
+  "requiredChecks": [
+    "finite Staff OS Control Views V1 contract validation",
+    "static source-authority and no-live-data inspection",
+    "focused negative and mutation cases",
+    "changed-path inspection",
+    "secret and protected-boundary inspection",
+    "explicit CI command inspection",
+    "independent Sol verification",
+    "machine verification evidence after exact-command admission"
+  ],
+  "requiredTests": [
+    "node tests/staff-os/validate-observe-only-control-views-v1.mjs",
     "npm run verify:fast",
     "git diff --check"
   ],
-  "requiredChecks": [
-    "staff-os contract validation",
-    "changed-path inspection",
-    "secret scan",
-    "independent verification"
-  ],
-  "requiredTests": [
-    "npm run test:staff-os",
-    "npm run verify:fast"
-  ],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
-  "riskLevel": "medium",
+  "riskLevel": "high",
   "autonomyTier": "tier-0",
   "defaultAgent": "codex-engineering-executor",
   "allowedAgents": [
     "codex-engineering-executor",
     "qa-verification"
   ],
-  "modelRoute": "terra",
-  "defaultModel": "gpt-5.6-terra",
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
   "solEscalationTriggers": [
-    "Any required change crosses declared subsystem or protected paths.",
-    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises."
+    "Any proposal broadens the finite view set, adds a live UI, API, service, data access, action control, mutable configuration, authorization, approval, execution, external access, credential, production write, payment, booking, RLS, migration, concurrency, or workflow behavior.",
+    "Any required change crosses the exact artifact, schema, validator, design, CI, task-state, or evidence paths.",
+    "Any ambiguity about source authority, exact static P1-007 observe decision, or verifier admission."
   ],
-  "rollbackExpectations": "Revert the staff-os branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert only the P1-008 static view artifact, schema, validator, design document, explicit CI step, task-state changes, and P1-008 evidence; preserve P1-002/P1-003/P1-007 authorities and evidence, completed records, canonical architecture sources, the immutable compatibility snapshot, and all external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P1-008/task.json",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
+      "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
+      "docs/control-plane-schema/CONTROL_PLANE_SCHEMA_CONTRACT.md",
+      "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md",
+      "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/AUTONOMY_BOUNDARIES.md",
+      "docs/project/DEFINITION_OF_DONE.md"
     ]
   },
   "owner": "codex-engineering-executor",
