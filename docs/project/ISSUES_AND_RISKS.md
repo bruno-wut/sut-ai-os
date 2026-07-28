@@ -19,7 +19,7 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ### 2026-07-28 — P2-001 must remain a local deterministic measurement boundary
 
-- **Task ID:** `SUT-AIOS-GOV-038`, `SUT-AIOS-P2-001`
+- **Task ID:** `SUT-AIOS-GOV-038`, `SUT-AIOS-GOV-039`, `SUT-AIOS-P2-001`
 - **Status:** Monitoring
 - **Severity:** High
 - **Affected scope:** Future P2-001 schemas, calculator core, validator, and
@@ -27,8 +27,9 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Evidence:** GOV-038 fixes a pure, stable `calculateMetricComparison`
   boundary with no infrastructure imports, no live data, and fail-closed
   invalid/non-comparable results. Correlation and seasonality are context or
-  not evaluated, never causal inference. The future exact validator is not yet
-  admitted by the independent verifier. Fresh independent QA on 2026-07-28
+  not evaluated, never causal inference. GOV-039 adds only the exact shell-free
+  verifier mapping for the planned validator and focused near-miss rejection
+  coverage; it does not implement or execute the validator. Fresh independent QA on 2026-07-28
   found the revised design still ambiguous about valid result-number bounds and
   its six-decimal rounding algorithm, and did not provide a total mapping from
   malformed field shapes to ordered reason-code combinations. Machine
@@ -43,8 +44,8 @@ This is the durable repository-wide register for issues, blockers, risks, failed
   accumulators to remain finite. Fresh independent Sol QA accepted the corrected
   plan and released it for machine verification; the earlier failed reviews
   remain recorded above.
-- **Next action / owner:** Implement only the approved V1 contract after a
-  separate exact-command admission task. Sol QA must verify core/adapter
+- **Next action / owner:** Independently verify GOV-039, then implement only the
+  approved V1 contract after the admission is merged. Sol QA must verify core/adapter
   separation, human approval boundaries, CI/evidence, and rollback before any
   downstream intelligence use.
 
