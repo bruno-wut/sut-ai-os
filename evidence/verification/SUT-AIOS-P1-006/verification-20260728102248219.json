@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-006",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-28T10:22:48.219Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/playbooks/validate-playbook-registry-v1.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: schemas/playbook-registry-v1.schema.json is the closed Draft 2020-12 structural authority for the documented finite V1 registry and accepts no extra properties.",
+    "confirmed: playbooks/playbook-registry-v1.json contains exactly the documented registry identity, P1-004 deny-taxonomy reference, and one disabled Tier 0 shadow content-schema-repair entry.",
+    "confirmed: The single entry has productionWritePermission false, empty permittedTools and permittedPaths, exact fixture-only trigger and evidence requirements, exact deterministic check identifiers, no activation approval, zero retries, and no-mutation rollback.",
+    "confirmed: The single entry requires historicalSuccessRate and historicalRollbackRate, each exactly null/not-recorded; omission or any non-null value is rejected without calculating or retrieving a rate.",
+    "confirmed: node tests/playbooks/validate-playbook-registry-v1.mjs loads only the committed canonical schema and artifact, validates the finite contract, and rejects the focused mutations defined by the design.",
+    "confirmed: Malformed JSON, altered authority, unexpected fields or values, activation, production-write permission, tools, paths, retries, or mutation-capable rollback fail deterministically with a nonzero exit.",
+    "confirmed: P1-006 adds no runtime runner, dispatcher, evaluator dependency, service, command execution, telemetry, rate calculator, runtime metric storage, external data, database, network call, credential access, production behavior, or package restructuring.",
+    "confirmed: The exact validator runs explicitly in CI, and independent QA confirms forbidden paths were untouched after separate exact-command verifier admission is merged."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "evidence/tasks/SUT-AIOS-P1-006/implementation.md",
+    "evidence/tasks/SUT-AIOS-P1-006/verification.md",
+    "playbooks/playbook-registry-v1.json",
+    "schemas/playbook-registry-v1.schema.json",
+    "tasks/backlog/SUT-AIOS-P1-006/task.json",
+    "tasks/review/SUT-AIOS-P1-006/task.json",
+    "tests/playbooks/validate-playbook-registry-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-006/verification-20260728102248219.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

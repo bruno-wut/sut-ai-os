@@ -34,6 +34,8 @@ jobs:
         run: node tests/policy-definitions/validate-authorization-policies-v2.mjs
       - name: Run P1-005 policy evaluator validator
         run: node tests/policy-engine/validate-deterministic-policy-evaluator.mjs
+      - name: Run P1-006 playbook registry validator
+        run: node tests/playbooks/validate-playbook-registry-v1.mjs
 
 
 
