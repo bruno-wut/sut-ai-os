@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-001",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-28T15:18:35.393Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Exactly two closed Draft 2020-12 authorities exist: `schemas/deterministic-analytics-calculator-request-v1.schema.json` and `schemas/deterministic-analytics-calculator-result-v1.schema.json`; every object sets `additionalProperties: false` and implements the exact V1 fields, types, bounds, and variants in the GOV-038 design.",
+    "confirmed: Exactly one pure public function, `calculateMetricComparison(request)`, exists at `packages/analytics-sdk/src/deterministic-analytics-calculators-v1.mjs`; its stable public API hides validation, rounding, reason-code, and confidence internals, reads no files, environment, network, database, clock, or mutable external state, and never throws for malformed input.",
+    "confirmed: The core follows ports-and-adapters boundaries: it imports no infrastructure or provider-specific dependency; prepared observations are its input port and deterministic result its output port. Any future source, report, or provider integration is a separately approved adapter outside the core.",
+    "confirmed: Only `event-count -> sum`, `event-value-sum -> sum`, `event-value-mean -> mean`, and `event-rate -> rate` are valid metric/aggregation mappings. The schemas and module enforce the exact identifier expression, date-only real-calendar and ordered/non-overlapping periods, 1-366 bounded finite observations, and exact context enums/array bounds from the design.",
+    "confirmed: The result schema has only `ok`, `non-comparable`, and `invalid` variants. It implements their exact null/non-null fields, confidence labels, fixed safe invalid identity/context, complete reason-code set, and fixed error precedence in the GOV-038 design. Invalid input never throws; zero baseline yields only `non-comparable` with `ZERO_BASELINE`, never Infinity, action, recommendation, authorization, approval, or execution.",
+    "confirmed: `tests/analytics/validate-deterministic-analytics-calculators-v1.mjs` loads committed V1 authority and calculator code, verifies every canonical table rule, variant, reason-code precedence, repeated never-throw behavior, authority replacement rejection, and private-boundary/no-infrastructure-import rule, and runs as `node tests/analytics/validate-deterministic-analytics-calculators-v1.mjs`.",
+    "confirmed: Documentation states correlation and seasonality are caller-declared context or `not-evaluated`; P2-001 does not infer causes, process guest data, ingest external analytics, invoke AI, render a report, or authorize intervention.",
+    "confirmed: Independent QA confirms allowed paths, human-approval boundary, fail-closed behavior, exact admission, required tests, CI, rollback, and retained machine-readable evidence."
+  ],
+  "changedPaths": [
+    "docs/analytics/DETERMINISTIC_ANALYTICS_CALCULATORS_V1.md",
+    "evidence/tasks/SUT-AIOS-P2-001/verification.md",
+    "packages/analytics-sdk/src/deterministic-analytics-calculators-v1.mjs",
+    "schemas/deterministic-analytics-calculator-request-v1.schema.json",
+    "schemas/deterministic-analytics-calculator-result-v1.schema.json",
+    "tasks/backlog/SUT-AIOS-P2-001/task.json",
+    "tasks/review/SUT-AIOS-P2-001/task.json",
+    "tests/analytics/validate-deterministic-analytics-calculators-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P2-001/verification-20260728151835393.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

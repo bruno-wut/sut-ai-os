@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/deterministic-analytics-calculator-result-v1.schema.json",
+  "title": "Deterministic Analytics Calculator Result V1",
+  "oneOf": [
+    { "$ref": "#/$defs/okSum" },
+    { "$ref": "#/$defs/okMeanOrRate" },
+    { "$ref": "#/$defs/nonComparableSum" },
+    { "$ref": "#/$defs/nonComparableMeanOrRate" },
+    { "$ref": "#/$defs/invalid" }
+  ],
+  "$defs": {
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "end": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anomalyDurationDays", "correlatedDeploymentIds", "correlatedCampaignIds", "seasonalityStatus"],
+      "properties": {
+        "anomalyDurationDays": { "type": "integer", "minimum": 0, "maximum": 366 },
+        "correlatedDeploymentIds": { "$ref": "#/$defs/correlationIds" },
+        "correlatedCampaignIds": { "$ref": "#/$defs/correlationIds" },
+        "seasonalityStatus": { "type": "string", "enum": ["not-evaluated", "caller-declared"] }
+      }
+    },
+    "correlationIds": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" }
+    },
+    "validCommon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion", "metricId", "segmentId", "aggregation", "currentPeriod", "baselinePeriod",
+        "status", "currentValue", "baselineValue", "absoluteMovement", "percentageMovement",
+        "currentSampleSize", "baselineSampleSize", "confidenceBand", "context", "reasonCodes"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" },
+        "metricId": { "type": "string", "enum": ["event-count", "event-value-sum", "event-value-mean", "event-rate"] },
+        "segmentId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+        "aggregation": { "type": "string", "enum": ["sum", "mean", "rate"] },
+        "currentPeriod": { "$ref": "#/$defs/period" },
+        "baselinePeriod": { "$ref": "#/$defs/period" },
+        "status": { "type": "string", "enum": ["ok", "non-comparable"] },
+        "currentValue": { "type": "number", "minimum": -366000000000, "maximum": 366000000000 },
+        "baselineValue": { "type": "number", "minimum": -366000000000, "maximum": 366000000000 },
+        "absoluteMovement": { "type": "number", "minimum": -732000000000, "maximum": 732000000000 },
+        "percentageMovement": { "type": ["number", "null"], "minimum": -1000000, "maximum": 1000000 },
+        "currentSampleSize": { "type": "integer", "minimum": 1, "maximum": 366 },
+        "baselineSampleSize": { "type": "integer", "minimum": 1, "maximum": 366 },
+        "confidenceBand": { "type": "string", "enum": ["insufficient", "low", "medium", "high", "not-applicable"] },
+        "context": { "$ref": "#/$defs/context" },
+        "reasonCodes": { "type": "array", "maxItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "okSum": {
+      "allOf": [
+        { "$ref": "#/$defs/validCommon" },
+        {
+          "properties": {
+            "metricId": { "enum": ["event-count", "event-value-sum"] },
+            "aggregation": { "const": "sum" },
+            "status": { "const": "ok" },
+            "percentageMovement": { "type": "number", "minimum": -1000000, "maximum": 1000000 },
+            "confidenceBand": { "enum": ["insufficient", "low", "medium", "high"] },
+            "reasonCodes": { "const": [] }
+          }
+        }
+      ]
+    },
+    "okMeanOrRate": {
+      "allOf": [
+        { "$ref": "#/$defs/validCommon" },
+        {
+          "oneOf": [
+            { "properties": { "metricId": { "const": "event-value-mean" }, "aggregation": { "const": "mean" } } },
+            { "properties": { "metricId": { "const": "event-rate" }, "aggregation": { "const": "rate" } } }
+          ],
+          "properties": {
+            "status": { "const": "ok" },
+            "currentValue": { "type": "number", "minimum": -1000000000, "maximum": 1000000000 },
+            "baselineValue": { "type": "number", "minimum": -1000000000, "maximum": 1000000000 },
+            "percentageMovement": { "type": "number", "minimum": -1000000, "maximum": 1000000 },
+            "confidenceBand": { "enum": ["insufficient", "low", "medium", "high"] },
+            "reasonCodes": { "const": [] }
+          }
+        }
+      ]
+    },
+    "nonComparableSum": {
+      "allOf": [
+        { "$ref": "#/$defs/validCommon" },
+        {
+          "properties": {
+            "metricId": { "enum": ["event-count", "event-value-sum"] },
+            "aggregation": { "const": "sum" },
+            "status": { "const": "non-comparable" },
+            "percentageMovement": { "type": "null" },
+            "confidenceBand": { "const": "not-applicable" },
+            "reasonCodes": { "const": ["ZERO_BASELINE"] }
+          }
+        }
+      ]
+    },
+    "nonComparableMeanOrRate": {
+      "allOf": [
+        { "$ref": "#/$defs/validCommon" },
+        {
+          "oneOf": [
+            { "properties": { "metricId": { "const": "event-value-mean" }, "aggregation": { "const": "mean" } } },
+            { "properties": { "metricId": { "const": "event-rate" }, "aggregation": { "const": "rate" } } }
+          ],
+          "properties": {
+            "status": { "const": "non-comparable" },
+            "currentValue": { "type": "number", "minimum": -1000000000, "maximum": 1000000000 },
+            "baselineValue": { "type": "number", "minimum": -1000000000, "maximum": 1000000000 },
+            "percentageMovement": { "type": "null" },
+            "confidenceBand": { "const": "not-applicable" },
+            "reasonCodes": { "const": ["ZERO_BASELINE"] }
+          }
+        }
+      ]
+    },
+    "invalid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion", "metricId", "segmentId", "aggregation", "currentPeriod", "baselinePeriod",
+        "status", "currentValue", "baselineValue", "absoluteMovement", "percentageMovement",
+        "currentSampleSize", "baselineSampleSize", "confidenceBand", "context", "reasonCodes"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" },
+        "metricId": { "type": "null" },
+        "segmentId": { "type": "null" },
+        "aggregation": { "type": "null" },
+        "currentPeriod": { "type": "null" },
+        "baselinePeriod": { "type": "null" },
+        "status": { "const": "invalid" },
+        "currentValue": { "type": "null" },
+        "baselineValue": { "type": "null" },
+        "absoluteMovement": { "type": "null" },
+        "percentageMovement": { "type": "null" },
+        "currentSampleSize": { "const": 0 },
+        "baselineSampleSize": { "const": 0 },
+        "confidenceBand": { "const": "not-applicable" },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["anomalyDurationDays", "correlatedDeploymentIds", "correlatedCampaignIds", "seasonalityStatus"],
+          "properties": {
+            "anomalyDurationDays": { "const": 0 },
+            "correlatedDeploymentIds": { "const": [] },
+            "correlatedCampaignIds": { "const": [] },
+            "seasonalityStatus": { "const": "not-evaluated" }
+          }
+        },
+        "reasonCodes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "MALFORMED_REQUEST", "UNKNOWN_METRIC", "INVALID_SEGMENT", "AGGREGATION_MISMATCH",
+              "INVALID_PERIOD", "EMPTY_OBSERVATIONS", "OBSERVATION_LIMIT_EXCEEDED",
+              "NON_FINITE_OBSERVATION", "INVALID_CONTEXT", "NUMERIC_OVERFLOW"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
