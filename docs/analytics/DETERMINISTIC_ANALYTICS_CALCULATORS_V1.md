@@ -25,6 +25,19 @@ display context. `not-evaluated` means no seasonality conclusion was supplied.
 The calculator does not infer correlation, causation, seasonality, diagnosis,
 recommendation, risk, approval, or authorization from those fields.
 
+Correlation identifier arrays must be duplicate-free and lexicographically
+ascending. Draft 2020-12 validates their shape, size, identifier pattern, and
+uniqueness but cannot express lexical ordering. The committed request schema
+therefore accepts an otherwise structurally valid unsorted array; the
+calculator performs the additional deterministic semantic check and returns
+`INVALID_CONTEXT`. Consumers must treat schema validation as structural
+validation and the calculator result as the complete V1 request decision.
+
+The contract validator compiles both committed authorities against the Draft
+2020-12 metaschema, checks canonical request acceptance and rejection, validates
+every calculator result, rejects malformed result variants, and confirms that
+each generated result satisfies exactly one declared result variant.
+
 P2-001 does not ingest external analytics, process guest data, query or persist
 records, invoke AI, render a report, or authorize an intervention. It remains a
 Tier 0 measurement boundary. Any production-impacting use remains subject to
