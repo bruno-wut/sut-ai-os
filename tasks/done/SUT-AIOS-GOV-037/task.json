@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-037",
   "title": "Admit exact P1-008 Staff OS control-view validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p1-008-validator-admission",
@@ -104,7 +104,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-037/task.json",
+      "tasks/done/SUT-AIOS-GOV-037/task.json",
       "tasks/backlog/SUT-AIOS-P1-008/task.json",
       "docs/staff-os/P1-008_OBSERVE_ONLY_CONTROL_VIEWS_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -115,9 +115,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T11:45:20.318Z",
-  "updatedDate": "2026-07-28T11:51:56.020Z",
+  "updatedDate": "2026-07-28T11:54:06.981Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-037/verification-20260728115053566.json"
+    "evidence/verification/SUT-AIOS-GOV-037/verification-20260728115053566.json",
+    "evidence/tasks/SUT-AIOS-GOV-037/verification.md"
   ],
   "stateTransitions": [
     {
@@ -154,6 +155,13 @@
       "at": "2026-07-28T11:51:56.020Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the exact shell-free P1-008 validator admission, all focused near-miss rejections, bounded paths, and passing machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T11:54:06.981Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #68 merged to origin/main at 4c4c546; completion reconciliation recorded."
     }
   ]
 }
