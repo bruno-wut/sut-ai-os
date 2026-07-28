@@ -10,7 +10,7 @@
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Advance Phase 1 — Trusted control foundation through one bounded policy-engine outcome.",
-  "technicalObjective": "Implement deterministic policy evaluator engine in packages/policy-engine/ evaluated against schemas/authorization-policy-contract-v2.schema.json and policies/deterministic-authorization-policies-v2.json. [Superseded by GOV-031: evaluator now uses V2-only policy contract authority, dedicated V2 schema, neutral shared scripts/verify/json-schema-evaluator.mjs, and type-only context schema for deterministic INVALID_PRINCIPAL_OR_RESOURCE reason codes.]",
+  "technicalObjective": "Implement the bounded deterministic V2 policy evaluator in packages/policy-engine/ using internally loaded canonical authorities: schemas/authorization-policy-contract-v2.schema.json, schemas/evaluation-context.schema.json, schemas/evaluation-decision.schema.json, and policies/deterministic-authorization-policies-v2.json. V1 remains a separate static P1-004 contract and is not a runtime authority.",
   "architectureReferences": [
     "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
     "docs/architecture/source/Agent Architecture.md",
@@ -32,7 +32,7 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "packages/policy-engine/src/evaluator.mjs evaluates request contexts against schemas/authorization-policy-contract.schema.json and policies/deterministic-authorization-policies-v1.json.",
+    "packages/policy-engine/src/evaluator.mjs evaluates request contexts against internally loaded schemas/authorization-policy-contract-v2.schema.json, schemas/evaluation-context.schema.json, schemas/evaluation-decision.schema.json, and policies/deterministic-authorization-policies-v2.json.",
     "Fail-closed evaluation posture returns explicit deny for missing fields, bad types, unapproved actions, or confidential data classifications.",
     "node tests/policy-engine/validate-deterministic-policy-evaluator.mjs systematically tests valid and negative evaluation context cases.",
     "npm run verify:fast passes and independent verification confirms forbidden paths were untouched."
@@ -151,5 +151,5 @@
     }
   ],
   "supersededBy": "SUT-AIOS-GOV-031",
-  "supersessionNote": "GOV-031 supersession: technicalObjective and architectureReferences updated to V2-only authority. V1 contract and old combined schema no longer referenced. Evaluator uses dedicated V2 schema, neutral shared json-schema-evaluator.mjs, and type-only context schema."
+  "supersessionNote": "The final canonical architecture isolates P1-004 V1 static taxonomy from P1-005 V2 runtime authority. The runtime loads V2 authorities internally and does not trust caller-supplied schemas or contracts."
 }
