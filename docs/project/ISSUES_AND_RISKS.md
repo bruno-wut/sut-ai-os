@@ -17,6 +17,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — Suffixed planning task identity was truncated by governance CI
+
+- **Task ID:** `SUT-AIOS-GOV-033`, `SUT-AIOS-P1-006-PLAN`
+- **Status:** Resolved
+- **Severity:** High
+- **Affected scope:** `scripts/github/validate-governance.mjs` branch-to-task identity binding and PR #50 verification lookup.
+- **Evidence:** PR #50 used the exact planning identity `SUT-AIOS-P1-006-PLAN`, but the former branch parser truncated it to `SUT-AIOS-P1-006` and searched the wrong machine-evidence directory. GOV-033 now resolves only exact repository task IDs, selects the longest exact identity, and self-tests unsuffixed and suffixed branches plus unknown, doubled, punctuated, overlength, and additional-suffix near misses. Independent QA and machine verification passed at `evidence/verification/SUT-AIOS-GOV-033/verification-20260728095821799.json`.
+- **Next action / owner:** Merge GOV-033, then rebase PR #50 so CI binds it to `SUT-AIOS-P1-006-PLAN` and its retained evidence.
+
 ### 2026-07-28 — Mac Mini and subscription-backed provider operational risks
 
 - **Task ID:** `SUT-AIOS-GOV-032`
