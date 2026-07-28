@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-036",
   "title": "Plan executable P1-008 Staff OS control-view verification",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-1",
   "workstream": "staff-os",
   "workflowId": "p1-008-control-view-planning",
@@ -112,9 +112,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T11:32:17.107Z",
-  "updatedDate": "2026-07-28T11:41:03.229Z",
+  "updatedDate": "2026-07-28T11:43:27.348Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-036/verification-20260728114051132.json"
+    "evidence/verification/SUT-AIOS-GOV-036/verification-20260728114051132.json",
+    "evidence/tasks/SUT-AIOS-GOV-036/verification.md"
   ],
   "stateTransitions": [
     {
@@ -151,6 +152,13 @@
       "at": "2026-07-28T11:41:03.229Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the bounded static P1-008 plan, exact authority references, deferred exact-command admission, and all packet checks."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T11:43:27.348Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #66 merged to origin/main at 1c20b90; completion reconciliation recorded."
     }
   ]
 }
