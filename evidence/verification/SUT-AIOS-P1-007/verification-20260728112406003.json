@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P1-007",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-28T11:24:06.003Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/orchestrator/validate-kill-switch-controls-v1.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: services/orchestrator/src/kill-switch/evaluator.mjs exports the normal one-argument evaluateKillSwitch(requestContext) interface and keeps the exact V1 authority private, recursively frozen, repository-committed, and independent of tests, scripts, mutable JSON imports, environment values, or caller-supplied schemas, contracts, authorities, dependencies, paths, or options.",
+    "confirmed: The exact ordered V1 controls are global-autonomous-actions, playbook-content-schema-repair-shadow, executor-codex-content-executor, codex-dispatch, pending-actions, and outbound-notifications, with the identifiers, scopes, target actions, engaged states, and reason codes fixed by docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md.",
+    "confirmed: Every public evaluation returns a newly allocated deeply frozen closed V1 object whose decision is deny; exact deterministic precedence covers internal-authority failure, malformed request, all six control matches, and valid no-match fail-closed outcomes, and no input can produce allow or throw.",
+    "confirmed: The focused validator proves authority isolation, exact control and reason behavior, no-match denial, attempted caller authority/schema/dependency replacement, prior-decision mutation resistance, throwing proxies/getters, cyclic and malformed values, and valid deterministic deny decisions for every case without attempting exhaustive JSON Schema mutation.",
+    "confirmed: The exact command node tests/orchestrator/validate-kill-switch-controls-v1.mjs runs explicitly in CI and passes with npm run verify:fast and git diff --check after a separate governance task admits that byte-for-byte command for independent machine verification.",
+    "confirmed: No server, queue, scheduler, mutable switch store, Staff OS view, authorization grant, approval, executor, notification, deployment, rollback, audit backend, database, credential, network, guest-data, booking, payment, inventory, pricing, or production behavior is added."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/orchestrator/P1-007_KILL_SWITCH_CONTROLS_V1_DESIGN.md",
+    "evidence/tasks/SUT-AIOS-P1-007/verification.md",
+    "services/orchestrator/src/kill-switch/evaluator.mjs",
+    "tasks/backlog/SUT-AIOS-P1-007/task.json",
+    "tasks/review/SUT-AIOS-P1-007/task.json",
+    "tests/orchestrator/validate-kill-switch-controls-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P1-007/verification-20260728112406003.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
