@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-033",
   "title": "Support bounded task-ID suffixes in governance validation",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "governance-validation",
   "workflowId": "task-id-suffix-validation",
@@ -91,7 +91,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-033/task.json",
+      "tasks/done/SUT-AIOS-GOV-033/task.json",
       "scripts/github/validate-governance.mjs",
       "docs/verification/VERIFICATION_POLICY.md"
     ]
@@ -99,9 +99,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T09:46:16.900Z",
-  "updatedDate": "2026-07-28T09:58:45.863Z",
+  "updatedDate": "2026-07-28T11:28:50.037Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-033/verification-20260728095821799.json"
+    "evidence/verification/SUT-AIOS-GOV-033/verification-20260728095821799.json",
+    "evidence/tasks/SUT-AIOS-GOV-033/verification.md"
   ],
   "stateTransitions": [
     {
@@ -138,6 +139,13 @@
       "at": "2026-07-28T09:58:45.863Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed exact existing task-ID binding, bounded suffix grammar, negative rejection coverage, allowed paths, and passing machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-28T11:28:50.037Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #53 merged to origin/main at af55ea4; completion reconciliation recorded."
     }
   ]
 }
