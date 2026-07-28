@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-002",
   "title": "Define provider-neutral structured intelligence contracts",
-  "status": "backlog",
+  "status": "review",
   "phase": "phase-2",
   "workstream": "ai-analysis",
   "workflowId": "implementation-p2-002",
@@ -129,7 +129,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-002/task.json",
+      "tasks/review/SUT-AIOS-P2-002/task.json",
       "tasks/done/SUT-AIOS-P2-001-R02/task.json",
       "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
       "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md"
@@ -138,7 +138,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-28T16:38:58.110Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -147,6 +147,27 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T16:29:56.485Z",
+      "actor": "chief-orchestrator",
+      "reason": "P2-001-R02, GOV-040, and GOV-041 are complete."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T16:29:56.526Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with finite provider-neutral intelligence contracts."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T16:38:58.110Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implemented the approved two closed V1 schemas, two-function private-authority semantic module, deterministic validator, documentation, risk record, and evidence; all executor checks pass and the bounded diff is ready for independent Sol QA."
     }
   ]
 }

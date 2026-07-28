@@ -17,6 +17,25 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-28 — P2-002 remains a contract-only, non-authoritative boundary
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Provider-neutral request/result contracts and future
+  intelligence-provider adapters.
+- **Evidence:** P2-002 implements two closed schemas and a two-function semantic
+  validation module only. Prepared analytics references must originate from the
+  canonical P2-001/R02 boundary; P2-002 does not import or reinterpret its
+  internals. Provider invocation, prompts, adapters, proposals, approval,
+  execution, and production access remain absent. The deterministic validator
+  passed 93 cases covering private authority, classification, cross-references,
+  all provider states, self-authorization rejection, and hostile never-throw
+  inputs.
+- **Next action / owner:** Independent Sol QA must verify the final diff and
+  machine evidence. Future provider tasks must preserve the deep-module and
+  hexagonal boundary and must not treat analysis as authorization.
+
 ### 2026-07-28 — P2-002 validator admission remains exact and fail-closed
 
 - **Task ID:** `SUT-AIOS-GOV-041`, `SUT-AIOS-P2-002`
