@@ -1,0 +1,142 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-034",
+  "title": "Admit exact P1-006 playbook registry validator",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "verification-admission",
+  "workflowId": "p1-006-validator-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Admit only the planned P1-006 validator without broadening execution.",
+  "technicalObjective": "Add one shell-free exact mapping for node tests/playbooks/validate-playbook-registry-v1.mjs and rejection coverage.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-006-PLAN"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-034/verification.md"
+  ],
+  "assumptions": [
+    "The planned validator is static and future product implementation remains separate."
+  ],
+  "acceptanceCriteria": [
+    "Only the exact planned Node validator command is admitted shell-free.",
+    "Near-miss paths, arguments and shell forms remain rejected.",
+    "Independent machine evidence passes."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-034/**",
+    "evidence/tasks/SUT-AIOS-GOV-034/**",
+    "evidence/verification/SUT-AIOS-GOV-034/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    "tests/**",
+    "package.json",
+    "apps/**",
+    "supabase/**",
+    ".env*",
+    "**/*secret*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-034 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact mapping",
+    "rejection coverage",
+    "machine verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "generic command admission or shell execution"
+  ],
+  "rollbackExpectations": "Revert only exact mapping, policy, task and evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-034/task.json",
+      "scripts/verify/verify-cli.mjs"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-28T10:03:36.429Z",
+  "updatedDate": "2026-07-28T10:14:02.289Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-034/verification.md"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-28T10:03:36.429Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-28T10:05:05.195Z",
+      "actor": "chief-orchestrator",
+      "reason": "Exact validator-admission scope and rejection requirements are bounded."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-28T10:05:05.241Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with shell-free exact verifier admission."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T10:07:17.547Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact shell-free P1-006 validator admission, near-miss rejection coverage, verification policy, risk record, and implementer evidence are ready for independent QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-28T10:14:02.289Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed exact shell-free admission, six near-miss rejections, and passing machine evidence."
+    }
+  ]
+}
