@@ -18,7 +18,8 @@
   ],
   "dependencies": [
     "SUT-AIOS-P4-003",
-    "SUT-AIOS-P4-004"
+    "SUT-AIOS-P4-004",
+    "SUT-AIOS-P2-005"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P5-001/verification.md"
@@ -32,6 +33,7 @@
     "Verifier identity and execution are independent from the implementer/provider being reviewed.",
     "Malformed, incomplete, timed-out, unavailable, or policy-inconsistent results fail closed and cannot become merge- or production-eligible.",
     "The interface permits separately approved deterministic, hosted, or local verification implementations without changing completion authority.",
+    "Verification rejects unauthenticated Staff/AI exposure, provider-SDK core coupling, and missing trust-zone evidence.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -96,7 +98,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

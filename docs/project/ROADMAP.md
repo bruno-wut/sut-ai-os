@@ -2,110 +2,67 @@
 
 ## 0. Workspace and governance foundation — complete
 
-The governed workspace, permanent memory, task/evidence workflow, immutable compatibility boundary, risk register, non-deploying validation practice, GitHub workflow, and technical baseline gate are established on `main`. Production writes and autonomous operation remain disabled.
+The governed workspace, task/evidence lifecycle, immutable compatibility
+boundary, and non-deploying validation practice are established. Production
+writes and autonomous operation remain disabled.
 
-## 0A. Existing platform stabilization — complete
+## 1. Trusted control foundation — complete
 
-The baseline gate, dependency/security remediation plan, and compatibility
-contracts are done. The finalized-platform snapshot remains immutable.
+`SUT-AIOS-P1-001` through `SUT-AIOS-P1-008` are done. They provide the event,
+control, audit, authorization, policy evaluation, playbook, kill-switch, and
+observe-only control-view foundations.
 
-## 1. Trusted control foundation — current
+## 2. Intelligence, reporting, and infrastructure authorities — current
 
-Define event, task, analysis, proposal, approval, and result schemas; create deterministic path/command/data policies; establish audit conventions, correlation IDs, task packets, and observe-only defaults.
+`P2-001` deterministic analytics and `P2-002` provider-neutral intelligence
+contracts are done. `P2-004` defines intervention proposals, then `P2-003`
+consumes them for an observe-only executive briefing. Before Phase 3 runtime
+implementation, the following static authorities must be completed:
 
-`SUT-AIOS-P1-001` through `SUT-AIOS-P1-005` are done. `SUT-AIOS-P1-006`
-remains the next product task and is still backlog while its bounded
-static-registry design and exact validator admission are reviewed. The Mac
-Mini/Pi roadmap does not alter its scope or acceptance criteria.
+- `P2-005` trust zones and provider-neutral port contracts;
+- `P2-006` data minimisation, aggregation, and retention contracts; and
+- `P2-007` deterministic resource-budget and quota contracts.
 
-## First-class provider-neutral runtime option
+They implement the derived planning constraints in ADR-0002: guest/public and
+Staff/AI workloads are logically and operationally separate; raw clickstream
+telemetry stays in source analytics; budgets and workload controls fail closed;
+and domain logic depends on stable ports rather than provider SDKs.
 
-Future Phase 2–5 work must support the derived deployment decision in
-`docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md`:
+## 3. Durable orchestration and persistence composition
 
-```text
-scheduled checks or normalized events
-  → deterministic analysis
-  → 24/7 Mac Mini host running Pi durable scheduling and queue
-  → supervised worker and Codex CLI adapter
-  → Codex CLI with ChatGPT subscription authentication
-  → structured intelligence and intervention proposal
-  → deterministic policy, risk, and approval controls
-  → bounded executor
-  → independent verification
-  → audit evidence and outcome
-```
-
-Pi, its durable state, the worker, and the adapter are initially co-located on
-the Mac Mini but remain logically separate. Durable queue/workflow state survives
-Pi-service, worker-process, and device restarts and is never Codex ephemeral
-state. The interfaces are `IntelligenceProvider`, `ProposalGenerator`,
-`ExecutorAdapter`, and `VerificationProvider`. Codex is replaceable and is never
-the workflow engine, scheduler, policy engine, authorization authority, or audit
-source of truth. OpenAI API, local-model, and other approved adapters remain
-future options.
-
-## 2. Intelligence and reporting
-
-Add prepared metrics, read-only data interfaces, a provider-neutral structured
-intelligence contract, an explicit intervention-proposal contract, initial
-insight/report workflows, and Staff OS integration designs. Intelligence must
-explain likely causes, rank hypotheses, select an intervention, estimate
-confidence, and return schema-valid output. A proposal records evidence,
-capabilities, risk, approval, verification, rollback, and expected outcome, but
-cannot authorize itself. No autonomous production changes.
-
-## 3. Durable orchestration
-
-Introduce event ingestion, durable scheduling, queue consumption, retries,
-requeue, dead-letter handling, provider waits, approval waits, timeouts,
-cancellation, recovery, and outcome tracking after the control foundation is
-verified. Provider states `available`, `busy`, `rate_limited`,
-`capacity_exhausted`, `authentication_required`, `temporarily_unavailable`, and
-`disabled` must fail closed and preserve the reason.
+Add signed/controlled ingestion, durable queue/workflow behavior, a
+provider-neutral persistence composition with reference adapters, and a
+fixture-only retention lifecycle composition that can calculate scheduled
+delete, aggregate, archive, or transfer eligibility without performing any of
+them. Work is
+batched, deduplicated, idempotent, bounded, and requeue/dead-letter capable;
+there is never one permanent AI OS record, queue message, workflow, or model
+call per guest interaction. Cloudflare queues/workflows and Pi/local durable
+orchestration remain replaceable adapters.
 
 ## 4. Provider-neutral bounded execution
 
-Add the provider-neutral invocation gateway, the first Pi-to-Codex CLI
-subscription adapter, the supervised Mac Mini worker, a distinct Codex
-repository `ExecutorAdapter`, provider-neutral executor dispatch, isolated task
-workspaces, concurrency limits, task timeouts, structured results, and
-pull-request-only delivery. The Codex repository adapter is limited to analysis,
-bounded code/content changes, tests, branch/pull-request preparation, and repair
-preparation. Specialized deterministic adapters
-handle GitHub, Cloudflare, CMS, notifications, and approved service APIs when AI
-reasoning is unnecessary. Start in Tier 0/shadow with low-risk, reversible
-playbooks.
+Implement the invocation gateway, Pi-to-Codex adapter, co-located supervised
+Mac Mini worker, Codex repository executor adapter, dispatch, and PR-only
+execution. Initial deployment may co-locate Pi, durable state, worker, and
+adapter on the Mac Mini, but they remain distinct logical components. Codex is
+not scheduler, workflow, policy, approval, or audit authority.
 
-## 5. Independent assurance and portability
+## 5. Independent assurance, portability, and saturation evidence
 
-Add provider-neutral independent verification, preview and evidence capture,
-audit attribution for model, sanitized prompt or classified prompt artifact
-reference, prompt/playbook integrity reference, task, commands, provider states,
-and outcomes, rollback eligibility, and qualification of future API/local/other
-fallback providers. A fallback is disabled unless separately configured,
-policy-compatible, and independently qualified.
+Add independent verification, preview/audit evidence, rollback gates, fallback
+qualification, migration-readiness verification, and quota/saturation
+verification. Hosted/self-hosted PostgreSQL/Supabase, Workers/local/VPS,
+Cloudflare/Pi queues and workflows, GitHub/self-hosted runners, and hosted/local
+AI may change through adapters/configuration after approval; core domain logic
+does not change. No fallback enables itself.
 
-## 6. SEO growth automation
+## 6–8. Growth, human-gated commercial intelligence, proven autonomy
 
-Deliver prepared Search Console evidence, deterministic opportunity scoring,
-observe-only views, and the first content-repair vertical slice through the same
-provider-neutral intelligence, proposal, executor, verification, and audit
-boundaries. Codex may prepare bounded repository changes and pull requests; it
-cannot publish or deploy during Tier 0/shadow operation.
+SEO ingestion and growth work uses source-system aggregates, scheduled
+summaries, and the same controls. Commercial recommendations remain
+human-approved. Autonomy promotion stays evidence-led; provider replacement
+does not promote autonomy. AI may investigate broadly but may act only narrowly.
 
-## 7. Human-gated commercial intelligence
-
-Use structured intelligence and proposals for commercial recommendations. The AI
-never authorizes its own proposal. Authenticated human approval and deterministic
-policy remain mandatory, and specialized deterministic executors handle approved
-service operations where model reasoning is unnecessary.
-
-## 8. Proven autonomous operations
-
-Promote only playbooks with verified safety, low rollback rates, reliable
-evidence, and measurable benefit. Provider replacement or fallback qualification
-does not promote autonomy. Higher-risk commercial, payment, inventory, guest
-data, and production actions remain human-gated or prohibited.
-
-The phase order is intentional; do not skip governance to build autonomous features first.
+The phase order is intentional. No task may skip its dependencies, independent
+review, deterministic verification, or a separate production authorization.

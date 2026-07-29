@@ -1,0 +1,117 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-005",
+  "title": "Implement fixture-only retention lifecycle control composition",
+  "status": "backlog",
+  "phase": "phase-3",
+  "workstream": "data-lifecycle-composition",
+  "workflowId": "implementation-p3-005",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prove that configured retention can be evaluated and composed without deleting production records, selecting a storage provider, or rewriting audit history.",
+  "technicalObjective": "Implement a small retention lifecycle control boundary with local/reference fixtures only. It consumes P2-006 retention authorities and P2-007 capacity decisions to produce scheduled delete, aggregate, archive, or transfer-eligibility instructions; it performs no deletion, archival, transfer, provisioning, network call, or local-storage write.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/verification/INFRASTRUCTURE_PORTABILITY_ASSURANCE.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007",
+    "SUT-AIOS-P3-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P3-005/verification.md"
+  ],
+  "assumptions": [
+    "P2-006 remains the retention-category and protected-evidence authority; P3-005 does not reinterpret it.",
+    "All inputs, clocks, schedules, records, and adapter responses are deterministic fixtures/reference objects.",
+    "A later separately approved task is required for any storage-provider adapter, scheduled job, deletion, archival, transfer, data copy, or production configuration."
+  ],
+  "acceptanceCriteria": [
+    "A deep lifecycle boundary accepts only classified, retention-authorized fixture records and returns one deterministic non-authoritative instruction: scheduled delete, aggregate, archive, transfer eligible, retain, or fail-closed block.",
+    "It defines and tests due/not-due schedule evaluation, aggregation-before-disposition, protected audit/failed-attempt preservation, archival eligibility, and future local-transfer eligibility without performing any lifecycle action.",
+    "Unknown category, missing authority, unsupported action, malformed record, missing/unavailable/stale/inconsistent/uncertain capacity input, or conflicting retention/audit rule fails closed with a deterministic reason.",
+    "Composition remains adapter-only: core/domain code imports no provider, database, filesystem, queue, scheduler, or local-server SDK and cannot delete, archive, transfer, provision, or write local storage.",
+    "Deterministic fixture tests cover every instruction and negative path, prove no fixture creates a per-click lifecycle record or AI invocation, and record that no production deletion, local transfer, or provisioning occurred."
+  ],
+  "allowedPaths": [
+    "packages/retention-lifecycle/**",
+    "services/retention-lifecycle-composition/**",
+    "tests/retention-lifecycle/**",
+    "docs/retention-lifecycle/**",
+    "evidence/tasks/SUT-AIOS-P3-005/**",
+    "tasks/**/SUT-AIOS-P3-005/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "artifacts/**",
+    "storage/**"
+  ],
+  "allowedCommands": [
+    "npm run test:retention-lifecycle",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact validator admission before independent verification",
+    "retention/audit-preservation and no-side-effect review",
+    "hexagonal import-boundary and fail-closed capacity review",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "npm run test:retention-lifecycle",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any actual deletion, archival, transfer, local storage write, provider configuration, scheduled service, audit-retention ambiguity, or production-data access."
+  ],
+  "rollbackExpectations": "Revert only the local/reference composition, tests, documentation, evidence, and packet state. Preserve all historical evidence and perform no external lifecycle action.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+      "tasks/backlog/SUT-AIOS-P2-006/task.json",
+      "tasks/backlog/SUT-AIOS-P2-007/task.json",
+      "tasks/backlog/SUT-AIOS-P3-005/task.json"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T12:33:26.465Z",
+  "updatedDate": "2026-07-29T13:20:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T12:33:26.465Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # ADR-0001: Provider-neutral Mac Mini, Pi, and Codex runtime
 
-- **Status:** Proposed; becomes the active derived deployment decision when `SUT-AIOS-GOV-032` is approved and merged.
+- **Status:** Accepted active derived planning decision; it creates no deployment or runtime capability. ADR-0002 adds the governing trust-zone, portability, minimisation, and resource constraints.
 - **Date:** 2026-07-28
 - **Decision owner:** Sri U-Thong Grand Hotel
 - **Derived from:** `docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md` and `docs/architecture/source/Agent Architecture.md`
@@ -28,6 +28,10 @@ execution work to the worker. The first supported provider path is:
 ```
 
 This is a deployment choice, not a change to the immutable architecture sources.
+It does not select a Cloudflare account, public domain, persistence provider, or
+production deployment. Guest/public traffic and future Staff/AI workloads retain
+separate trust, quota, credential, deployment, and failure boundaries under
+ADR-0002.
 
 ## Decision
 

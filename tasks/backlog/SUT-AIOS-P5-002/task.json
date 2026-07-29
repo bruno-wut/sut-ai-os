@@ -19,6 +19,7 @@
   "dependencies": [
     "SUT-AIOS-P5-001",
     "SUT-AIOS-P1-003",
+    "SUT-AIOS-P2-006",
     "SUT-AIOS-P4-006"
   ],
   "evidence": [
@@ -33,6 +34,7 @@
     "Authentication material, secrets, raw sensitive prompts, and unapproved guest data are excluded from ordinary repository evidence.",
     "Preview or evidence failure blocks eligibility and preserves a deterministic reason without enabling production action.",
     "Retention and cleanup preserve the append-only audit boundary and failed-attempt history.",
+    "Evidence uses classified/sanitized references and configured retention actions; raw clickstream, credentials, and unapproved prompt payloads are excluded.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -97,7 +99,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

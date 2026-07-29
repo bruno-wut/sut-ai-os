@@ -2,6 +2,24 @@
 
 This is the durable repository-wide register for issues, blockers, risks, failed checks, and unresolved warnings. Add a dated entry before task handoff; do not rely on chat-only reporting.
 
+### 2026-07-29 — Infrastructure portability and resource-governance controls are planned, not implemented
+
+- **Task ID:** `SUT-AIOS-GOV-043`
+- **Status:** Open / planned
+- **Severity:** High
+- **Affected scope:** Future guest/public, Staff/control, AI/workload, persistence, queue/workflow, provider, runner, and evidence infrastructure.
+- **Evidence:** ADR-0002 and backlog packets `P2-005`–`P2-007`, `P3-004`, and `P5-005`–`P5-006` define seams and QA rejection gates without provisioning a component.
+- **Next action / owner:** Complete static authorities before Phase 3 activation, separately admit exact validators, and do not claim cross-account isolation, retention enforcement, capacity protection, or migration readiness before independent evidence exists.
+
+### 2026-07-29 — GOV-043 review found no P2-001/R02 or P2-002 product remediation
+
+- **Task ID:** `SUT-AIOS-GOV-043`, `SUT-AIOS-P2-001-R02`, `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** Low
+- **Affected scope:** Completed deterministic analytics and provider-neutral intelligence contract boundaries.
+- **Evidence:** GOV-043 reviews only future derived portability planning. P2-001/R02 retains its standards-based schema assurance and explicit semantic ordering boundary. P2-002 retains its pinned runtime Ajv dependency, trusted provider-rejection semantics, and final-head CI validator admission. Neither contract imports new infrastructure authority or has a concrete defect from ADR-0002 planning.
+- **Next action / owner:** Preserve terminal history and evidence; require a new bounded remediation task only if a concrete defect is independently demonstrated.
+
 ## Entry format
 
 ```md

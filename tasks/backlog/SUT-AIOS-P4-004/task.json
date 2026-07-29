@@ -20,6 +20,9 @@
   "dependencies": [
     "SUT-AIOS-P2-002",
     "SUT-AIOS-P2-004",
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007",
     "SUT-AIOS-P3-003",
     "SUT-AIOS-P1-005",
     "SUT-AIOS-P1-007"
@@ -37,6 +40,7 @@
     "Every non-available state fails closed, returns a durable reason for pause or safe requeue, and cannot cause production action.",
     "Fallback selection is disabled unless a separately qualified, configured, data-policy-eligible provider is available.",
     "Provider capability, model identity, request correlation, timeout, and outcome are emitted for audit without secrets."
+    ,"Gateway core depends on intelligence and infrastructure ports only; adapters own provider SDKs, configuration, authentication, and quota metering."
   ],
   "allowedPaths": [
     "packages/intelligence-provider/**",
@@ -103,7 +107,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T09:15:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

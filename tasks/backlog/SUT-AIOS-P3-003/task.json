@@ -20,7 +20,8 @@
     "SUT-AIOS-P3-002",
     "SUT-AIOS-P1-006",
     "SUT-AIOS-P1-007",
-    "SUT-AIOS-P2-004"
+    "SUT-AIOS-P2-004",
+    "SUT-AIOS-P2-007"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P3-003/verification.md"
@@ -34,6 +35,7 @@
     "Every provider state available, busy, rate_limited, capacity_exhausted, authentication_required, temporarily_unavailable, and disabled has deterministic fail-closed transition behavior.",
     "Non-available providers pause or safely requeue work, record the reason, and never authorize or execute production changes.",
     "The AI provider cannot advance policy or approval state.",
+    "Unknown or saturated quota state blocks/pause-requeues work before provider or executor invocation and never shares booking-path capacity.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
@@ -95,7 +97,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

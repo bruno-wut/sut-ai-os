@@ -17,7 +17,9 @@
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
-    "SUT-AIOS-P3-001"
+    "SUT-AIOS-P3-001",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P3-002/verification.md"
@@ -29,6 +31,7 @@
   "acceptanceCriteria": [
     "Scheduled checks and normalized events produce durable, deduplicated queue work without relying on Codex or a model as scheduler.",
     "Retry, safe requeue, exhaustion, and dead-letter transitions are bounded, deterministic, observable, and preserve task and failure reason.",
+    "Batching, deduplication, idempotency, backpressure, rate/concurrency/retry limits, priority queues, and scheduled summaries enforce the quota contract before capacity exhaustion.",
     "Unavailable providers cannot drop work, bypass policy, or cause production execution.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
@@ -94,7 +97,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

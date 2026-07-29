@@ -25,5 +25,10 @@ The live register is [ISSUES_AND_RISKS.md](ISSUES_AND_RISKS.md). This page is a 
   contain sensitive data. Prompt integrity references and classified retention
   are required; secrets and raw sensitive prompts must not enter ordinary
   repository evidence.
+- Guest/public and Staff/AI workloads may later span accounts and hosts. Until
+  P2-005 through P5-006 are independently verified, cross-account
+  authentication/rate limits, retention, migration portability, resource
+  exhaustion isolation, and provider-neutral composition are planning
+  constraints only, not live controls.
 
 When any item changes, add or update the dated entry in the live register with evidence and an owner.

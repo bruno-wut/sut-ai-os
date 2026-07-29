@@ -1,121 +1,64 @@
 # Dependency Graph
 
-The critical path to the first complete execution slice remains rooted in the
-Phase 1 controls, but Phase 2–5 now separates intelligence, proposals,
-orchestration, provider invocation, worker execution, and independent
-verification:
-
 ```mermaid
 flowchart LR
-  P0["P0-003 Compatibility contracts"] --> E["P1-001 Event contract"]
-  E --> S["P1-002 Control-plane schema"] --> A["P1-003 Audit records"]
-  A --> P["P1-004 Policies"] --> PE["P1-005 Policy engine"]
-  P --> R["P1-006 Playbook registry"]
-  PE --> K["P1-007 Kill switches"]
-  R --> K
-
-  E --> AN["P2-001 Deterministic analytics"]
-  A --> AN
-  AN --> IC["P2-002 Intelligence contracts"]
-  P --> IC
-  IC --> PR["P2-004 Intervention proposal"]
-  P --> PR
-
-  E --> SI["P3-001 Signal ingestion"]
-  A --> SI
-  PE --> SI
-  SI --> Q["P3-002 Schedule / queue / requeue / DLQ"]
-  Q --> W["P3-003 Durable workflow"]
-  R --> W
-  K --> W
-  PR --> W
-
-  IC --> G["P4-004 IntelligenceProvider gateway"]
-  PR --> G
-  W --> G
-  PE --> G
-  K --> G
-  G --> C["P4-005 Pi-to-Codex adapter"]
-  C --> M["P4-006 Mac Mini worker"]
+  A["P1 audit/policy foundation"] --> B["P2-002 intelligence contracts"]
+  B --> C["P2-004 proposal contract"]
+  A --> TZ["P2-005 trust zones and ports"]
+  TZ --> DM["P2-006 minimisation and retention"]
+  TZ --> QB["P2-007 resource budgets"]
+  DM --> I["P3-001 ingestion"]
+  QB --> I
+  I --> Q["P3-002 queue/workload controls"]
+  DM --> Q
+  QB --> Q
+  TZ --> P["P3-004 persistence composition"]
+  DM --> P
+  QB --> P
+  P --> RL["P3-005 retention lifecycle fixtures"]
+  DM --> RL
+  QB --> RL
+  Q --> W["P3-003 workflow"]
+  C --> W
+  QB --> W
+  W --> G["P4-004 intelligence gateway"]
+  TZ --> G
+  DM --> G
+  QB --> G
+  G --> C1["P4-005 Pi-to-Codex adapter"] --> M["P4-006 Mac Mini worker"]
   Q --> M
-  W --> M
-  K --> M
-  C --> RE["P4-007 Codex repository ExecutorAdapter"]
-  M --> RE
-
-  W --> D["P4-002 ExecutorAdapter dispatch"]
-  G --> D
-  M --> D
-  RE --> D
-  D --> X["P4-003 Executor / PR flow"]
-  M --> X
-
-  X --> V["P5-001 VerificationProvider"]
-  G --> V
-  V --> EV["P5-002 Preview and audit evidence"]
-  A --> EV
-  M --> EV
-  EV --> RB["P5-003 Rollback gate"]
-  K --> RB
-  G --> FB["P5-004 Fallback qualification"]
-  C --> FB
-  V --> FB
-  EV --> FB
-
-  P --> CSR["P6-004 Content-schema repair"]
-  R --> CSR
-  K --> CSR
-  X --> CSR
-  EV --> CSR
+  P --> M
+  QB --> M
+  M --> RE["P4-007 Codex repository adapter"] --> D["P4-002 dispatcher"] --> X["P4-003 PR flow"]
+  X --> V["P5-001 independent verification"] --> E["P5-002 evidence"]
+  P --> MR["P5-005 migration readiness"]
+  RL --> MR
+  Q --> MR
+  M --> MR
+  E --> MR
+  QB --> SV["P5-006 quota/saturation verification"]
+  Q --> SV
+  W --> SV
+  M --> SV
+  V --> SV
 ```
-
-## Recalculated Phase 2–5 dependencies
-
-| Task | Direct dependencies |
-| --- | --- |
-| `P2-002` | `P2-001`, `P1-004` |
-| `P2-004` | `P2-002`, `P1-004` |
-| `P2-003` | `P2-001`, `P2-002`, `P2-004`, `P1-008` |
-| `P3-002` | `P3-001` |
-| `P3-003` | `P3-002`, `P1-006`, `P1-007`, `P2-004` |
-| `P4-004` | `P2-002`, `P2-004`, `P3-003`, `P1-005`, `P1-007` |
-| `P4-005` | `P4-004` |
-| `P4-006` | `P3-002`, `P3-003`, `P4-005`, `P1-007` |
-| `P4-007` | `P4-005`, `P4-006` |
-| `P4-002` | `P3-003`, `P4-001`, `P4-004`, `P4-006`, `P4-007`, `GOV-003`, `GOV-004` |
-| `P4-003` | `P4-002`, `P4-001`, `P4-006`, `GOV-005` |
-| `P5-001` | `P4-003`, `P4-004` |
-| `P5-002` | `P5-001`, `P1-003`, `P4-006` |
-| `P5-003` | `P5-002`, `P1-007` |
-| `P5-004` | `P4-004`, `P4-005`, `P5-001`, `P5-002` |
 
 ## Dependency rules
 
-- A dependency is satisfied only when its packet is `verified` or `done` with
-  durable evidence.
-- Schema and policy dependencies precede runtime implementation.
-- Audit, deterministic policy, and kill-switch controls precede provider or
-  executor activation.
-- Structured intelligence precedes intervention proposals; proposals precede
-  durable provider invocation.
-- The Pi workflow and queue logically own scheduling, waits, retries,
-  dead-lettering, cancellation, and recovery. Initially they run locally on the
-  same Mac Mini host as the worker, but their durable state survives Pi-service,
-  worker-process, and device restarts and is never Codex ephemeral state.
-- The provider-neutral gateway precedes the Codex subscription adapter; the
-  adapter precedes the supervised Mac Mini worker and the distinct Codex
-  repository ExecutorAdapter.
-- Provider-neutral execution precedes independent verification; verification
-  precedes the first vertical slice.
-- Fallback qualification does not enable a fallback. Configuration, data-policy
-  eligibility, and independent approval remain separate requirements.
-- Phase labels describe product sequencing, but branches may proceed in parallel
-  only when their packet dependencies are satisfied.
-- Payment, authentication, authorization, RLS, workflow correctness,
-  concurrency, rollback, and autonomy work always retain Sol escalation.
+- Dependencies are satisfied only at `verified` or `done` with durable evidence.
+- `P2-005`, `P2-006`, and `P2-007` are Phase 3 prerequisites; runtime work may
+  not invent trust, retention, or quota authorities.
+- All infrastructure behavior enters core through stable ports; adapters own
+  provider SDKs/configuration. Provider replacement must not rewrite core.
+- Ingestion is aggregate-oriented, bounded, deduplicated, idempotent, and
+  backpressured. Non-available capacity fails closed to pause/requeue/DLQ.
+- Staff/AI exposure is authenticated; cross-account traffic uses audience-bound
+  short-lived HTTPS credentials, recipient expiry/audience checks,
+  timestamp/nonce replay rejection, idempotency, bounded bodies/timeouts, and
+  per-caller/per-route rate limits. Guest booking paths have distinct
+  credentials, quotas, deployments, and failure boundaries.
+- Missing, unavailable, stale, inconsistent, uncertain, or unknown metering
+  fails closed; it may not be estimated into a booking-impacting decision.
+- `P5-005`/`P5-006` are evidence gates, not deployment or migration authority.
 
-The recalculated Phase 2–5 graph is acyclic. `P6-004` receives the new gateway,
-adapter, worker, repository ExecutorAdapter, and independent-verification
-controls transitively through `P4-003` and `P5-002`; its existing direct
-dependencies do not need to be
-rewritten by this governance task.
+The graph is acyclic. See `IMPLEMENTATION_BACKLOG.md` for direct dependencies.
