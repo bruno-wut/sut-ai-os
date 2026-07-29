@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-044",
   "title": "Plan P2-004 intervention proposal contract",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "intervention-proposals",
   "workflowId": "p2-004-contract-design",
@@ -112,7 +112,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-044/task.json",
+      "tasks/done/SUT-AIOS-GOV-044/task.json",
       "tasks/backlog/SUT-AIOS-P2-004/task.json",
       "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
       "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md"
@@ -121,9 +121,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T13:58:00.000Z",
-  "updatedDate": "2026-07-29T14:06:26.529Z",
+  "updatedDate": "2026-07-29T14:10:25.996Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-044/verification-20260729140619592.json"
+    "evidence/verification/SUT-AIOS-GOV-044/verification-20260729140619592.json",
+    "evidence/tasks/SUT-AIOS-GOV-044/verification.md"
   ],
   "stateTransitions": [
     {
@@ -160,6 +161,13 @@
       "at": "2026-07-29T14:06:26.529Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA accepted the finite P2-004 design and executable-ready packets; machine verification passed from origin/main."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T14:10:25.996Z",
+      "actor": "qa-verification",
+      "reason": "PR #90 merged to main at 43dc6f6d5e3b5c965efda5bb1d68ee5e1be9d1c9; independently verified delivery is reconciled to done without changing acceptance criteria or historical evidence."
     }
   ]
 }
