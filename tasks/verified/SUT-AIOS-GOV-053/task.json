@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-053",
   "title": "Plan P2-007 resource governance contracts",
-  "status": "review",
+  "status": "verified",
   "phase": "engineering-governance",
   "workstream": "resource-governance",
   "workflowId": "p2-007-contract-design",
@@ -107,7 +107,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/review/SUT-AIOS-GOV-053/task.json",
+      "tasks/verified/SUT-AIOS-GOV-053/task.json",
       "tasks/backlog/SUT-AIOS-P2-007/task.json",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"
     ]
@@ -115,8 +115,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-07-29T20:04:04.374Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T20:06:42.315Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-053/verification-20260729200633365.json"
+  ],
   "worktree": null,
   "stateTransitions": [
     {
@@ -146,6 +148,34 @@
       "at": "2026-07-29T20:04:04.374Z",
       "actor": "codex-engineering-executor",
       "reason": "Finite P2-007 resource-budget design, executable product packet, bounded GOV-054 admission packet, permanent-memory/risk updates, evidence, and passing implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T20:06:01.222Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA rejected the 50% and 75% mappings: ADR-0002 requires affected Staff/AI work to fail closed before the hard limit, but the design permits warn-continue/throttle and marks those states failClosed false; revise the design and P2-007 packet, then rerun independent review."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T20:06:15.749Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply narrow independent-QA correction so every warning threshold fails closed before hard limit."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T20:06:30.337Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol review confirmed the staged 50 warning, 75 throttle, 90 fail-closed pause or safe-requeue, and 100 block mapping against ADR-0002; packet is ready for machine verification."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T20:06:42.315Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA accepted finite staged resource-budget design, booking isolation, workload controls, bounded packets, and passing machine verification; no product or live infrastructure behavior was introduced."
     }
   ]
 }
