@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-051",
   "title": "Admit exact P2-006 data-governance validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-006-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-051/task.json",
+      "tasks/done/SUT-AIOS-GOV-051/task.json",
       "tasks/backlog/SUT-AIOS-P2-006/task.json",
       "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -120,7 +120,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T18:50:51.319Z",
-  "updatedDate": "2026-07-29T19:08:05.662Z",
+  "updatedDate": "2026-07-29T19:24:30.030Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-051/verification-20260729190749951.json"
   ],
@@ -159,6 +159,13 @@
       "at": "2026-07-29T19:08:05.662Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA accepted the exact shell-free P2-006 validator admission, 17 focused near-miss rejections, bounded non-product scope, and all packet-authorized deterministic checks."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T19:24:30.030Z",
+      "actor": "qa-verification",
+      "reason": "PR #108 merged to main as commit d9b53dc49b4dc6679aa70f6bdd49fa012b2a166a after independent Sol QA and green final-head CI; reconcile verified to done without changing admission scope."
     }
   ]
 }
