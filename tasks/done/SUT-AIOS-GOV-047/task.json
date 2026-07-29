@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-047",
   "title": "Plan P2-005 infrastructure trust-zone contracts",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "infrastructure-contracts",
   "workflowId": "p2-005-contract-design",
@@ -113,7 +113,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-047/task.json",
+      "tasks/done/SUT-AIOS-GOV-047/task.json",
       "tasks/backlog/SUT-AIOS-P2-005/task.json",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "docs/project/ENGINEERING_PRINCIPLES.md"
@@ -122,7 +122,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T15:35:00.000Z",
-  "updatedDate": "2026-07-29T15:49:29.888Z",
+  "updatedDate": "2026-07-29T16:05:39.478Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-047/verification-20260729154919272.json"
   ],
@@ -183,6 +183,13 @@
       "at": "2026-07-29T15:49:29.888Z",
       "actor": "qa-verification",
       "reason": "Fresh independent Sol QA accepted the corrected six-object request contract, finite mappings, packet boundaries, and deterministic checks."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T16:05:39.478Z",
+      "actor": "qa-verification",
+      "reason": "PR #98 merged to main as commit a2303e10de4cda4de9e71c0704cde9017e3e250d after independent Sol QA and green final-head CI; reconcile verified to done without changing planning scope."
     }
   ]
 }
