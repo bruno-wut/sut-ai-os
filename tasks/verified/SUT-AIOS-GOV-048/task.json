@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-048",
   "title": "Admit exact P2-005 infrastructure-contract validator",
-  "status": "backlog",
+  "status": "verified",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-005-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-GOV-048/task.json",
+      "tasks/verified/SUT-AIOS-GOV-048/task.json",
       "tasks/backlog/SUT-AIOS-P2-005/task.json",
       "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -120,8 +120,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T15:40:00.000Z",
-  "updatedDate": "2026-07-29T15:40:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T17:13:14.095Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-048/verification-20260729171258747.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -129,6 +131,34 @@
       "at": "2026-07-29T15:40:00.000Z",
       "actor": "engineering-planner",
       "reason": "Created by GOV-047 to admit only the finite P2-005 validator literal before product activation."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T17:09:11.472Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-047 is terminal and fixes the exact P2-005 validator literal, scope, evidence path, and Sol review route."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T17:09:11.846Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed with the one exact P2-005 validator admission only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T17:11:47.338Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact shell-free P2-005 validator admission, 17 focused near-miss rejections, policy and risk updates, and passing implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T17:13:14.095Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed exact literal admission, 17 near-miss rejections, shell-free fixed-argument execution, authorized paths, and all packet checks."
     }
   ]
 }

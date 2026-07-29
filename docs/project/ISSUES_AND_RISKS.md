@@ -1,5 +1,23 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-005 validator admission is exact and non-product
+
+- **Task ID:** `SUT-AIOS-GOV-048`, `SUT-AIOS-P2-005`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Future independent machine verification of the P2-005
+  infrastructure boundary and provider-neutral port contract.
+- **Evidence:** GOV-048 admits only the byte-for-byte literal
+  `node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs`
+  as `node` with one fixed repository-relative forward-slash path through the
+  existing `shell: false` runner. Focused self-tests reject whitespace,
+  arguments, chaining, redirects, substitutions, alternate and sibling paths,
+  dot paths, traversal, absolute paths, and Windows separators.
+- **Next action / owner:** Independent Sol QA must verify GOV-048 before P2-005
+  activation. This admission creates no product validator, schema, policy,
+  runtime module, provider adapter, authentication, network, persistence,
+  queue, workflow, deployment, authority, or production behavior.
+
 ### 2026-07-29 - P2-005 infrastructure authority is designed, not implemented
 
 - **Task ID:** `SUT-AIOS-GOV-047`, `SUT-AIOS-GOV-048`, `SUT-AIOS-P2-005`
