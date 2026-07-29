@@ -17,6 +17,48 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-29 — P2-002 rejected-reason semantics and finite boundary coverage are incomplete
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** Medium
+- **Affected scope:** P2-002 semantic result validation and deterministic
+  contract validator.
+- **Evidence:** Final Sol QA found that `resultSemanticsAreValid()` accepts
+  precedence-ordered combinations containing `MALFORMED_PROVIDER_RESULT` or
+  `INTERNAL_AUTHORITY_UNAVAILABLE`, although the approved GOV-040 design makes
+  each code exclusive. The 93-case validator also omits required finite boundary
+  cases, including every intervention selection, low/high confidence bands,
+  text and collection edges, identifier/digest edges, and the exclusive-code
+  regression. Existing validator, packet, fast, and diff checks otherwise pass.
+- **Resolution:** The semantic authority now rejects any multi-code result that
+  contains either fatal code. The deterministic validator covers both exclusive
+  fatal-code regressions, every finite enum and result variant, and accepted and
+  rejected edges for the documented text, identifier, digest, numeric, and
+  collection bounds. The provider-neutral static boundary remains unchanged.
+- **Next action / owner:** Resolved by final independent Sol QA. Retain
+  `verification-20260729111249806.json` with the historical failed records.
+
+### 2026-07-28 — P2-002 verification evidence path is absent from its allowlist
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** Medium
+- **Affected scope:** P2-002 task metadata and independent verification evidence.
+- **Evidence:** Fresh Sol QA used explicit `--base origin/main`; the machine
+  record `verification-20260728164848515.json` inspected a nonempty nine-path
+  delivery diff, all functional tests passed, forbidden paths remained
+  untouched, and the secret scan passed. Changed-path inspection failed solely
+  because the packet does not allow its required historical directory
+  `evidence/verification/SUT-AIOS-P2-002/**` and therefore treats the preserved
+  earlier failed record as outside scope.
+- **Resolution:** The task-specific machine-evidence directory is explicitly
+  allowed. Final independent verification inspected the complete nonempty
+  `origin/main` diff, preserved both failed records, and passed changed-path and
+  security-boundary checks in `verification-20260729111249806.json`.
+- **Next action / owner:** No further P2-002 correction is required; retain the
+  complete evidence history.
+
 ### 2026-07-28 — P2-002 remains a contract-only, non-authoritative boundary
 
 - **Task ID:** `SUT-AIOS-P2-002`
@@ -32,9 +74,20 @@ This is the durable repository-wide register for issues, blockers, risks, failed
   passed 93 cases covering private authority, classification, cross-references,
   all provider states, self-authorization rejection, and hostile never-throw
   inputs.
-- **Next action / owner:** Independent Sol QA must verify the final diff and
-  machine evidence. Future provider tasks must preserve the deep-module and
-  hexagonal boundary and must not treat analysis as authorization.
+- **Evidence:** Independent Sol QA passed the 93-case validator, packet and fast
+  checks, and the single machine verification cycle. Because the implementation
+  was committed before QA and the packet has no `worktree.primaryBranch`, the
+  machine record defaulted to `HEAD` and listed no changed paths. The record was
+  preserved; supplemental `verify:changed --base origin/main` and
+  `verify:security-boundaries --base origin/main` runs covered all nine delivery
+  and evidence paths, found no forbidden/outside path, and found no configured
+  secret pattern. Two initial direct `verify-cli.mjs` diagnostic invocations
+  failed on wrapper syntax before the documented npm wrapper forms passed.
+- **Evidence:** Final independent Sol QA passed the expanded 236-case validator
+  and machine verification against the complete nonempty `origin/main` diff in
+  `verification-20260729111249806.json`.
+- **Next action / owner:** Future provider tasks must preserve the deep-module
+  and hexagonal boundary and must not treat analysis as authorization.
 
 ### 2026-07-28 — P2-002 validator admission remains exact and fail-closed
 

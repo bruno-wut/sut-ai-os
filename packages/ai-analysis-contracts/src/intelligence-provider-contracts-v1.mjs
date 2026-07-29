@@ -272,6 +272,8 @@ function resultSemanticsAreValid(result, request) {
   if (result.status === "rejected") {
     if (result.providerState !== null || result.providerIdentity !== null || result.failClosed !== true || result.analysis !== null || !Array.isArray(result.reasonCodes) ||
         result.reasonCodes.length < 1 || !unique(result.reasonCodes)) return false;
+    if (result.reasonCodes.length > 1 &&
+        (result.reasonCodes.includes("MALFORMED_PROVIDER_RESULT") || result.reasonCodes.includes("INTERNAL_AUTHORITY_UNAVAILABLE"))) return false;
     let previous = -1;
     for (const code of result.reasonCodes) {
       const index = REJECTION_PRECEDENCE.indexOf(code);

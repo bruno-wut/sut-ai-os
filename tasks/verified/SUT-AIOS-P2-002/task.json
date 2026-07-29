@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-002",
   "title": "Define provider-neutral structured intelligence contracts",
-  "status": "review",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "ai-analysis",
   "workflowId": "implementation-p2-002",
@@ -53,6 +53,7 @@
     "docs/ai-analysis/INTELLIGENCE_PROVIDER_CONTRACTS_V1.md",
     "docs/project/ISSUES_AND_RISKS.md",
     "evidence/tasks/SUT-AIOS-P2-002/**",
+    "evidence/verification/SUT-AIOS-P2-002/**",
     "tasks/**/SUT-AIOS-P2-002/**"
   ],
   "forbiddenPaths": [
@@ -125,11 +126,18 @@
   ],
   "rollbackExpectations": "Revert only the two P2-002 schemas, contract module, validator, documentation, task state, and P2-002 evidence; preserve P1/P2-001/P2-001-R02 authorities and historical evidence, canonical sources, immutable snapshot, and external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/.codex/worktrees/fbec/SUT_AI_OS-p2-002",
+    "branch": "task/SUT-AIOS-P2-002-provider-neutral-intelligence-contracts-v1",
+    "primaryBranch": "main",
+    "createdAt": "2026-07-28T16:29:56.526Z",
+    "createdBy": "chief-orchestrator"
+  },
   "contextBudget": {
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/review/SUT-AIOS-P2-002/task.json",
+      "tasks/verified/SUT-AIOS-P2-002/task.json",
       "tasks/done/SUT-AIOS-P2-001-R02/task.json",
       "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
       "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md"
@@ -138,8 +146,11 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T16:38:58.110Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T11:13:27.445Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-P2-002/verification.md",
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260729111249806.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -168,6 +179,76 @@
       "at": "2026-07-28T16:38:58.110Z",
       "actor": "codex-engineering-executor",
       "reason": "Implemented the approved two closed V1 schemas, two-function private-authority semantic module, deterministic validator, documentation, risk record, and evidence; all executor checks pass and the bounded diff is ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T16:45:34.768Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA found the single verify:task pass did not inspect the committed delivery diff because no worktree primaryBranch/base was configured; preserve the machine record and supplemental passing checks, then return to active for a fresh verification cycle with explicit origin/main base."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-28T16:47:07.491Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Correct the packet-only worktree metadata so independent verification can identify the actual task branch and primary branch; preserve prior QA evidence and product implementation unchanged."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-28T16:47:07.543Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Recorded the actual isolated worktree path, task branch, and main primary branch without changing product code or prior evidence; ready for fresh independent QA using origin/main as the explicit current base ref."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-28T16:49:36.175Z",
+      "actor": "qa-verification",
+      "reason": "Fresh Sol QA confirmed the product acceptance criteria and obtained a nonempty origin/main diff, but the single machine verification failed because the packet omits its mandatory task-specific verification-evidence directory from allowedPaths; preserve both failed records and correct only that metadata before a new QA cycle."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T10:55:24.797Z",
+      "actor": "chief-orchestrator",
+      "reason": "Corrected task-specific verification evidence allowlist; product unchanged."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T10:55:24.842Z",
+      "actor": "chief-orchestrator",
+      "reason": "Metadata-only correction ready for fresh independent QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T11:00:19.172Z",
+      "actor": "qa-verification",
+      "reason": "Final Sol QA found rejected-result exclusivity and finite boundary coverage gaps; preserve all historical evidence and correct only those bounded contract assurances."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T11:02:48.368Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implement the two bounded final QA corrections: fatal rejected-reason exclusivity and exhaustive finite contract boundary regression coverage."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T11:10:16.366Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Corrected fatal rejected-reason exclusivity and expanded the deterministic validator to 236 cases covering every finite enum/result variant and documented text, identifier, digest, numeric, and collection boundary; all executor checks pass."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T11:13:27.445Z",
+      "actor": "qa-verification",
+      "reason": "Final independent Sol QA confirms both prior findings resolved, 236 finite and boundary cases pass, the complete origin/main diff is in scope, and machine verification passes fail closed."
     }
   ]
 }

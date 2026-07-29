@@ -16,6 +16,11 @@ const PROVIDER_REASONS = {
   busy: "PROVIDER_BUSY", rate_limited: "PROVIDER_RATE_LIMITED", capacity_exhausted: "PROVIDER_CAPACITY_EXHAUSTED",
   authentication_required: "PROVIDER_AUTHENTICATION_REQUIRED", temporarily_unavailable: "PROVIDER_TEMPORARILY_UNAVAILABLE", disabled: "PROVIDER_DISABLED"
 };
+const REJECTION_CODES = [
+  "MALFORMED_REQUEST", "UNSUPPORTED_SCHEMA_VERSION", "UNSUPPORTED_DATA_CLASSIFICATION", "UNSUPPORTED_PURPOSE",
+  "INVALID_PREPARED_EVIDENCE", "INVALID_ALLOWED_CONTEXT", "UNSUPPORTED_ANALYSIS_OBJECTIVES",
+  "MALFORMED_PROVIDER_RESULT", "INTERNAL_AUTHORITY_UNAVAILABLE"
+];
 
 const baseRequest = () => ({
   schemaVersion: "1.0.0",
@@ -68,6 +73,23 @@ const insufficientResult = (request = baseRequest()) => ({
     evidenceCitations: ["analytics-a"], additionalEvidenceNeeded: ["A prepared post-deployment measurement is needed."]
   }, reasonCodes: ["INSUFFICIENT_EVIDENCE"]
 });
+
+const rejectedResult = (request, reasonCodes) => ({
+  schemaVersion: "1.0.0", status: "rejected", requestId: request.requestId, providerState: null,
+  providerIdentity: null, nonAuthoritative: true, failClosed: true, analysis: null, reasonCodes
+});
+
+function requestWithEvidence(count) {
+  const request = baseRequest();
+  request.preparedEvidence = request.preparedEvidence.slice(0, Math.min(count, 2));
+  for (let index = request.preparedEvidence.length; index < count; index += 1) {
+    request.preparedEvidence.push({
+      evidenceId: `evidence-${String(index).padStart(2, "0")}`, kind: "technical_artifact", dataClassification: "public",
+      summary: `Prepared evidence ${index}.`, facts: [`Bounded fact ${index}.`], integritySha256: index.toString(16).padStart(64, "0")
+    });
+  }
+  return request;
+}
 
 function assertClosedObjectSchemas(node, location = "schema") {
   if (Array.isArray(node)) return node.forEach((child, index) => assertClosedObjectSchemas(child, `${location}[${index}]`));
@@ -150,6 +172,64 @@ try {
     const request = baseRequest(); request.preparedEvidence[0].kind = kind; checkRequest(request, true, null, `evidence kind ${kind}`);
   }
   for (const locale of ["en", "th"]) { const request = baseRequest(); request.allowedContext.locale = locale; checkRequest(request, true, null, `locale ${locale}`); }
+  expect(JSON.stringify(requestSchema.properties.analysisObjectives.prefixItems.map((item) => item.const)) === JSON.stringify(OBJECTIVES), "schema must contain every objective in exact order");
+
+  for (const [field, validMinimum, validMaximum, invalidBelow, invalidAbove] of [
+    ["requestId", "A", `A${"b".repeat(127)}`, "", `A${"b".repeat(128)}`],
+    ["taskId", "ABC", `A${"B".repeat(80)}`, "AB", `A${"B".repeat(81)}`],
+    ["analysisQuestion", "x", "x".repeat(1000), "", "x".repeat(1001)]
+  ]) {
+    for (const [value, label] of [[validMinimum, "minimum"], [validMaximum, "maximum"]]) {
+      const request = baseRequest(); request[field] = value; checkRequest(request, true, null, `${field} ${label}`);
+    }
+    for (const [value, label] of [[invalidBelow, "below minimum"], [invalidAbove, "above maximum"]]) {
+      const request = baseRequest(); request[field] = value; checkRequest(request, false, ["MALFORMED_REQUEST"], `${field} ${label}`);
+    }
+  }
+
+  for (const [field, validMinimum, validMaximum, invalidBelow, invalidAbove] of [
+    ["summary", "x", "x".repeat(500), "", "x".repeat(501)],
+    ["facts", ["x"], ["x".repeat(500)], [""], ["x".repeat(501)]]
+  ]) {
+    for (const [value, label] of [[validMinimum, "minimum"], [validMaximum, "maximum"]]) {
+      const request = baseRequest(); request.preparedEvidence[0][field] = value; checkRequest(request, true, null, `evidence ${field} ${label}`);
+    }
+    for (const [value, label] of [[invalidBelow, "below minimum"], [invalidAbove, "above maximum"]]) {
+      const request = baseRequest(); request.preparedEvidence[0][field] = value; checkRequest(request, false, ["INVALID_PREPARED_EVIDENCE"], `evidence ${field} ${label}`);
+    }
+  }
+
+  for (const [count, ok, reason, label] of [[1, true, null, "minimum"], [20, true, null, "maximum"], [0, false, "INVALID_PREPARED_EVIDENCE", "below minimum"], [21, false, "INVALID_PREPARED_EVIDENCE", "above maximum"]]) {
+    const request = requestWithEvidence(count); checkRequest(request, ok, ok ? null : [reason], `preparedEvidence ${label}`);
+  }
+  for (const [count, ok, label] of [[1, true, "minimum"], [20, true, "maximum"], [0, false, "below minimum"], [21, false, "above maximum"]]) {
+    const request = baseRequest(); request.preparedEvidence[0].facts = Array.from({ length: count }, (_, index) => `fact-${String(index).padStart(2, "0")}`);
+    checkRequest(request, ok, ok ? null : ["INVALID_PREPARED_EVIDENCE"], `facts collection ${label}`);
+  }
+  for (const [count, ok, label] of [[1, true, "minimum"], [20, true, "maximum"], [0, false, "below minimum"], [21, false, "above maximum"]]) {
+    const request = baseRequest(); request.allowedContext.affectedSystems = Array.from({ length: count }, (_, index) => `system-${String(index).padStart(2, "0")}`);
+    checkRequest(request, ok, ok ? null : ["INVALID_ALLOWED_CONTEXT"], `affectedSystems ${label}`);
+  }
+  for (const [count, ok, label] of [[0, true, "minimum"], [20, true, "maximum"], [21, false, "above maximum"]]) {
+    const request = baseRequest(); request.allowedContext.metricIds = Array.from({ length: count }, (_, index) => `metric-${String(index).padStart(2, "0")}`);
+    checkRequest(request, ok, ok ? null : ["INVALID_ALLOWED_CONTEXT"], `metricIds ${label}`);
+  }
+  for (const [count, ok, label] of [[1, true, "minimum"], [7, true, "maximum"], [0, false, "below minimum"]]) {
+    const request = baseRequest(); request.allowedContext.allowedInterventions = INTERVENTIONS.slice(0, count);
+    checkRequest(request, ok, ok ? null : ["INVALID_ALLOWED_CONTEXT"], `allowedInterventions ${label}`);
+  }
+  for (const [value, ok, label] of [[1, true, "minimum"], [5, true, "maximum"], [0, false, "below minimum"], [6, false, "above maximum"]]) {
+    const request = baseRequest(); request.allowedContext.maxHypotheses = value;
+    checkRequest(request, ok, ok ? null : ["INVALID_ALLOWED_CONTEXT"], `maxHypotheses ${label}`);
+  }
+  for (const [value, ok, label] of [["a", true, "minimum"], [`a${"b".repeat(63)}`, true, "maximum"], ["", false, "below minimum"], [`a${"b".repeat(64)}`, false, "above maximum"]]) {
+    const request = baseRequest(); request.preparedEvidence[0].evidenceId = value;
+    checkRequest(request, ok, ok ? null : ["INVALID_PREPARED_EVIDENCE"], `evidence identifier ${label}`);
+  }
+  for (const [value, ok, label] of [["a".repeat(64), true, "exact length"], ["a".repeat(63), false, "below length"], ["a".repeat(65), false, "above length"], ["A".repeat(64), false, "non-lowercase hex"]]) {
+    const request = baseRequest(); request.preparedEvidence[0].integritySha256 = value;
+    checkRequest(request, ok, ok ? null : ["INVALID_PREPARED_EVIDENCE"], `digest ${label}`);
+  }
 
   for (const [mutate, reasons, label] of [
     [(request) => { request.extra = true; }, ["MALFORMED_REQUEST"], "unknown root authority field"],
@@ -177,6 +257,152 @@ try {
   }
   checkResult({ schemaVersion: "1.0.0", status: "rejected", requestId: canonicalRequest.requestId, providerState: null,
     providerIdentity: null, nonAuthoritative: true, failClosed: true, analysis: null, reasonCodes: ["MALFORMED_PROVIDER_RESULT"] }, canonicalRequest, true, null, "canonical rejected result");
+
+  for (const intervention of INTERVENTIONS) {
+    const result = completedResult(canonicalRequest); result.analysis.selectedIntervention.kind = intervention;
+    checkResult(result, canonicalRequest, true, null, `selected intervention ${intervention}`);
+  }
+  for (const [score, band, label] of [[0, "low", "low minimum"], [0.499, "low", "low maximum"], [0.5, "medium", "medium minimum"], [0.799, "medium", "medium maximum"], [0.8, "high", "high minimum"], [1, "high", "high maximum"]]) {
+    const result = completedResult(canonicalRequest); result.analysis.confidence.score = score; result.analysis.confidence.band = band;
+    checkResult(result, canonicalRequest, true, null, `confidence ${label}`);
+  }
+  for (const [score, ok, label] of [[0, true, "minimum"], [1, true, "maximum"], [-0.001, false, "below minimum"], [1.001, false, "above maximum"]]) {
+    const result = completedResult(canonicalRequest); result.analysis.rankedHypotheses[0].confidenceScore = score;
+    if (ok && score === 0) result.analysis.rankedHypotheses[1].confidenceScore = 0;
+    checkResult(result, canonicalRequest, ok, ok ? null : "MALFORMED_PROVIDER_RESULT", `hypothesis confidence ${label}`);
+  }
+  for (const reasonCode of REJECTION_CODES) {
+    checkResult(rejectedResult(canonicalRequest, [reasonCode]), canonicalRequest, true, null, `rejected reason ${reasonCode}`);
+  }
+  checkResult(rejectedResult(canonicalRequest, REJECTION_CODES.slice(0, 7)), canonicalRequest, true, null, "combined ordered request rejection reasons");
+  for (const fatalCode of ["MALFORMED_PROVIDER_RESULT", "INTERNAL_AUTHORITY_UNAVAILABLE"]) {
+    const combined = rejectedResult(canonicalRequest, ["MALFORMED_REQUEST", fatalCode]);
+    expect(schemaResult(combined), `${fatalCode} combination remains structurally valid for semantic rejection`);
+    checkResult(combined, canonicalRequest, false, "MALFORMED_PROVIDER_RESULT", `${fatalCode} must be exclusive`);
+  }
+
+  for (const [mutate, label] of [
+    [(result) => { result.providerIdentity.providerId = "x"; }, "providerId minimum"],
+    [(result) => { result.providerIdentity.providerId = "x".repeat(128); }, "providerId maximum"],
+    [(result) => { result.providerIdentity.modelId = "x"; }, "modelId minimum"],
+    [(result) => { result.providerIdentity.modelId = "x".repeat(128); }, "modelId maximum"],
+    [(result) => { result.analysis.explanation = "x"; }, "explanation minimum"],
+    [(result) => { result.analysis.explanation = "x".repeat(2000); }, "explanation maximum"],
+    [(result) => { result.analysis.likelyCauses[0].statement = "x"; }, "cause statement minimum"],
+    [(result) => { result.analysis.likelyCauses[0].statement = "x".repeat(500); }, "cause statement maximum"],
+    [(result) => { result.analysis.rankedHypotheses[0].statement = "x"; }, "hypothesis statement minimum"],
+    [(result) => { result.analysis.rankedHypotheses[0].statement = "x".repeat(500); }, "hypothesis statement maximum"],
+    [(result) => { result.analysis.selectedIntervention.rationale = "x"; }, "rationale minimum"],
+    [(result) => { result.analysis.selectedIntervention.rationale = "x".repeat(1000); }, "rationale maximum"],
+    [(result) => { result.analysis.confidence.basis = "x"; }, "confidence basis minimum"],
+    [(result) => { result.analysis.confidence.basis = "x".repeat(500); }, "confidence basis maximum"]
+  ]) {
+    const result = completedResult(canonicalRequest); mutate(result); checkResult(result, canonicalRequest, true, null, label);
+  }
+  for (const [mutate, label] of [
+    [(result) => { result.providerIdentity.providerId = ""; }, "providerId below minimum"],
+    [(result) => { result.providerIdentity.providerId = "x".repeat(129); }, "providerId above maximum"],
+    [(result) => { result.providerIdentity.modelId = ""; }, "modelId below minimum"],
+    [(result) => { result.providerIdentity.modelId = "x".repeat(129); }, "modelId above maximum"],
+    [(result) => { result.analysis.explanation = ""; }, "explanation below minimum"],
+    [(result) => { result.analysis.explanation = "x".repeat(2001); }, "explanation above maximum"],
+    [(result) => { result.analysis.likelyCauses[0].statement = ""; }, "cause statement below minimum"],
+    [(result) => { result.analysis.likelyCauses[0].statement = "x".repeat(501); }, "cause statement above maximum"],
+    [(result) => { result.analysis.rankedHypotheses[0].statement = ""; }, "hypothesis statement below minimum"],
+    [(result) => { result.analysis.rankedHypotheses[0].statement = "x".repeat(501); }, "hypothesis statement above maximum"],
+    [(result) => { result.analysis.selectedIntervention.rationale = ""; }, "rationale below minimum"],
+    [(result) => { result.analysis.selectedIntervention.rationale = "x".repeat(1001); }, "rationale above maximum"],
+    [(result) => { result.analysis.confidence.basis = ""; }, "confidence basis below minimum"],
+    [(result) => { result.analysis.confidence.basis = "x".repeat(501); }, "confidence basis above maximum"]
+  ]) {
+    const result = completedResult(canonicalRequest); mutate(result); checkResult(result, canonicalRequest, false, "MALFORMED_PROVIDER_RESULT", label);
+  }
+
+  for (const [value, ok, label] of [["a", true, "minimum"], [`a${"b".repeat(63)}`, true, "maximum"], ["", false, "below minimum"], [`a${"b".repeat(64)}`, false, "above maximum"]]) {
+    const result = completedResult(canonicalRequest);
+    result.analysis.likelyCauses[0].causeId = value;
+    checkResult(result, canonicalRequest, ok, ok ? null : "MALFORMED_PROVIDER_RESULT", `result identifier ${label}`);
+  }
+
+  const maximumRequest = requestWithEvidence(20);
+  maximumRequest.allowedContext.maxHypotheses = 5;
+  const allEvidenceIds = maximumRequest.preparedEvidence.map((item) => item.evidenceId);
+  const maximumResult = completedResult(maximumRequest);
+  maximumResult.analysis.likelyCauses = Array.from({ length: 5 }, (_, index) => ({
+    causeId: `cause-${index}`, statement: `Cause ${index}.`, supportingEvidenceIds: [...allEvidenceIds], counterEvidenceIds: [...allEvidenceIds]
+  }));
+  maximumResult.analysis.rankedHypotheses = Array.from({ length: 5 }, (_, index) => ({
+    hypothesisId: `hypothesis-${index}`, rank: index + 1, statement: `Hypothesis ${index}.`,
+    supportingEvidenceIds: [...allEvidenceIds], counterEvidenceIds: [...allEvidenceIds], confidenceScore: 1 - (index * 0.1)
+  }));
+  maximumResult.analysis.selectedIntervention.supportingHypothesisIds = maximumResult.analysis.rankedHypotheses.map((item) => item.hypothesisId);
+  maximumResult.analysis.confidence.score = 1;
+  maximumResult.analysis.confidence.band = "high";
+  maximumResult.analysis.confidence.evidenceIds = [...allEvidenceIds];
+  maximumResult.analysis.evidenceCitations = [...allEvidenceIds];
+  checkResult(maximumResult, maximumRequest, true, null, "completed collection maxima");
+  for (const [mutate, label] of [
+    [(result) => { result.analysis.likelyCauses.push({ ...copy(result.analysis.likelyCauses[0]), causeId: "cause-overflow" }); }, "likelyCauses above maximum"],
+    [(result) => { result.analysis.rankedHypotheses.push({ ...copy(result.analysis.rankedHypotheses[4]), hypothesisId: "hypothesis-overflow", rank: 6 }); }, "rankedHypotheses above maximum"],
+    [(result) => { result.analysis.likelyCauses[0].supportingEvidenceIds.push("unknown-overflow"); }, "cause supportingEvidenceIds above maximum"],
+    [(result) => { result.analysis.likelyCauses[0].counterEvidenceIds.push("unknown-overflow"); }, "cause counterEvidenceIds above maximum"],
+    [(result) => { result.analysis.rankedHypotheses[0].supportingEvidenceIds.push("unknown-overflow"); }, "hypothesis supportingEvidenceIds above maximum"],
+    [(result) => { result.analysis.rankedHypotheses[0].counterEvidenceIds.push("unknown-overflow"); }, "hypothesis counterEvidenceIds above maximum"],
+    [(result) => { result.analysis.selectedIntervention.supportingHypothesisIds.push("hypothesis-overflow"); }, "supportingHypothesisIds above maximum"],
+    [(result) => { result.analysis.confidence.evidenceIds.push("unknown-overflow"); }, "confidence evidenceIds above maximum"],
+    [(result) => { result.analysis.evidenceCitations.push("unknown-overflow"); }, "evidenceCitations above maximum"],
+    [(result) => { result.analysis.additionalEvidenceNeeded.push("unexpected"); }, "completed additionalEvidenceNeeded above exact empty"]
+  ]) {
+    const result = copy(maximumResult); mutate(result);
+    checkResult(result, maximumRequest, false, "MALFORMED_PROVIDER_RESULT", label);
+  }
+
+  const minimumResult = completedResult(canonicalRequest);
+  minimumResult.analysis.rankedHypotheses = minimumResult.analysis.rankedHypotheses.slice(0, 1);
+  minimumResult.analysis.selectedIntervention.supportingHypothesisIds = [minimumResult.analysis.rankedHypotheses[0].hypothesisId];
+  minimumResult.analysis.likelyCauses[0].supportingEvidenceIds = [canonicalRequest.preparedEvidence[0].evidenceId];
+  minimumResult.analysis.likelyCauses[0].counterEvidenceIds = [];
+  minimumResult.analysis.rankedHypotheses[0].supportingEvidenceIds = [canonicalRequest.preparedEvidence[0].evidenceId];
+  minimumResult.analysis.rankedHypotheses[0].counterEvidenceIds = [];
+  minimumResult.analysis.confidence.evidenceIds = [canonicalRequest.preparedEvidence[0].evidenceId];
+  minimumResult.analysis.evidenceCitations = [canonicalRequest.preparedEvidence[0].evidenceId];
+  checkResult(minimumResult, canonicalRequest, true, null, "completed collection minima");
+
+  for (const [mutate, label] of [
+    [(result) => { result.analysis.likelyCauses = []; }, "likelyCauses below minimum"],
+    [(result) => { result.analysis.likelyCauses = Array.from({ length: 6 }, (_, index) => ({ ...copy(result.analysis.likelyCauses[0]), causeId: `cause-${index}` })); }, "likelyCauses above maximum"],
+    [(result) => { result.analysis.rankedHypotheses = []; }, "rankedHypotheses below minimum"],
+    [(result) => { result.analysis.likelyCauses[0].supportingEvidenceIds = []; }, "supportingEvidenceIds below minimum"],
+    [(result) => { result.analysis.selectedIntervention.supportingHypothesisIds = []; }, "supportingHypothesisIds below minimum"],
+    [(result) => { result.analysis.evidenceCitations = []; }, "evidenceCitations below minimum"]
+  ]) {
+    const result = completedResult(canonicalRequest); mutate(result); checkResult(result, canonicalRequest, false, "MALFORMED_PROVIDER_RESULT", label);
+  }
+
+  for (const [count, ok, label] of [[1, true, "minimum"], [10, true, "maximum"], [0, false, "below minimum"], [11, false, "above maximum"]]) {
+    const result = insufficientResult(canonicalRequest);
+    result.analysis.additionalEvidenceNeeded = Array.from({ length: count }, (_, index) => `Additional evidence ${index}.`);
+    checkResult(result, canonicalRequest, ok, ok ? null : "MALFORMED_PROVIDER_RESULT", `additionalEvidenceNeeded ${label}`);
+  }
+  for (const [count, ok, label] of [[0, true, "minimum"], [2, true, "request maximum"], [3, false, "unknown reference"]]) {
+    const result = insufficientResult(canonicalRequest);
+    result.analysis.evidenceCitations = count === 0 ? [] : count === 2 ? ["analytics-a", "event-b"] : ["analytics-a", "event-b", "unknown"];
+    checkResult(result, canonicalRequest, ok, ok ? null : "MALFORMED_PROVIDER_RESULT", `insufficient evidenceCitations ${label}`);
+  }
+  const maximumInsufficient = insufficientResult(maximumRequest);
+  maximumInsufficient.analysis.confidence.evidenceIds = [...allEvidenceIds];
+  maximumInsufficient.analysis.evidenceCitations = [...allEvidenceIds];
+  checkResult(maximumInsufficient, maximumRequest, true, null, "insufficient optional evidence collections maximum");
+  for (const field of ["evidenceIds", "evidenceCitations"]) {
+    const result = copy(maximumInsufficient);
+    if (field === "evidenceIds") result.analysis.confidence.evidenceIds.push("unknown-overflow");
+    else result.analysis.evidenceCitations.push("unknown-overflow");
+    checkResult(result, maximumRequest, false, "MALFORMED_PROVIDER_RESULT", `insufficient ${field} above maximum`);
+  }
+  for (const [value, ok, label] of [["x", true, "minimum"], ["x".repeat(500), true, "maximum"], ["", false, "below minimum"], ["x".repeat(501), false, "above maximum"]]) {
+    const result = insufficientResult(canonicalRequest); result.analysis.additionalEvidenceNeeded = [value];
+    checkResult(result, canonicalRequest, ok, ok ? null : "MALFORMED_PROVIDER_RESULT", `additional evidence text ${label}`);
+  }
 
   for (const [mutate, label] of [
     [(result) => { result.approved = true; }, "self approval"],
