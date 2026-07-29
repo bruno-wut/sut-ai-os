@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/infrastructure-port-contract-v1.schema.json",
+  "title": "Infrastructure Boundary and Provider-Neutral Port Contract V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "policyId", "zones", "crossZoneProtocol", "routes", "ports", "coreDependencyRules", "bookingIsolation", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "policyId": { "const": "infrastructure-trust-zone-policy-v1" },
+    "zones": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "prefixItems": [
+        { "$ref": "#/$defs/guestZone" },
+        { "$ref": "#/$defs/staffZone" },
+        { "$ref": "#/$defs/aiZone" }
+      ],
+      "items": false
+    },
+    "crossZoneProtocol": { "$ref": "#/$defs/crossZoneProtocol" },
+    "routes": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "prefixItems": [
+        { "$ref": "#/$defs/aggregateRoute" },
+        { "$ref": "#/$defs/analyticsRoute" },
+        { "$ref": "#/$defs/workRequestRoute" },
+        { "$ref": "#/$defs/workResultRoute" },
+        { "$ref": "#/$defs/notificationRoute" }
+      ],
+      "items": false
+    },
+    "ports": {
+      "type": "array", "minItems": 13, "maxItems": 13,
+      "prefixItems": [
+        { "$ref": "#/$defs/persistencePort" },
+        { "$ref": "#/$defs/ingestionPort" },
+        { "$ref": "#/$defs/analyticsPort" },
+        { "$ref": "#/$defs/schedulingPort" },
+        { "$ref": "#/$defs/workflowPort" },
+        { "$ref": "#/$defs/objectStoragePort" },
+        { "$ref": "#/$defs/notificationPort" },
+        { "$ref": "#/$defs/intelligencePort" },
+        { "$ref": "#/$defs/deploymentPort" },
+        { "$ref": "#/$defs/authenticationPort" },
+        { "$ref": "#/$defs/proposalPort" },
+        { "$ref": "#/$defs/executorPort" },
+        { "$ref": "#/$defs/verificationPort" }
+      ],
+      "items": false
+    },
+    "coreDependencyRules": { "$ref": "#/$defs/coreDependencyRules" },
+    "bookingIsolation": { "$ref": "#/$defs/bookingIsolation" },
+    "authority": { "$ref": "#/$defs/authority" }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "requestIdentifier": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "zoneName": { "enum": ["guest_public", "staff_control", "ai_workload"] },
+    "routeClass": { "enum": ["aggregate_or_lifecycle_ingest", "prepared_analytics_read", "bounded_work_request", "bounded_work_result", "staff_notification"] },
+    "closedZone": {
+      "type": "object", "additionalProperties": false,
+      "required": ["zone", "exposure", "credentialBoundaryId", "quotaBoundaryId", "deploymentBoundaryId", "failureBoundaryId"],
+      "properties": {
+        "zone": { "type": "string" }, "exposure": { "type": "string" },
+        "credentialBoundaryId": { "$ref": "#/$defs/identifier" }, "quotaBoundaryId": { "$ref": "#/$defs/identifier" },
+        "deploymentBoundaryId": { "$ref": "#/$defs/identifier" }, "failureBoundaryId": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "guestZone": { "allOf": [{ "$ref": "#/$defs/closedZone" }, { "properties": { "zone": { "const": "guest_public" }, "exposure": { "const": "public_guest_only" }, "credentialBoundaryId": { "const": "guest-credential" }, "quotaBoundaryId": { "const": "guest-quota" }, "deploymentBoundaryId": { "const": "guest-deployment" }, "failureBoundaryId": { "const": "guest-failure" } } }] },
+    "staffZone": { "allOf": [{ "$ref": "#/$defs/closedZone" }, { "properties": { "zone": { "const": "staff_control" }, "exposure": { "const": "authenticated_staff_only" }, "credentialBoundaryId": { "const": "staff-credential" }, "quotaBoundaryId": { "const": "staff-quota" }, "deploymentBoundaryId": { "const": "staff-deployment" }, "failureBoundaryId": { "const": "staff-failure" } } }] },
+    "aiZone": { "allOf": [{ "$ref": "#/$defs/closedZone" }, { "properties": { "zone": { "const": "ai_workload" }, "exposure": { "const": "non_public_workload_only" }, "credentialBoundaryId": { "const": "ai-credential" }, "quotaBoundaryId": { "const": "ai-quota" }, "deploymentBoundaryId": { "const": "ai-deployment" }, "failureBoundaryId": { "const": "ai-failure" } } }] },
+    "crossZoneProtocol": {
+      "type": "object", "additionalProperties": false,
+      "required": ["protocol", "method", "credentialMode", "credentialLifetimeMaxSeconds", "audienceBound", "recipientChecks", "timestampSkewMaxSeconds", "replayWindowSeconds", "nonceRequired", "idempotencyRequired", "duplicateDisposition", "requestBodyMaxBytes", "responseBodyMaxBytes", "timeoutMinMs", "timeoutMaxMs", "rateLimitScopes"],
+      "properties": {
+        "protocol": { "const": "https" }, "method": { "const": "POST" }, "credentialMode": { "const": "short_lived" },
+        "credentialLifetimeMaxSeconds": { "const": 300 }, "audienceBound": { "const": true },
+        "recipientChecks": { "const": ["credential", "expiry", "audience", "timestamp", "nonce", "replay", "idempotency", "caller_limit", "route_limit"] },
+        "timestampSkewMaxSeconds": { "const": 60 }, "replayWindowSeconds": { "const": 300 }, "nonceRequired": { "const": true },
+        "idempotencyRequired": { "const": true }, "duplicateDisposition": { "const": "return_prior_result_without_dispatch" },
+        "requestBodyMaxBytes": { "const": 65536 }, "responseBodyMaxBytes": { "const": 262144 },
+        "timeoutMinMs": { "const": 100 }, "timeoutMaxMs": { "const": 10000 },
+        "rateLimitScopes": { "const": ["authenticated_caller", "route"] }
+      }
+    },
+    "closedRoute": {
+      "type": "object", "additionalProperties": false,
+      "required": ["routeClass", "sourceZone", "targetZone", "port", "operation"],
+      "properties": { "routeClass": { "type": "string" }, "sourceZone": { "type": "string" }, "targetZone": { "type": "string" }, "port": { "type": "string" }, "operation": { "type": "string" } }
+    },
+    "aggregateRoute": { "allOf": [{ "$ref": "#/$defs/closedRoute" }, { "properties": { "routeClass": { "const": "aggregate_or_lifecycle_ingest" }, "sourceZone": { "const": "guest_public" }, "targetZone": { "const": "staff_control" }, "port": { "const": "EventIngestionPort" }, "operation": { "const": "ingest_batch" } } }] },
+    "analyticsRoute": { "allOf": [{ "$ref": "#/$defs/closedRoute" }, { "properties": { "routeClass": { "const": "prepared_analytics_read" }, "sourceZone": { "const": "staff_control" }, "targetZone": { "const": "guest_public" }, "port": { "const": "AnalyticsSourcePort" }, "operation": { "const": "read_aggregate" } } }] },
+    "workRequestRoute": { "allOf": [{ "$ref": "#/$defs/closedRoute" }, { "properties": { "routeClass": { "const": "bounded_work_request" }, "sourceZone": { "const": "staff_control" }, "targetZone": { "const": "ai_workload" }, "port": { "const": "SchedulingQueuePort" }, "operation": { "const": "enqueue" } } }] },
+    "workResultRoute": { "allOf": [{ "$ref": "#/$defs/closedRoute" }, { "properties": { "routeClass": { "const": "bounded_work_result" }, "sourceZone": { "const": "ai_workload" }, "targetZone": { "const": "staff_control" }, "port": { "const": "WorkflowExecutionPort" }, "operation": { "const": "read_state" } } }] },
+    "notificationRoute": { "allOf": [{ "$ref": "#/$defs/closedRoute" }, { "properties": { "routeClass": { "const": "staff_notification" }, "sourceZone": { "const": "ai_workload" }, "targetZone": { "const": "staff_control" }, "port": { "const": "NotificationPort" }, "operation": { "const": "send" } } }] },
+    "closedPort": {
+      "type": "object", "additionalProperties": false,
+      "required": ["port", "operations", "providerNeutral", "coreOwnsInterface", "adapterOwnsProviderBehavior", "authorizationAuthority", "workflowAuthority", "auditAuthority"],
+      "properties": {
+        "port": { "type": "string" }, "operations": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "providerNeutral": { "const": true }, "coreOwnsInterface": { "const": true }, "adapterOwnsProviderBehavior": { "const": true },
+        "authorizationAuthority": { "const": false }, "workflowAuthority": { "const": false }, "auditAuthority": { "const": false }
+      }
+    },
+    "persistencePort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "PersistencePort" }, "operations": { "const": ["read", "write", "append", "delete_expired"] } } }] },
+    "ingestionPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "EventIngestionPort" }, "operations": { "const": ["ingest_batch"] } } }] },
+    "analyticsPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "AnalyticsSourcePort" }, "operations": { "const": ["read_aggregate"] } } }] },
+    "schedulingPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "SchedulingQueuePort" }, "operations": { "const": ["enqueue", "lease", "acknowledge", "requeue", "dead_letter"] } } }] },
+    "workflowPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "WorkflowExecutionPort" }, "operations": { "const": ["start", "resume", "cancel", "read_state"] } } }] },
+    "objectStoragePort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "ObjectStoragePort" }, "operations": { "const": ["put", "get", "delete_expired"] } } }] },
+    "notificationPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "NotificationPort" }, "operations": { "const": ["send"] } } }] },
+    "intelligencePort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "IntelligenceProvider" }, "operations": { "const": ["analyze"] } } }] },
+    "deploymentPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "DeploymentProvider" }, "operations": { "const": ["prepare", "read_status", "rollback"] } } }] },
+    "authenticationPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "AuthenticationPort" }, "operations": { "const": ["verify_identity"] } } }] },
+    "proposalPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "ProposalGenerator" }, "operations": { "const": ["generate"] } } }] },
+    "executorPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "ExecutorAdapter" }, "operations": { "const": ["execute"] } } }] },
+    "verificationPort": { "allOf": [{ "$ref": "#/$defs/closedPort" }, { "properties": { "port": { "const": "VerificationProvider" }, "operations": { "const": ["verify"] } } }] },
+    "coreDependencyRules": {
+      "type": "object", "additionalProperties": false,
+      "required": ["forbiddenProviderFamilies", "providerSdkImportsAllowedInCore", "providerConfigurationAllowedInCore", "compositionLocation", "providerReplacementMode"],
+      "properties": {
+        "forbiddenProviderFamilies": { "const": ["cloudflare", "supabase", "github", "openai", "line", "local_server"] },
+        "providerSdkImportsAllowedInCore": { "const": false }, "providerConfigurationAllowedInCore": { "const": false },
+        "compositionLocation": { "const": "outside_core" }, "providerReplacementMode": { "const": "adapter_and_configuration_only" }
+      }
+    },
+    "bookingIsolation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["guestBookingDependsOnStaffAvailability", "guestBookingDependsOnAiAvailability", "sharedCredentials", "sharedQuotas", "sharedDeployments", "sharedFailureBoundaries"],
+      "properties": {
+        "guestBookingDependsOnStaffAvailability": { "const": false }, "guestBookingDependsOnAiAvailability": { "const": false },
+        "sharedCredentials": { "const": false }, "sharedQuotas": { "const": false }, "sharedDeployments": { "const": false }, "sharedFailureBoundaries": { "const": false }
+      }
+    },
+    "authority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["nonAuthoritative", "providerMayAuthorize", "requestMayAuthorize", "validationMayDispatch", "policyBypassAllowed", "productionWriteGranted"],
+      "properties": {
+        "nonAuthoritative": { "const": true }, "providerMayAuthorize": { "const": false }, "requestMayAuthorize": { "const": false },
+        "validationMayDispatch": { "const": false }, "policyBypassAllowed": { "const": false }, "productionWriteGranted": { "const": false }
+      }
+    },
+    "boundaryRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "routeClass", "sourceZone", "targetZone", "port", "operation", "transport", "securityEvidence", "deliveryEvidence", "limitEvidence", "isolationEvidence", "authorityClaims"],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" }, "requestId": { "$ref": "#/$defs/requestIdentifier" }, "routeClass": { "$ref": "#/$defs/routeClass" },
+        "sourceZone": { "$ref": "#/$defs/zoneName" }, "targetZone": { "$ref": "#/$defs/zoneName" }, "port": { "enum": ["PersistencePort", "EventIngestionPort", "AnalyticsSourcePort", "SchedulingQueuePort", "WorkflowExecutionPort", "ObjectStoragePort", "NotificationPort", "IntelligenceProvider", "DeploymentProvider", "AuthenticationPort", "ProposalGenerator", "ExecutorAdapter", "VerificationProvider"] }, "operation": { "enum": ["read", "write", "append", "delete_expired", "ingest_batch", "read_aggregate", "enqueue", "lease", "acknowledge", "requeue", "dead_letter", "start", "resume", "cancel", "read_state", "put", "get", "send", "analyze", "prepare", "read_status", "rollback", "verify_identity", "generate", "execute", "verify"] },
+        "transport": { "$ref": "#/$defs/transport" }, "securityEvidence": { "$ref": "#/$defs/securityEvidence" },
+        "deliveryEvidence": { "$ref": "#/$defs/deliveryEvidence" }, "limitEvidence": { "$ref": "#/$defs/limitEvidence" },
+        "isolationEvidence": { "$ref": "#/$defs/isolationEvidence" }, "authorityClaims": { "$ref": "#/$defs/authorityClaims" }
+      }
+    },
+    "transport": {
+      "type": "object", "additionalProperties": false,
+      "required": ["protocol", "method", "requestBodyBytes", "responseBodyLimitBytes", "timeoutMs"],
+      "properties": { "protocol": { "const": "https" }, "method": { "const": "POST" }, "requestBodyBytes": { "type": "integer", "minimum": 0, "maximum": 65536 }, "responseBodyLimitBytes": { "type": "integer", "minimum": 1, "maximum": 262144 }, "timeoutMs": { "type": "integer", "minimum": 100, "maximum": 10000 } }
+    },
+    "securityEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["factSource", "credentialStatus", "credentialAudience", "credentialLifetimeSeconds", "credentialAgeSeconds", "timestampStatus", "nonceStatus"],
+      "properties": {
+        "factSource": { "const": "recipient_adapter" }, "credentialStatus": { "enum": ["valid", "missing", "invalid", "expired", "audience_mismatch"] },
+        "credentialAudience": { "oneOf": [{ "$ref": "#/$defs/zoneName" }, { "type": "null" }] },
+        "credentialLifetimeSeconds": { "type": "integer", "minimum": 1, "maximum": 86400 }, "credentialAgeSeconds": { "type": "integer", "minimum": 0, "maximum": 86400 },
+        "timestampStatus": { "enum": ["within_window", "missing", "outside_window", "invalid"] }, "nonceStatus": { "enum": ["fresh", "missing", "reused", "invalid"] }
+      }
+    },
+    "deliveryEvidence": {
+      "type": "object", "additionalProperties": false, "required": ["idempotencyKey", "idempotencyStatus"],
+      "properties": { "idempotencyKey": { "oneOf": [{ "$ref": "#/$defs/requestIdentifier" }, { "type": "null" }] }, "idempotencyStatus": { "enum": ["new", "missing", "duplicate_same_request", "conflict"] } }
+    },
+    "limitEvidence": {
+      "type": "object", "additionalProperties": false, "required": ["authenticatedCallerId", "callerLimitStatus", "routeLimitStatus"],
+      "properties": { "authenticatedCallerId": { "$ref": "#/$defs/identifier" }, "callerLimitStatus": { "enum": ["within_limit", "exceeded", "unknown"] }, "routeLimitStatus": { "enum": ["within_limit", "exceeded", "unknown"] } }
+    },
+    "isolationEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["credentialsSharedWithGuest", "quotasSharedWithGuest", "deploymentsSharedWithGuest", "failureBoundariesSharedWithGuest", "bookingAvailabilityDependsOnInternalServices"],
+      "properties": { "credentialsSharedWithGuest": { "type": "boolean" }, "quotasSharedWithGuest": { "type": "boolean" }, "deploymentsSharedWithGuest": { "type": "boolean" }, "failureBoundariesSharedWithGuest": { "type": "boolean" }, "bookingAvailabilityDependsOnInternalServices": { "type": "boolean" } }
+    },
+    "authorityClaims": {
+      "type": "object", "additionalProperties": false,
+      "required": ["providerAuthorizes", "callerAuthorizes", "requestAuthorizes", "policyBypassed", "productionWriteGranted"],
+      "properties": { "providerAuthorizes": { "const": false }, "callerAuthorizes": { "const": false }, "requestAuthorizes": { "const": false }, "policyBypassed": { "const": false }, "productionWriteGranted": { "const": false } }
+    },
+    "reasonCode": { "enum": ["INTERNAL_AUTHORITY_UNAVAILABLE", "CALLER_AUTHORITY_INJECTION", "MALFORMED_REQUEST", "UNSUPPORTED_SCHEMA_VERSION", "UNKNOWN_ZONE", "ZONE_CONFUSION", "UNSUPPORTED_ROUTE", "UNSUPPORTED_PORT", "ROUTE_PORT_MISMATCH", "INSECURE_TRANSPORT", "UNAUTHENTICATED_CALLER", "INVALID_AUDIENCE", "CREDENTIAL_EXPIRED", "INVALID_TIMESTAMP", "REPLAY_DETECTED", "MISSING_IDEMPOTENCY_KEY", "IDEMPOTENCY_CONFLICT", "DUPLICATE_ACCEPTED_REQUEST", "REQUEST_BODY_LIMIT_EXCEEDED", "RESPONSE_BODY_LIMIT_EXCEEDED", "TIMEOUT_LIMIT_EXCEEDED", "CALLER_RATE_LIMITED", "ROUTE_RATE_LIMITED", "UNKNOWN_LIMIT_STATE", "SHARED_CREDENTIAL_BOUNDARY", "SHARED_QUOTA_BOUNDARY", "SHARED_DEPLOYMENT_BOUNDARY", "SHARED_FAILURE_BOUNDARY", "BOOKING_CAPACITY_DEPENDENCY", "PROVIDER_AUTHORITY_CLAIM", "SELF_AUTHORIZATION_CLAIM"] },
+    "rejection": {
+      "type": "object", "additionalProperties": false, "required": ["schemaVersion", "failClosed", "reasonCodes"],
+      "properties": { "schemaVersion": { "const": "1.0.0" }, "failClosed": { "const": true }, "reasonCodes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/reasonCode" } } }
+    },
+    "validationDecision": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["ok", "value", "rejection"], "properties": { "ok": { "const": true }, "value": { "$ref": "#/$defs/boundaryRequest" }, "rejection": { "type": "null" } } },
+        { "type": "object", "additionalProperties": false, "required": ["ok", "value", "rejection"], "properties": { "ok": { "const": false }, "value": { "type": "null" }, "rejection": { "$ref": "#/$defs/rejection" } } }
+      ]
+    }
+  }
+}

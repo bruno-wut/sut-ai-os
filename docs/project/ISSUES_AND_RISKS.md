@@ -1,5 +1,30 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-005 validates descriptors but cannot establish live trust
+
+- **Task ID:** `SUT-AIOS-P2-005`
+- **Status:** Monitoring / implementation ready for independent review
+- **Severity:** High
+- **Affected scope:** Future guest/public, Staff/control, and AI/workload
+  cross-zone adapters and every consumer of provider-neutral infrastructure
+  ports.
+- **Evidence:** The static V1 schema, canonical policy, private-authority deep
+  module, product documentation, and 235-case exact validator implement the
+  finite GOV-047 contract. Caller schemas, policies, configurations, adapters,
+  and dependency arguments cannot become runtime authority; malformed input,
+  replay/idempotency conflicts, uncertain limits, shared boundaries, booking
+  dependencies, and authority claims fail closed.
+- **Residual risk:** A conforming descriptor is not proof of cryptographic
+  identity, current time, replay/idempotency history, quota availability,
+  process isolation, authorization, approval, or dispatch permission. A future
+  recipient adapter must establish those facts independently from trusted
+  services. P2-006 and P2-007 remain the separate minimisation/retention and
+  numeric budget authorities.
+- **Next action / owner:** Independent Sol QA must inspect the final diff and
+  import boundary, rerun deterministic checks, and create task-specific machine
+  evidence. Later adapter tasks must not accept network caller assertions as
+  trusted evidence or make guest booking depend on Staff/AI capacity.
+
 ### 2026-07-30 - P2-005 validator admission is exact and non-product
 
 - **Task ID:** `SUT-AIOS-GOV-048`, `SUT-AIOS-P2-005`

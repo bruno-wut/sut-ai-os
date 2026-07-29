@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "policyId": "infrastructure-trust-zone-policy-v1",
+  "zones": [
+    { "zone": "guest_public", "exposure": "public_guest_only", "credentialBoundaryId": "guest-credential", "quotaBoundaryId": "guest-quota", "deploymentBoundaryId": "guest-deployment", "failureBoundaryId": "guest-failure" },
+    { "zone": "staff_control", "exposure": "authenticated_staff_only", "credentialBoundaryId": "staff-credential", "quotaBoundaryId": "staff-quota", "deploymentBoundaryId": "staff-deployment", "failureBoundaryId": "staff-failure" },
+    { "zone": "ai_workload", "exposure": "non_public_workload_only", "credentialBoundaryId": "ai-credential", "quotaBoundaryId": "ai-quota", "deploymentBoundaryId": "ai-deployment", "failureBoundaryId": "ai-failure" }
+  ],
+  "crossZoneProtocol": {
+    "protocol": "https",
+    "method": "POST",
+    "credentialMode": "short_lived",
+    "credentialLifetimeMaxSeconds": 300,
+    "audienceBound": true,
+    "recipientChecks": ["credential", "expiry", "audience", "timestamp", "nonce", "replay", "idempotency", "caller_limit", "route_limit"],
+    "timestampSkewMaxSeconds": 60,
+    "replayWindowSeconds": 300,
+    "nonceRequired": true,
+    "idempotencyRequired": true,
+    "duplicateDisposition": "return_prior_result_without_dispatch",
+    "requestBodyMaxBytes": 65536,
+    "responseBodyMaxBytes": 262144,
+    "timeoutMinMs": 100,
+    "timeoutMaxMs": 10000,
+    "rateLimitScopes": ["authenticated_caller", "route"]
+  },
+  "routes": [
+    { "routeClass": "aggregate_or_lifecycle_ingest", "sourceZone": "guest_public", "targetZone": "staff_control", "port": "EventIngestionPort", "operation": "ingest_batch" },
+    { "routeClass": "prepared_analytics_read", "sourceZone": "staff_control", "targetZone": "guest_public", "port": "AnalyticsSourcePort", "operation": "read_aggregate" },
+    { "routeClass": "bounded_work_request", "sourceZone": "staff_control", "targetZone": "ai_workload", "port": "SchedulingQueuePort", "operation": "enqueue" },
+    { "routeClass": "bounded_work_result", "sourceZone": "ai_workload", "targetZone": "staff_control", "port": "WorkflowExecutionPort", "operation": "read_state" },
+    { "routeClass": "staff_notification", "sourceZone": "ai_workload", "targetZone": "staff_control", "port": "NotificationPort", "operation": "send" }
+  ],
+  "ports": [
+    { "port": "PersistencePort", "operations": ["read", "write", "append", "delete_expired"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "EventIngestionPort", "operations": ["ingest_batch"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "AnalyticsSourcePort", "operations": ["read_aggregate"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "SchedulingQueuePort", "operations": ["enqueue", "lease", "acknowledge", "requeue", "dead_letter"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "WorkflowExecutionPort", "operations": ["start", "resume", "cancel", "read_state"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "ObjectStoragePort", "operations": ["put", "get", "delete_expired"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "NotificationPort", "operations": ["send"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "IntelligenceProvider", "operations": ["analyze"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "DeploymentProvider", "operations": ["prepare", "read_status", "rollback"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "AuthenticationPort", "operations": ["verify_identity"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "ProposalGenerator", "operations": ["generate"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "ExecutorAdapter", "operations": ["execute"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false },
+    { "port": "VerificationProvider", "operations": ["verify"], "providerNeutral": true, "coreOwnsInterface": true, "adapterOwnsProviderBehavior": true, "authorizationAuthority": false, "workflowAuthority": false, "auditAuthority": false }
+  ],
+  "coreDependencyRules": {
+    "forbiddenProviderFamilies": ["cloudflare", "supabase", "github", "openai", "line", "local_server"],
+    "providerSdkImportsAllowedInCore": false,
+    "providerConfigurationAllowedInCore": false,
+    "compositionLocation": "outside_core",
+    "providerReplacementMode": "adapter_and_configuration_only"
+  },
+  "bookingIsolation": {
+    "guestBookingDependsOnStaffAvailability": false,
+    "guestBookingDependsOnAiAvailability": false,
+    "sharedCredentials": false,
+    "sharedQuotas": false,
+    "sharedDeployments": false,
+    "sharedFailureBoundaries": false
+  },
+  "authority": {
+    "nonAuthoritative": true,
+    "providerMayAuthorize": false,
+    "requestMayAuthorize": false,
+    "validationMayDispatch": false,
+    "policyBypassAllowed": false,
+    "productionWriteGranted": false
+  }
+}
