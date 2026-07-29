@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-052",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-29T19:43:28.783Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Workflow invokes exactly `node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs` after fast verification.",
+    "confirmed: No generic/dynamic command, shell, credentials, external service, deployment, or product change is added.",
+    "confirmed: Policy documents that final-head CI proves only the static P2-006 merge candidate and performs no data or retention operation.",
+    "confirmed: Packet checks, independent Sol review, evidence, and final-head CI pass."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-052/verification.md",
+    "tasks/review/SUT-AIOS-GOV-052/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-052/verification-20260729194328783.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
