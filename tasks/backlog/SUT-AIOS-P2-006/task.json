@@ -1,6 +1,146 @@
 {
-  "$schema":"../../../schemas/task-packet.schema.json","schemaVersion":"1.0.0","taskId":"SUT-AIOS-P2-006","title":"Define data minimisation, aggregation, and retention contracts","status":"backlog","phase":"phase-2","workstream":"data-governance","workflowId":"implementation-p2-006","playbookId":null,"playbookMode":"shadow",
-  "businessObjective":"Keep analytics useful without copying raw guest interaction telemetry into AI OS.","technicalObjective":"Define static aggregate allowlists and configurable retention authorities for temporary ingestion, logs, AI artifacts, workflows, aggregates, incidents, and audit evidence.","architectureReferences":["docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"],"dependencies":["SUT-AIOS-P1-003","SUT-AIOS-P2-001","SUT-AIOS-P2-005"],"evidence":["evidence/tasks/SUT-AIOS-P2-006/verification.md"],"assumptions":["Raw page views, clicks, scrolls, and marketing telemetry remain in their source systems."],
-  "acceptanceCriteria":["Contract allows only hourly/daily aggregates, essential booking lifecycle events, anomalies/incidents, investigations/recommendations, proposals/approvals/executions/outcomes, and required audit evidence.","It rejects a permanent row, queue message, workflow, or AI invocation per guest interaction.","Retention categories and actions define scheduled deletion, aggregation, archival, and future local transfer without rewriting audit/failed-attempt history.","Core receives classified/aggregated data through ports, never a provider storage SDK.","Tests cover allowlists, prohibited raw telemetry, retention conflicts, and fail-closed unknown categories."],
-  "allowedPaths":["schemas/data-minimisation-retention-contract-v1.schema.json","policies/data-minimisation-retention-policy-v1.json","packages/data-governance-contracts/**","tests/data-governance/**","docs/data-governance/**","evidence/tasks/SUT-AIOS-P2-006/**","evidence/verification/SUT-AIOS-P2-006/**","tasks/**/SUT-AIOS-P2-006/**"],"forbiddenPaths":["reference/finalized-platform/**","docs/architecture/source/**",".github/**","supabase/**","**/*.sql",".env*","**/*secret*","**/*credential*"],"allowedCommands":["node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs","npm run verify:fast","git diff --check"],"requiredChecks":["exact validator admission before independent verification","telemetry-minimisation and audit-retention review","independent Sol review"],"requiredTests":["node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs","npm run verify:fast"],"productionWritePermission":false,"pullRequestRequirement":true,"riskLevel":"high","autonomyTier":"tier-0","defaultAgent":"codex-engineering-executor","allowedAgents":["codex-engineering-executor","qa-verification"],"modelRoute":"sol","defaultModel":"gpt-5.6-sol","fallbackModel":"gpt-5.6-sol","workspaceWrite":true,"solEscalationTriggers":["Any guest-data, retention, audit-deletion, storage-provider, or production-data ambiguity."],"rollbackExpectations":"Revert static contracts only and preserve evidence.","outputSchema":"schemas/agent-result.schema.json","contextBudget":{"maxBytes":262144,"includedPaths":["AGENTS.md","docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md","tasks/backlog/SUT-AIOS-P2-006/task.json"]},"owner":"codex-engineering-executor","reviewer":"qa-verification","createdDate":"2026-07-29T12:21:28.668Z","updatedDate":"2026-07-29T13:00:00.000Z","completionEvidence":[],"stateTransitions":[{"from":null,"to":"backlog","at":"2026-07-29T12:21:28.668Z","actor":"chief-orchestrator","reason":"Created by GOV-043 for the required data authority."}]
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-006",
+  "title": "Define data minimisation, aggregation, and retention contract V1",
+  "status": "backlog",
+  "phase": "phase-2",
+  "workstream": "data-governance",
+  "workflowId": "implementation-p2-006",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Keep analytics useful without copying raw guest-interaction telemetry into AI OS or creating continuous per-event workloads.",
+  "technicalObjective": "Implement one closed static V1 structural authority, one canonical finite minimisation/retention policy, and one runtime-safe classification deep module for metadata-only candidates; perform no data access, lifecycle action, persistence, workflow, or production operation.",
+  "architectureReferences": [
+    "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P2-001",
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-GOV-050",
+    "SUT-AIOS-GOV-051"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P2-006/verification.md"
+  ],
+  "assumptions": [
+    "Raw page views, clicks, scrolls, and marketing telemetry remain in their source analytics systems.",
+    "The candidate is metadata only and contains no guest, booking, payment, credential, prompt, telemetry, or evidence payload.",
+    "Classification is non-authoritative and cannot establish legal retention, action due-ness, persistence permission, lifecycle permission, AI invocation permission, compliance, or production-write authority.",
+    "P3-005 may later consume this static authority with separately approved fixture-only retention configuration and capacity authority; P2-006 performs no lifecycle operation."
+  ],
+  "acceptanceCriteria": [
+    "The Draft 2020-12 schema is closed and the canonical policy fixes exactly four source-only raw categories, twelve AI-OS-eligible semantic categories, ten artifact/retention classes, four aggregation intervals, six non-authoritative action candidates, the metadata-only candidate, and exclusive valid decision variants from the approved GOV-050 design.",
+    "The sole public export is `classifyDataGovernanceCandidate(candidate)`; it obtains committed authority internally, accepts no caller-supplied schema/policy/configuration/validator/adapter/dependency, ignores extra JavaScript arguments, returns recursively frozen plain data, does not mutate input, and never throws for malformed, hostile, cyclic, getter/proxy, or deeply nested input.",
+    "Raw page views, clicks, scrolls, and marketing telemetry classify only as source-system-managed with no AI OS storage, queue, workflow, or AI intent; permanent per-interaction rows, individual-interaction queue/workflow/AI, and individual-system-event AI invocation fail closed.",
+    "Only hourly/daily aggregates, essential booking lifecycle events, anomalies/incidents, investigations/recommendations, proposals/approvals/executions/outcomes, and required audit evidence can become AI-OS-eligible metadata classifications, with exact source/category/artifact/interval/action mappings.",
+    "Retention classification is candidate-only: no duration or due-state is inferred; scheduled delete, aggregate, archive, transfer eligibility, and retain mappings do not execute or authorize an action, and missing future retention authority remains fail closed.",
+    "Append-only audit and failed-attempt history reject delete, aggregate, rewrite, or weakened-preservation descriptors and can only classify as retain, archive, or transfer candidates that preserve the original protected record.",
+    "Deterministic reason codes follow the exact GOV-050 precedence; internal authority failure is singleton, authority injection is detected before ordinary structure, malformed input always returns a schema-valid fail-closed decision, and accepted decisions explicitly deny action and production-write authority.",
+    "The exact validator compiles both committed authorities, checks exact finite mappings and decision exclusivity, validates every returned decision, covers the focused negative and hostile-input matrix, confirms the core import boundary, and demonstrates that weakened caller dependencies cannot redirect authority.",
+    "Documentation states the schema/semantic limits: the contract cannot prove payload minimisation, aggregation correctness, legal retention, due state, external preservation, source behavior, or completed lifecycle action.",
+    "No data source, guest data, provider/storage SDK, filesystem, clock, environment, credential, network, database, SQL, migration, RLS, queue, workflow, scheduler, AI invocation, deletion, archive, transfer, local-storage write, audit rewrite, or production write is accessed or implemented."
+  ],
+  "allowedPaths": [
+    "schemas/data-minimisation-retention-contract-v1.schema.json",
+    "policies/data-minimisation-retention-policy-v1.json",
+    "packages/data-governance-contracts/src/data-minimisation-retention-contract-v1.mjs",
+    "tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs",
+    "docs/data-governance/DATA_MINIMISATION_RETENTION_CONTRACT_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P2-006/**",
+    "evidence/verification/SUT-AIOS-P2-006/**",
+    "tasks/**/SUT-AIOS-P2-006/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "scripts/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "package.json",
+    "package-lock.json",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P2-006 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "GOV-051 exact validator admission is terminal before activation",
+    "Draft 2020-12 schema and canonical-policy compilation",
+    "finite category/artifact/interval/action and reason-precedence inspection",
+    "raw-telemetry, cardinality, protected-history, authority-injection, and never-throw regression matrix",
+    "deep-module private-authority and no-infrastructure-import inspection",
+    "changed-path and secret-boundary inspection",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI explicitly runs the exact P2-006 validator"
+  ],
+  "requiredTests": [
+    "node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any guest/personal/booking/payment data access, legal-retention interpretation, lifecycle action, audit/failed-history weakening, storage/provider integration, SDK, filesystem/clock/environment authority, network/service, SQL/migration/RLS, AI invocation, or production operation is out of scope and requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the static P2-006 schema, canonical policy, classification module, validator, product documentation, P2-006 task state, risk update, and P2-006 evidence; preserve GOV-050/GOV-051 planning/admission history, P1-003/P2-001/P2-005 terminal records, all protected audit and failed-attempt history, canonical sources, immutable snapshot, and external systems. No external state exists to roll back.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P2-006/task.json",
+      "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+      "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T12:21:28.668Z",
+  "updatedDate": "2026-07-29T18:50:51.319Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T12:21:28.668Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created by GOV-043 for the required data authority."
+    }
+  ]
 }

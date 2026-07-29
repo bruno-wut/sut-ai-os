@@ -1,5 +1,30 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-006 data governance authority is designed, not implemented
+
+- **Task ID:** `SUT-AIOS-GOV-050`, `SUT-AIOS-GOV-051`, `SUT-AIOS-P2-006`
+- **Status:** Open / planned
+- **Severity:** High
+- **Affected scope:** Future aggregate ingestion, persistence, retention
+  lifecycle composition, AI evidence, audit evidence, and workload consumers.
+- **Evidence:** GOV-050 defines one closed metadata-only Draft 2020-12
+  authority, one committed canonical policy, four source-only raw categories,
+  twelve AI-OS-eligible semantic categories, ten artifact/retention classes,
+  four intervals, six non-authoritative action candidates, protected audit and
+  failed-attempt preservation, a private-authority deep module, deterministic
+  failure precedence, and focused negative cases. It implements none of them.
+  GOV-051 separately governs only the exact validator admission.
+- **Residual risk:** Static classification cannot prove payload minimisation,
+  aggregate correctness, source-system behavior, legal retention, action due
+  state, archive/transfer preservation, or that a lifecycle operation did not
+  occur. Caller descriptors remain untrusted metadata. No duration or legal
+  rule is selected by P2-006.
+- **Next action / owner:** Independently verify GOV-050, complete exact-only
+  GOV-051, then implement P2-006 within its executable packet. P3-005 must use a
+  separately approved retention configuration and trusted facts, fail closed
+  when authority is missing, preserve append-only audit and failed-attempt
+  history, and perform no real lifecycle action in its fixture-only scope.
+
 ### 2026-07-30 - P2-005 final-head CI assurance is bounded
 
 - **Task ID:** `SUT-AIOS-GOV-049`, `SUT-AIOS-P2-005`
