@@ -1,0 +1,175 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-042",
+  "title": "Add exact P2-002 validator to governance CI",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "continuous-verification",
+  "workflowId": "p2-002-ci-validator",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make the final GitHub merge candidate independently execute P2-002's admitted deterministic validator before P2-002 may be approved.",
+  "technicalObjective": "Add one explicit GitHub Actions step that runs exactly node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs after dependency installation and repository fast verification; do not alter P2-002 product artifacts or introduce generic command execution.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-041"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-042/verification.md"
+  ],
+  "assumptions": [
+    "PR #84 contains the P2-002 validator and remains unmerged while this governance task is stacked on its final reviewed head.",
+    "The exact validator command was separately admitted by completed task SUT-AIOS-GOV-041.",
+    "The existing workflow uses npm ci before validators, so the P2-002 runtime dependency is available to this explicit step.",
+    "No product implementation, dependency change, schema change, runtime behavior, provider invocation, live data access, proposal, workflow, execution, or production operation is authorized."
+  ],
+  "acceptanceCriteria": [
+    "The Governance / validate workflow contains one explicit step named for P2-002 that runs exactly node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs.",
+    "The P2-002 step executes after dependency installation, repository governance checks, task validation, and npm run verify:fast, and does not replace or weaken any existing CI step.",
+    "No wildcard, matrix, shell composition, generic node tests pattern, arbitrary argument forwarding, or mutation-capable command is introduced.",
+    "No P2-002 product, schema, package, dependency, provider, gateway, proposal, workflow, executor, live-data, or production path is changed.",
+    "The exact P2-002 validator, all task-packet validation, repository fast verification, governance validation, and diff whitespace checks pass locally before independent Sol QA.",
+    "Implementation evidence records the bounded changed paths, commands, results, limitations, and rollback; the implementer does not run verify:task or act as completion authority."
+  ],
+  "allowedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-042/**",
+    "evidence/tasks/SUT-AIOS-GOV-042/**",
+    "evidence/verification/SUT-AIOS-GOV-042/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "scripts/**",
+    "tests/**",
+    "packages/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    "apps/**",
+    "services/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs",
+    "node scripts/github/validate-governance.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-042 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "explicit exact CI command inspection",
+    "workflow ordering and preservation inspection",
+    "no generic execution or argument-forwarding inspection",
+    "changed-path and forbidden-boundary inspection",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head GitHub Actions pass"
+  ],
+  "requiredTests": [
+    "node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs",
+    "node scripts/github/validate-governance.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic or pattern-based CI command execution, argument forwarding, shell composition, dependency change, P2-002 product change, provider call, live data access, workflow, execution, or production behavior requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the explicit P2-002 GitHub Actions validator step, GOV-042 verification-policy/risk wording, lifecycle record, and GOV-042 evidence; preserve PR #84 product changes and evidence, prior completed records, all other CI steps, canonical architecture sources, immutable compatibility snapshot, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-042/task.json",
+      "tasks/done/SUT-AIOS-GOV-041/task.json",
+      "tasks/review/SUT-AIOS-P2-002/task.json",
+      ".github/workflows/validate-governance.yml",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "docs/project/ISSUES_AND_RISKS.md",
+      "tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs"
+    ]
+  },
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/.codex/worktrees/fbec/SUT_AI_OS-gov-042-p2-002-ci",
+    "taskBranch": "task/SUT-AIOS-GOV-042-add-p2-002-ci-validator",
+    "primaryBranch": "origin/task/SUT-AIOS-P2-002-provider-neutral-intelligence-contracts-v1",
+    "createdAt": "2026-07-29T11:34:26.804Z"
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T11:34:26.804Z",
+  "updatedDate": "2026-07-29T11:41:08.412Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-042/verification-20260729114046326.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T11:34:26.804Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T11:36:17.278Z",
+      "actor": "chief-orchestrator",
+      "reason": "Exact stacked P2-002 CI validator scope, boundaries, checks, evidence, and Sol route are approved."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T11:36:17.328Z",
+      "actor": "engineering-planner",
+      "reason": "Proceed with the bounded explicit P2-002 GitHub Actions validator step."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T11:39:28.416Z",
+      "actor": "engineering-planner",
+      "reason": "Explicit exact P2-002 GitHub Actions validator step, policy and risk record, corrected stacked base, passing deterministic checks, and bounded evidence are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T11:41:08.412Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed the exact P2-002 CI validator step, preserved workflow ordering, bounded scope, passing deterministic checks, and diff-bound machine evidence."
+    }
+  ]
+}
