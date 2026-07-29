@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-002",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-29T11:51:41.945Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Exactly two closed Draft 2020-12 structural authorities exist: `schemas/intelligence-provider-request-v1.schema.json` and `schemas/intelligence-provider-result-v1.schema.json`; every object sets `additionalProperties: false` and implements the exact V1 variants, fields, types, enums, and bounds in the GOV-040 design.",
+    "confirmed: Exactly one runtime-safe semantic authority exists at `packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs`; it exports only `validateIntelligenceRequest(input)` and `validateIntelligenceResult(input, request)`, internally loads committed schemas, accepts no caller-supplied authority or dependencies, returns frozen plain-data decisions, mutates no input, and never throws for any JavaScript input.",
+    "confirmed: The request contract admits only bounded prepared public/internal evidence, the four exact purposes and analysis objectives, and closed allowed context. It exposes no prompt, schema, validator, provider option, storage location, policy, approval, capability token, command, or executable instruction.",
+    "confirmed: The result contract has exactly `completed`, `insufficient_evidence`, `rejected`, and `provider_unavailable` variants; it implements the exact provider states, reason mappings, analysis shapes, cross-references, rank order, confidence bands, non-authority constants, and validation precedence in the GOV-040 design.",
+    "confirmed: A `deterministic_analytics` item can cite only evidence produced through the canonical P2-001 public boundary under P2-001-R02 structural-plus-semantic assurance; P2-002 does not import calculator internals, recompute metrics, reorder identifiers, reinterpret reason codes, or accept replacement analytics schemas.",
+    "confirmed: The conceptual `IntelligenceProvider.analyze(request) -> result` port remains unimplemented. Core contract logic imports no provider SDK, CLI, database, filesystem, network, environment, clock, queue, workflow, policy, approval, execution, verification, audit-storage, UI, or framework dependency; provider-specific behavior is deferred to adapters.",
+    "confirmed: Malformed requests produce a schema-valid deterministic `rejected` decision before invocation; malformed provider results, missing internal authority, unsupported classifications, and every non-available provider state fail closed. No result grants authorization, approval, capabilities, execution, verification, or production eligibility.",
+    "confirmed: Ajv 8.17.1 is a pinned runtime dependency because the runtime contract module privately compiles committed schemas at module load; package and lock metadata prove it remains installed when development dependencies are omitted.",
+    "confirmed: After a request passes validation, the public provider-result validator rejects every caller/provider-supplied `rejected` result, including all request-level reason codes, as singleton `MALFORMED_PROVIDER_RESULT`; only trusted request validation constructs request-rejection decisions.",
+    "confirmed: `tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs` compiles both committed schemas against Draft 2020-12, verifies all finite variants and semantic rules, authority-replacement and self-authorization rejection, P2-001-R02 boundary preservation, frozen cloned outputs, and repeated adversarial never-throw behavior, and runs as `node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs`.",
+    "confirmed: Independent Sol QA confirms exact validator admission, deep-module and hexagonal boundaries, human-approval preservation, allowed paths, required tests, CI, rollback, and retained machine-readable evidence."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/ai-analysis/INTELLIGENCE_PROVIDER_CONTRACTS_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-042/verification.md",
+    "evidence/tasks/SUT-AIOS-P2-002/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-042/verification-20260729114046326.json",
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260728164345860.json",
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260728164848515.json",
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260729111249806.json",
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260729114546237.json",
+    "package-lock.json",
+    "package.json",
+    "packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs",
+    "schemas/intelligence-provider-request-v1.schema.json",
+    "schemas/intelligence-provider-result-v1.schema.json",
+    "tasks/review/SUT-AIOS-P2-002/task.json",
+    "tasks/verified/SUT-AIOS-GOV-042/task.json",
+    "tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260729115141945.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

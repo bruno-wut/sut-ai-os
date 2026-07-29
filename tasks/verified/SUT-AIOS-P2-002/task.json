@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-002",
   "title": "Define provider-neutral structured intelligence contracts",
-  "status": "review",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "ai-analysis",
   "workflowId": "implementation-p2-002",
@@ -22,7 +22,8 @@
     "SUT-AIOS-P2-001",
     "SUT-AIOS-P2-001-R02",
     "SUT-AIOS-P1-004",
-    "SUT-AIOS-GOV-040"
+    "SUT-AIOS-GOV-040",
+    "SUT-AIOS-GOV-042"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P2-002/verification.md"
@@ -32,7 +33,8 @@
     "Only prepared public or internal evidence is admitted; no guest, payment, booking, inventory, pricing-authority, credential, or secret data is in V1.",
     "P2-001-R02 distinguishes structural schema validation from deep-module semantic enforcement; P2-002 preserves that boundary and never treats caller-supplied or schema-only analytics data as semantically authoritative.",
     "Codex, OpenAI API, local models, and other future providers must implement the same port contract and cannot authorize an intervention.",
-    "A separate governance task must admit the exact validator command before P2-002 moves to ready."
+    "A separate governance task must admit the exact validator command before P2-002 moves to ready.",
+    "GOV-042 is a separately verified stacked delivery dependency: its one exact GitHub Actions command and own task/evidence records are included only because PR #84 delivers the already-merged GOV-042 head to main."
   ],
   "acceptanceCriteria": [
     "Exactly two closed Draft 2020-12 structural authorities exist: `schemas/intelligence-provider-request-v1.schema.json` and `schemas/intelligence-provider-result-v1.schema.json`; every object sets `additionalProperties: false` and implements the exact V1 variants, fields, types, enums, and bounds in the GOV-040 design.",
@@ -56,8 +58,13 @@
     "tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs",
     "docs/ai-analysis/INTELLIGENCE_PROVIDER_CONTRACTS_V1.md",
     "docs/project/ISSUES_AND_RISKS.md",
+    ".github/workflows/validate-governance.yml",
+    "docs/verification/VERIFICATION_POLICY.md",
     "evidence/tasks/SUT-AIOS-P2-002/**",
     "evidence/verification/SUT-AIOS-P2-002/**",
+    "evidence/tasks/SUT-AIOS-GOV-042/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-042/verification-20260729114046326.json",
+    "tasks/verified/SUT-AIOS-GOV-042/task.json",
     "tasks/**/SUT-AIOS-P2-002/**"
   ],
   "forbiddenPaths": [
@@ -68,7 +75,6 @@
     "evidence/verification/SUT-AIOS-P2-001/**",
     "evidence/verification/SUT-AIOS-P2-001-R02/**",
     "scripts/**",
-    ".github/**",
     "apps/**",
     "services/**",
     "policies/**",
@@ -141,7 +147,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/review/SUT-AIOS-P2-002/task.json",
+      "tasks/verified/SUT-AIOS-P2-002/task.json",
       "tasks/done/SUT-AIOS-P2-001-R02/task.json",
       "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
       "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md"
@@ -150,10 +156,11 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-29T11:32:11.831Z",
+  "updatedDate": "2026-07-29T11:51:57.603Z",
   "completionEvidence": [
     "evidence/tasks/SUT-AIOS-P2-002/verification.md",
-    "evidence/verification/SUT-AIOS-P2-002/verification-20260729111249806.json"
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260729111249806.json",
+    "evidence/verification/SUT-AIOS-P2-002/verification-20260729115141945.json"
   ],
   "stateTransitions": [
     {
@@ -274,6 +281,34 @@
       "at": "2026-07-29T11:32:11.831Z",
       "actor": "codex-engineering-executor",
       "reason": "Promoted Ajv to the pinned runtime dependency graph, added an isolated production-only dependency installation regression, rejected all provider-supplied rejected variants after valid request validation, corrected documentation and risk claims, and passed 237 contract cases plus packet, fast, package, and diff checks; CI workflow admission remains separately governed."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T11:48:21.692Z",
+      "actor": "qa-verification",
+      "reason": "Final Sol QA passed all functional and deterministic checks, but diff-bound verification failed because the stacked GOV-042 merge adds separately governed CI and GOV-042 record paths that remain forbidden by the P2-002 packet. Preserve verification-20260729114546237.json and correct the combined delivery boundary before a fresh QA cycle."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T11:49:30.637Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Correct only the packet boundary for the verified stacked GOV-042 CI delivery before fresh independent verification."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T11:49:59.273Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Packet-only combined-delivery correction explicitly scopes the already independently verified GOV-042 CI paths and dependency; product implementation remains unchanged and is ready for fresh independent QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T11:51:57.603Z",
+      "actor": "qa-verification",
+      "reason": "Final independent Sol QA confirms the combined P2-002 and exact GOV-042 CI delivery is narrowly admitted, all 237 contract cases and repository checks pass, historical failed evidence is preserved, product source remains unchanged by the governance merge, and fresh origin/main diff-bound verification passes fail closed."
     }
   ]
 }
