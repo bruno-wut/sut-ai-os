@@ -17,6 +17,23 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-29 — P2-002 final-head CI assurance gap
+
+- **Task ID:** `SUT-AIOS-GOV-042`, `SUT-AIOS-P2-002`
+- **Status:** Resolved pending independent verification
+- **Severity:** High
+- **Affected scope:** `.github/workflows/validate-governance.yml` and the P2-002
+  merge-candidate assurance boundary.
+- **Evidence:** PR #84's earlier green workflow did not invoke
+  `node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs`, so
+  GitHub Actions did not independently prove the reviewed 236-case validator on
+  the final merge candidate. GOV-042 adds exactly that explicit command after
+  dependency installation and `npm run verify:fast`, without changing or
+  replacing any existing CI step.
+- **Next action / owner:** Independent Sol QA must inspect the bounded workflow
+  diff, run the packet-authorized checks and one machine verification cycle,
+  then final-head GitHub Actions must pass before either stacked PR is approved.
+
 ### 2026-07-29 — P2-002 runtime dependency and rejection provenance gaps
 
 - **Task ID:** `SUT-AIOS-P2-002`
