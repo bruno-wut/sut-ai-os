@@ -2,6 +2,23 @@
 
 This is the durable repository-wide register for issues, blockers, risks, failed checks, and unresolved warnings. Add a dated entry before task handoff; do not rely on chat-only reporting.
 
+### 2026-07-29 — P2-004 proposal authority is planned, not implemented
+
+- **Task ID:** `SUT-AIOS-GOV-044`, `SUT-AIOS-GOV-045`, `SUT-AIOS-P2-004`
+- **Status:** Open / planned
+- **Severity:** High
+- **Affected scope:** Future intervention-proposal schema, semantic validator,
+  provenance boundary, capability requests, approval posture, and downstream
+  workflow consumers.
+- **Evidence:** GOV-044 defines one closed V1 schema, one private-authority
+  validator, exact P2-002 provenance checks, finite outcomes/capabilities/risks,
+  and explicit false authority claims. It implements none of them. GOV-045 is a
+  separate backlog task for the exact validator admission.
+- **Next action / owner:** Independently verify GOV-044, complete GOV-045, then
+  implement P2-004 only within its exact packet. Reject any generator, policy,
+  approval, workflow, persistence, provider, executor, retention, or production
+  expansion; proposals must remain non-authoritative and fail closed.
+
 ### 2026-07-29 — Infrastructure portability and resource-governance controls are planned, not implemented
 
 - **Task ID:** `SUT-AIOS-GOV-043`

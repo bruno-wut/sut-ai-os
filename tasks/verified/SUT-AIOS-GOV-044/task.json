@@ -1,0 +1,165 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-044",
+  "title": "Plan P2-004 intervention proposal contract",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "intervention-proposals",
+  "workflowId": "p2-004-contract-design",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Define a finite, reviewable intervention proposal boundary that turns grounded intelligence into advice without granting models, proposals, or callers authorization or execution authority.",
+  "technicalObjective": "Write the P2-004 V1 design and make its packet executable-ready: one closed proposal schema, a runtime-safe semantic validator with a small public surface, an exact deterministic validator command for separate admission, tests, documentation, evidence, and bounded dependencies; do not implement the contract.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-002",
+    "SUT-AIOS-GOV-043"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-044/verification.md"
+  ],
+  "assumptions": [
+    "P2-004 remains static Tier-0 contract work only.",
+    "P2-002 intelligence results are grounded but remain non-authoritative inputs.",
+    "A separate governance task must admit the exact P2-004 validator before implementation."
+  ],
+  "acceptanceCriteria": [
+    "The design defines a single closed Draft 2020-12 proposal authority, exact finite fields/outcomes/reason codes/bounds, and a minimal runtime-safe semantic public interface that accepts no caller authority.",
+    "The design requires diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, expected outcome, and an explicit non-authority posture.",
+    "The design rejects self-approval, authorization, execution, verification, production eligibility, unknown capability, unsupported risk, invalid provenance, malformed input, and cross-field inconsistency fail closed without throwing.",
+    "The design preserves deep-module and hexagonal boundaries: no provider, transport, persistence, workflow, policy, approval, executor, audit-store, SDK, network, or environment import in core contract logic.",
+    "The P2-004 packet names exact allowed paths, task-specific verification evidence, real exact validator command, required checks, rollback, GOV-044/GOV-045 dependencies, and no production permissions.",
+    "A distinct GOV-045 is specified only to admit `node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs` shell-free with fixed arguments; GOV-044 does not broaden command execution."
+  ],
+  "allowedPaths": [
+    "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/CURRENT_FOCUS.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P2-004/task.json",
+    "tasks/backlog/SUT-AIOS-GOV-045/**",
+    "tasks/**/SUT-AIOS-GOV-044/**",
+    "evidence/tasks/SUT-AIOS-GOV-044/**",
+    "evidence/verification/SUT-AIOS-GOV-044/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "packages/**",
+    "schemas/**",
+    "tests/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite-contract design review",
+    "non-authority and self-authorization rejection review",
+    "deep-module and hexagonal-boundary review",
+    "packet/verifier-admission readiness review",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any field or decision that implies policy, approval, authorization, execution, production, data retention, credentials, payments, bookings, inventory, pricing, RLS, persistence, workflow, or provider invocation is out of scope."
+  ],
+  "rollbackExpectations": "Revert only GOV-044 design, P2-004/GOV-045 future packet preparation, task state, and GOV-044 evidence; preserve P2-002 and all terminal history, runtime code, canonical sources, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-044/task.json",
+      "tasks/backlog/SUT-AIOS-P2-004/task.json",
+      "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T13:58:00.000Z",
+  "updatedDate": "2026-07-29T14:06:26.529Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-044/verification-20260729140619592.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T13:58:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created after P2-004 packet readiness review found no exact executable validator contract."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T13:57:55.448Z",
+      "actor": "chief-orchestrator",
+      "reason": "P2-004 dependencies are done and Sol-scoped contract design, packet, verifier, evidence, and non-goals are bounded."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T13:57:55.495Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with finite P2-004 proposal-contract design and packet preparation only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T14:03:57.381Z",
+      "actor": "engineering-planner",
+      "reason": "Finite P2-004 V1 proposal design, executable-ready product packet, bounded GOV-045 admission packet, dependency memory, risk record, evidence, and packet-authorized checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T14:06:26.529Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA accepted the finite P2-004 design and executable-ready packets; machine verification passed from origin/main."
+    }
+  ]
+}

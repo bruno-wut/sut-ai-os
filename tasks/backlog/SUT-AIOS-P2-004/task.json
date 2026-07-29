@@ -2,71 +2,98 @@
   "$schema": "../../../schemas/task-packet.schema.json",
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-004",
-  "title": "Define the intervention proposal contract",
+  "title": "Define the intervention proposal contract V1",
   "status": "backlog",
   "phase": "phase-2",
   "workstream": "intervention-proposals",
   "workflowId": "implementation-p2-004",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Convert grounded intelligence into a controlled, reviewable proposal without granting AI authorization authority.",
-  "technicalObjective": "Define a finite ProposalGenerator contract for diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, and expected outcome.",
+  "businessObjective": "Convert grounded intelligence into a finite, reviewable proposal without granting AI, callers, proposals, or validation dependencies authorization authority.",
+  "technicalObjective": "Implement one closed Draft 2020-12 V1 proposal schema and one runtime-safe semantic validation deep module that internally uses committed authorities, validates P2-002 provenance, rejects authority claims and cross-field inconsistency, and never throws; do not implement generation, policy, approval, execution, persistence, workflow, or provider behavior.",
   "architectureReferences": [
-    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
-    "docs/architecture/source/Agent Architecture.md",
+    "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
+    "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
     "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
-    "docs/project/IMPLEMENTATION_BACKLOG.md"
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md"
   ],
   "dependencies": [
     "SUT-AIOS-P2-002",
-    "SUT-AIOS-P1-004"
+    "SUT-AIOS-GOV-044",
+    "SUT-AIOS-GOV-045"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P2-004/verification.md"
   ],
   "assumptions": [
-    "No production write, deployment, or live credential access is authorized.",
-    "Proposal generation is logically separate from deterministic policy, approval, execution, verification, and audit."
+    "P2-004 remains static Tier-0 contract validation only and invokes no proposal generator or AI provider.",
+    "The proposal validator consumes untrusted proposal, intelligence request, and intelligence result data while obtaining schema and semantic authority only from committed repository modules.",
+    "A valid proposal may request a finite capability for later evaluation but cannot grant it, authorize it, or carry an executable command or target.",
+    "No production write, deployment, live credential access, retention behavior, workflow state, or external side effect is authorized."
   ],
   "acceptanceCriteria": [
-    "The schema requires diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, and expected outcome.",
-    "The contract distinguishes no-action, more-evidence, recommendation, draft, branch-or-PR preparation, and escalation outcomes.",
-    "A proposal cannot represent itself as approved, authorized, verified, executed, or production-eligible.",
-    "Malformed, incomplete, unknown-capability, or internally inconsistent proposals fail deterministic validation.",
-    "Required tests pass and independent verification confirms forbidden paths were untouched."
+    "The committed `schemas/intervention-proposal-contract-v1.schema.json` is a closed Draft 2020-12 authority that requires the exact diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, expected outcome, source-intelligence, and non-authority fields defined by the GOV-044 design.",
+    "The runtime-safe deep module exports only `validateInterventionProposal(proposal, intelligenceRequest, intelligenceResult)`, loads committed authority internally, uses the public P2-002 validation boundary, accepts no caller authority or dependency injection, returns deeply frozen plain-data decisions, mutates no input, and never throws.",
+    "All six outcomes, four risk classes, two approval classes, seven requested capabilities, identifier/string/number/collection bounds, deterministic reason codes, precedence, and cross-field mappings exactly match the finite design.",
+    "Validation rejects invalid or ineligible P2-002 sources, mismatched task/request/status, non-source evidence/cause/hypothesis/system references, raised or relabelled confidence, unknown capability, outcome/capability/approval/risk/rollback inconsistency, and every self-approval, authorization, execution, verification, or production-eligibility claim fail closed.",
+    "Core contract logic has no provider, transport, persistence, queue, workflow, scheduler, policy, approval, executor, verification, audit, notification, SDK, network, filesystem, credential, clock, or environment import; no AI invocation, generation, retention, or production behavior is added.",
+    "The exact admitted command `node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs` compiles the committed authority and deterministically covers all finite values, variants, focused real exploit paths, hostile never-throw inputs, private-authority isolation, deep freeze/clone behavior, and the dependency boundary.",
+    "Packet validation, the exact P2-004 validator, `npm run verify:fast`, `git diff --check`, changed-path and secret checks, independent Sol review, task-specific machine evidence, and final-head CI pass before merge."
   ],
   "allowedPaths": [
-    "packages/intervention-proposal-contracts/**",
-    "tests/intervention-proposals/**",
-    "docs/intervention-proposals/**",
+    "schemas/intervention-proposal-contract-v1.schema.json",
+    "packages/intervention-proposal-contracts/src/intervention-proposal-contract-v1.mjs",
+    "tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs",
+    "docs/intervention-proposals/INTERVENTION_PROPOSAL_CONTRACT_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
     "evidence/tasks/SUT-AIOS-P2-004/**",
+    "evidence/verification/SUT-AIOS-P2-004/**",
     "tasks/**/SUT-AIOS-P2-004/**"
   ],
   "forbiddenPaths": [
     "reference/finalized-platform/**",
     "docs/architecture/source/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "supabase/**",
+    "package.json",
+    "package-lock.json",
+    "**/*.sql",
+    "**/*migration*",
     ".env*",
     "**/*secret*",
     "**/*credential*",
-    "supabase/migrations/**",
-    "apps/ibe/src/payments/**",
-    "apps/ibe/src/inventory/**"
+    "tasks/done/**",
+    "tasks/verified/**"
   ],
   "allowedCommands": [
-    "npm run test:intervention-proposals",
+    "node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs",
+    "node scripts/task/validate --all",
     "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P2-004 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
     "git diff --check"
   ],
   "requiredChecks": [
-    "intervention proposal contract validation",
-    "self-authorization rejection",
-    "changed-path inspection",
-    "secret scan",
-    "independent verification"
+    "closed Draft 2020-12 schema compilation and finite-contract validation",
+    "canonical P2-002 provenance and cross-reference validation",
+    "self-authorization and caller-authority rejection",
+    "malformed and hostile input never-throw validation",
+    "deep-module and hexagonal import-boundary inspection",
+    "changed-path inspection and secret scan",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI"
   ],
   "requiredTests": [
-    "npm run test:intervention-proposals",
-    "npm run verify:fast"
+    "node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
   ],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
@@ -82,24 +109,26 @@
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
   "solEscalationTriggers": [
-    "Any proposal field would imply policy, approval, execution, or audit authority.",
-    "Any production access, credential, payment, booking, RLS, migration, authorization, or workflow-correctness ambiguity arises."
+    "Any ambiguity or implementation that permits caller-supplied authority, unvalidated P2-002 provenance, provider/infrastructure imports in core, or proposal claims of approval, authorization, execution, verification, or production eligibility.",
+    "Any generation, provider call, live data access, retention, persistence, workflow, policy, approval, capability grant, executor, notification, audit-store, production write, payment, booking, inventory, pricing, RLS, migration, credential, or external behavior."
   ],
-  "rollbackExpectations": "Revert the intervention-proposal branch and generated artifacts; preserve audit and verification evidence.",
+  "rollbackExpectations": "Revert only the P2-004 schema, contract module, validator, product documentation, task-state change, risk entry, and P2-004 evidence; preserve P2-002 authorities/evidence, GOV-044/GOV-045 history, all terminal records, canonical sources, immutable snapshots, and external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
-    "maxBytes": 262144,
+    "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P2-004/task.json",
-      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
+      "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
+      "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
+      "packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs",
+      "docs/project/ENGINEERING_PRINCIPLES.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T09:15:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T14:10:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
