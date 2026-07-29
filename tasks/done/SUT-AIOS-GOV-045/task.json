@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-045",
   "title": "Admit exact P2-004 intervention-proposal validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-004-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-045/task.json",
+      "tasks/done/SUT-AIOS-GOV-045/task.json",
       "tasks/backlog/SUT-AIOS-P2-004/task.json",
       "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -121,7 +121,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T13:58:33.930Z",
-  "updatedDate": "2026-07-29T14:17:28.808Z",
+  "updatedDate": "2026-07-29T14:22:09.362Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-045/verification-20260729141710779.json"
   ],
@@ -160,6 +160,13 @@
       "at": "2026-07-29T14:17:28.808Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA accepted the exact shell-free literal admission, 17 focused near-miss rejections, bounded diff, and passing origin/main machine verification."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T14:22:09.362Z",
+      "actor": "qa-verification",
+      "reason": "PR #92 merged to main as commit 0557fc33e2a4ecf585941b080f786a0662fc1b21 after independent Sol verification and green final-head CI; reconcile verified to done without changing delivered scope."
     }
   ]
 }
