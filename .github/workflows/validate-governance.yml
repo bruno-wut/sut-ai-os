@@ -28,6 +28,8 @@ jobs:
         run: npm run task:validate -- --all
       - name: Run repository fast verification
         run: npm run verify:fast
+      - name: Run P2-004 intervention proposal contract validator
+        run: node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs
       - name: Run P2-002 intelligence provider contracts validator
         run: node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs
       - name: Run P1-004 V1 policy contract validator
