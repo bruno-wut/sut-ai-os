@@ -1,5 +1,39 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-29 - P2-004 final-head CI assurance is bounded
+
+- **Task ID:** `SUT-AIOS-GOV-046`, `SUT-AIOS-P2-004`
+- **Status:** Monitoring / ready for independent review
+- **Severity:** High
+- **Affected scope:** GitHub merge-candidate assurance for the static P2-004
+  intervention-proposal contract.
+- **Evidence:** GOV-046 adds one fixed GitHub Actions step for the already
+  admitted exact P2-004 validator after repository fast verification. It adds
+  no dynamic command construction, generic runner, argument interpolation,
+  credential, external service, product behavior, or production capability.
+- **Next action / owner:** Independent Sol QA must inspect the literal and its
+  ordering, verify the changed-path boundary, record machine evidence, and
+  require passing final-head CI before the stacked delivery is merged.
+
+### 2026-07-29 - P2-004 remains non-authoritative static validation
+
+- **Task ID:** `SUT-AIOS-P2-004`
+- **Status:** Monitoring / independently verified; final-head CI admission pending
+- **Severity:** High
+- **Affected scope:** Future consumers of the Intervention Proposal Contract V1.
+- **Evidence:** The committed schema and private-authority deep module accept
+  only canonically validated eligible P2-002 provenance, reject authority and
+  execution claims, enforce finite outcome/capability/approval/risk/rollback
+  mappings, and return total fail-closed frozen decisions. The exact admitted
+  validator passes 221 focused cases. P2-004 creates no proposal generator,
+  policy result, approval, workflow, persistence, capability grant, executor,
+  verification result, audit record, notification, or production behavior.
+- **Next action / owner:** GOV-046 must add the already admitted exact validator
+  to final-head CI before delivery merge; downstream consumers must reject any
+  treatment of a proposal or capability request as authorization. Later policy,
+  human approval, execution, and independent verification remain separate
+  governed authorities.
+
 This is the durable repository-wide register for issues, blockers, risks, failed checks, and unresolved warnings. Add a dated entry before task handoff; do not rely on chat-only reporting.
 
 ### 2026-07-29 — P2-004 validator admission is exact and non-product

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-004",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-29T14:42:02.500Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: The committed `schemas/intervention-proposal-contract-v1.schema.json` is a closed Draft 2020-12 authority that requires the exact diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, expected outcome, source-intelligence, and non-authority fields defined by the GOV-044 design.",
+    "confirmed: The runtime-safe deep module exports only `validateInterventionProposal(proposal, intelligenceRequest, intelligenceResult)`, loads committed authority internally, uses the public P2-002 validation boundary, accepts no caller authority or dependency injection, returns deeply frozen plain-data decisions, mutates no input, and never throws.",
+    "confirmed: All six outcomes, four risk classes, two approval classes, seven requested capabilities, identifier/string/number/collection bounds, deterministic reason codes, precedence, and cross-field mappings exactly match the finite design.",
+    "confirmed: Validation rejects invalid or ineligible P2-002 sources, mismatched task/request/status, non-source evidence/cause/hypothesis/system references, raised or relabelled confidence, unknown capability, outcome/capability/approval/risk/rollback inconsistency, and every self-approval, authorization, execution, verification, or production-eligibility claim fail closed.",
+    "confirmed: Core contract logic has no provider, transport, persistence, queue, workflow, scheduler, policy, approval, executor, verification, audit, notification, SDK, network, filesystem, credential, clock, or environment import; no AI invocation, generation, retention, or production behavior is added.",
+    "confirmed: The exact admitted command `node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs` compiles the committed authority and deterministically covers all finite values, variants, focused real exploit paths, hostile never-throw inputs, private-authority isolation, deep freeze/clone behavior, and the dependency boundary.",
+    "confirmed: Packet validation, the exact P2-004 validator, `npm run verify:fast`, `git diff --check`, changed-path and secret checks, independent Sol review, task-specific machine evidence, and final-head CI pass before merge."
+  ],
+  "changedPaths": [
+    "docs/intervention-proposals/INTERVENTION_PROPOSAL_CONTRACT_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P2-004/verification.md",
+    "packages/intervention-proposal-contracts/src/intervention-proposal-contract-v1.mjs",
+    "schemas/intervention-proposal-contract-v1.schema.json",
+    "tasks/backlog/SUT-AIOS-P2-004/task.json",
+    "tasks/review/SUT-AIOS-P2-004/task.json",
+    "tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P2-004/verification-20260729144202500.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
