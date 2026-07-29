@@ -1,0 +1,158 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-052",
+  "title": "Add P2-006 validator to final-head CI",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "ci-assurance",
+  "workflowId": "p2-006-final-head-validator",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Ensure each P2-006 merge candidate executes its static data-governance validator without granting CI or the contract data authority.",
+  "technicalObjective": "Add one fixed GitHub Actions step for the already admitted P2-006 validator and document its bounded final-head assurance; do not change P2-006 product artifacts or add generic command execution.",
+  "architectureReferences": [
+    "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
+    "docs/verification/VERIFICATION_POLICY.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-051",
+    "SUT-AIOS-P2-006"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-052/verification.md"
+  ],
+  "assumptions": [
+    "GOV-051 admits the exact P2-006 literal.",
+    "P2-006 is independently verified but unmerged.",
+    "No data, provider, storage, retention action, external service, or production operation is authorized."
+  ],
+  "acceptanceCriteria": [
+    "Workflow invokes exactly `node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs` after fast verification.",
+    "No generic/dynamic command, shell, credentials, external service, deployment, or product change is added.",
+    "Policy documents that final-head CI proves only the static P2-006 merge candidate and performs no data or retention operation.",
+    "Packet checks, independent Sol review, evidence, and final-head CI pass."
+  ],
+  "allowedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-052/**",
+    "evidence/tasks/SUT-AIOS-GOV-052/**",
+    "evidence/verification/SUT-AIOS-GOV-052/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tests/**",
+    "schemas/**",
+    "packages/**",
+    "policies/**",
+    "apps/**",
+    "services/**",
+    "playbooks/**",
+    "scripts/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-052 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "literal CI step inspection",
+    "changed-path review",
+    "independent Sol review",
+    "machine evidence",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic/dynamic CI execution, data/storage/retention behavior, external service, credential, deployment, or P2-006 product change requires a separate packet."
+  ],
+  "rollbackExpectations": "Revert only fixed CI step, policy statement, GOV-052 packet/evidence/risk; preserve P2-006 and terminal history.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-052/task.json",
+      "tasks/verified/SUT-AIOS-P2-006/task.json",
+      ".github/workflows/validate-governance.yml"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-30T00:00:00.000Z",
+  "updatedDate": "2026-07-29T19:43:51.414Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-052/verification-20260729194328783.json"
+  ],
+  "worktree": null,
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-30T00:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after P2-006 QA found final-head CI lacked its exact admitted validator."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T19:40:37.976Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact literal and verified P2-006 baseline are ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T19:40:38.432Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed one fixed P2-006 CI validator step only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T19:42:11.668Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Fixed final-head P2-006 validator step, bounded policy and risk records, evidence, and passing implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T19:43:51.414Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol review and task-specific machine verification passed the bounded fixed CI admission."
+    }
+  ]
+}

@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-006",
   "title": "Define data minimisation, aggregation, and retention contract V1",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "data-governance",
   "workflowId": "implementation-p2-006",
@@ -123,7 +123,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-006/task.json",
+      "tasks/verified/SUT-AIOS-P2-006/task.json",
       "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md"
@@ -132,8 +132,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.668Z",
-  "updatedDate": "2026-07-29T18:50:51.319Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T19:38:55.526Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P2-006/verification-20260729193840047.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -141,6 +143,34 @@
       "at": "2026-07-29T12:21:28.668Z",
       "actor": "chief-orchestrator",
       "reason": "Created by GOV-043 for the required data authority."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T19:27:05.631Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-003, P2-001, P2-005, GOV-050, and GOV-051 are terminal; exact P2-006 authority, evidence, verifier admission, commands, and Sol route are ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T19:27:06.050Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed with the approved static V1 data-minimisation and retention contract only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T19:36:22.498Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Static V1 authority, private deep module, exact validator, documentation, risk record, and implementation evidence pass the packet-authorized deterministic checks and are ready for independent Sol review."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T19:38:55.526Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol review and machine verification passed the full static contract acceptance matrix."
     }
   ]
 }

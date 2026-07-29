@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0.0",
+  "policyId": "data-minimisation-retention-policy-v1",
+  "rawSourceOnlyCategories": ["raw_page_view", "raw_click", "raw_scroll", "raw_marketing_telemetry"],
+  "aiOsEligibleCategories": ["hourly_analytics_aggregate", "daily_analytics_aggregate", "essential_booking_lifecycle_event", "anomaly", "incident", "investigation", "recommendation", "intervention_proposal", "approval", "execution", "outcome", "required_audit_evidence"],
+  "artifactClasses": ["source_system_managed", "temporary_ingestion_record", "debug_log", "ai_prompt", "ai_output", "workflow_execution_detail", "analytics_aggregate", "booking_lifecycle_record", "incident_record", "audit_evidence"],
+  "aggregationIntervals": ["source_only", "hourly", "daily", "not_applicable"],
+  "actionCandidates": ["retain_at_source", "aggregate", "scheduled_delete", "archive", "transfer_eligible", "retain"],
+  "categoryRules": [
+    { "dataCategory": "raw_page_view", "sourceClass": "analytics_source", "artifactClasses": ["source_system_managed"], "aggregationInterval": "source_only", "storageClasses": ["source_system_only"], "actionCandidates": ["retain_at_source"], "eligibility": "source_only" },
+    { "dataCategory": "raw_click", "sourceClass": "analytics_source", "artifactClasses": ["source_system_managed"], "aggregationInterval": "source_only", "storageClasses": ["source_system_only"], "actionCandidates": ["retain_at_source"], "eligibility": "source_only" },
+    { "dataCategory": "raw_scroll", "sourceClass": "analytics_source", "artifactClasses": ["source_system_managed"], "aggregationInterval": "source_only", "storageClasses": ["source_system_only"], "actionCandidates": ["retain_at_source"], "eligibility": "source_only" },
+    { "dataCategory": "raw_marketing_telemetry", "sourceClass": "analytics_source", "artifactClasses": ["source_system_managed"], "aggregationInterval": "source_only", "storageClasses": ["source_system_only"], "actionCandidates": ["retain_at_source"], "eligibility": "source_only" },
+    { "dataCategory": "hourly_analytics_aggregate", "sourceClass": "analytics_source", "artifactClasses": ["temporary_ingestion_record", "analytics_aggregate"], "aggregationInterval": "hourly", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["aggregate", "scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "daily_analytics_aggregate", "sourceClass": "analytics_source", "artifactClasses": ["temporary_ingestion_record", "analytics_aggregate"], "aggregationInterval": "daily", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "essential_booking_lifecycle_event", "sourceClass": "booking_control_plane", "artifactClasses": ["temporary_ingestion_record", "booking_lifecycle_record"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "anomaly", "sourceClass": "ai_os_control_plane", "artifactClasses": ["debug_log", "incident_record"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "incident", "sourceClass": "ai_os_control_plane", "artifactClasses": ["debug_log", "incident_record"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "investigation", "sourceClass": "ai_os_control_plane", "artifactClasses": ["ai_prompt", "ai_output"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "recommendation", "sourceClass": "ai_os_control_plane", "artifactClasses": ["ai_prompt", "ai_output"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "intervention_proposal", "sourceClass": "ai_os_control_plane", "artifactClasses": ["ai_prompt", "ai_output"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "approval", "sourceClass": "ai_os_control_plane", "artifactClasses": ["workflow_execution_detail"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "execution", "sourceClass": "ai_os_control_plane", "artifactClasses": ["workflow_execution_detail"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "outcome", "sourceClass": "ai_os_control_plane", "artifactClasses": ["workflow_execution_detail"], "aggregationInterval": "not_applicable", "storageClasses": ["temporary_ai_os", "durable_ai_os"], "actionCandidates": ["scheduled_delete", "archive", "transfer_eligible", "retain"], "eligibility": "future_lifecycle_candidate" },
+    { "dataCategory": "required_audit_evidence", "sourceClass": "repository_evidence", "artifactClasses": ["audit_evidence"], "aggregationInterval": "not_applicable", "storageClasses": ["durable_ai_os"], "actionCandidates": ["archive", "transfer_eligible", "retain"], "eligibility": "protected_preservation_only" }
+  ],
+  "workloadRules": {
+    "perInteractionPermanentRowAllowed": false,
+    "perInteractionQueueAllowed": false,
+    "perInteractionWorkflowAllowed": false,
+    "perInteractionAiInvocationAllowed": false,
+    "perSystemEventAiInvocationAllowed": false,
+    "scheduledSummaryOrGovernedCaseOnly": true
+  },
+  "retentionRules": {
+    "eligibilityMode": "future_lifecycle_candidate_only",
+    "configuredDurationIncluded": false,
+    "dueStateEvaluated": false,
+    "legalComplianceEstablished": false,
+    "protectedHistoryActions": ["archive", "transfer_eligible", "retain"]
+  },
+  "reasonPrecedence": ["INTERNAL_AUTHORITY_UNAVAILABLE", "CALLER_AUTHORITY_INJECTION", "MALFORMED_CANDIDATE", "UNSUPPORTED_SCHEMA_VERSION", "UNKNOWN_DATA_CATEGORY", "UNKNOWN_SOURCE_CLASS", "UNKNOWN_ARTIFACT_CLASS", "RAW_TELEMETRY_SOURCE_BOUNDARY_VIOLATION", "PROHIBITED_PER_INTERACTION_PERSISTENCE", "PROHIBITED_PER_INTERACTION_QUEUE", "PROHIBITED_PER_INTERACTION_WORKFLOW", "PROHIBITED_PER_INTERACTION_AI_INVOCATION", "PROHIBITED_PER_EVENT_AI_INVOCATION", "AGGREGATION_INTERVAL_MISMATCH", "CATEGORY_SOURCE_MISMATCH", "CATEGORY_ARTIFACT_MISMATCH", "RETENTION_ACTION_NOT_ELIGIBLE", "PROTECTED_HISTORY_CONFLICT", "APPEND_ONLY_AUDIT_CONFLICT", "FAILED_ATTEMPT_HISTORY_CONFLICT", "SELF_AUTHORIZATION_CLAIM", "PRODUCTION_WRITE_CLAIM"],
+  "authority": {
+    "nonAuthoritative": true,
+    "classificationAuthorizesPersistence": false,
+    "classificationAuthorizesLifecycleAction": false,
+    "classificationAuthorizesAiInvocation": false,
+    "classificationEstablishesCompliance": false,
+    "productionWriteGranted": false
+  }
+}
