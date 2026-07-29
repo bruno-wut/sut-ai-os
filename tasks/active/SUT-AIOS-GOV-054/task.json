@@ -1,0 +1,155 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-054",
+  "title": "Admit exact P2-007 resource-budget validator",
+  "status": "active",
+  "phase": "engineering-governance",
+  "workstream": "verification-admission",
+  "workflowId": "p2-007-validator-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit independent machine verification of the planned P2-007 static resource-budget contract without broadening command execution or implementing resource control.",
+  "technicalObjective": "Add one shell-free exact mapping for `node tests/resource-governance/validate-resource-budget-contract-v1.mjs`, focused near-miss rejection coverage, and accurate verifier-policy documentation; do not create or execute the future product validator.",
+  "architectureReferences": [
+    "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-053"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-054/verification.md"
+  ],
+  "assumptions": [
+    "GOV-053 fixes one byte-for-byte future validator command; the P2-007 schema, policy, module, validator, and product documentation remain absent and outside GOV-054.",
+    "The verifier already provides a shell-false fixed-argument process runner; this task may add only one literal mapping and focused self-tests.",
+    "No meter, quota, resource control, provider, queue, workflow, scheduler, notifier, booking capacity, data, external call, or production operation is authorized."
+  ],
+  "acceptanceCriteria": [
+    "Only the exact literal `node tests/resource-governance/validate-resource-budget-contract-v1.mjs` is newly admitted and maps to `node` with exactly one fixed repository-relative path argument through the existing `shell: false` runner.",
+    "Self-tests accept the exact literal and reject leading, doubled, and trailing whitespace; extra arguments; chaining and shell operators; redirects; command substitution; alternate and sibling paths; dot-path and traversal forms; absolute paths; and Windows path separators.",
+    "No generic Node or test-path pattern, arbitrary argument parsing, shell execution, mutation-capable command, P2-007 product validator/schema/policy/module, provider/SDK, metering, resource-control behavior, queue, workflow, scheduler, notifier, external call, or production behavior is introduced.",
+    "Verification policy and a durable risk entry identify the exact admission, its non-product scope, and the remaining P2-007 implementation and independent-verification boundary.",
+    "Packet-authorized deterministic checks pass and implementation evidence is ready for separate independent Sol QA; the implementer does not run `verify:task` or act as completion authority."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-054/**",
+    "evidence/tasks/SUT-AIOS-GOV-054/**",
+    "evidence/verification/SUT-AIOS-GOV-054/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tests/**",
+    "schemas/**",
+    "packages/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-054 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact literal mapping inspection",
+    "fixed argument and shell-free process inspection",
+    "focused near-miss rejection coverage",
+    "changed-path and forbidden-boundary inspection",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic/pattern admission, arbitrary arguments, shell execution, mutation-capable command, P2-007 product implementation, live metering/resource behavior, provider/queue/workflow/scheduler/notifier, booking capacity, external call, or scope outside the exact verifier mapping requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the exact P2-007 validator mapping, focused self-tests, verification-policy statement, GOV-054 risk entry, lifecycle record, and GOV-054 evidence; preserve GOV-053 design/evidence, the P2-007 backlog packet, terminal records, product paths, canonical sources, immutable snapshots, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/active/SUT-AIOS-GOV-054/task.json",
+      "tasks/backlog/SUT-AIOS-P2-007/task.json",
+      "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "scripts/verify/verify-cli.mjs"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-30T00:00:00.000Z",
+  "updatedDate": "2026-07-29T20:14:09.851Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-30T00:00:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Created by GOV-053 to admit only the exact P2-007 validator literal before product activation."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T20:13:20.569Z",
+      "actor": "engineering-planner",
+      "reason": "GOV-053 completion is merged; exact scope, dependencies, commands, and Sol route are confirmed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T20:14:09.851Z",
+      "actor": "engineering-planner",
+      "reason": "Isolated worktree created from main; the approved exact-command admission is ready for bounded Sol implementation."
+    }
+  ],
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/.codex/worktrees/fbec/SUT_AI_OS-worktrees/SUT-AIOS-GOV-054",
+    "branch": "task/SUT-AIOS-GOV-054-admit-exact-p2-007-resource-budget-validator",
+    "primaryBranch": "main",
+    "createdAt": "2026-07-29T20:13:21.277Z",
+    "createdBy": "engineering-planner"
+  }
+}
