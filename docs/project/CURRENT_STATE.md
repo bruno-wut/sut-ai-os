@@ -3,7 +3,8 @@
 ## Workspace
 
 - Repository: independent AI OS workspace on `main`; Phase 0, `P1-001` through
-  `P1-008`, `P2-001`, `P2-002`, and `P2-004` have merged completion records.
+  `P1-008`, `P2-001`, `P2-002`, `P2-004`, and `P2-005` have merged completion
+  records.
 - Active code: no deployed AI OS product services. The repository contains the
   governed workspace, permanent memory, Phase 1 static contracts and local
   deterministic policy evaluator, retained verification evidence, and a
@@ -46,10 +47,11 @@ Root Next.js and Astro builds passed in an isolated disposable copy. Warnings, d
 
 ## Immediate constraint
 
-P2-004 is done. GOV-047 is preparing the exact finite P2-005 design and
-executable product packet; GOV-048 must separately admit its literal validator
-before P2-005 can activate. The remaining GOV-043 static infrastructure
-authorities must be verified before Phase 3 runtime work. The future Mac Mini
-worker starts at Tier 0/shadow and cannot substitute for policy, approval,
-workflow, verification, or audit. Production writes and autonomous operation
-remain disabled.
+P2-005 is done. GOV-050 prepares the exact finite P2-006 data-minimisation and
+retention design; GOV-051 must separately admit its literal validator before
+P2-006 can activate. P2-006 classification remains metadata-only and
+non-authoritative: no data access or lifecycle action exists. P2-006 and P2-007
+must be verified before Phase 3 runtime work. The future Mac Mini worker starts
+at Tier 0/shadow and cannot substitute for policy, approval, workflow,
+verification, retention authority, or audit. Production writes and autonomous
+operation remain disabled.

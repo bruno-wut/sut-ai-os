@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-050",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-29T18:59:17.099Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Design one closed V1 structural authority/canonical finite policy/exact data categories, aggregation intervals, prohibited per-interaction persistence/queue/workflow/AI invocation, retention classes/actions/eligibility, protected audit/failed-attempt history, deterministic reasons/precedence, and a minimal private-authority semantic interface.",
+    "confirmed: Raw telemetry stays source-only; only hourly/daily aggregates, essential booking lifecycle events, anomalies/incidents, investigations/recommendations, proposals/approvals/executions/outcomes, and required audit evidence are eligible.",
+    "confirmed: Retention classification is non-authoritative: no deletion, aggregation, archival, transfer, storage integration, or external operation occurs; unknown/conflicting/malformed categories fail closed.",
+    "confirmed: Core obtains committed authority internally and imports no storage/provider SDK, clock, environment, filesystem, queue, workflow, network, credential, or caller dependency.",
+    "confirmed: Update P2-006 with exact artifacts/evidence/validator/tests/rollback/GOV-050+GOV-051 dependencies and create GOV-051 to admit only the exact shell-free literal.",
+    "confirmed: No schema, policy, package, test, runtime, storage service, SDK, provider selection, guest data, production operation, or external call is implemented."
+  ],
+  "changedPaths": [
+    "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-050/verification.md",
+    "tasks/backlog/SUT-AIOS-GOV-051/task.json",
+    "tasks/backlog/SUT-AIOS-P2-006/task.json",
+    "tasks/review/SUT-AIOS-GOV-050/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-050/verification-20260729185917099.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

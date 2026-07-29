@@ -5,7 +5,7 @@ flowchart LR
   A["P1 audit/policy foundation"] --> B["P2-002 intelligence contracts"]
   B --> GP["GOV-044 finite proposal design"] --> GA["GOV-045 exact validator admission"] --> C["P2-004 proposal contract"]
   A --> GT["GOV-047 finite trust-zone design"] --> GV["GOV-048 exact validator admission"] --> TZ["P2-005 trust zones and ports"]
-  TZ --> DM["P2-006 minimisation and retention"]
+  TZ --> GD["GOV-050 finite minimisation/retention design"] --> GE["GOV-051 exact validator admission"] --> DM["P2-006 minimisation and retention"]
   TZ --> QB["P2-007 resource budgets"]
   DM --> I["P3-001 ingestion"]
   QB --> I
@@ -52,6 +52,10 @@ flowchart LR
 - P2-005 activates only after GOV-047 fixes its one structural authority,
   canonical policy, private-authority module surface, finite routes/ports and
   rejection semantics, and GOV-048 admits its exact shell-free validator.
+- P2-006 activates only after GOV-050 fixes its closed category, artifact,
+  interval, action, protected-history, result, and reason mappings, and GOV-051
+  admits its exact shell-free validator. Classification is non-authoritative
+  and never proves due state or performs a lifecycle action.
 - `P2-005`, `P2-006`, and `P2-007` are Phase 3 prerequisites; runtime work may
   not invent trust, retention, or quota authorities.
 - All infrastructure behavior enters core through stable ports; adapters own

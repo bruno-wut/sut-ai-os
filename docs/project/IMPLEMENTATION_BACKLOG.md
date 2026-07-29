@@ -4,11 +4,11 @@ This is the exhaustive canonical product-task inventory for Phases 0–8. All pr
 
 ## Current state
 
-- `P0-001`–`P0-003`, `P1-001`–`P1-008`, `P2-001`, `P2-002`, and `P2-004` are `done` with retained evidence.
+- `P0-001`–`P0-003`, `P1-001`–`P1-008`, `P2-001`, `P2-002`, `P2-004`, and `P2-005` are `done` with retained evidence.
 - `P1-005-R01` and `P2-001-R02` are completed bounded remediations; they do not replace their terminal parent histories.
-- `P2-003` remains retained backlog work. GOV-047 defines P2-005's finite V1
-  contract and GOV-048 separately admits its exact validator before activation.
-  `P2-005`–`P2-007`, `P3-004`–`P3-005`, and `P5-005`–`P5-006` are new GOV-043 backlog work.
+- `P2-003` remains retained backlog work. GOV-050 defines P2-006's finite V1
+  contract and GOV-051 separately admits its exact validator before activation.
+  `P2-006`–`P2-007`, `P3-004`–`P3-005`, and `P5-005`–`P5-006` remain new GOV-043 backlog work.
 
 ## Phase 0 — Existing platform stabilization
 
@@ -43,8 +43,8 @@ This is the exhaustive canonical product-task inventory for Phases 0–8. All pr
 | `P2-002` | Done — provider-neutral structured intelligence contracts. | P2-001, P2-001-R02, P1-004, GOV-040, GOV-042 |
 | `P2-004` | Done — static non-authoritative intervention-proposal V1 schema and semantic validator. | P2-002, GOV-044, GOV-045 |
 | `P2-003` | Retained — observe-only executive briefing. | P2-001, P2-002, P2-004, P1-008, P2-006, P2-007 |
-| `P2-005` | New, GOV-047-designed — static trust-zone and provider-neutral port contracts. | P1-003, P1-005, P2-002, GOV-047, GOV-048 |
-| `P2-006` | New — static data-minimisation, aggregation, and retention contracts. | P1-003, P2-001, P2-005 |
+| `P2-005` | Done — static trust-zone and provider-neutral port contracts. | P1-003, P1-005, P2-002, GOV-047, GOV-048 |
+| `P2-006` | New, GOV-050-designed — static data-minimisation, aggregation, and non-authoritative retention classification contract. | P1-003, P2-001, P2-005, GOV-050, GOV-051 |
 | `P2-007` | New — static deterministic resource-budget and quota contracts. | P1-003, P1-005, P2-005 |
 
 ## Phase 3 — Durable orchestration and persistence

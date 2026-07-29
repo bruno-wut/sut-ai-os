@@ -1,0 +1,164 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-050",
+  "title": "Plan P2-006 data governance contracts",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "data-governance",
+  "workflowId": "p2-006-contract-design",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make source-system telemetry minimisation and future retention controls explicit before AI OS persistence or workflow work begins.",
+  "technicalObjective": "Write an exact finite design for P2-006 static data-minimisation, aggregation, and retention authorities, make its product packet executable-ready, and prepare a separately bounded exact validator-admission task; do not implement a contract, retention behavior, or storage integration.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/SOURCE_OF_TRUTH.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P2-001",
+    "SUT-AIOS-P2-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-050/verification.md"
+  ],
+  "assumptions": [
+    "Raw page views, clicks, scrolls, and marketing telemetry remain in analytics source systems.",
+    "P2-006 is static Tier-0 design only; it does not delete, aggregate, archive, transfer, persist, or access data.",
+    "A separate task must admit the exact P2-006 validator before implementation."
+  ],
+  "acceptanceCriteria": [
+    "Design one closed V1 structural authority/canonical finite policy/exact data categories, aggregation intervals, prohibited per-interaction persistence/queue/workflow/AI invocation, retention classes/actions/eligibility, protected audit/failed-attempt history, deterministic reasons/precedence, and a minimal private-authority semantic interface.",
+    "Raw telemetry stays source-only; only hourly/daily aggregates, essential booking lifecycle events, anomalies/incidents, investigations/recommendations, proposals/approvals/executions/outcomes, and required audit evidence are eligible.",
+    "Retention classification is non-authoritative: no deletion, aggregation, archival, transfer, storage integration, or external operation occurs; unknown/conflicting/malformed categories fail closed.",
+    "Core obtains committed authority internally and imports no storage/provider SDK, clock, environment, filesystem, queue, workflow, network, credential, or caller dependency.",
+    "Update P2-006 with exact artifacts/evidence/validator/tests/rollback/GOV-050+GOV-051 dependencies and create GOV-051 to admit only the exact shell-free literal.",
+    "No schema, policy, package, test, runtime, storage service, SDK, provider selection, guest data, production operation, or external call is implemented."
+  ],
+  "allowedPaths": [
+    "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P2-006/task.json",
+    "tasks/backlog/SUT-AIOS-GOV-051/**",
+    "tasks/**/SUT-AIOS-GOV-050/**",
+    "evidence/tasks/SUT-AIOS-GOV-050/**",
+    "evidence/verification/SUT-AIOS-GOV-050/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "packages/**",
+    "schemas/**",
+    "tests/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite data/retention design review",
+    "minimisation/audit-preservation/deep-module boundary review",
+    "packet/verifier-admission readiness review",
+    "changed-path and secret-boundary inspection",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any guest data access, data deletion/retention action, storage/provider selection, audit-history weakening, network integration, or product implementation is out of scope."
+  ],
+  "rollbackExpectations": "Revert only GOV-050 design, future P2-006/GOV-051 packet preparation, state/memory/risk/evidence; preserve terminal records, ADR-0002, canonical sources, snapshot, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-050/task.json",
+      "tasks/backlog/SUT-AIOS-P2-006/task.json",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-30T00:00:00.000Z",
+  "updatedDate": "2026-07-29T18:59:29.161Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-050/verification-20260729185917099.json"
+  ],
+  "worktree": null,
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-30T00:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after P2-006 dependency review found no finite executable contract design or exact validator admission."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T18:48:26.449Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P2-006 dependencies are terminal and this Sol planning packet fixes finite design, future evidence, exact validator admission, and static non-goals."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T18:48:26.877Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed with P2-006 static contract design and packet preparation only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T18:57:06.540Z",
+      "actor": "engineering-planner",
+      "reason": "Finite P2-006 data-minimisation and retention design, executable product packet, bounded GOV-051 admission packet, permanent-memory/risk updates, evidence, and passing implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T18:59:29.161Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA accepted finite data-minimisation and non-authoritative retention design; all deterministic and machine verification gates passed."
+    }
+  ]
+}
