@@ -16,6 +16,9 @@ schema failure → normalized event → policy check → playbook selection
 - P1-004: explicit repository, command, data, and autonomy policies.
 - P1-006: versioned content-schema-repair playbook in shadow mode.
 - P1-007: executor/playbook/global kill switches independent of AI.
+- P2-005 through P2-007: trust-zone/port, minimisation/retention, and
+  resource-budget authorities.
+- P3-004: provider-neutral persistence composition.
 - P4-003: isolated executor execution, structured result, branch and PR flow.
 - P5-002: independent QA, preview, and durable audit evidence capture.
 
@@ -40,6 +43,8 @@ The trigger uses a sanitized fixture or approved non-production content-schema f
   isolated workspace with external concurrency and timeout controls.
 - Independent QA validates schema, content checks, build/preview where available, changed paths, and secret boundaries.
 - Failed verification prevents merge eligibility and records revision or rollback evidence.
+- The slice uses aggregate/sanitized evidence only, bounded workloads, and
+  distinct booking versus Staff/AI capacity and failure boundaries.
 - Success remains Tier 0/shadow evidence; it does not automatically promote autonomy or deploy production.
 
 The slice is complete only when implementation, deterministic checks, independent review, and recorded evidence all pass.

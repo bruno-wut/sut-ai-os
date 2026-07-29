@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-043",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-29T12:45:22.477Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: A derived ADR makes guest/public and Staff/AI trust zones, authenticated rate-limited cross-account HTTPS integration, separate credentials/quotas/deployments/failure boundaries, and booking-path isolation explicit without selecting or provisioning infrastructure.",
+    "confirmed: The roadmap names inward-facing provider-neutral ports for persistence, event ingestion, analytics sources, scheduling/queues, workflow execution, object storage, notifications, intelligence, deployment, and authentication; future cores may not import Cloudflare, Supabase, GitHub, OpenAI, LINE, or local-server SDKs.",
+    "confirmed: Permanent roadmap and backlog rules keep raw clicks, page views, scrolls, and marketing telemetry in source systems; only bounded aggregates and allowlisted operational/audit records may enter AI OS, and no permanent row, message, workflow, or AI invocation is created per guest interaction.",
+    "confirmed: Future packets define configurable retention for temporary ingestion, debug logs, prompts/outputs, workflow detail, aggregates, incidents, and audit evidence, including scheduled deletion, aggregation, archival, and later local transfer without historical-evidence rewriting.",
+    "confirmed: Future packets define deterministic resource budgets for worker, queue, workflow, persistence, runner, AI, and notification usage; warning thresholds at 50%, 75%, and 90%; pre-hard-limit fail-closed behavior; and workload safeguards including batching, deduplication, idempotency, backpressure, rate/concurrency/retry limits, dead-lettering, priorities, and scheduled summaries.",
+    "confirmed: Bounded future packets and an acyclic dependency graph exist for trust-zone/port contracts, minimisation/retention, quota governance, provider-neutral persistence composition, local/self-hosted migration readiness, and quota/saturation verification.",
+    "confirmed: Current Phase 1-2 facts are corrected without retroactively changing terminal acceptance criteria or historical evidence; no completed Phase 2 product remediation is claimed unless a concrete defect is found.",
+    "confirmed: QA gates explicitly reject provider SDK imports in core/domain logic, unauthenticated Staff/AI exposure, shared guest/internal failure or quota boundaries, per-click permanence or AI invocation, missing retention/budget authority, unbounded workloads, and booking-impacting saturation."
+  ],
+  "changedPaths": [
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/CURRENT_FOCUS.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/FIRST_VERTICAL_SLICE.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/project/KNOWN_RISKS.md",
+    "docs/project/MILESTONES.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/project/SYSTEM_MAP.md",
+    "docs/verification/INFRASTRUCTURE_PORTABILITY_ASSURANCE.md",
+    "evidence/tasks/SUT-AIOS-GOV-043/verification.md",
+    "tasks/backlog/SUT-AIOS-P2-003/task.json",
+    "tasks/backlog/SUT-AIOS-P2-005/task.json",
+    "tasks/backlog/SUT-AIOS-P2-006/task.json",
+    "tasks/backlog/SUT-AIOS-P2-007/task.json",
+    "tasks/backlog/SUT-AIOS-P3-001/task.json",
+    "tasks/backlog/SUT-AIOS-P3-002/task.json",
+    "tasks/backlog/SUT-AIOS-P3-003/task.json",
+    "tasks/backlog/SUT-AIOS-P3-004/task.json",
+    "tasks/backlog/SUT-AIOS-P3-005/task.json",
+    "tasks/backlog/SUT-AIOS-P4-004/task.json",
+    "tasks/backlog/SUT-AIOS-P4-006/task.json",
+    "tasks/backlog/SUT-AIOS-P5-001/task.json",
+    "tasks/backlog/SUT-AIOS-P5-002/task.json",
+    "tasks/backlog/SUT-AIOS-P5-005/task.json",
+    "tasks/backlog/SUT-AIOS-P5-006/task.json",
+    "tasks/backlog/SUT-AIOS-P6-001/task.json",
+    "tasks/review/SUT-AIOS-GOV-043/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-043/verification-20260729124522477.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

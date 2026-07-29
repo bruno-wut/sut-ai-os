@@ -39,6 +39,7 @@ Current repository mapping:
 | Finalized IBE, Astro storefront, Staff UI | Read-only compatibility snapshot in `reference/finalized-platform/` |
 | AI OS implementation | Not yet created |
 | Derived Mac Mini/Pi/Codex deployment decision | `docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md` |
+| Derived portability/resource decision | `docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md` |
 | Agent definitions and prompts | `agents/`, `prompts/` |
 | Task and evidence records | `tasks/`, `evidence/`, `artifacts/reports/` |
 | Governance contracts | `schemas/`, `policies/`, `playbooks/` |
@@ -48,5 +49,12 @@ Key rule: agents advise or perform bounded tasks; deterministic metrics, policy,
 approvals, workflows, scheduling, queue state, credential handling, audit
 logging, and kill switches must remain software-controlled services. AI may
 investigate broadly, but it may act only narrowly.
+
+Guest/public, Staff/control, and AI/workload components are distinct logical
+trust zones. Public guest traffic may stay in a separate Cloudflare account and
+domain; cross-zone communication is authenticated, rate-limited HTTPS only.
+Core application logic uses ports; adapters contain provider SDKs. Raw
+clickstream remains in source analytics, while AI OS retains bounded aggregates
+and governed operational/audit records only.
 
 Details: [PRODUCT.md](PRODUCT.md), [SOURCE_OF_TRUTH.md](SOURCE_OF_TRUTH.md), and the canonical architecture sources.

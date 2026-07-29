@@ -1,0 +1,334 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-043",
+  "title": "Define infrastructure portability and resource-governance roadmap",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "architecture-portability",
+  "workflowId": "infrastructure-portability-roadmap",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prepare the AI OS for future infrastructure changes without coupling domain logic, guest traffic, or booking operations to a provider, account, deployment, or AI worker.",
+  "technicalObjective": "Create a derived ADR, update permanent roadmap memory and future backlog packets to define trust zones, provider-neutral infrastructure ports, telemetry minimisation, retention, resource budgets, workload controls, portability verification, and acyclic dependencies; do not implement runtime infrastructure.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-002",
+    "SUT-AIOS-GOV-042"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-043/verification.md"
+  ],
+  "assumptions": [
+    "The existing guest website may remain in its current Cloudflare account and domain while future Staff OS and AI OS may use a separate account and dedicated domain.",
+    "No provider, account, database, queue, deployment, credential, production system, or live analytics source is accessed or modified by this task.",
+    "Canonical architecture sources and terminal task records remain immutable; this task creates only a derived ADR and future-looking planning records."
+  ],
+  "acceptanceCriteria": [
+    "A derived ADR makes guest/public and Staff/AI trust zones, authenticated rate-limited cross-account HTTPS integration, separate credentials/quotas/deployments/failure boundaries, and booking-path isolation explicit without selecting or provisioning infrastructure.",
+    "The roadmap names inward-facing provider-neutral ports for persistence, event ingestion, analytics sources, scheduling/queues, workflow execution, object storage, notifications, intelligence, deployment, and authentication; future cores may not import Cloudflare, Supabase, GitHub, OpenAI, LINE, or local-server SDKs.",
+    "Permanent roadmap and backlog rules keep raw clicks, page views, scrolls, and marketing telemetry in source systems; only bounded aggregates and allowlisted operational/audit records may enter AI OS, and no permanent row, message, workflow, or AI invocation is created per guest interaction.",
+    "Future packets define configurable retention for temporary ingestion, debug logs, prompts/outputs, workflow detail, aggregates, incidents, and audit evidence, including scheduled deletion, aggregation, archival, and later local transfer without historical-evidence rewriting.",
+    "Future packets define deterministic resource budgets for worker, queue, workflow, persistence, runner, AI, and notification usage; warning thresholds at 50%, 75%, and 90%; pre-hard-limit fail-closed behavior; and workload safeguards including batching, deduplication, idempotency, backpressure, rate/concurrency/retry limits, dead-lettering, priorities, and scheduled summaries.",
+    "Bounded future packets and an acyclic dependency graph exist for trust-zone/port contracts, minimisation/retention, quota governance, provider-neutral persistence composition, local/self-hosted migration readiness, and quota/saturation verification.",
+    "Current Phase 1-2 facts are corrected without retroactively changing terminal acceptance criteria or historical evidence; no completed Phase 2 product remediation is claimed unless a concrete defect is found.",
+    "QA gates explicitly reject provider SDK imports in core/domain logic, unauthenticated Staff/AI exposure, shared guest/internal failure or quota boundaries, per-click permanence or AI invocation, missing retention/budget authority, unbounded workloads, and booking-impacting saturation."
+  ],
+  "allowedPaths": [
+    "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md",
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ROADMAP.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/SYSTEM_MAP.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/CURRENT_FOCUS.md",
+    "docs/project/MILESTONES.md",
+    "docs/project/FIRST_VERTICAL_SLICE.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/KNOWN_RISKS.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/INFRASTRUCTURE_PORTABILITY_ASSURANCE.md",
+    "tasks/backlog/SUT-AIOS-P2-003/task.json",
+    "tasks/backlog/SUT-AIOS-P2-005/**",
+    "tasks/backlog/SUT-AIOS-P2-006/**",
+    "tasks/backlog/SUT-AIOS-P2-007/**",
+    "tasks/backlog/SUT-AIOS-P3-001/task.json",
+    "tasks/backlog/SUT-AIOS-P3-002/task.json",
+    "tasks/backlog/SUT-AIOS-P3-003/task.json",
+    "tasks/backlog/SUT-AIOS-P3-004/**",
+    "tasks/backlog/SUT-AIOS-P3-005/**",
+    "tasks/backlog/SUT-AIOS-P4-004/task.json",
+    "tasks/backlog/SUT-AIOS-P4-006/task.json",
+    "tasks/backlog/SUT-AIOS-P5-001/task.json",
+    "tasks/backlog/SUT-AIOS-P5-002/task.json",
+    "tasks/backlog/SUT-AIOS-P5-005/**",
+    "tasks/backlog/SUT-AIOS-P5-006/**",
+    "tasks/backlog/SUT-AIOS-P6-001/task.json",
+    "tasks/**/SUT-AIOS-GOV-043/**",
+    "evidence/tasks/SUT-AIOS-GOV-043/**",
+    "evidence/verification/SUT-AIOS-GOV-043/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "packages/**",
+    "apps/**",
+    "services/**",
+    "scripts/**",
+    "schemas/**",
+    "policies/**",
+    "playbooks/**",
+    ".github/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "evidence/tasks/SUT-AIOS-P2-001/**",
+    "evidence/tasks/SUT-AIOS-P2-002/**",
+    "evidence/verification/SUT-AIOS-P2-001/**",
+    "evidence/verification/SUT-AIOS-P2-002/**"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "current-state and terminal-history factual review",
+    "trust-zone, deep-module, and hexagonal-boundary review",
+    "data-minimisation, retention, quota, and workload-control review",
+    "acyclic dependency review",
+    "task-packet validation",
+    "governance validation",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any change that selects/provisions a cloud account, domain, provider, database, queue, deployment, credential, production integration, or runtime implementation is out of scope.",
+    "Any weakening of authenticated cross-account boundaries, resource fail-closed behavior, data minimisation, retention, booking isolation, or core/adapter dependency direction requires separate architecture escalation."
+  ],
+  "rollbackExpectations": "Revert only GOV-043's derived ADR, planning documents, future backlog packets, task state, and GOV-043 evidence. Preserve canonical architecture sources, terminal records and evidence, product code, external infrastructure, credentials, and production systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/CONTEXT_INDEX.md",
+      "tasks/verified/SUT-AIOS-GOV-043/task.json",
+      "docs/project/ROADMAP.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/DEPENDENCY_GRAPH.md",
+      "docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T12:20:32.270Z",
+  "updatedDate": "2026-07-29T13:37:47.892Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-043/verification-20260729124522477.json",
+    "evidence/verification/SUT-AIOS-GOV-043/verification-20260729133739076.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T12:20:32.270Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T12:22:25.829Z",
+      "actor": "chief-orchestrator",
+      "reason": "Sol architecture review confirms bounded forward-looking portability scope, exact files, dependencies, controls, and no production implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T12:22:25.875Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with the approved ADR, roadmap, backlog, and verification preparation only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T12:30:15.412Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Derived ADR, roadmap, bounded future packets, dependency graph, QA gates, and executor checks are complete; awaiting independent Sol review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T12:33:26.381Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA found missing replay resistance, retention-lifecycle ownership, metering uncertainty failure semantics, factual ADR status, and explicit Phase 2 remediation conclusion; preserve the review and correct only these forward-looking planning gaps."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T12:33:26.421Z",
+      "actor": "chief-orchestrator",
+      "reason": "Apply the bounded independent-QA corrections to the ADR, roadmap, packets, evidence, and risk records; no runtime implementation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T12:40:15.310Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Completed bounded remediation for all five independent Sol QA findings; deterministic checks pass and revised planning is ready for independent re-review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T12:42:56.892Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA found a single M3 task-range inconsistency and a duplicate dependency-graph edge; no machine verification was run."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T12:42:56.933Z",
+      "actor": "chief-orchestrator",
+      "reason": "Correct only the milestone range and duplicate graph edge before the final independent verification cycle."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T12:43:10.257Z",
+      "actor": "chief-orchestrator",
+      "reason": "Corrected only the M3 task range and duplicate graph edge identified by fresh Sol QA; all prior architecture corrections remain unchanged and are ready for final independent verification."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T12:45:29.067Z",
+      "actor": "qa-verification",
+      "reason": "Final independent Sol review passed after milestone and dependency-graph corrections; all acceptance criteria and deterministic checks are confirmed."
+    },
+    {
+      "from": "verified",
+      "to": "revision-required",
+      "at": "2026-07-29T13:23:20.150Z",
+      "actor": "qa-verification",
+      "reason": "External architecture review found missing task-specific machine-evidence allowlists on newly created or modified future packets and incomplete canonical backlog tables; preserve prior verified evidence and correct only those governance records."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T13:23:20.194Z",
+      "actor": "chief-orchestrator",
+      "reason": "Correct future packet evidence allowlists and restore the exhaustive Phase 0-8 backlog inventory without changing ADR-0002 decisions."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T13:27:38.166Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Corrected external-review evidence allowlists and restored exhaustive Phase 0-8 backlog inventory; deterministic checks pass and independent Sol re-review is required."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T13:29:48.976Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA confirmed exact machine-evidence allowlists and complete task visibility but found five backlog dependency cells omit canonical packet dependencies; no machine verification was run."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T13:30:06.197Z",
+      "actor": "chief-orchestrator",
+      "reason": "Correct only five displayed legacy dependency cells to match their canonical packets, then perform fresh independent verification."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T13:30:23.048Z",
+      "actor": "chief-orchestrator",
+      "reason": "Corrected only five exhaustive-backlog dependency cells to match their canonical terminal packets; all external-review corrections remain unchanged."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T13:32:21.993Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA found two omitted terminal planning packets in the claimed exhaustive backlog inventory; correct only their truthful Phase 1 rows."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T13:32:22.034Z",
+      "actor": "chief-orchestrator",
+      "reason": "Add only P1-006-PLAN and P1-007-PLAN inventory rows before final independent verification."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T13:32:34.387Z",
+      "actor": "chief-orchestrator",
+      "reason": "Added only the two omitted terminal planning packet rows with canonical dependencies; exhaustive backlog inventory is ready for final independent QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T13:35:29.917Z",
+      "actor": "qa-verification",
+      "reason": "Fresh machine verification preserved a fail because the broad tasks/verified/** prohibition overrides GOV-043's own allowed lifecycle path after revision; correct only that redundant packet rule before a new independent cycle."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T13:35:47.981Z",
+      "actor": "chief-orchestrator",
+      "reason": "Correct only the redundant own-lifecycle verified-path prohibition found by fresh machine verification; preserve failed evidence and all architecture content."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T13:35:58.900Z",
+      "actor": "chief-orchestrator",
+      "reason": "Removed only the redundant broad verified-path prohibition so GOV-043 can preserve its own prior lifecycle record; all other terminal paths remain outside the narrow allowlist."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T13:37:47.892Z",
+      "actor": "qa-verification",
+      "reason": "Fresh final independent Sol QA passed after correcting only the redundant own-lifecycle forbidden-path rule; prior failed evidence is preserved, all 16 exact future machine-evidence allowlists and the exhaustive 50-packet dependency-accurate backlog remain confirmed."
+    }
+  ]
+}

@@ -1,5 +1,14 @@
 # Engineering Principles
 
+## Deep modules, ports, and fail-closed infrastructure
+
+Future Phase 2+ code exposes small stable core ports and hides provider details
+in adapters. Core/domain logic must not import infrastructure SDKs. Unknown
+authority, malformed input, unsupported configuration, unavailable dependency,
+or resource saturation fails closed. Guest booking and Staff/AI workloads retain
+distinct trust, credential, quota, deployment, and failure boundaries; see
+ADR-0002.
+
 1. Measure deterministically before asking a model to explain a change.
 2. Prefer narrow, reversible, observable changes over broad repairs.
 3. Separate planning, authorization, execution, and verification.

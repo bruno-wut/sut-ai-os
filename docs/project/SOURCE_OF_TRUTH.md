@@ -10,6 +10,8 @@
 | Payments and refunds | Payment providers | Provider records govern financial state |
 | Deployments and edge runtime state | Cloudflare | Cloudflare records govern active versions and health |
 | Search and traffic measures | Search Console and analytics | Use measured source data with reporting limits |
+| Raw clickstream and marketing telemetry | Source analytics systems | Retain there; AI OS receives only approved aggregates/events |
+| Infrastructure portability rules | ADR-0002 and its approved static contracts | Core uses ports; adapters/configuration select providers |
 | AI outputs | None | Hypotheses, drafts, plans, or classifications only; always verify |
 
 When sources disagree, preserve the disagreement as evidence, use the appropriate authoritative system, and escalate rather than allowing an agent to decide by convenience.

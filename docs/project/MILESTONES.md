@@ -2,14 +2,19 @@
 
 | Milestone | Exit evidence | Constituent tasks |
 | --- | --- | --- |
-| M0 — Reproducible baseline | Known commands, failures, compatibility contracts, and security-remediation plan are independently verified. | P0-001–003 |
+| M0 — Reproducible baseline | Compatibility contracts and remediation planning independently verified. | P0-001–003 |
 | M1 — Trusted control foundation | Events, control schema, audit, policies, playbooks, kill switches, and observe-only views pass deterministic checks. | P1-001–008 |
-| M2 — Explainable intelligence | Analytics, provider-neutral intelligence, and intervention proposals produce grounded, schema-valid, observe-only reports without self-authorization. | P2-001–004 |
-| M3 — Durable orchestration | Signed events survive scheduling, queueing, retry/requeue, provider waits, deduplication, dead-lettering, cancellation, timeout, and recovery tests. | P3-001–003 |
-| M4 — Provider-neutral bounded execution | GitHub App, intelligence gateway, Pi-to-Codex adapter, co-located supervised Mac Mini worker, Codex repository adapter, executor dispatch, isolated workspaces, structured results, and PR flow enforce packet permissions. | P4-001–007 |
-| M5 — Independent assurance and portability | Provider-neutral QA, preview/audit evidence, rollback gates, and fallback qualification independently block failed or unavailable work. | P5-001–004 |
+| M2 — Explainable intelligence and infrastructure authority | Analytics, intelligence/proposal contracts, trust zones/ports, minimisation/retention, and quota contracts are schema-valid and bounded. | P2-001–007 |
+| M3 — Durable orchestration | Authenticated aggregate signals, bounded queue/workflow control, provider-neutral persistence composition, and fixture-only retention lifecycle controls pass recovery and negative tests. | P3-001–005 |
+| M4 — Provider-neutral bounded execution | Gateway, adapters, supervised worker, repository executor, dispatch, and PR-only flow enforce packet permissions. | P4-001–007 |
+| M5 — Independent assurance and portability | Independent verification, evidence, rollback/fallback, migration readiness, and quota/saturation evidence block unsafe work. | P5-001–006 |
 | M6 — First vertical slice | Content-schema repair completes detect → authorize → execute → verify in shadow/Tier 0 mode. | P6-004 plus critical-path dependencies |
-| M7 — Growth and approvals | SEO intelligence and authenticated human approvals operate without production activation. | P6-001–003, P7-001–003 |
+| M7 — Growth and approvals | SEO uses source aggregates and human approvals remain authenticated. | P6-001–003, P7-001–003 |
 | M8 — Evidence-led autonomy | Outcome history supports a reviewed promotion rehearsal; no automatic promotion occurs. | P8-001–003 |
 
-Milestone completion never implies production deployment. Production eligibility requires a separate approved release packet, protected environment, required checks, and explicit authorization.
+M3 includes `P3-005` fixture-only retention lifecycle composition; it has no
+authority to delete, archive, transfer, or provision storage.
+
+Milestone completion never implies production deployment. Production eligibility
+requires a separately approved release packet, protected environment, required
+checks, explicit authorization, and relevant portability-assurance evidence.

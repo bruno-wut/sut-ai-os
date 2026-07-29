@@ -2,8 +2,8 @@
 
 ## Workspace
 
-- Repository: independent AI OS workspace on `main`; Phase 0 and
-  `SUT-AIOS-P1-001` through `SUT-AIOS-P1-005` have merged completion records.
+- Repository: independent AI OS workspace on `main`; Phase 0, `P1-001` through
+  `P1-008`, `P2-001`, and `P2-002` have merged completion records.
 - Active code: no deployed AI OS product services. The repository contains the
   governed workspace, permanent memory, Phase 1 static contracts and local
   deterministic policy evaluator, retained verification evidence, and a
@@ -21,9 +21,15 @@
 - Repository boundaries, issue/risk register, validation record, and permanent-memory documents.
 - The technical baseline gate is complete at `docs/verification/technical-baseline-gate.json` with independent evidence under `evidence/verification/SUT-AIOS-P0-001/`.
 - The task worktree for `SUT-AIOS-P0-001` was clean, merged, and removed after reconciliation.
-- The derived provider-neutral Mac Mini/Pi/Codex deployment option is proposed
-  in `docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md`; it adds no runtime
-  capability.
+- The derived provider-neutral Mac Mini/Pi/Codex deployment option is accepted
+  active planning in `docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md`; it
+  adds no deployment or runtime capability.
+- ADR-0002 is proposed derived planning: it adds no runtime capability, but
+  requires trust-zone/port, minimisation/retention, resource-budget/workload,
+  and portability authorities before Phase 3 implementation. No P2-001/R02 or
+  P2-002 remediation is required: their accepted finite contracts, runtime
+  dependency correction, trusted rejection semantics, and final-head CI evidence
+  remain intact and are not changed by this planning task.
 
 ## What does not exist yet
 
@@ -40,8 +46,8 @@ Root Next.js and Astro builds passed in an isolated disposable copy. Warnings, d
 
 ## Immediate constraint
 
-This remains the control-foundation phase. `SUT-AIOS-P1-006` is the next product
-task, but remains backlog until its exact static contract and validator path are
-approved. The future Mac Mini worker starts at Tier 0/shadow and cannot
-substitute for policy, approval, workflow, verification, or audit. Production
-writes and autonomous operation remain disabled.
+The next existing product dependency is `P2-004`; it and the GOV-043-added
+static infrastructure authorities must be verified before Phase 3 runtime work.
+The future Mac Mini worker starts at Tier 0/shadow and cannot substitute for
+policy, approval, workflow, verification, or audit. Production writes and
+autonomous operation remain disabled.

@@ -20,6 +20,8 @@
   "dependencies": [
     "SUT-AIOS-P3-002",
     "SUT-AIOS-P3-003",
+    "SUT-AIOS-P3-004",
+    "SUT-AIOS-P2-007",
     "SUT-AIOS-P4-005",
     "SUT-AIOS-P1-007"
   ],
@@ -38,6 +40,7 @@
     "Pi queue and workflow records survive Pi-service, worker-process, and device restarts and are never stored as Codex process, session, output, or isolated-workspace state.",
     "Supervision restarts the worker after reboot without automatically resuming an unverified production-impacting command.",
     "Worker health reports sanitized provider and capacity state without exposing subscription or repository credentials.",
+    "Worker capacity is isolated from guest booking capacity and fails closed to bounded pause/requeue/dead letter before a hard resource limit.",
     "Tier 0/shadow operation permits investigation, drafts, tests, branches, and authorized pull requests only; it cannot merge or deploy."
   ],
   "allowedPaths": [
@@ -45,6 +48,7 @@
     "tests/mac-mini-worker/**",
     "docs/mac-mini-worker/**",
     "evidence/tasks/SUT-AIOS-P4-006/**",
+    "evidence/verification/SUT-AIOS-P4-006/**",
     "tasks/**/SUT-AIOS-P4-006/**"
   ],
   "forbiddenPaths": [
@@ -105,7 +109,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T09:15:00.000Z",
-  "updatedDate": "2026-07-28T09:32:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

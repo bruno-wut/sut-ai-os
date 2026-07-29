@@ -20,7 +20,9 @@
     "SUT-AIOS-P2-001",
     "SUT-AIOS-P2-002",
     "SUT-AIOS-P2-004",
-    "SUT-AIOS-P1-008"
+    "SUT-AIOS-P1-008",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P2-003/verification.md"
@@ -32,6 +34,7 @@
   "acceptanceCriteria": [
     "The observe-only briefing consumes validated deterministic metrics, structured intelligence, and intervention proposals without authorizing or executing them.",
     "Provider unavailability, insufficient evidence, and approval requirements are surfaced truthfully rather than converted into an allow or production action.",
+    "Briefing inputs are approved aggregates and governed records only; raw guest interaction telemetry and per-event AI processing are rejected.",
     "Machine-readable contracts and deterministic failure behavior are documented.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
@@ -40,6 +43,7 @@
     "tests/executive-reporting/**",
     "docs/executive-reporting/**",
     "evidence/tasks/SUT-AIOS-P2-003/**",
+    "evidence/verification/SUT-AIOS-P2-003/**",
     "tasks/**/SUT-AIOS-P2-003/**"
   ],
   "forbiddenPaths": [
@@ -97,7 +101,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-28T09:15:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

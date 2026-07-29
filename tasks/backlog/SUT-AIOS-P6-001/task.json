@@ -17,7 +17,9 @@
     "docs/project/IMPLEMENTATION_BACKLOG.md"
   ],
   "dependencies": [
-    "SUT-AIOS-P3-002"
+    "SUT-AIOS-P3-002",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
   ],
   "evidence": [
     "evidence/tasks/SUT-AIOS-P6-001/verification.md"
@@ -27,7 +29,7 @@
     "Interfaces with the finalized platform use approved compatibility contracts only."
   ],
   "acceptanceCriteria": [
-    "Implement Google Search Console ingestion is implemented only within the declared subsystem.",
+    "Search Console ingestion uses bounded scheduled aggregates through the analytics-source port; it does not persist raw guest interaction telemetry or invoke AI per event.",
     "Machine-readable contracts and deterministic failure behavior are documented.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
@@ -36,6 +38,7 @@
     "tests/seo-ingestion/**",
     "docs/seo-ingestion/**",
     "evidence/tasks/SUT-AIOS-P6-001/**",
+    "evidence/verification/SUT-AIOS-P6-001/**",
     "tasks/**/SUT-AIOS-P6-001/**"
   ],
   "forbiddenPaths": [
@@ -93,7 +96,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-26T13:05:00.000Z",
+  "updatedDate": "2026-07-29T13:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
