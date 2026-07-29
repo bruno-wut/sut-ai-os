@@ -1,0 +1,151 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-053",
+  "title": "Plan P2-007 resource governance contracts",
+  "status": "review",
+  "phase": "engineering-governance",
+  "workstream": "resource-governance",
+  "workflowId": "p2-007-contract-design",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Define deterministic workload budgets so AI and Staff workloads cannot exhaust or affect booking capacity.",
+  "technicalObjective": "Write an exact finite P2-007 static resource-budget design, make its packet executable-ready, and prepare separately bounded exact validator admission; do not implement metering, queue, scheduler, provider, or production control.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P2-005"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-053/verification.md"
+  ],
+  "assumptions": [
+    "Budgets are static deterministic inputs, not live provider configuration.",
+    "No metric, budget, queue, workflow, scheduler, service, provider, data, or production state is accessed.",
+    "A separate task admits exact validator before P2-007."
+  ],
+  "acceptanceCriteria": [
+    "Define closed V1 authority/policy with finite resource dimensions, 50/75/90 thresholds, hard-limit states, fresh/unknown/stale/inconsistent metering, fail-closed pause/requeue/block outcomes, booking isolation and workload limits.",
+    "Cover worker CPU/requests, queue operations, workflow steps, persistence size/growth/egress, runner minutes, AI invocations/tokens, notifications; batching/dedupe/idempotency/backpressure/rate/concurrency/retry/DLQ/priority/scheduled summaries.",
+    "Core private semantic interface imports no provider or infra; static validation cannot reserve capacity, schedule, execute, or alter production.",
+    "Update P2-007 exact paths/evidence/commands/deps and create GOV-054 exact admission task; no product artifacts implemented."
+  ],
+  "allowedPaths": [
+    "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P2-007/task.json",
+    "tasks/backlog/SUT-AIOS-GOV-054/**",
+    "tasks/**/SUT-AIOS-GOV-053/**",
+    "evidence/tasks/SUT-AIOS-GOV-053/**",
+    "evidence/verification/SUT-AIOS-GOV-053/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "packages/**",
+    "schemas/**",
+    "tests/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite budget design",
+    "booking isolation/fail closed review",
+    "packet admission readiness",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any live quota/provider/metering/scheduling/queue action, booking capacity change, data or production behavior is out of scope."
+  ],
+  "rollbackExpectations": "Revert only design/future packets/state/memory/evidence; preserve terminal records and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/review/SUT-AIOS-GOV-053/task.json",
+      "tasks/backlog/SUT-AIOS-P2-007/task.json",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-30T00:00:00.000Z",
+  "updatedDate": "2026-07-29T20:04:04.374Z",
+  "completionEvidence": [],
+  "worktree": null,
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-30T00:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created because P2-007 lacks finite executable design and exact validator admission."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T19:57:09.928Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Dependencies terminal; finite plan/admission scope ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T19:57:10.375Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed static P2-007 design and packet preparation only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T20:04:04.374Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Finite P2-007 resource-budget design, executable product packet, bounded GOV-054 admission packet, permanent-memory/risk updates, evidence, and passing implementer checks are ready for independent Sol QA."
+    }
+  ]
+}

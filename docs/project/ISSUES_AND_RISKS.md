@@ -254,6 +254,15 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Evidence:** ADR-0002 and backlog packets `P2-005`–`P2-007`, `P3-004`, and `P5-005`–`P5-006` define seams and QA rejection gates without provisioning a component.
 - **Next action / owner:** Complete static authorities before Phase 3 activation, separately admit exact validators, and do not claim cross-account isolation, retention enforcement, capacity protection, or migration readiness before independent evidence exists.
 
+### 2026-07-30 — P2-007 static observations cannot prove live capacity or workload enforcement
+
+- **Task ID:** `SUT-AIOS-GOV-053`, `SUT-AIOS-P2-007`
+- **Status:** Open / planned limitation
+- **Severity:** High
+- **Affected scope:** Future resource meters, provider limits, worker/queue/workflow controls, notification paths, and booking-isolation evidence.
+- **Evidence:** GOV-053 fixes a provider-neutral metadata classifier with committed thresholds and ceilings. It deliberately has no clock, provider meter, queue, scheduler, workflow, notifier, process control, or booking access, so a valid observation cannot prove that its limit, usage, age, workload controls, or isolation claims match external reality.
+- **Next action / owner:** GOV-054 must first admit the exact validator; P2-007 must implement and independently verify only the static authority. Runtime adapters must fail closed on uncertainty, and P5-006 must prove saturation and booking isolation before higher-volume activation.
+
 ### 2026-07-29 — GOV-043 review found no P2-001/R02 or P2-002 product remediation
 
 - **Task ID:** `SUT-AIOS-GOV-043`, `SUT-AIOS-P2-001-R02`, `SUT-AIOS-P2-002`

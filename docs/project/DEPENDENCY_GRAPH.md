@@ -6,7 +6,7 @@ flowchart LR
   B --> GP["GOV-044 finite proposal design"] --> GA["GOV-045 exact validator admission"] --> C["P2-004 proposal contract"]
   A --> GT["GOV-047 finite trust-zone design"] --> GV["GOV-048 exact validator admission"] --> TZ["P2-005 trust zones and ports"]
   TZ --> GD["GOV-050 finite minimisation/retention design"] --> GE["GOV-051 exact validator admission"] --> DM["P2-006 minimisation and retention"]
-  TZ --> QB["P2-007 resource budgets"]
+  TZ --> GQ["GOV-053 finite resource-budget design"] --> GVA["GOV-054 exact validator admission"] --> QB["P2-007 resource budgets"]
   DM --> I["P3-001 ingestion"]
   QB --> I
   I --> Q["P3-002 queue/workload controls"]
@@ -56,6 +56,11 @@ flowchart LR
   interval, action, protected-history, result, and reason mappings, and GOV-051
   admits its exact shell-free validator. Classification is non-authoritative
   and never proves due state or performs a lifecycle action.
+- P2-007 activates only after GOV-053 fixes its closed dimensions, units,
+  thresholds, metering/configuration states, workload ceilings, booking
+  isolation, outcomes, and reason precedence, and GOV-054 admits its exact
+  shell-free validator. Classification is non-authoritative and cannot meter,
+  reserve, schedule, control, notify, write, or affect booking.
 - `P2-005`, `P2-006`, and `P2-007` are Phase 3 prerequisites; runtime work may
   not invent trust, retention, or quota authorities.
 - All infrastructure behavior enters core through stable ports; adapters own

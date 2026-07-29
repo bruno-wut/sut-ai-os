@@ -9,42 +9,131 @@
   "workflowId": "implementation-p2-007",
   "playbookId": null,
   "playbookMode": "shadow",
-  "businessObjective": "Prevent AI/staff workloads from exhausting capacity or affecting booking operations.",
-  "technicalObjective": "Define finite quota budget, threshold, state, metering-freshness, and fail-closed decision contracts without connecting to a provider meter.",
-  "architectureReferences": ["docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"],
-  "dependencies": ["SUT-AIOS-P1-003", "SUT-AIOS-P1-005", "SUT-AIOS-P2-005"],
-  "evidence": ["evidence/tasks/SUT-AIOS-P2-007/verification.md"],
-  "assumptions": ["Budgets are deterministic policy inputs, not live provider configuration."],
-  "acceptanceCriteria": [
-    "Contract covers worker requests/CPU, queue operations, workflow steps, persistence size/growth/egress, runner minutes, AI invocations/tokens, and notification volume.",
-    "It defines 50%, 75%, and 90% warning thresholds and a pre-hard-limit fail-closed pause/requeue/block decision.",
-    "Missing, unavailable, stale, inconsistent, uncertain, or unknown metrics, budgets, limits, metering timestamps, or configuration fail closed with deterministic reasons and cannot affect booking capacity.",
-    "Workload rules require batching, dedupe, idempotency, backpressure, rate/concurrency/retry bounds, DLQ, priority queues, and scheduled summaries.",
-    "Tests reject every metering-uncertainty state, unbounded or per-event AI, and booking-shared quota cases."
+  "businessObjective": "Prevent AI and Staff workloads from exhausting capacity or affecting booking operations.",
+  "technicalObjective": "Implement the finite static V1 resource-budget policy, structural authority, private-authority classifier, exact validator, and bounded documentation fixed by GOV-053; do not connect to a provider meter or implement resource control.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/verification/INFRASTRUCTURE_PORTABILITY_ASSURANCE.md"
   ],
-  "allowedPaths": ["schemas/resource-budget-contract-v1.schema.json", "policies/resource-budget-policy-v1.json", "packages/resource-governance-contracts/**", "tests/resource-governance/**", "docs/resource-governance/**", "evidence/tasks/SUT-AIOS-P2-007/**", "evidence/verification/SUT-AIOS-P2-007/**", "tasks/**/SUT-AIOS-P2-007/**"],
-  "forbiddenPaths": ["reference/finalized-platform/**", "docs/architecture/source/**", ".github/**", "supabase/**", "**/*.sql", ".env*", "**/*secret*", "**/*credential*"],
-  "allowedCommands": ["node tests/resource-governance/validate-resource-budget-contract-v1.mjs", "npm run verify:fast", "git diff --check"],
-  "requiredChecks": ["exact validator admission before independent verification", "quota/boundary, metering-freshness, and workload-control review", "independent Sol review"],
-  "requiredTests": ["node tests/resource-governance/validate-resource-budget-contract-v1.mjs", "npm run verify:fast"],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-GOV-053",
+    "SUT-AIOS-GOV-054"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P2-007/verification.md"
+  ],
+  "assumptions": [
+    "The committed policy fixes dimensions, thresholds, states, ceilings, mappings, and precedence; declared usage and limits are untrusted observation metadata, not live provider facts.",
+    "P2-007 is static Tier-0 classification only and cannot meter, reserve, throttle, pause, requeue, block, schedule, notify, execute, write, or affect booking.",
+    "GOV-054 must be terminal before activation so the exact validator can run through independent machine verification."
+  ],
+  "acceptanceCriteria": [
+    "Create only `schemas/resource-budget-contract-v1.schema.json`, `policies/resource-budget-policy-v1.json`, `packages/resource-governance-contracts/src/resource-budget-contract-v1.mjs`, `tests/resource-governance/validate-resource-budget-contract-v1.mjs`, bounded P2-007 documentation, evidence, and lifecycle state.",
+    "The closed V1 policy implements exactly eleven resource dimensions, their units, 5000/7500/9000/10000 basis-point thresholds, six budget states, seven meter states, five budget-authority states, five configuration states, two internal workload zones, six non-authoritative outcomes, workload ceilings, booking isolation, decision rules, reason precedence, and false authority claims from the GOV-053 design.",
+    "The runtime-safe deep module exports only `evaluateResourceBudget(observation)`, obtains canonical schema/policy authority internally, accepts no injected authority or infrastructure, returns recursively frozen plain data, does not mutate input, and never throws for malformed, cyclic, throwing, or adversarial input.",
+    "Only available budget authority, valid configuration, fresh bounded metering, complete safe-integer measurements, valid workload controls, and isolated Staff/AI zones reach deterministic integer threshold classification; all missing, unavailable, stale, inconsistent, uncertain, unknown, unsupported, malformed, shared-booking, or unbounded cases fail closed with ordered finite reasons.",
+    "Threshold mapping is exact: below 50 continue candidate, 50 warning candidate, 75 throttle candidate, 90 pause or safe-requeue candidate, and at/over hard limit block candidate; every result remains non-authoritative and authorizes no scheduling, execution, notification, production write, or booking effect.",
+    "Workload semantics require bounded batching, deduplication, idempotency, backpressure, rate/concurrency/retry ceilings, retry-attempt bounds, dead-letter handling, priority queues, and scheduled-summary or governed-case operation; per-interaction work, continuous/per-event summaries, and per-event AI are rejected.",
+    "The exact validator compiles Draft 2020-12 authorities, validates result exclusivity, covers every dimension/state/outcome/threshold edge, real exploit paths, booking isolation, workload mutations, authority injection, malformed totality, private imports, and operational non-authority; all packet-authorized checks and independent Sol QA pass."
+  ],
+  "allowedPaths": [
+    "schemas/resource-budget-contract-v1.schema.json",
+    "policies/resource-budget-policy-v1.json",
+    "packages/resource-governance-contracts/src/resource-budget-contract-v1.mjs",
+    "tests/resource-governance/validate-resource-budget-contract-v1.mjs",
+    "docs/resource-governance/RESOURCE_BUDGET_CONTRACT_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P2-007/**",
+    "evidence/verification/SUT-AIOS-P2-007/**",
+    "tasks/**/SUT-AIOS-P2-007/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "scripts/**",
+    "apps/**",
+    "services/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node tests/resource-governance/validate-resource-budget-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P2-007 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "schema and canonical-policy finite authority inspection",
+    "private deep-module and provider-import inspection",
+    "threshold, metering uncertainty, workload ceiling, and booking isolation review",
+    "total fail-closed mutation and negative matrix",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node tests/resource-governance/validate-resource-budget-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
   "riskLevel": "high",
   "autonomyTier": "tier-0",
   "defaultAgent": "codex-engineering-executor",
-  "allowedAgents": ["codex-engineering-executor", "qa-verification"],
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
   "modelRoute": "sol",
   "defaultModel": "gpt-5.6-sol",
   "fallbackModel": "gpt-5.6-sol",
   "workspaceWrite": true,
-  "solEscalationTriggers": ["Any resource control changes booking capacity, provider quotas, live scheduling, or production behavior."],
-  "rollbackExpectations": "Revert static contracts only and preserve evidence.",
+  "solEscalationTriggers": [
+    "Any provider/live meter, account quota, clock, service, queue, workflow, scheduler, notifier, booking capacity, production control, generic validator admission, or scope outside the finite static GOV-053 design requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only P2-007 static schema, policy, module, validator, documentation, lifecycle state, and task-specific evidence; preserve GOV-053/GOV-054 evidence, terminal records, canonical sources, immutable snapshots, and all external systems.",
   "outputSchema": "schemas/agent-result.schema.json",
-  "contextBudget": {"maxBytes": 262144, "includedPaths": ["AGENTS.md", "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md", "tasks/backlog/SUT-AIOS-P2-007/task.json"]},
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P2-007/task.json",
+      "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+      "policies/resource-budget-policy-v1.json",
+      "schemas/resource-budget-contract-v1.schema.json",
+      "packages/resource-governance-contracts/src/resource-budget-contract-v1.mjs",
+      "tests/resource-governance/validate-resource-budget-contract-v1.mjs"
+    ]
+  },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.719Z",
-  "updatedDate": "2026-07-29T13:20:00.000Z",
+  "updatedDate": "2026-07-30T00:00:00.000Z",
   "completionEvidence": [],
-  "stateTransitions": [{"from": null, "to": "backlog", "at": "2026-07-29T12:21:28.719Z", "actor": "chief-orchestrator", "reason": "Created by GOV-043 for the required resource authority."}]
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T12:21:28.719Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created by GOV-043 for the required resource authority."
+    }
+  ]
 }
