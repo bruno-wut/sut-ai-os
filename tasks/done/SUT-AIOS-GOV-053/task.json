@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-053",
   "title": "Plan P2-007 resource governance contracts",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "resource-governance",
   "workflowId": "p2-007-contract-design",
@@ -107,7 +107,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-053/task.json",
+      "tasks/done/SUT-AIOS-GOV-053/task.json",
       "tasks/backlog/SUT-AIOS-P2-007/task.json",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"
     ]
@@ -115,7 +115,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-07-29T20:06:42.315Z",
+  "updatedDate": "2026-07-29T20:09:11.988Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-053/verification-20260729200633365.json"
   ],
@@ -176,6 +176,13 @@
       "at": "2026-07-29T20:06:42.315Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA accepted finite staged resource-budget design, booking isolation, workload controls, bounded packets, and passing machine verification; no product or live infrastructure behavior was introduced."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T20:09:11.988Z",
+      "actor": "qa-verification",
+      "reason": "PR #114 merged to main as commit 833653fd7481c71363939a7af0e52ba37502602d after independent Sol QA and green final-head CI; reconcile verified to done without changing planning scope."
     }
   ]
 }
