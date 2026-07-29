@@ -31,4 +31,12 @@ step proves the merge candidate's provider-neutral contract artifacts; it does
 not broaden verifier admission or add provider, workflow, authorization, or
 production capability.
 
+The same workflow executes the exact P2-004 validator
+`node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs`
+as a distinct fixed step after dependency installation and repository fast
+verification. This final-head check proves only the committed static proposal
+contract merge candidate. It does not generate a proposal, grant a capability,
+authorize or approve an action, invoke a provider or workflow, execute a change,
+record an audit event, or create production capability.
+
 Large logs, traces, screenshots, and reports belong in `artifacts/`; result JSON stores concise references only. Do not add secrets or raw webhook payloads to evidence.

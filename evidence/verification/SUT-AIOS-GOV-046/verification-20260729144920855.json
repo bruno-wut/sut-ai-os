@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-046",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-29T14:49:20.855Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: The Governance / validate workflow invokes exactly `node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs` as a distinct fixed CI step after dependencies and repository fast verification.",
+    "confirmed: The CI change adds no generic command runner, shell execution, dynamic path, argument interpolation, matrix, new credential, external service, deployment, product-code, or proposal-generation capability.",
+    "confirmed: Verification policy accurately states that final-head CI executes the fixed P2-004 validator and that the step proves only the committed static proposal contract merge candidate.",
+    "confirmed: Packet-authorized deterministic checks, independent Sol review, task-specific machine evidence, and final-head CI pass before merge."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-046/verification.md",
+    "tasks/review/SUT-AIOS-GOV-046/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-046/verification-20260729144920855.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

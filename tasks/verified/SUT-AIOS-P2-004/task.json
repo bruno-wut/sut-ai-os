@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-004",
   "title": "Define the intervention proposal contract V1",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "intervention-proposals",
   "workflowId": "implementation-p2-004",
@@ -118,7 +118,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-004/task.json",
+      "tasks/verified/SUT-AIOS-P2-004/task.json",
       "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
       "docs/ai-analysis/P2-002_INTELLIGENCE_PROVIDER_CONTRACTS_V1_DESIGN.md",
       "packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs",
@@ -128,8 +128,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-28T09:15:00.000Z",
-  "updatedDate": "2026-07-29T14:10:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T14:42:28.587Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P2-004/verification-20260729144202500.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -137,6 +139,34 @@
       "at": "2026-07-28T09:15:00.000Z",
       "actor": "engineering-planner",
       "reason": "Added by GOV-032 to separate structured intelligence from non-authoritative intervention proposals."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T14:24:38.376Z",
+      "actor": "chief-orchestrator",
+      "reason": "P2-002, GOV-044, and GOV-045 are done with the static proposal design and exact validator admission in place."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T14:24:38.429Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with the approved static V1 intervention-proposal contract only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T14:36:23.895Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded V1 schema, private-authority deep module, deterministic validator, product documentation, risk status, and implementation evidence pass executor checks and are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T14:42:28.587Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA confirmed the bounded static V1 contract, private committed authority, canonical P2-002 provenance, finite mappings, fail-closed total behavior, architecture boundaries, and all task-specific machine checks."
     }
   ]
 }

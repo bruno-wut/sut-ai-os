@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/intervention-proposal-contract-v1.schema.json",
+  "title": "Intervention Proposal Contract V1",
+  "description": "A closed, non-authoritative Tier-0 proposal derived from one canonically validated P2-002 intelligence result. Semantic ordering, provenance, outcome, capability, risk, approval, and rollback rules are enforced by the committed deep module.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "proposalId", "taskId", "sourceIntelligence", "outcome",
+    "diagnosis", "evidenceReferences", "confidence", "recommendedAction",
+    "alternatives", "affectedSystems", "requestedCapabilities",
+    "riskClassification", "approvalRequirement", "verificationPlan",
+    "rollbackPlan", "expectedOutcome", "authority"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "proposalId": { "$ref": "#/$defs/proposalId" },
+    "taskId": { "$ref": "#/$defs/taskId" },
+    "sourceIntelligence": { "$ref": "#/$defs/sourceIntelligence" },
+    "outcome": { "$ref": "#/$defs/outcome" },
+    "diagnosis": { "$ref": "#/$defs/diagnosis" },
+    "evidenceReferences": { "$ref": "#/$defs/optionalIdentifiers20" },
+    "confidence": { "$ref": "#/$defs/confidence" },
+    "recommendedAction": { "$ref": "#/$defs/recommendedAction" },
+    "alternatives": {
+      "type": "array", "minItems": 0, "maxItems": 5,
+      "items": { "$ref": "#/$defs/alternative" }
+    },
+    "affectedSystems": {
+      "description": "A non-empty subset of the P2-002 allowed affected systems. Values must be unique and lexicographically ascending; the deep module enforces subset membership and ordering.",
+      "type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "requestedCapabilities": {
+      "description": "Capability requests follow the declared enum order and are advisory only. The deep module enforces ordering and outcome-specific combinations.",
+      "type": "array", "minItems": 0, "maxItems": 7, "uniqueItems": true,
+      "items": { "$ref": "#/$defs/requestedCapability" }
+    },
+    "riskClassification": { "$ref": "#/$defs/riskClassification" },
+    "approvalRequirement": { "$ref": "#/$defs/approvalRequirement" },
+    "verificationPlan": { "$ref": "#/$defs/verificationPlan" },
+    "rollbackPlan": { "$ref": "#/$defs/rollbackPlan" },
+    "expectedOutcome": { "$ref": "#/$defs/expectedOutcome" },
+    "authority": { "$ref": "#/$defs/authority" }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "proposalId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "taskId": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]{2,80}$" },
+    "text200": {
+      "description": "Must be trimmed and contain no control character other than line feed; semantic text rules are enforced by the deep module.",
+      "type": "string", "minLength": 1, "maxLength": 200
+    },
+    "text500": {
+      "description": "Must be trimmed and contain no control character other than line feed; semantic text rules are enforced by the deep module.",
+      "type": "string", "minLength": 1, "maxLength": 500
+    },
+    "text1000": {
+      "description": "Must be trimmed and contain no control character other than line feed; semantic text rules are enforced by the deep module.",
+      "type": "string", "minLength": 1, "maxLength": 1000
+    },
+    "text2000": {
+      "description": "Must be trimmed and contain no control character other than line feed; semantic text rules are enforced by the deep module.",
+      "type": "string", "minLength": 1, "maxLength": 2000
+    },
+    "optionalIdentifiers5": {
+      "type": "array", "minItems": 0, "maxItems": 5, "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "optionalIdentifiers20": {
+      "type": "array", "minItems": 0, "maxItems": 20, "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "boundedStrings10": {
+      "type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true,
+      "items": { "$ref": "#/$defs/text500" }
+    },
+    "optionalBoundedStrings10": {
+      "type": "array", "minItems": 0, "maxItems": 10, "uniqueItems": true,
+      "items": { "$ref": "#/$defs/text500" }
+    },
+    "sourceIntelligence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requestId", "status"],
+      "properties": {
+        "requestId": { "$ref": "#/$defs/proposalId" },
+        "status": { "type": "string", "enum": ["completed", "insufficient_evidence"] }
+      }
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["no_action", "gather_more_evidence", "recommendation", "prepare_draft", "prepare_branch_or_pr", "escalate_to_human"]
+    },
+    "diagnosis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["summary", "causeIds", "hypothesisIds"],
+      "properties": {
+        "summary": { "$ref": "#/$defs/text2000" },
+        "causeIds": { "$ref": "#/$defs/optionalIdentifiers5" },
+        "hypothesisIds": { "$ref": "#/$defs/optionalIdentifiers5" }
+      }
+    },
+    "confidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["score", "band", "basis"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "band": { "type": "string", "enum": ["insufficient", "low", "medium", "high"] },
+        "basis": { "$ref": "#/$defs/text500" }
+      }
+    },
+    "recommendedAction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "description", "rationale", "executionAuthorized"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/outcome" },
+        "description": { "$ref": "#/$defs/text1000" },
+        "rationale": { "$ref": "#/$defs/text1000" },
+        "executionAuthorized": { "const": false }
+      }
+    },
+    "alternative": {
+      "type": "object", "additionalProperties": false,
+      "required": ["alternativeId", "description", "tradeoff"],
+      "properties": {
+        "alternativeId": { "$ref": "#/$defs/identifier" },
+        "description": { "$ref": "#/$defs/text1000" },
+        "tradeoff": { "$ref": "#/$defs/text1000" }
+      }
+    },
+    "requestedCapability": {
+      "type": "string",
+      "enum": ["analytics_read", "repository_read", "repository_write", "content_draft", "branch_create", "pull_request_create", "staff_notification"]
+    },
+    "riskClassification": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+    "approvalRequirement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["required", "approvalClass", "reason"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "approvalClass": { "type": "string", "enum": ["none", "human_review"] },
+        "reason": { "$ref": "#/$defs/text500" }
+      }
+    },
+    "verificationPlan": {
+      "type": "object", "additionalProperties": false,
+      "required": ["independentReviewRequired", "checks", "successCriteria"],
+      "properties": {
+        "independentReviewRequired": { "const": true },
+        "checks": { "$ref": "#/$defs/boundedStrings10" },
+        "successCriteria": { "$ref": "#/$defs/boundedStrings10" }
+      }
+    },
+    "rollbackPlan": {
+      "type": "object", "additionalProperties": false,
+      "required": ["required", "trigger", "steps"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "trigger": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/text500" }] },
+        "steps": { "$ref": "#/$defs/optionalBoundedStrings10" }
+      }
+    },
+    "expectedOutcome": {
+      "type": "object", "additionalProperties": false,
+      "required": ["summary", "measurableSignals", "observationWindow"],
+      "properties": {
+        "summary": { "$ref": "#/$defs/text1000" },
+        "measurableSignals": { "$ref": "#/$defs/boundedStrings10" },
+        "observationWindow": { "$ref": "#/$defs/text200" }
+      }
+    },
+    "authority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["nonAuthoritative", "approved", "authorized", "executed", "independentlyVerified", "productionEligible"],
+      "properties": {
+        "nonAuthoritative": { "const": true },
+        "approved": { "const": false },
+        "authorized": { "const": false },
+        "executed": { "const": false },
+        "independentlyVerified": { "const": false },
+        "productionEligible": { "const": false }
+      }
+    }
+  }
+}
