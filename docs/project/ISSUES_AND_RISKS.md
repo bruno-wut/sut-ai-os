@@ -1,5 +1,27 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-006 validator admission is exact and non-product
+
+- **Task ID:** `SUT-AIOS-GOV-051`, `SUT-AIOS-P2-006`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Future independent machine verification of the P2-006
+  data-minimisation and retention contract.
+- **Evidence:** GOV-051 admits only the byte-for-byte literal
+  `node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs`
+  as `node` with one fixed repository-relative forward-slash path through the
+  existing `shell: false` runner. Focused self-tests reject whitespace,
+  arguments, chaining, redirects, substitutions, alternate and sibling paths,
+  dot paths, traversal, absolute paths, and Windows separators.
+- **Residual risk:** Command admission creates no product validator, schema,
+  canonical policy, runtime module, data classification, minimisation or
+  aggregation enforcement, retention action, deletion, archival, transfer,
+  storage, queue, workflow, AI invocation, external call, or production
+  behavior.
+- **Next action / owner:** Independent Sol QA must verify GOV-051 before P2-006
+  activation. P2-006 implementation and its own independent verification remain
+  separately governed.
+
 ### 2026-07-30 - P2-006 data governance authority is designed, not implemented
 
 - **Task ID:** `SUT-AIOS-GOV-050`, `SUT-AIOS-GOV-051`, `SUT-AIOS-P2-006`
