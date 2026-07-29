@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-042",
   "title": "Add exact P2-002 validator to governance CI",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "continuous-verification",
   "workflowId": "p2-002-ci-validator",
@@ -113,7 +113,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-042/task.json",
+      "tasks/done/SUT-AIOS-GOV-042/task.json",
       "tasks/done/SUT-AIOS-GOV-041/task.json",
       "tasks/review/SUT-AIOS-P2-002/task.json",
       ".github/workflows/validate-governance.yml",
@@ -131,9 +131,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T11:34:26.804Z",
-  "updatedDate": "2026-07-29T11:41:08.412Z",
+  "updatedDate": "2026-07-29T12:12:40.104Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-042/verification-20260729114046326.json"
+    "evidence/verification/SUT-AIOS-GOV-042/verification-20260729114046326.json",
+    "evidence/tasks/SUT-AIOS-GOV-042/verification.md"
   ],
   "stateTransitions": [
     {
@@ -170,6 +171,13 @@
       "at": "2026-07-29T11:41:08.412Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the exact P2-002 CI validator step, preserved workflow ordering, bounded scope, passing deterministic checks, and diff-bound machine evidence."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T12:12:40.104Z",
+      "actor": "qa-verification",
+      "reason": "Verified CI-admission delivery reached main through PR #84; completion reconciliation records the canonical done state."
     }
   ]
 }
