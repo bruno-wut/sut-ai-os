@@ -1,0 +1,161 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-046",
+  "title": "Add P2-004 validator to final-head CI",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "ci-assurance",
+  "workflowId": "p2-004-final-head-validator",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Ensure the P2-004 intervention-proposal contract is independently exercised on each merge candidate without broadening CI authority or product scope.",
+  "technicalObjective": "Add exactly one fixed GitHub Actions step for the already admitted P2-004 validator and document its bounded final-head assurance; do not change the P2-004 contract or add generic command execution.",
+  "architectureReferences": [
+    "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/TASK_WORKFLOW.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-045",
+    "SUT-AIOS-P2-004"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-046/verification.md"
+  ],
+  "assumptions": [
+    "GOV-045 already admits the byte-for-byte P2-004 validator for shell-free local verification.",
+    "P2-004 is implemented and independently verified on this stacked branch, while its delivery remains unmerged to main.",
+    "This task grants no provider, proposal generation, authorization, execution, persistence, production, or external behavior."
+  ],
+  "acceptanceCriteria": [
+    "The Governance / validate workflow invokes exactly `node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs` as a distinct fixed CI step after dependencies and repository fast verification.",
+    "The CI change adds no generic command runner, shell execution, dynamic path, argument interpolation, matrix, new credential, external service, deployment, product-code, or proposal-generation capability.",
+    "Verification policy accurately states that final-head CI executes the fixed P2-004 validator and that the step proves only the committed static proposal contract merge candidate.",
+    "Packet-authorized deterministic checks, independent Sol review, task-specific machine evidence, and final-head CI pass before merge."
+  ],
+  "allowedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-046/**",
+    "evidence/tasks/SUT-AIOS-GOV-046/**",
+    "evidence/verification/SUT-AIOS-GOV-046/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tests/**",
+    "schemas/**",
+    "packages/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "scripts/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-046 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "literal CI step inspection",
+    "changed-path and forbidden-boundary inspection",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic/dynamic CI execution, shell invocation, external service/credential/deployment addition, or P2-004 product change requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the fixed P2-004 CI step, its verification-policy statement, GOV-046 packet state, risk entry, and GOV-046 evidence; preserve the P2-004 product contract/evidence, GOV-044/GOV-045 history, terminal records, canonical sources, immutable snapshots, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-046/task.json",
+      "tasks/verified/SUT-AIOS-P2-004/task.json",
+      ".github/workflows/validate-governance.yml",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T14:44:00.000Z",
+  "updatedDate": "2026-07-29T14:49:29.166Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-GOV-046/verification.md"
+  ],
+  "worktree": null,
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T14:44:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after independent P2-004 QA found final-head CI lacked its already admitted exact validator step."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T14:43:57.089Z",
+      "actor": "codex-engineering-executor",
+      "reason": "GOV-045 admits the exact literal and verified P2-004 supplies the committed validator; the CI-only scope, evidence paths, and Sol route are complete."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T14:43:57.469Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed with one fixed final-head P2-004 validator step only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T14:45:37.007Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Fixed final-head validator step, bounded policy wording, and implementer checks are ready for independent Sol review."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T14:49:29.166Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol review passed; exact CI-only scope, deterministic checks, and machine verification evidence accepted."
+    }
+  ]
+}
