@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-049",
   "title": "Add P2-005 validator to final-head CI",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "ci-assurance",
   "workflowId": "p2-005-final-head-validator",
@@ -106,7 +106,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-049/task.json",
+      "tasks/done/SUT-AIOS-GOV-049/task.json",
       "tasks/verified/SUT-AIOS-P2-005/task.json",
       ".github/workflows/validate-governance.yml",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -115,7 +115,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-07-29T17:43:24.544Z",
+  "updatedDate": "2026-07-29T18:42:28.762Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-049/verification-20260729174301294.json"
   ],
@@ -155,6 +155,13 @@
       "at": "2026-07-29T17:43:24.544Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed the exact fixed P2-005 CI step, bounded non-product scope, passing packet checks, and task-specific machine evidence; final-head CI remains required before merge."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T18:42:28.762Z",
+      "actor": "qa-verification",
+      "reason": "PR #103 merged to main as commit 3176ef3a40fda198db8a20c5559018b5e819ecaa after independent Sol QA and green final-head CI; reconcile verified to done without changing delivery scope."
     }
   ]
 }
