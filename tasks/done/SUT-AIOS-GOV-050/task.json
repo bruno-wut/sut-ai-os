@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-050",
   "title": "Plan P2-006 data governance contracts",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "data-governance",
   "workflowId": "p2-006-contract-design",
@@ -111,7 +111,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-050/task.json",
+      "tasks/done/SUT-AIOS-GOV-050/task.json",
       "tasks/backlog/SUT-AIOS-P2-006/task.json",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"
     ]
@@ -119,7 +119,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-07-29T18:59:29.161Z",
+  "updatedDate": "2026-07-29T19:01:51.775Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-050/verification-20260729185917099.json"
   ],
@@ -159,6 +159,13 @@
       "at": "2026-07-29T18:59:29.161Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA accepted finite data-minimisation and non-authoritative retention design; all deterministic and machine verification gates passed."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T19:01:51.775Z",
+      "actor": "qa-verification",
+      "reason": "PR #106 merged to main as commit c6c3ad18e0b997711d5831a6fc6a0a5ecde60c07 after independent Sol QA and green final-head CI; reconcile verified to done without changing planning scope."
     }
   ]
 }
