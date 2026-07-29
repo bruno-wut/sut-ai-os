@@ -1,15 +1,146 @@
 {
-  "$schema": "../../../schemas/task-packet.schema.json", "schemaVersion": "1.0.0", "taskId": "SUT-AIOS-P2-005", "title": "Define infrastructure trust-zone and provider-neutral port contracts", "status": "backlog", "phase": "phase-2", "workstream": "infrastructure-contracts", "workflowId": "implementation-p2-005", "playbookId": null, "playbookMode": "shadow",
-  "businessObjective": "Keep guest operations isolated while future Staff and AI OS infrastructure can change without a domain rewrite.",
-  "technicalObjective": "Define finite static V1 contracts for public/staff/AI trust zones, authenticated audience-bound short-lived cross-account HTTPS integration with replay resistance and idempotency, and provider-neutral inbound/outbound ports; do not provision infrastructure.",
-  "architectureReferences": ["docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md", "docs/project/ENGINEERING_PRINCIPLES.md"],
-  "dependencies": ["SUT-AIOS-P1-003", "SUT-AIOS-P1-005", "SUT-AIOS-P2-002"], "evidence": ["evidence/tasks/SUT-AIOS-P2-005/verification.md"],
-  "assumptions": ["No account, domain, credential, service, deployment, or production integration is selected or accessed."],
-  "acceptanceCriteria": ["Contracts distinguish guest/public, staff/control, and AI/workload zones with separate credentials, quotas, deployments, and failure boundaries.", "Cross-account use is limited to bounded HTTPS calls authenticated by audience-bound short-lived credentials; recipient validation rejects missing/expired/mis-audienced credentials, bad timestamps, reused nonces, replay, malformed bodies, and over-limit calls before dispatch.", "The contract fixes nonce/timestamp/replay-rejection and idempotency semantics, bounded request/response bodies and timeouts, and per-authenticated-caller/per-route rate limits; retries may not duplicate an accepted operation.", "Small stable ports cover persistence, ingestion, analytics, scheduling/queues, workflow, object storage, notifications, intelligence, deployment, and authentication.", "Core/domain dependency rules prohibit Cloudflare, Supabase, GitHub, OpenAI, LINE, and local-server SDK imports.", "Negative tests reject unauthenticated exposure, audience confusion, replay, duplicate idempotency use, unbounded body/timeout, route/caller rate-limit bypass, shared booking/AI boundary, provider authority, and unsupported ports."],
-  "allowedPaths": ["schemas/infrastructure-port-contract-v1.schema.json", "policies/infrastructure-trust-zone-policy-v1.json", "packages/infrastructure-contracts/**", "tests/infrastructure-contracts/**", "docs/infrastructure-contracts/**", "evidence/tasks/SUT-AIOS-P2-005/**", "evidence/verification/SUT-AIOS-P2-005/**", "tasks/**/SUT-AIOS-P2-005/**"],
-  "forbiddenPaths": ["reference/finalized-platform/**", "docs/architecture/source/**", ".github/**", "supabase/**", "**/*.sql", ".env*", "**/*secret*", "**/*credential*"],
-  "allowedCommands": ["node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs", "npm run verify:fast", "git diff --check"],
-  "requiredChecks": ["exact validator admission before independent verification", "trust-zone and core/adapter boundary review", "negative authorization/rate-limit cases", "independent Sol review"], "requiredTests": ["node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs", "npm run verify:fast"],
-  "productionWritePermission": false, "pullRequestRequirement": true, "riskLevel": "high", "autonomyTier": "tier-0", "defaultAgent": "codex-engineering-executor", "allowedAgents": ["codex-engineering-executor", "qa-verification"], "modelRoute": "sol", "defaultModel": "gpt-5.6-sol", "fallbackModel": "gpt-5.6-sol", "workspaceWrite": true,
-  "solEscalationTriggers": ["Any provider/account selection, live integration, authentication weakening, public exposure, or change to booking availability boundaries."], "rollbackExpectations": "Revert only the contract implementation and preserve evidence; no external state exists.", "outputSchema": "schemas/agent-result.schema.json", "contextBudget": {"maxBytes": 262144, "includedPaths": ["AGENTS.md", "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md", "tasks/backlog/SUT-AIOS-P2-005/task.json"]}, "owner": "codex-engineering-executor", "reviewer": "qa-verification", "createdDate": "2026-07-29T12:21:28.627Z", "updatedDate": "2026-07-29T13:00:00.000Z", "completionEvidence": [], "stateTransitions": [{"from": null, "to": "backlog", "at": "2026-07-29T12:21:28.627Z", "actor": "chief-orchestrator", "reason": "Created by GOV-043 for the required infrastructure authority."}]
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-005",
+  "title": "Define infrastructure boundary and provider-neutral port contracts V1",
+  "status": "backlog",
+  "phase": "phase-2",
+  "workstream": "infrastructure-contracts",
+  "workflowId": "implementation-p2-005",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Keep guest operations isolated while Staff and AI OS infrastructure can change through adapters and configuration without a domain rewrite.",
+  "technicalObjective": "Implement one closed static V1 structural authority, one canonical trust-zone policy artifact, and one runtime-safe validation deep module for finite cross-zone descriptors and provider-neutral ports; do not provision, integrate, authenticate, dispatch, or select infrastructure.",
+  "architectureReferences": [
+    "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P2-002",
+    "SUT-AIOS-GOV-047",
+    "SUT-AIOS-GOV-048"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P2-005/verification.md"
+  ],
+  "assumptions": [
+    "P2-005 remains static Tier-0 contract validation only; a successful descriptor validation is not authentication, authorization, approval, capacity reservation, dispatch permission, or evidence of a live recipient check.",
+    "The public module obtains the committed schema and canonical policy internally and accepts no caller-supplied authority, validator, adapter, configuration, credential verifier, clock, state store, rate limiter, quota state, or dependency injection.",
+    "No account, domain, service, provider, credential, network, database, queue, deployment, production integration, or external system is selected, accessed, or configured.",
+    "P2-006 and P2-007 will separately define minimisation/retention and numeric budget authorities; P2-005 must not invent them."
+  ],
+  "acceptanceCriteria": [
+    "`schemas/infrastructure-port-contract-v1.schema.json` is one closed Draft 2020-12 authority for the exact canonical policy and boundary-request structures in the GOV-047 design; every object is closed and all finite values and bounds are explicit.",
+    "`policies/infrastructure-trust-zone-policy-v1.json` validates under the schema and fixes exactly the guest/public, staff/control, and AI/workload zones; distinct credential/quota/deployment/failure boundaries; authenticated HTTPS protocol bounds; five directed route classes; booking isolation; dependency rules; and non-authority posture.",
+    "The canonical policy declares exactly thirteen provider-neutral ports and their finite V1 operations: persistence, ingestion, analytics, scheduling/queues, workflow, object storage, notifications, intelligence, deployment, authentication, proposal generation, executor adapters, and verification; core imports no infrastructure/provider SDK or configuration and providers gain no policy, authorization, workflow, approval, or audit authority.",
+    "`packages/infrastructure-contracts/src/infrastructure-port-contract-v1.mjs` exports only `validateInfrastructureBoundaryRequest(request)`, obtains committed authority internally, returns deeply frozen plain-data decisions, mutates no input, ignores caller dependency arguments, and never throws for any JavaScript input.",
+    "Validation deterministically fails closed for malformed input, unsupported version/zone/route/port, zone or route confusion, insecure or unbounded transport, missing/invalid/expired/mis-audienced credentials, invalid timestamp, missing/reused nonce, missing/conflicting/duplicate idempotency, caller/route saturation or unknown metering, shared boundaries, booking-capacity dependency, provider/self authority claims, and caller authority injection using the exact reason precedence in the design.",
+    "The module and documentation state that network-supplied facts are untrusted; live recipient adapters must independently establish cryptographic identity, time, replay/idempotency history, rate/quota state, and isolation before later policy/approval dispatch. Validation success alone never dispatches.",
+    "The implementation creates only the exact schema, policy, deep module, validator, product documentation, P2-005 evidence/state, and permitted risk update; it adds no adapter, SDK, endpoint, service, provider, storage, workflow, credential, rate limiter, deployment, migration, production behavior, or external call.",
+    "The exact admitted validator compiles the committed schema, validates the canonical policy, tests every finite value/bound/mapping and focused exploit path, proves private authority, total/frozen/clone behavior and import boundaries, and passes with packet validation, fast verification, diff checks, independent Sol QA, task-specific machine evidence, and final-head CI."
+  ],
+  "allowedPaths": [
+    "schemas/infrastructure-port-contract-v1.schema.json",
+    "policies/infrastructure-trust-zone-policy-v1.json",
+    "packages/infrastructure-contracts/src/infrastructure-port-contract-v1.mjs",
+    "tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs",
+    "docs/infrastructure-contracts/INFRASTRUCTURE_PORT_CONTRACT_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P2-005/**",
+    "evidence/verification/SUT-AIOS-P2-005/**",
+    "tasks/**/SUT-AIOS-P2-005/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "supabase/**",
+    "package.json",
+    "package-lock.json",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P2-005 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "closed Draft 2020-12 schema compilation and canonical policy validation",
+    "finite trust-zone, route, protocol, port, operation, isolation, and authority review",
+    "deep-module private-authority and hexagonal import-boundary inspection",
+    "focused authentication, replay, idempotency, limit, booking-isolation, and caller-authority exploit regressions",
+    "malformed and hostile input never-throw validation",
+    "changed-path inspection and secret scan",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any ambiguity or implementation that permits caller-supplied authority, treats descriptor validation as authentication/authorization/dispatch, exposes Staff/AI publicly, shares guest/internal boundaries, makes booking availability depend on Staff/AI, or imports provider/infrastructure details into core.",
+    "Any provider/account/domain selection, credential or live authentication behavior, network/service/storage/queue/workflow/rate-limit/quota/deployment implementation, production write, guest-data retention, SQL, migration, RLS, payment, inventory, or pricing behavior."
+  ],
+  "rollbackExpectations": "Revert only the P2-005 schema, canonical policy, deep module, validator, product documentation, task state/evidence, and P2-005 risk entry; preserve ADR-0002, GOV-043/GOV-047/GOV-048 history, terminal P1/P2 records and evidence, canonical sources, immutable snapshots, and all external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P2-005/task.json",
+      "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+      "docs/project/ENGINEERING_PRINCIPLES.md",
+      "packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T12:21:28.627Z",
+  "updatedDate": "2026-07-29T15:40:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T12:21:28.627Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created by GOV-043 for the required infrastructure authority."
+    }
+  ]
 }

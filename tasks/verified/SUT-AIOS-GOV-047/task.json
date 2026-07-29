@@ -1,0 +1,188 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-047",
+  "title": "Plan P2-005 infrastructure trust-zone contracts",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "infrastructure-contracts",
+  "workflowId": "p2-005-contract-design",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make future Staff and AI infrastructure portable and isolated from guest operations without selecting or provisioning any provider.",
+  "technicalObjective": "Write an exact finite design for P2-005 static trust-zone and provider-neutral port contracts, make its product packet executable-ready, and define a separate narrow exact validator-admission task; do not implement a contract or infrastructure.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/SOURCE_OF_TRUTH.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P2-002",
+    "SUT-AIOS-GOV-043"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-047/verification.md"
+  ],
+  "assumptions": [
+    "P2-005 is static Tier-0 contract work only.",
+    "No cloud account, domain, service, credential, SDK, queue, database, deployment, network call, or production integration is selected, accessed, or configured.",
+    "A separate governance task must admit P2-005's exact validator before product implementation and independent machine verification."
+  ],
+  "acceptanceCriteria": [
+    "The design defines one closed Draft 2020-12 V1 contract authority, exact finite zone/port/request/rejection fields and bounds, and a minimal runtime-safe semantic public surface that obtains committed authority internally and accepts no caller-supplied policy, schema, adapter, or configuration.",
+    "The design fixes distinct guest/public, staff/control, and AI/workload zones; separate credential, quota, deployment, and failure boundaries; booking isolation; authenticated audience-bound short-lived HTTPS; recipient-side expiry/audience/timestamp/nonce/replay/idempotency handling; bounded request/response/timeouts; and caller/route limits.",
+    "The design defines finite provider-neutral ports for persistence, event ingestion, analytics, scheduling/queues, workflow, object storage, notifications, intelligence, deployment, authentication, proposal generation, executor adapters, and verification providers; core has no provider or infrastructure imports.",
+    "The design defines deterministic fail-closed reason codes and focused real exploit regressions for malformed input, unauthenticated/mis-audienced/expired/replayed calls, duplicate idempotency, unbounded body/timeout, rate-limit bypass, zone confusion, provider authority, shared booking/AI capacity, unsupported ports, caller authority injection, and never-throw behavior.",
+    "The P2-005 packet is updated with exact allowed paths, task-specific machine-evidence path, real exact validator command, required checks, rollback, GOV-047/GOV-048 dependencies, no production permissions, and a separate GOV-048 packet admits only the exact literal shell-free validator command with focused rejection coverage.",
+    "The planning output preserves deep-module, hexagonal-port, minimisation, retention, quota, and approval boundaries; it introduces no schema/module/test implementation, service, adapter, SDK, external call, provider selection, or production behavior."
+  ],
+  "allowedPaths": [
+    "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P2-005/task.json",
+    "tasks/backlog/SUT-AIOS-GOV-048/**",
+    "tasks/**/SUT-AIOS-GOV-047/**",
+    "evidence/tasks/SUT-AIOS-GOV-047/**",
+    "evidence/verification/SUT-AIOS-GOV-047/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "packages/**",
+    "schemas/**",
+    "tests/**",
+    "scripts/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "finite trust-zone and protocol design review",
+    "deep-module and hexagonal port-boundary review",
+    "packet and exact verifier-admission readiness review",
+    "changed-path and secret-boundary inspection",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any provider/account/domain selection, credential/authentication weakening, network/infrastructure provisioning, public exposure, database/queue/storage action, booking-boundary change, runtime adapter implementation, or product contract implementation requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the GOV-047 design, P2-005/GOV-048 future-packet preparation, task state, permanent-memory/risk entries, and GOV-047 evidence; preserve terminal P2-002/P2-004/GOV-043 history, canonical sources, immutable snapshot, and all external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-047/task.json",
+      "tasks/backlog/SUT-AIOS-P2-005/task.json",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+      "docs/project/ENGINEERING_PRINCIPLES.md"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T15:35:00.000Z",
+  "updatedDate": "2026-07-29T15:49:29.888Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-047/verification-20260729154919272.json"
+  ],
+  "worktree": null,
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T15:35:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after canonical review found P2-005 dependency-unblocked but lacking a finite executable contract and exact validator admission."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T15:35:25.544Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P2-005 dependencies are terminal and this Sol-scoped planning packet fixes its design, future evidence, exact validator admission, and strict non-goals."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T15:35:25.955Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed with P2-005 static contract design and packet preparation only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T15:42:50.901Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Finite P2-005 trust-zone and port design, executable product packet, bounded GOV-048 admission packet, memory/risk updates, evidence, and implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T15:47:13.366Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA found the closed request descriptor internally inconsistent: it says five closed nested objects while requiring and enumerating six. Correct the finite count and rerun implementer checks before fresh independent verification."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T15:47:32.884Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent Sol QA found one finite-contract documentation count mismatch; correct the closed-object count only and repeat independent review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T15:47:44.917Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Corrected the independently identified closed-object count; no other design, packet, or scope change."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T15:49:29.888Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA accepted the corrected six-object request contract, finite mappings, packet boundaries, and deterministic checks."
+    }
+  ]
+}

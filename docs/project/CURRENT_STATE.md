@@ -3,7 +3,7 @@
 ## Workspace
 
 - Repository: independent AI OS workspace on `main`; Phase 0, `P1-001` through
-  `P1-008`, `P2-001`, and `P2-002` have merged completion records.
+  `P1-008`, `P2-001`, `P2-002`, and `P2-004` have merged completion records.
 - Active code: no deployed AI OS product services. The repository contains the
   governed workspace, permanent memory, Phase 1 static contracts and local
   deterministic policy evaluator, retained verification evidence, and a
@@ -24,7 +24,7 @@
 - The derived provider-neutral Mac Mini/Pi/Codex deployment option is accepted
   active planning in `docs/decisions/ADR-0001-MAC-MINI-PI-CODEX-RUNTIME.md`; it
   adds no deployment or runtime capability.
-- ADR-0002 is proposed derived planning: it adds no runtime capability, but
+- ADR-0002 is accepted derived planning: it adds no runtime capability, but
   requires trust-zone/port, minimisation/retention, resource-budget/workload,
   and portability authorities before Phase 3 implementation. No P2-001/R02 or
   P2-002 remediation is required: their accepted finite contracts, runtime
@@ -46,8 +46,10 @@ Root Next.js and Astro builds passed in an isolated disposable copy. Warnings, d
 
 ## Immediate constraint
 
-The next existing product dependency is `P2-004`; it and the GOV-043-added
-static infrastructure authorities must be verified before Phase 3 runtime work.
-The future Mac Mini worker starts at Tier 0/shadow and cannot substitute for
-policy, approval, workflow, verification, or audit. Production writes and
-autonomous operation remain disabled.
+P2-004 is done. GOV-047 is preparing the exact finite P2-005 design and
+executable product packet; GOV-048 must separately admit its literal validator
+before P2-005 can activate. The remaining GOV-043 static infrastructure
+authorities must be verified before Phase 3 runtime work. The future Mac Mini
+worker starts at Tier 0/shadow and cannot substitute for policy, approval,
+workflow, verification, or audit. Production writes and autonomous operation
+remain disabled.

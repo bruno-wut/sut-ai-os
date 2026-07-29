@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-047",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-29T15:49:19.272Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: The design defines one closed Draft 2020-12 V1 contract authority, exact finite zone/port/request/rejection fields and bounds, and a minimal runtime-safe semantic public surface that obtains committed authority internally and accepts no caller-supplied policy, schema, adapter, or configuration.",
+    "confirmed: The design fixes distinct guest/public, staff/control, and AI/workload zones; separate credential, quota, deployment, and failure boundaries; booking isolation; authenticated audience-bound short-lived HTTPS; recipient-side expiry/audience/timestamp/nonce/replay/idempotency handling; bounded request/response/timeouts; and caller/route limits.",
+    "confirmed: The design defines finite provider-neutral ports for persistence, event ingestion, analytics, scheduling/queues, workflow, object storage, notifications, intelligence, deployment, authentication, proposal generation, executor adapters, and verification providers; core has no provider or infrastructure imports.",
+    "confirmed: The design defines deterministic fail-closed reason codes and focused real exploit regressions for malformed input, unauthenticated/mis-audienced/expired/replayed calls, duplicate idempotency, unbounded body/timeout, rate-limit bypass, zone confusion, provider authority, shared booking/AI capacity, unsupported ports, caller authority injection, and never-throw behavior.",
+    "confirmed: The P2-005 packet is updated with exact allowed paths, task-specific machine-evidence path, real exact validator command, required checks, rollback, GOV-047/GOV-048 dependencies, no production permissions, and a separate GOV-048 packet admits only the exact literal shell-free validator command with focused rejection coverage.",
+    "confirmed: The planning output preserves deep-module, hexagonal-port, minimisation, retention, quota, and approval boundaries; it introduces no schema/module/test implementation, service, adapter, SDK, external call, provider selection, or production behavior."
+  ],
+  "changedPaths": [
+    "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
+    "docs/project/CURRENT_STATE.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-047/verification.md",
+    "tasks/backlog/SUT-AIOS-GOV-048/task.json",
+    "tasks/backlog/SUT-AIOS-P2-005/task.json",
+    "tasks/review/SUT-AIOS-GOV-047/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-047/verification-20260729154919272.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
