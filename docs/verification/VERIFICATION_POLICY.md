@@ -48,4 +48,14 @@ authorize a caller, establish live trust or recipient facts, reserve capacity,
 dispatch a call, configure an adapter or provider, access infrastructure, or
 create production capability.
 
+The same workflow executes the exact P2-006 validator
+`node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs`
+as a distinct fixed step after dependency installation and repository fast
+verification. This final-head check proves only the committed static data-
+minimisation and retention contract merge candidate. It does not access or
+classify live data, prove payload minimisation or aggregation, establish legal
+retention or due state, schedule or perform deletion, aggregation, archival, or
+transfer, invoke storage, queues, workflows, AI, or external services, or
+create production capability.
+
 Large logs, traces, screenshots, and reports belong in `artifacts/`; result JSON stores concise references only. Do not add secrets or raw webhook payloads to evidence.

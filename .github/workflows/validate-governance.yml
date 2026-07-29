@@ -28,6 +28,8 @@ jobs:
         run: npm run task:validate -- --all
       - name: Run repository fast verification
         run: npm run verify:fast
+      - name: Run P2-006 data minimisation and retention contract validator
+        run: node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs
       - name: Run P2-005 infrastructure port contract validator
         run: node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs
       - name: Run P2-004 intervention proposal contract validator
