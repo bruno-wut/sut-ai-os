@@ -43,6 +43,7 @@
     "tests/executive-reporting/**",
     "docs/executive-reporting/**",
     "evidence/tasks/SUT-AIOS-P2-003/**",
+    "evidence/verification/SUT-AIOS-P2-003/**",
     "tasks/**/SUT-AIOS-P2-003/**"
   ],
   "forbiddenPaths": [

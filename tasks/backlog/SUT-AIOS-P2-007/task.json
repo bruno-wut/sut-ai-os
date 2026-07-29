@@ -22,7 +22,7 @@
     "Workload rules require batching, dedupe, idempotency, backpressure, rate/concurrency/retry bounds, DLQ, priority queues, and scheduled summaries.",
     "Tests reject every metering-uncertainty state, unbounded or per-event AI, and booking-shared quota cases."
   ],
-  "allowedPaths": ["schemas/resource-budget-contract-v1.schema.json", "policies/resource-budget-policy-v1.json", "packages/resource-governance-contracts/**", "tests/resource-governance/**", "docs/resource-governance/**", "evidence/tasks/SUT-AIOS-P2-007/**", "tasks/**/SUT-AIOS-P2-007/**"],
+  "allowedPaths": ["schemas/resource-budget-contract-v1.schema.json", "policies/resource-budget-policy-v1.json", "packages/resource-governance-contracts/**", "tests/resource-governance/**", "docs/resource-governance/**", "evidence/tasks/SUT-AIOS-P2-007/**", "evidence/verification/SUT-AIOS-P2-007/**", "tasks/**/SUT-AIOS-P2-007/**"],
   "forbiddenPaths": ["reference/finalized-platform/**", "docs/architecture/source/**", ".github/**", "supabase/**", "**/*.sql", ".env*", "**/*secret*", "**/*credential*"],
   "allowedCommands": ["node tests/resource-governance/validate-resource-budget-contract-v1.mjs", "npm run verify:fast", "git diff --check"],
   "requiredChecks": ["exact validator admission before independent verification", "quota/boundary, metering-freshness, and workload-control review", "independent Sol review"],

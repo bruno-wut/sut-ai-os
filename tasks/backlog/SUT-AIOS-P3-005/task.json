@@ -42,6 +42,7 @@
     "tests/retention-lifecycle/**",
     "docs/retention-lifecycle/**",
     "evidence/tasks/SUT-AIOS-P3-005/**",
+    "evidence/verification/SUT-AIOS-P3-005/**",
     "tasks/**/SUT-AIOS-P3-005/**"
   ],
   "forbiddenPaths": [

@@ -21,7 +21,7 @@
     "Migration readiness includes a bounded future transfer, rollback, retention, audit, authentication, failure-boundary, and P3-005 transfer-eligibility checklist; it performs none of those actions.",
     "Missing adapter capability, retention lifecycle evidence, metering authority, or migration authority fails closed and produces no cutover claim."
   ],
-  "allowedPaths": ["tests/portability-assurance/**", "docs/portability-assurance/**", "artifacts/reports/portability/**", "evidence/tasks/SUT-AIOS-P5-005/**", "tasks/**/SUT-AIOS-P5-005/**"],
+  "allowedPaths": ["tests/portability-assurance/**", "docs/portability-assurance/**", "artifacts/reports/portability/**", "evidence/tasks/SUT-AIOS-P5-005/**", "evidence/verification/SUT-AIOS-P5-005/**", "tasks/**/SUT-AIOS-P5-005/**"],
   "forbiddenPaths": ["reference/finalized-platform/**", "docs/architecture/source/**", ".github/**", "supabase/**", "**/*.sql", "**/*migration*", ".env*", "**/*secret*", "**/*credential*"],
   "allowedCommands": ["npm run test:portability-assurance", "npm run verify:fast", "git diff --check"],
   "requiredChecks": ["exact validator admission before independent verification", "adapter-only dependency inspection", "migration/rollback/retention-lifecycle review", "independent Sol review"],

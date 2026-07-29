@@ -48,6 +48,7 @@
     "tests/mac-mini-worker/**",
     "docs/mac-mini-worker/**",
     "evidence/tasks/SUT-AIOS-P4-006/**",
+    "evidence/verification/SUT-AIOS-P4-006/**",
     "tasks/**/SUT-AIOS-P4-006/**"
   ],
   "forbiddenPaths": [

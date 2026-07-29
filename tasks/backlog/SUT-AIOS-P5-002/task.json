@@ -42,6 +42,7 @@
     "tests/preview-verification/**",
     "docs/preview-verification/**",
     "evidence/tasks/SUT-AIOS-P5-002/**",
+    "evidence/verification/SUT-AIOS-P5-002/**",
     "tasks/**/SUT-AIOS-P5-002/**"
   ],
   "forbiddenPaths": [

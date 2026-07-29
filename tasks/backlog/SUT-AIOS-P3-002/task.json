@@ -40,6 +40,7 @@
     "tests/event-delivery/**",
     "docs/event-delivery/**",
     "evidence/tasks/SUT-AIOS-P3-002/**",
+    "evidence/verification/SUT-AIOS-P3-002/**",
     "tasks/**/SUT-AIOS-P3-002/**"
   ],
   "forbiddenPaths": [

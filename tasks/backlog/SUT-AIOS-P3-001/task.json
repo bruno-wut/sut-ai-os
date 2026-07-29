@@ -42,6 +42,7 @@
     "tests/signal-ingestion/**",
     "docs/signal-ingestion/**",
     "evidence/tasks/SUT-AIOS-P3-001/**",
+    "evidence/verification/SUT-AIOS-P3-001/**",
     "tasks/**/SUT-AIOS-P3-001/**"
   ],
   "forbiddenPaths": [

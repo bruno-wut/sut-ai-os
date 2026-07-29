@@ -38,6 +38,7 @@
     "tests/seo-ingestion/**",
     "docs/seo-ingestion/**",
     "evidence/tasks/SUT-AIOS-P6-001/**",
+    "evidence/verification/SUT-AIOS-P6-001/**",
     "tasks/**/SUT-AIOS-P6-001/**"
   ],
   "forbiddenPaths": [

@@ -22,7 +22,7 @@
     "Booking-path fixture/boundary remains available and has no shared AI/staff credential, quota, deployment, or failure dependency.",
     "Results cannot claim production capacity or authorize a production change."
   ],
-  "allowedPaths": ["tests/resource-assurance/**", "docs/resource-assurance/**", "artifacts/reports/resource-assurance/**", "evidence/tasks/SUT-AIOS-P5-006/**", "tasks/**/SUT-AIOS-P5-006/**"],
+  "allowedPaths": ["tests/resource-assurance/**", "docs/resource-assurance/**", "artifacts/reports/resource-assurance/**", "evidence/tasks/SUT-AIOS-P5-006/**", "evidence/verification/SUT-AIOS-P5-006/**", "tasks/**/SUT-AIOS-P5-006/**"],
   "forbiddenPaths": ["reference/finalized-platform/**", "docs/architecture/source/**", ".github/**", "supabase/**", "**/*.sql", "**/*migration*", ".env*", "**/*secret*", "**/*credential*"],
   "allowedCommands": ["npm run test:resource-assurance", "npm run verify:fast", "git diff --check"],
   "requiredChecks": ["exact validator admission before independent verification", "all budget/threshold, metering-uncertainty, and workload negative cases", "booking-isolation review", "independent Sol review"],

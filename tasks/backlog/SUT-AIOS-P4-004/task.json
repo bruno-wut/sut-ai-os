@@ -48,6 +48,7 @@
     "tests/intelligence-gateway/**",
     "docs/intelligence-gateway/**",
     "evidence/tasks/SUT-AIOS-P4-004/**",
+    "evidence/verification/SUT-AIOS-P4-004/**",
     "tasks/**/SUT-AIOS-P4-004/**"
   ],
   "forbiddenPaths": [
