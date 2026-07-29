@@ -161,3 +161,39 @@ with `EPERM`; it produced no machine record. The approved out-of-sandbox retry
 is the sole completed cycle and authoritative final result.
 
 Independent recommendation: `verified`. Production eligibility remains false.
+
+## Executor remediation after external review
+
+External review correctly identified two product-contract defects and one
+separate CI-governance prerequisite. This bounded revision resolves the product
+defects without editing `.github/**` or rewriting any historical evidence.
+
+- Ajv 8.17.1 is promoted from `devDependencies` to the pinned runtime
+  `dependencies` graph in both package authorities. The exact validator builds
+  a disposable isolated installation containing only lockfile packages retained
+  when development dependencies are omitted, loads the contract module from
+  that installation, and validates a canonical request.
+- Once a request passes trusted validation, every caller- or provider-supplied
+  `rejected` result—including each request-level reason code—now becomes exactly
+  `MALFORMED_PROVIDER_RESULT`. Only `validateIntelligenceRequest` constructs
+  request-rejection decisions, while invalid requests still take precedence
+  before provider output is inspected.
+- The risk register no longer claims the root Ajv dependency is development-only
+  after P2-002, while preserving the factual boundary that the pure P2-001
+  calculator runtime does not import it.
+
+Executor checks on 2026-07-29:
+
+- `node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs`
+  passed 237 deterministic cases, including the isolated production-only
+  dependency installation and every rejected-result provenance regression.
+- `npm ls --omit=dev ajv` retained pinned `ajv@8.17.1` in the production graph.
+- `node scripts/task/validate --all` passed every packet.
+- `npm run verify:fast` passed all four fast-governance checks.
+- `git diff --check` passed; line-ending notices were informational only.
+
+The executor did not run `verify:task`. The third external finding—the missing
+P2-002 validator invocation in GitHub Actions—requires a separate governance
+packet because `.github/**` remains forbidden here. Fresh independent Sol QA
+must run after that governance prerequisite lands. Production eligibility
+remains false.

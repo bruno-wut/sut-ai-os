@@ -1,4 +1,5 @@
-import { readFile } from "node:fs/promises";
+import { cp, copyFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -7,6 +8,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const requestSchemaPath = path.join(root, "schemas/intelligence-provider-request-v1.schema.json");
 const resultSchemaPath = path.join(root, "schemas/intelligence-provider-result-v1.schema.json");
 const modulePath = path.join(root, "packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs");
+const packageJsonPath = path.join(root, "package.json");
+const packageLockPath = path.join(root, "package-lock.json");
 const expect = (condition, message) => { if (!condition) throw new Error(message); };
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
@@ -103,10 +106,58 @@ function assertFrozen(value, label) {
   if (typeof value === "object") for (const child of Object.values(value)) if (child !== null && typeof child === "object") assertFrozen(child, label);
 }
 
+function productionDependencyNames(packageJson, packageLock) {
+  expect(packageJson.dependencies?.ajv === "8.17.1", "Ajv 8.17.1 must be a pinned runtime dependency");
+  expect(packageJson.devDependencies?.ajv === undefined, "Ajv must not remain development-only");
+  expect(packageLock.packages?.[""]?.dependencies?.ajv === "8.17.1", "lockfile root must retain Ajv for production installs");
+  expect(packageLock.packages?.[""]?.devDependencies?.ajv === undefined, "lockfile root must not classify Ajv as development-only");
+  const names = new Set();
+  const pending = Object.keys(packageJson.dependencies ?? {});
+  while (pending.length > 0) {
+    const name = pending.shift();
+    if (names.has(name)) continue;
+    const entry = packageLock.packages?.[`node_modules/${name}`];
+    expect(entry !== undefined, `production dependency ${name} must exist in the lockfile`);
+    expect(entry.dev !== true, `production dependency ${name} must not be marked development-only`);
+    names.add(name);
+    pending.push(...Object.keys(entry.dependencies ?? {}));
+  }
+  return [...names].sort();
+}
+
+async function verifyProductionOnlyRuntime(packageJson, packageLock, canonicalRequest) {
+  const dependencyNames = productionDependencyNames(packageJson, packageLock);
+  const productionRoot = await mkdtemp(path.join(tmpdir(), "sut-ai-os-p2-002-production-"));
+  try {
+    const isolatedModulePath = path.join(productionRoot, "packages/ai-analysis-contracts/src/intelligence-provider-contracts-v1.mjs");
+    await mkdir(path.dirname(isolatedModulePath), { recursive: true });
+    await mkdir(path.join(productionRoot, "schemas"), { recursive: true });
+    await mkdir(path.join(productionRoot, "node_modules"), { recursive: true });
+    await copyFile(modulePath, isolatedModulePath);
+    await copyFile(requestSchemaPath, path.join(productionRoot, "schemas/intelligence-provider-request-v1.schema.json"));
+    await copyFile(resultSchemaPath, path.join(productionRoot, "schemas/intelligence-provider-result-v1.schema.json"));
+    for (const name of dependencyNames) {
+      const destination = path.join(productionRoot, "node_modules", ...name.split("/"));
+      await mkdir(path.dirname(destination), { recursive: true });
+      await cp(path.join(root, "node_modules", ...name.split("/")), destination, { recursive: true });
+    }
+    const isolatedModule = await import(`${pathToFileURL(isolatedModulePath).href}?production=${Date.now()}`);
+    const decision = isolatedModule.validateIntelligenceRequest(canonicalRequest);
+    expect(decision.ok === true, "production-only dependency installation must load committed authority and validate a canonical request");
+  } finally {
+    await rm(productionRoot, { recursive: true, force: true });
+  }
+}
+
 try {
-  const [requestText, resultText, moduleText] = await Promise.all([readFile(requestSchemaPath, "utf8"), readFile(resultSchemaPath, "utf8"), readFile(modulePath, "utf8")]);
+  const [requestText, resultText, moduleText, packageText, packageLockText] = await Promise.all([
+    readFile(requestSchemaPath, "utf8"), readFile(resultSchemaPath, "utf8"), readFile(modulePath, "utf8"),
+    readFile(packageJsonPath, "utf8"), readFile(packageLockPath, "utf8")
+  ]);
   const requestSchema = JSON.parse(requestText);
   const resultSchema = JSON.parse(resultText);
+  const packageJson = JSON.parse(packageText);
+  const packageLock = JSON.parse(packageLockText);
   expect(requestSchema.$schema === "https://json-schema.org/draft/2020-12/schema" && resultSchema.$schema === requestSchema.$schema, "both authorities must use Draft 2020-12");
   expect(requestSchema.$id.endsWith("intelligence-provider-request-v1.schema.json") && resultSchema.$id.endsWith("intelligence-provider-result-v1.schema.json"), "schema identities must be canonical V1");
   expect(resultSchema.oneOf.length === 4, "result must expose exactly four variants");
@@ -159,6 +210,8 @@ try {
   };
 
   const canonicalRequest = baseRequest();
+  await verifyProductionOnlyRuntime(packageJson, packageLock, canonicalRequest);
+  testsRun += 1;
   expect(schemaRequest(canonicalRequest), `canonical request must satisfy schema: ${ajv.errorsText(schemaRequest.errors)}`);
   checkRequest(canonicalRequest, true, null, "canonical request");
   for (const purpose of ["technical", "operational", "seo", "commercial"]) {
@@ -256,7 +309,7 @@ try {
       providerIdentity: null, nonAuthoritative: true, failClosed: true, analysis: null, reasonCodes: [reasonCode] }, canonicalRequest, true, null, `provider state ${providerState}`);
   }
   checkResult({ schemaVersion: "1.0.0", status: "rejected", requestId: canonicalRequest.requestId, providerState: null,
-    providerIdentity: null, nonAuthoritative: true, failClosed: true, analysis: null, reasonCodes: ["MALFORMED_PROVIDER_RESULT"] }, canonicalRequest, true, null, "canonical rejected result");
+    providerIdentity: null, nonAuthoritative: true, failClosed: true, analysis: null, reasonCodes: ["MALFORMED_PROVIDER_RESULT"] }, canonicalRequest, false, "MALFORMED_PROVIDER_RESULT", "provider-supplied rejected result");
 
   for (const intervention of INTERVENTIONS) {
     const result = completedResult(canonicalRequest); result.analysis.selectedIntervention.kind = intervention;
@@ -272,9 +325,11 @@ try {
     checkResult(result, canonicalRequest, ok, ok ? null : "MALFORMED_PROVIDER_RESULT", `hypothesis confidence ${label}`);
   }
   for (const reasonCode of REJECTION_CODES) {
-    checkResult(rejectedResult(canonicalRequest, [reasonCode]), canonicalRequest, true, null, `rejected reason ${reasonCode}`);
+    const result = rejectedResult(canonicalRequest, [reasonCode]);
+    expect(schemaResult(result), `rejected reason ${reasonCode} remains a structurally valid trusted decision`);
+    checkResult(result, canonicalRequest, false, "MALFORMED_PROVIDER_RESULT", `provider cannot supply rejected reason ${reasonCode}`);
   }
-  checkResult(rejectedResult(canonicalRequest, REJECTION_CODES.slice(0, 7)), canonicalRequest, true, null, "combined ordered request rejection reasons");
+  checkResult(rejectedResult(canonicalRequest, REJECTION_CODES.slice(0, 7)), canonicalRequest, false, "MALFORMED_PROVIDER_RESULT", "provider cannot supply combined request rejection reasons");
   for (const fatalCode of ["MALFORMED_PROVIDER_RESULT", "INTERNAL_AUTHORITY_UNAVAILABLE"]) {
     const combined = rejectedResult(canonicalRequest, ["MALFORMED_REQUEST", fatalCode]);
     expect(schemaResult(combined), `${fatalCode} combination remains structurally valid for semantic rejection`);
@@ -446,7 +501,7 @@ try {
   const originalResult = completedResult(); const acceptedResult = validateIntelligenceResult(originalResult, baseRequest()); originalResult.analysis.explanation = "mutated";
   expect(acceptedResult.value.analysis.explanation !== "mutated", "accepted result must not share input references");
 
-  process.stdout.write(`${JSON.stringify({ name: "intelligence-provider-contracts-v1", passed: true, testsRun, details: "Draft 2020-12 compilation, four exact result variants, finite enums and provider mappings, semantic cross-references, classification and P2-001 boundaries, private authority, frozen clones, self-authorization rejection, and adversarial never-throw behavior passed" })}\n`);
+  process.stdout.write(`${JSON.stringify({ name: "intelligence-provider-contracts-v1", passed: true, testsRun, details: "Draft 2020-12 compilation, production-only runtime dependency installation, four exact result variants, trusted rejection provenance, finite enums and provider mappings, semantic cross-references, classification and P2-001 boundaries, private authority, frozen clones, self-authorization rejection, and adversarial never-throw behavior passed" })}\n`);
 } catch (error) {
   process.stdout.write(`${JSON.stringify({ name: "intelligence-provider-contracts-v1", passed: false, details: error.message })}\n`);
   process.exitCode = 1;

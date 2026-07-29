@@ -17,6 +17,28 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-29 — P2-002 runtime dependency and rejection provenance gaps
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** High
+- **Affected scope:** P2-002 runtime authority loading, package metadata, and
+  provider-result semantic validation.
+- **Evidence:** External review found that the runtime contract imports Ajv
+  while Ajv was declared development-only, and that a valid request could be
+  paired with provider-supplied request-rejection reason codes. The earlier
+  R02 risk text accurately described P2-001 but did not account for P2-002's
+  later runtime import.
+- **Resolution:** Ajv 8.17.1 is now a pinned runtime dependency in both package
+  authorities; deterministic validation proves its complete lockfile graph is
+  retained when development dependencies are omitted. After request validation
+  succeeds, every provider-supplied `rejected` variant now fails closed as the
+  singleton `MALFORMED_PROVIDER_RESULT`; trusted request validation remains the
+  only constructor of request-level rejection decisions.
+- **Next action / owner:** A separate governance task must add the exact P2-002
+  validator to GitHub Actions before PR #84 is approvable. Independent Sol QA
+  must verify this product remediation after that governance prerequisite.
+
 ### 2026-07-29 — P2-002 rejected-reason semantics and finite boundary coverage are incomplete
 
 - **Task ID:** `SUT-AIOS-P2-002`
@@ -128,20 +150,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Next action / owner:** Independent Sol QA must review the final R02 diff and
   run the single machine verification cycle before downstream P2-002 work.
 
-### 2026-07-28 — R02 install reports one moderate development-only advisory
+### 2026-07-28 — R02 install reports one moderate Ajv advisory
 
 - **Task ID:** `SUT-AIOS-P2-001-R02`
 - **Status:** Monitoring
 - **Severity:** Low
-- **Affected scope:** Root development dependency used only by the local P2-001
-  contract validator.
+- **Affected scope:** Original P2-001 use of the root dependency and later
+  P2-002 runtime use.
 - **Evidence:** Installing pinned `ajv@8.17.1` completed successfully and reported
-  one moderate npm advisory across development dependencies. Ajv is not imported
-  by the pure analytics runtime, receives only committed repository schemas, and
-  introduces no production capability. No audit fix or dependency expansion was
-  attempted.
-- **Next action / owner:** QA should confirm the development-only boundary; any
-  upgrade or advisory remediation requires a separately approved dependency task.
+  one moderate npm advisory. Ajv remains absent from the pure P2-001 analytics
+  runtime, but P2-002 later imports it to compile committed request/result
+  authorities and therefore correctly promotes the pinned version to a runtime
+  dependency. It receives only committed repository schemas and introduces no
+  production capability. No audit fix or version expansion was attempted.
+- **Next action / owner:** Monitor the pinned runtime dependency; any upgrade or
+  advisory remediation requires a separately approved dependency task.
 
 ### 2026-07-28 — P2-001 must remain a local deterministic measurement boundary
 

@@ -15,6 +15,12 @@ classification ordering, request/result references, hypothesis ranks,
 confidence bands, and provider-state reason mappings. Callers cannot replace
 schemas, validators, policies, dependencies, or configuration.
 
+Ajv 8.17.1 is a pinned runtime dependency because the deep module compiles the
+two committed structural authorities when it loads. The package lock keeps Ajv
+and its transitive graph in production installations that omit development
+dependencies; authority-load failure still returns
+`INTERNAL_AUTHORITY_UNAVAILABLE` rather than failing open.
+
 ## Boundary and responsibility
 
 The request carries only bounded, prepared `public` or `internal` evidence. A
@@ -43,6 +49,11 @@ return deeply frozen plain-data clones. Malformed or hostile JavaScript values,
 unsupported classification or purpose, missing committed authority, malformed
 provider output, inconsistent references, and all non-available provider states
 fail closed. An invalid request is rejected before provider output is inspected.
+Only the trusted request-validation path constructs request-level `rejected`
+decisions. Once a request is valid, `validateIntelligenceResult` rejects every
+caller- or provider-supplied `rejected` variant as the singleton
+`MALFORMED_PROVIDER_RESULT`; provider output cannot relabel itself with request
+failure reasons.
 
 The only admitted provider states are `available`, `busy`, `rate_limited`,
 `capacity_exhausted`, `authentication_required`,

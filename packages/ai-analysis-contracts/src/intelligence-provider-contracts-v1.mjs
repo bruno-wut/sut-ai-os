@@ -270,17 +270,10 @@ function resultSemanticsAreValid(result, request) {
       Object.hasOwn(PROVIDER_REASONS, result.providerState) && JSON.stringify(result.reasonCodes) === JSON.stringify([PROVIDER_REASONS[result.providerState]]);
   }
   if (result.status === "rejected") {
-    if (result.providerState !== null || result.providerIdentity !== null || result.failClosed !== true || result.analysis !== null || !Array.isArray(result.reasonCodes) ||
-        result.reasonCodes.length < 1 || !unique(result.reasonCodes)) return false;
-    if (result.reasonCodes.length > 1 &&
-        (result.reasonCodes.includes("MALFORMED_PROVIDER_RESULT") || result.reasonCodes.includes("INTERNAL_AUTHORITY_UNAVAILABLE"))) return false;
-    let previous = -1;
-    for (const code of result.reasonCodes) {
-      const index = REJECTION_PRECEDENCE.indexOf(code);
-      if (index < 0 || index <= previous) return false;
-      previous = index;
-    }
-    return true;
+    // Rejected decisions are constructed only by trusted validation paths.
+    // A provider result is inspected only after the request has passed, so a
+    // caller/provider-supplied rejected variant is never authoritative input.
+    return false;
   }
   return false;
 }
