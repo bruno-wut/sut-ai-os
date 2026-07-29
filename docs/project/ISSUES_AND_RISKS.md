@@ -1,5 +1,25 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-005 final-head CI assurance is bounded
+
+- **Task ID:** `SUT-AIOS-GOV-049`, `SUT-AIOS-P2-005`
+- **Status:** Monitoring / independently verified; final-head CI pending
+- **Severity:** High
+- **Affected scope:** GitHub merge-candidate assurance for the static P2-005
+  infrastructure-port contract.
+- **Evidence:** GOV-049 adds one distinct fixed GitHub Actions step for the
+  already admitted exact P2-005 validator after repository fast verification.
+  It adds no dynamic command construction, generic runner, interpolated path or
+  arguments, credential, external service, deployment, P2-005 product change,
+  infrastructure behavior, or production capability.
+- **Residual risk:** Passing final-head validation proves only the committed
+  static descriptor contract. It does not establish live authentication,
+  authorization, replay state, current quota, recipient availability, booking
+  isolation, dispatch permission, or production eligibility.
+- **Next action / owner:** The orchestrator must commit and push the verified
+  GOV-049 record, open the governed draft PR, and require passing final-head CI
+  before the stacked delivery is merged.
+
 ### 2026-07-30 - P2-005 validates descriptors but cannot establish live trust
 
 - **Task ID:** `SUT-AIOS-P2-005`
