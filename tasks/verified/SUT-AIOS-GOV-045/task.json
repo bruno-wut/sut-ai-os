@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-045",
   "title": "Admit exact P2-004 intervention-proposal validator",
-  "status": "backlog",
+  "status": "verified",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-004-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-GOV-045/task.json",
+      "tasks/verified/SUT-AIOS-GOV-045/task.json",
       "tasks/backlog/SUT-AIOS-P2-004/task.json",
       "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -121,8 +121,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T13:58:33.930Z",
-  "updatedDate": "2026-07-29T14:10:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T14:17:28.808Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-045/verification-20260729141710779.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -130,6 +132,34 @@
       "at": "2026-07-29T13:58:33.930Z",
       "actor": "chief-orchestrator",
       "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T14:12:43.675Z",
+      "actor": "chief-orchestrator",
+      "reason": "GOV-044 is done and defines the exact P2-004 validator literal, scope, evidence paths, and Sol review route."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T14:12:43.719Z",
+      "actor": "chief-orchestrator",
+      "reason": "Proceed with the one exact P2-004 validator admission only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T14:15:10.785Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact shell-free P2-004 validator admission, focused near-miss coverage, policy/risk updates, and implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T14:17:28.808Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA accepted the exact shell-free literal admission, 17 focused near-miss rejections, bounded diff, and passing origin/main machine verification."
     }
   ]
 }
