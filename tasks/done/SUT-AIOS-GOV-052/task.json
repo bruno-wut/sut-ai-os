@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-052",
   "title": "Add P2-006 validator to final-head CI",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "ci-assurance",
   "workflowId": "p2-006-final-head-validator",
@@ -105,7 +105,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-052/task.json",
+      "tasks/done/SUT-AIOS-GOV-052/task.json",
       "tasks/verified/SUT-AIOS-P2-006/task.json",
       ".github/workflows/validate-governance.yml"
     ]
@@ -113,7 +113,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-07-29T19:43:51.414Z",
+  "updatedDate": "2026-07-29T19:52:27.328Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-052/verification-20260729194328783.json"
   ],
@@ -153,6 +153,13 @@
       "at": "2026-07-29T19:43:51.414Z",
       "actor": "qa-verification",
       "reason": "Independent Sol review and task-specific machine verification passed the bounded fixed CI admission."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T19:52:27.328Z",
+      "actor": "qa-verification",
+      "reason": "PR #111 merged to main as af6e60b6f8a468b89494002e31e9a17f61817508 after independent Sol QA and green CI."
     }
   ]
 }
