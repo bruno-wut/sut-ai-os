@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/intelligence-provider-request-v1.schema.json",
+  "title": "Intelligence Provider Request V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "requestId", "taskId", "purpose", "analysisQuestion", "dataClassification", "analysisObjectives", "preparedEvidence", "allowedContext"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "requestId": { "$ref": "#/$defs/requestId" },
+    "taskId": { "$ref": "#/$defs/taskId" },
+    "purpose": { "type": "string", "enum": ["technical", "operational", "seo", "commercial"] },
+    "analysisQuestion": { "$ref": "#/$defs/question" },
+    "dataClassification": { "$ref": "#/$defs/classification" },
+    "analysisObjectives": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        { "const": "explain_likely_causes" },
+        { "const": "rank_hypotheses" },
+        { "const": "select_intervention" },
+        { "const": "estimate_confidence" }
+      ],
+      "items": false
+    },
+    "preparedEvidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "allowedContext": { "$ref": "#/$defs/allowedContext" }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "requestId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "taskId": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]{2,80}$" },
+    "classification": { "type": "string", "enum": ["public", "internal"] },
+    "question": {
+      "description": "Must be trimmed, contain no control characters other than line feed, and contain 1-1000 Unicode code points; the deep module enforces those semantic string rules.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "boundedText": {
+      "description": "Must be trimmed, contain no control characters other than line feed, and contain 1-500 Unicode code points; the deep module enforces those semantic string rules.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidenceId", "kind", "dataClassification", "summary", "facts", "integritySha256"],
+      "properties": {
+        "evidenceId": { "$ref": "#/$defs/identifier" },
+        "kind": {
+          "type": "string",
+          "enum": ["deterministic_analytics", "event_summary", "audit_excerpt", "technical_artifact", "operational_summary", "seo_measurement", "commercial_measurement"]
+        },
+        "dataClassification": { "$ref": "#/$defs/classification" },
+        "summary": { "$ref": "#/$defs/boundedText" },
+        "facts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/boundedText" }
+        },
+        "integritySha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "allowedContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["affectedSystems", "metricIds", "locale", "maxHypotheses", "allowedInterventions"],
+      "properties": {
+        "affectedSystems": {
+          "description": "Values must be unique and lexicographically ascending; ordering is enforced semantically by the deep module.",
+          "type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "metricIds": {
+          "description": "Values must be unique and lexicographically ascending; ordering is enforced semantically by the deep module.",
+          "type": "array", "minItems": 0, "maxItems": 20, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "locale": { "type": "string", "enum": ["en", "th"] },
+        "maxHypotheses": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "allowedInterventions": {
+          "description": "Values must follow the declared enum order; ordering is enforced semantically by the deep module.",
+          "type": "array", "minItems": 1, "maxItems": 7, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/interventionKind" }
+        }
+      }
+    },
+    "interventionKind": {
+      "type": "string",
+      "enum": ["no_action", "continue_monitoring", "gather_more_evidence", "prepare_recommendation", "prepare_draft", "prepare_branch_or_pr", "escalate_to_human"]
+    }
+  }
+}

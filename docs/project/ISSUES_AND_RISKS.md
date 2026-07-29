@@ -17,6 +17,117 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 
 ## Open entries
 
+### 2026-07-29 — P2-002 final-head CI assurance gap
+
+- **Task ID:** `SUT-AIOS-GOV-042`, `SUT-AIOS-P2-002`
+- **Status:** Resolved pending independent verification
+- **Severity:** High
+- **Affected scope:** `.github/workflows/validate-governance.yml` and the P2-002
+  merge-candidate assurance boundary.
+- **Evidence:** PR #84's earlier green workflow did not invoke
+  `node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs`, so
+  GitHub Actions did not independently prove the reviewed 236-case validator on
+  the final merge candidate. GOV-042 adds exactly that explicit command after
+  dependency installation and `npm run verify:fast`, without changing or
+  replacing any existing CI step.
+- **Next action / owner:** Independent Sol QA must inspect the bounded workflow
+  diff, run the packet-authorized checks and one machine verification cycle,
+  then final-head GitHub Actions must pass before either stacked PR is approved.
+
+### 2026-07-29 — P2-002 runtime dependency and rejection provenance gaps
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** High
+- **Affected scope:** P2-002 runtime authority loading, package metadata, and
+  provider-result semantic validation.
+- **Evidence:** External review found that the runtime contract imports Ajv
+  while Ajv was declared development-only, and that a valid request could be
+  paired with provider-supplied request-rejection reason codes. The earlier
+  R02 risk text accurately described P2-001 but did not account for P2-002's
+  later runtime import.
+- **Resolution:** Ajv 8.17.1 is now a pinned runtime dependency in both package
+  authorities; deterministic validation proves its complete lockfile graph is
+  retained when development dependencies are omitted. After request validation
+  succeeds, every provider-supplied `rejected` variant now fails closed as the
+  singleton `MALFORMED_PROVIDER_RESULT`; trusted request validation remains the
+  only constructor of request-level rejection decisions.
+- **Next action / owner:** A separate governance task must add the exact P2-002
+  validator to GitHub Actions before PR #84 is approvable. Independent Sol QA
+  must verify this product remediation after that governance prerequisite.
+
+### 2026-07-29 — P2-002 rejected-reason semantics and finite boundary coverage are incomplete
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** Medium
+- **Affected scope:** P2-002 semantic result validation and deterministic
+  contract validator.
+- **Evidence:** Final Sol QA found that `resultSemanticsAreValid()` accepts
+  precedence-ordered combinations containing `MALFORMED_PROVIDER_RESULT` or
+  `INTERNAL_AUTHORITY_UNAVAILABLE`, although the approved GOV-040 design makes
+  each code exclusive. The 93-case validator also omits required finite boundary
+  cases, including every intervention selection, low/high confidence bands,
+  text and collection edges, identifier/digest edges, and the exclusive-code
+  regression. Existing validator, packet, fast, and diff checks otherwise pass.
+- **Resolution:** The semantic authority now rejects any multi-code result that
+  contains either fatal code. The deterministic validator covers both exclusive
+  fatal-code regressions, every finite enum and result variant, and accepted and
+  rejected edges for the documented text, identifier, digest, numeric, and
+  collection bounds. The provider-neutral static boundary remains unchanged.
+- **Next action / owner:** Resolved by final independent Sol QA. Retain
+  `verification-20260729111249806.json` with the historical failed records.
+
+### 2026-07-28 — P2-002 verification evidence path is absent from its allowlist
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Resolved
+- **Severity:** Medium
+- **Affected scope:** P2-002 task metadata and independent verification evidence.
+- **Evidence:** Fresh Sol QA used explicit `--base origin/main`; the machine
+  record `verification-20260728164848515.json` inspected a nonempty nine-path
+  delivery diff, all functional tests passed, forbidden paths remained
+  untouched, and the secret scan passed. Changed-path inspection failed solely
+  because the packet does not allow its required historical directory
+  `evidence/verification/SUT-AIOS-P2-002/**` and therefore treats the preserved
+  earlier failed record as outside scope.
+- **Resolution:** The task-specific machine-evidence directory is explicitly
+  allowed. Final independent verification inspected the complete nonempty
+  `origin/main` diff, preserved both failed records, and passed changed-path and
+  security-boundary checks in `verification-20260729111249806.json`.
+- **Next action / owner:** No further P2-002 correction is required; retain the
+  complete evidence history.
+
+### 2026-07-28 — P2-002 remains a contract-only, non-authoritative boundary
+
+- **Task ID:** `SUT-AIOS-P2-002`
+- **Status:** Monitoring
+- **Severity:** High
+- **Affected scope:** Provider-neutral request/result contracts and future
+  intelligence-provider adapters.
+- **Evidence:** P2-002 implements two closed schemas and a two-function semantic
+  validation module only. Prepared analytics references must originate from the
+  canonical P2-001/R02 boundary; P2-002 does not import or reinterpret its
+  internals. Provider invocation, prompts, adapters, proposals, approval,
+  execution, and production access remain absent. The deterministic validator
+  passed 93 cases covering private authority, classification, cross-references,
+  all provider states, self-authorization rejection, and hostile never-throw
+  inputs.
+- **Evidence:** Independent Sol QA passed the 93-case validator, packet and fast
+  checks, and the single machine verification cycle. Because the implementation
+  was committed before QA and the packet has no `worktree.primaryBranch`, the
+  machine record defaulted to `HEAD` and listed no changed paths. The record was
+  preserved; supplemental `verify:changed --base origin/main` and
+  `verify:security-boundaries --base origin/main` runs covered all nine delivery
+  and evidence paths, found no forbidden/outside path, and found no configured
+  secret pattern. Two initial direct `verify-cli.mjs` diagnostic invocations
+  failed on wrapper syntax before the documented npm wrapper forms passed.
+- **Evidence:** Final independent Sol QA passed the expanded 236-case validator
+  and machine verification against the complete nonempty `origin/main` diff in
+  `verification-20260729111249806.json`.
+- **Next action / owner:** Future provider tasks must preserve the deep-module
+  and hexagonal boundary and must not treat analysis as authorization.
+
 ### 2026-07-28 — P2-002 validator admission remains exact and fail-closed
 
 - **Task ID:** `SUT-AIOS-GOV-041`, `SUT-AIOS-P2-002`
@@ -56,20 +167,21 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Next action / owner:** Independent Sol QA must review the final R02 diff and
   run the single machine verification cycle before downstream P2-002 work.
 
-### 2026-07-28 — R02 install reports one moderate development-only advisory
+### 2026-07-28 — R02 install reports one moderate Ajv advisory
 
 - **Task ID:** `SUT-AIOS-P2-001-R02`
 - **Status:** Monitoring
 - **Severity:** Low
-- **Affected scope:** Root development dependency used only by the local P2-001
-  contract validator.
+- **Affected scope:** Original P2-001 use of the root dependency and later
+  P2-002 runtime use.
 - **Evidence:** Installing pinned `ajv@8.17.1` completed successfully and reported
-  one moderate npm advisory across development dependencies. Ajv is not imported
-  by the pure analytics runtime, receives only committed repository schemas, and
-  introduces no production capability. No audit fix or dependency expansion was
-  attempted.
-- **Next action / owner:** QA should confirm the development-only boundary; any
-  upgrade or advisory remediation requires a separately approved dependency task.
+  one moderate npm advisory. Ajv remains absent from the pure P2-001 analytics
+  runtime, but P2-002 later imports it to compile committed request/result
+  authorities and therefore correctly promotes the pinned version to a runtime
+  dependency. It receives only committed repository schemas and introduces no
+  production capability. No audit fix or version expansion was attempted.
+- **Next action / owner:** Monitor the pinned runtime dependency; any upgrade or
+  advisory remediation requires a separately approved dependency task.
 
 ### 2026-07-28 — P2-001 must remain a local deterministic measurement boundary
 

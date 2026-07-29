@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/intelligence-provider-result-v1.schema.json",
+  "title": "Intelligence Provider Result V1",
+  "oneOf": [
+    { "$ref": "#/$defs/completed" },
+    { "$ref": "#/$defs/insufficientEvidence" },
+    { "$ref": "#/$defs/rejected" },
+    { "$ref": "#/$defs/providerUnavailable" }
+  ],
+  "$defs": {
+    "requestId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "identifier": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "text128": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "text500": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "text1000": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "text2000": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "evidenceIds": { "type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": { "$ref": "#/$defs/identifier" } },
+    "optionalEvidenceIds": { "type": "array", "minItems": 0, "maxItems": 20, "uniqueItems": true, "items": { "$ref": "#/$defs/identifier" } },
+    "providerIdentity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["providerId", "modelId"],
+      "properties": { "providerId": { "$ref": "#/$defs/text128" }, "modelId": { "$ref": "#/$defs/text128" } }
+    },
+    "cause": {
+      "type": "object", "additionalProperties": false,
+      "required": ["causeId", "statement", "supportingEvidenceIds", "counterEvidenceIds"],
+      "properties": {
+        "causeId": { "$ref": "#/$defs/identifier" }, "statement": { "$ref": "#/$defs/text500" },
+        "supportingEvidenceIds": { "$ref": "#/$defs/evidenceIds" }, "counterEvidenceIds": { "$ref": "#/$defs/optionalEvidenceIds" }
+      }
+    },
+    "hypothesis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["hypothesisId", "rank", "statement", "supportingEvidenceIds", "counterEvidenceIds", "confidenceScore"],
+      "properties": {
+        "hypothesisId": { "$ref": "#/$defs/identifier" }, "rank": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "statement": { "$ref": "#/$defs/text500" }, "supportingEvidenceIds": { "$ref": "#/$defs/evidenceIds" },
+        "counterEvidenceIds": { "$ref": "#/$defs/optionalEvidenceIds" }, "confidenceScore": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "interventionKind": {
+      "type": "string",
+      "enum": ["no_action", "continue_monitoring", "gather_more_evidence", "prepare_recommendation", "prepare_draft", "prepare_branch_or_pr", "escalate_to_human"]
+    },
+    "selectedIntervention": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "rationale", "supportingHypothesisIds"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/interventionKind" }, "rationale": { "$ref": "#/$defs/text1000" },
+        "supportingHypothesisIds": { "type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": { "$ref": "#/$defs/identifier" } }
+      }
+    },
+    "gatherMoreEvidenceIntervention": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "rationale", "supportingHypothesisIds"],
+      "properties": {
+        "kind": { "const": "gather_more_evidence" }, "rationale": { "$ref": "#/$defs/text1000" },
+        "supportingHypothesisIds": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "confidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["score", "band", "basis", "evidenceIds"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 }, "band": { "type": "string", "enum": ["low", "medium", "high"] },
+        "basis": { "$ref": "#/$defs/text500" }, "evidenceIds": { "$ref": "#/$defs/evidenceIds" }
+      }
+    },
+    "insufficientConfidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["score", "band", "basis", "evidenceIds"],
+      "properties": {
+        "score": { "const": 0 }, "band": { "const": "insufficient" }, "basis": { "$ref": "#/$defs/text500" },
+        "evidenceIds": { "$ref": "#/$defs/optionalEvidenceIds" }
+      }
+    },
+    "completedAnalysis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["explanation", "likelyCauses", "rankedHypotheses", "selectedIntervention", "confidence", "evidenceCitations", "additionalEvidenceNeeded"],
+      "properties": {
+        "explanation": { "$ref": "#/$defs/text2000" },
+        "likelyCauses": { "type": "array", "minItems": 1, "maxItems": 5, "items": { "$ref": "#/$defs/cause" } },
+        "rankedHypotheses": { "type": "array", "minItems": 1, "maxItems": 5, "items": { "$ref": "#/$defs/hypothesis" } },
+        "selectedIntervention": { "$ref": "#/$defs/selectedIntervention" }, "confidence": { "$ref": "#/$defs/confidence" },
+        "evidenceCitations": { "$ref": "#/$defs/evidenceIds" },
+        "additionalEvidenceNeeded": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "insufficientAnalysis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["explanation", "likelyCauses", "rankedHypotheses", "selectedIntervention", "confidence", "evidenceCitations", "additionalEvidenceNeeded"],
+      "properties": {
+        "explanation": { "$ref": "#/$defs/text2000" }, "likelyCauses": { "type": "array", "maxItems": 0 },
+        "rankedHypotheses": { "type": "array", "maxItems": 0 }, "selectedIntervention": { "$ref": "#/$defs/gatherMoreEvidenceIntervention" },
+        "confidence": { "$ref": "#/$defs/insufficientConfidence" }, "evidenceCitations": { "$ref": "#/$defs/optionalEvidenceIds" },
+        "additionalEvidenceNeeded": { "type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": { "$ref": "#/$defs/text500" } }
+      }
+    },
+    "completed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "status", "requestId", "providerState", "providerIdentity", "nonAuthoritative", "failClosed", "analysis", "reasonCodes"],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" }, "status": { "const": "completed" }, "requestId": { "$ref": "#/$defs/requestId" },
+        "providerState": { "const": "available" }, "providerIdentity": { "$ref": "#/$defs/providerIdentity" },
+        "nonAuthoritative": { "const": true }, "failClosed": { "const": false }, "analysis": { "$ref": "#/$defs/completedAnalysis" },
+        "reasonCodes": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "insufficientEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "status", "requestId", "providerState", "providerIdentity", "nonAuthoritative", "failClosed", "analysis", "reasonCodes"],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" }, "status": { "const": "insufficient_evidence" }, "requestId": { "$ref": "#/$defs/requestId" },
+        "providerState": { "const": "available" }, "providerIdentity": { "$ref": "#/$defs/providerIdentity" },
+        "nonAuthoritative": { "const": true }, "failClosed": { "const": true }, "analysis": { "$ref": "#/$defs/insufficientAnalysis" },
+        "reasonCodes": { "type": "array", "prefixItems": [{ "const": "INSUFFICIENT_EVIDENCE" }], "items": false, "minItems": 1, "maxItems": 1 }
+      }
+    },
+    "rejected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "status", "requestId", "providerState", "providerIdentity", "nonAuthoritative", "failClosed", "analysis", "reasonCodes"],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" }, "status": { "const": "rejected" }, "requestId": { "oneOf": [{ "$ref": "#/$defs/requestId" }, { "type": "null" }] },
+        "providerState": { "type": "null" }, "providerIdentity": { "type": "null" }, "nonAuthoritative": { "const": true },
+        "failClosed": { "const": true }, "analysis": { "type": "null" },
+        "reasonCodes": {
+          "type": "array", "minItems": 1, "maxItems": 9, "uniqueItems": true,
+          "items": { "type": "string", "enum": ["MALFORMED_REQUEST", "UNSUPPORTED_SCHEMA_VERSION", "UNSUPPORTED_DATA_CLASSIFICATION", "UNSUPPORTED_PURPOSE", "INVALID_PREPARED_EVIDENCE", "INVALID_ALLOWED_CONTEXT", "UNSUPPORTED_ANALYSIS_OBJECTIVES", "MALFORMED_PROVIDER_RESULT", "INTERNAL_AUTHORITY_UNAVAILABLE"] }
+        }
+      }
+    },
+    "providerUnavailable": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "status", "requestId", "providerState", "providerIdentity", "nonAuthoritative", "failClosed", "analysis", "reasonCodes"],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" }, "status": { "const": "provider_unavailable" }, "requestId": { "$ref": "#/$defs/requestId" },
+        "providerState": { "type": "string", "enum": ["busy", "rate_limited", "capacity_exhausted", "authentication_required", "temporarily_unavailable", "disabled"] },
+        "providerIdentity": { "oneOf": [{ "$ref": "#/$defs/providerIdentity" }, { "type": "null" }] },
+        "nonAuthoritative": { "const": true }, "failClosed": { "const": true }, "analysis": { "type": "null" },
+        "reasonCodes": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "string", "enum": ["PROVIDER_BUSY", "PROVIDER_RATE_LIMITED", "PROVIDER_CAPACITY_EXHAUSTED", "PROVIDER_AUTHENTICATION_REQUIRED", "PROVIDER_TEMPORARILY_UNAVAILABLE", "PROVIDER_DISABLED"] } }
+      },
+      "allOf": [
+        { "if": { "properties": { "providerState": { "const": "busy" } } }, "then": { "properties": { "reasonCodes": { "const": ["PROVIDER_BUSY"] } } } },
+        { "if": { "properties": { "providerState": { "const": "rate_limited" } } }, "then": { "properties": { "reasonCodes": { "const": ["PROVIDER_RATE_LIMITED"] } } } },
+        { "if": { "properties": { "providerState": { "const": "capacity_exhausted" } } }, "then": { "properties": { "reasonCodes": { "const": ["PROVIDER_CAPACITY_EXHAUSTED"] } } } },
+        { "if": { "properties": { "providerState": { "const": "authentication_required" } } }, "then": { "properties": { "reasonCodes": { "const": ["PROVIDER_AUTHENTICATION_REQUIRED"] } } } },
+        { "if": { "properties": { "providerState": { "const": "temporarily_unavailable" } } }, "then": { "properties": { "reasonCodes": { "const": ["PROVIDER_TEMPORARILY_UNAVAILABLE"] } } } },
+        { "if": { "properties": { "providerState": { "const": "disabled" } } }, "then": { "properties": { "reasonCodes": { "const": ["PROVIDER_DISABLED"] } } } }
+      ]
+    }
+  }
+}

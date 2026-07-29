@@ -52,7 +52,7 @@
     "model-run:compare": "node scripts/model-run/compare",
     "model-run:recommend-routing": "node scripts/model-run/recommend-routing"
   },
-  "devDependencies": {
+  "dependencies": {
     "ajv": "8.17.1"
   }
 }
