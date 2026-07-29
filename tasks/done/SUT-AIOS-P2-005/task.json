@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-005",
   "title": "Define infrastructure boundary and provider-neutral port contracts V1",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-2",
   "workstream": "infrastructure-contracts",
   "workflowId": "implementation-p2-005",
@@ -122,7 +122,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P2-005/task.json",
+      "tasks/done/SUT-AIOS-P2-005/task.json",
       "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "docs/project/ENGINEERING_PRINCIPLES.md",
@@ -132,7 +132,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.627Z",
-  "updatedDate": "2026-07-29T17:38:40.005Z",
+  "updatedDate": "2026-07-29T18:42:28.754Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P2-005/verification-20260729173821600.json"
   ],
@@ -192,6 +192,13 @@
       "at": "2026-07-29T17:38:40.005Z",
       "actor": "qa-verification",
       "reason": "Fresh independent Sol QA accepted the bounded static contract after exact port-schema closure; 235 cases and all governance checks passed."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T18:42:28.754Z",
+      "actor": "qa-verification",
+      "reason": "PR #102 merged to main as commit cbfbc949a186360c13ce0f663bda309f88a6309e after independent Sol QA and green final-head CI; reconcile verified to done without changing delivery scope."
     }
   ]
 }
