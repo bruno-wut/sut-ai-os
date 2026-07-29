@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-005",
   "title": "Define infrastructure boundary and provider-neutral port contracts V1",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "infrastructure-contracts",
   "workflowId": "implementation-p2-005",
@@ -122,7 +122,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-005/task.json",
+      "tasks/verified/SUT-AIOS-P2-005/task.json",
       "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "docs/project/ENGINEERING_PRINCIPLES.md",
@@ -132,8 +132,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.627Z",
-  "updatedDate": "2026-07-29T15:40:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-07-29T17:38:40.005Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P2-005/verification-20260729173821600.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -141,6 +143,55 @@
       "at": "2026-07-29T12:21:28.627Z",
       "actor": "chief-orchestrator",
       "reason": "Created by GOV-043 for the required infrastructure authority."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T17:20:23.618Z",
+      "actor": "codex-engineering-executor",
+      "reason": "P1-003, P1-005, P2-002, GOV-047, and GOV-048 are terminal; exact P2-005 authority, evidence, verifier admission, commands, and Sol route are ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T17:20:24.005Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Proceed with the approved static V1 trust-zone and provider-neutral port contract only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T17:32:16.933Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded static V1 infrastructure contract implementation and deterministic checks are ready for independent Sol review"
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-07-29T17:35:23.034Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA found that boundaryRequest.port is an open string in the committed schema rather than the exact thirteen-port enum required by the finite V1 authority; add the enum and schema-level unknown-port regression before re-review."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-07-29T17:35:36.142Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent Sol QA found the closed schema lacked the exact canonical port enum; add only that finite structural constraint and schema-level regression before fresh review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-07-29T17:36:34.524Z",
+      "actor": "codex-engineering-executor",
+      "reason": "QA-required exact thirteen-port schema closure and focused schema regressions are implemented and all deterministic checks pass"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-07-29T17:38:40.005Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA accepted the bounded static contract after exact port-schema closure; 235 cases and all governance checks passed."
     }
   ]
 }

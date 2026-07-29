@@ -1,5 +1,50 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-005 final-head CI assurance is bounded
+
+- **Task ID:** `SUT-AIOS-GOV-049`, `SUT-AIOS-P2-005`
+- **Status:** Monitoring / independently verified; final-head CI pending
+- **Severity:** High
+- **Affected scope:** GitHub merge-candidate assurance for the static P2-005
+  infrastructure-port contract.
+- **Evidence:** GOV-049 adds one distinct fixed GitHub Actions step for the
+  already admitted exact P2-005 validator after repository fast verification.
+  It adds no dynamic command construction, generic runner, interpolated path or
+  arguments, credential, external service, deployment, P2-005 product change,
+  infrastructure behavior, or production capability.
+- **Residual risk:** Passing final-head validation proves only the committed
+  static descriptor contract. It does not establish live authentication,
+  authorization, replay state, current quota, recipient availability, booking
+  isolation, dispatch permission, or production eligibility.
+- **Next action / owner:** The orchestrator must commit and push the verified
+  GOV-049 record, open the governed draft PR, and require passing final-head CI
+  before the stacked delivery is merged.
+
+### 2026-07-30 - P2-005 validates descriptors but cannot establish live trust
+
+- **Task ID:** `SUT-AIOS-P2-005`
+- **Status:** Monitoring / implementation ready for independent review
+- **Severity:** High
+- **Affected scope:** Future guest/public, Staff/control, and AI/workload
+  cross-zone adapters and every consumer of provider-neutral infrastructure
+  ports.
+- **Evidence:** The static V1 schema, canonical policy, private-authority deep
+  module, product documentation, and 235-case exact validator implement the
+  finite GOV-047 contract. Caller schemas, policies, configurations, adapters,
+  and dependency arguments cannot become runtime authority; malformed input,
+  replay/idempotency conflicts, uncertain limits, shared boundaries, booking
+  dependencies, and authority claims fail closed.
+- **Residual risk:** A conforming descriptor is not proof of cryptographic
+  identity, current time, replay/idempotency history, quota availability,
+  process isolation, authorization, approval, or dispatch permission. A future
+  recipient adapter must establish those facts independently from trusted
+  services. P2-006 and P2-007 remain the separate minimisation/retention and
+  numeric budget authorities.
+- **Next action / owner:** Independent Sol QA must inspect the final diff and
+  import boundary, rerun deterministic checks, and create task-specific machine
+  evidence. Later adapter tasks must not accept network caller assertions as
+  trusted evidence or make guest booking depend on Staff/AI capacity.
+
 ### 2026-07-30 - P2-005 validator admission is exact and non-product
 
 - **Task ID:** `SUT-AIOS-GOV-048`, `SUT-AIOS-P2-005`

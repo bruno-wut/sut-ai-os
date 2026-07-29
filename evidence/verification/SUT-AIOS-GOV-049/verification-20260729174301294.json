@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-049",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-29T17:43:01.294Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: The Governance / validate workflow invokes exactly `node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs` as a distinct fixed step after repository fast verification.",
+    "confirmed: No generic/dynamic runner, shell execution, interpolated path/arguments, matrix, credential, external service, deployment, or P2-005 product change is added.",
+    "confirmed: Verification policy states that this fixed final-head step proves only the static P2-005 merge candidate and creates no authentication, authorization, dispatch, infrastructure, or production capability.",
+    "confirmed: Packet checks, independent Sol review, task-specific machine evidence, and final-head CI pass before merge."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-049/verification.md",
+    "tasks/review/SUT-AIOS-GOV-049/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-049/verification-20260729174301294.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

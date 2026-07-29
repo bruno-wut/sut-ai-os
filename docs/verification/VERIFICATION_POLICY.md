@@ -39,4 +39,13 @@ contract merge candidate. It does not generate a proposal, grant a capability,
 authorize or approve an action, invoke a provider or workflow, execute a change,
 record an audit event, or create production capability.
 
+The same workflow executes the exact P2-005 validator
+`node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs`
+as a distinct fixed step after dependency installation and repository fast
+verification. This final-head check proves only the committed static
+infrastructure-port contract merge candidate. It does not authenticate or
+authorize a caller, establish live trust or recipient facts, reserve capacity,
+dispatch a call, configure an adapter or provider, access infrastructure, or
+create production capability.
+
 Large logs, traces, screenshots, and reports belong in `artifacts/`; result JSON stores concise references only. Do not add secrets or raw webhook payloads to evidence.
