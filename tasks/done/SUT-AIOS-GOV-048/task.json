@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-048",
   "title": "Admit exact P2-005 infrastructure-contract validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-005-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-048/task.json",
+      "tasks/done/SUT-AIOS-GOV-048/task.json",
       "tasks/backlog/SUT-AIOS-P2-005/task.json",
       "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -120,7 +120,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T15:40:00.000Z",
-  "updatedDate": "2026-07-29T17:13:14.095Z",
+  "updatedDate": "2026-07-29T17:15:44.201Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-048/verification-20260729171258747.json"
   ],
@@ -159,6 +159,13 @@
       "at": "2026-07-29T17:13:14.095Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA confirmed exact literal admission, 17 near-miss rejections, shell-free fixed-argument execution, authorized paths, and all packet checks."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T17:15:44.201Z",
+      "actor": "qa-verification",
+      "reason": "PR #100 merged to main as commit 2068c653b4bad3717e649dd3116268d1c2a8a0ab after independent Sol QA and green final-head CI; reconcile verified to done without changing admission scope."
     }
   ]
 }
