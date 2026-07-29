@@ -1,5 +1,29 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-30 - P2-006 classifies metadata but cannot establish lifecycle facts
+
+- **Task ID:** `SUT-AIOS-P2-006`
+- **Status:** Monitoring / implementation ready for independent review
+- **Severity:** High
+- **Affected scope:** Future aggregate ingestion, evidence persistence, and
+  retention-lifecycle consumers.
+- **Evidence:** The static schema, canonical finite policy, private-authority
+  deep module, documentation, and 1,395-case exact validator implement the
+  approved source-only telemetry boundary, eligible semantic taxonomy,
+  workload cardinality prohibitions, protected-history rules, deterministic
+  reasons, and non-authoritative results. Caller-supplied authorities cannot
+  redirect classification and hostile input fails closed without throwing.
+- **Residual risk:** A conforming descriptor is not proof that a payload is
+  minimised, an aggregate is correct, a source retained raw telemetry, a legal
+  rule permits an action, retention is due, an external archive/transfer
+  preserved history, or any action ran. No duration, clock, provider, or live
+  fact source exists in P2-006.
+- **Next action / owner:** Independent Sol QA must inspect the finite authority,
+  import boundary, hostile-input behavior, and machine evidence. P3-005 must
+  later use separately approved trusted retention facts and configuration,
+  fail closed when either is absent, and preserve append-only audit and
+  failed-attempt history.
+
 ### 2026-07-30 - P2-006 validator admission is exact and non-product
 
 - **Task ID:** `SUT-AIOS-GOV-051`, `SUT-AIOS-P2-006`

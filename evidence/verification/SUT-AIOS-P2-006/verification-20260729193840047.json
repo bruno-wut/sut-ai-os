@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-006",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-07-29T19:38:40.047Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: The Draft 2020-12 schema is closed and the canonical policy fixes exactly four source-only raw categories, twelve AI-OS-eligible semantic categories, ten artifact/retention classes, four aggregation intervals, six non-authoritative action candidates, the metadata-only candidate, and exclusive valid decision variants from the approved GOV-050 design.",
+    "confirmed: The sole public export is `classifyDataGovernanceCandidate(candidate)`; it obtains committed authority internally, accepts no caller-supplied schema/policy/configuration/validator/adapter/dependency, ignores extra JavaScript arguments, returns recursively frozen plain data, does not mutate input, and never throws for malformed, hostile, cyclic, getter/proxy, or deeply nested input.",
+    "confirmed: Raw page views, clicks, scrolls, and marketing telemetry classify only as source-system-managed with no AI OS storage, queue, workflow, or AI intent; permanent per-interaction rows, individual-interaction queue/workflow/AI, and individual-system-event AI invocation fail closed.",
+    "confirmed: Only hourly/daily aggregates, essential booking lifecycle events, anomalies/incidents, investigations/recommendations, proposals/approvals/executions/outcomes, and required audit evidence can become AI-OS-eligible metadata classifications, with exact source/category/artifact/interval/action mappings.",
+    "confirmed: Retention classification is candidate-only: no duration or due-state is inferred; scheduled delete, aggregate, archive, transfer eligibility, and retain mappings do not execute or authorize an action, and missing future retention authority remains fail closed.",
+    "confirmed: Append-only audit and failed-attempt history reject delete, aggregate, rewrite, or weakened-preservation descriptors and can only classify as retain, archive, or transfer candidates that preserve the original protected record.",
+    "confirmed: Deterministic reason codes follow the exact GOV-050 precedence; internal authority failure is singleton, authority injection is detected before ordinary structure, malformed input always returns a schema-valid fail-closed decision, and accepted decisions explicitly deny action and production-write authority.",
+    "confirmed: The exact validator compiles both committed authorities, checks exact finite mappings and decision exclusivity, validates every returned decision, covers the focused negative and hostile-input matrix, confirms the core import boundary, and demonstrates that weakened caller dependencies cannot redirect authority.",
+    "confirmed: Documentation states the schema/semantic limits: the contract cannot prove payload minimisation, aggregation correctness, legal retention, due state, external preservation, source behavior, or completed lifecycle action.",
+    "confirmed: No data source, guest data, provider/storage SDK, filesystem, clock, environment, credential, network, database, SQL, migration, RLS, queue, workflow, scheduler, AI invocation, deletion, archive, transfer, local-storage write, audit rewrite, or production write is accessed or implemented."
+  ],
+  "changedPaths": [
+    "docs/data-governance/DATA_MINIMISATION_RETENTION_CONTRACT_V1.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P2-006/verification.md",
+    "packages/data-governance-contracts/src/data-minimisation-retention-contract-v1.mjs",
+    "policies/data-minimisation-retention-policy-v1.json",
+    "schemas/data-minimisation-retention-contract-v1.schema.json",
+    "tasks/backlog/SUT-AIOS-P2-006/task.json",
+    "tasks/review/SUT-AIOS-P2-006/task.json",
+    "tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P2-006/verification-20260729193840047.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
