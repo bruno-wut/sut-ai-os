@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-006",
   "title": "Define data minimisation, aggregation, and retention contract V1",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-2",
   "workstream": "data-governance",
   "workflowId": "implementation-p2-006",
@@ -123,7 +123,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P2-006/task.json",
+      "tasks/done/SUT-AIOS-P2-006/task.json",
       "docs/data-governance/P2-006_DATA_MINIMISATION_RETENTION_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "docs/audit/APPEND_ONLY_AUDIT_CONTRACT.md"
@@ -132,7 +132,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.668Z",
-  "updatedDate": "2026-07-29T19:38:55.526Z",
+  "updatedDate": "2026-07-29T19:52:27.327Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P2-006/verification-20260729193840047.json"
   ],
@@ -171,6 +171,13 @@
       "at": "2026-07-29T19:38:55.526Z",
       "actor": "qa-verification",
       "reason": "Independent Sol review and machine verification passed the full static contract acceptance matrix."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T19:52:27.327Z",
+      "actor": "qa-verification",
+      "reason": "PR #110 merged to main as 2c5eac9fc5d4a038f5b22a44fcc63e1c2e425e5b after independent Sol QA and green CI."
     }
   ]
 }
