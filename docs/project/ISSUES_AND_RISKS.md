@@ -1,5 +1,24 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-07-29 - P2-005 infrastructure authority is designed, not implemented
+
+- **Task ID:** `SUT-AIOS-GOV-047`, `SUT-AIOS-GOV-048`, `SUT-AIOS-P2-005`
+- **Status:** Open / planned
+- **Severity:** High
+- **Affected scope:** Future trust-zone descriptors, cross-zone recipient
+  controls, provider-neutral ports, booking isolation, and adapter composition.
+- **Evidence:** GOV-047 defines one closed Draft 2020-12 authority, one
+  committed canonical policy, three distinct zones, five bounded cross-zone
+  routes, thirteen provider-neutral ports, one private-authority validation
+  surface, deterministic fail-closed reasons, and focused exploit cases. It
+  implements none of them. A validation success is explicitly not live
+  authentication, authorization, capacity reservation, or dispatch permission.
+- **Next action / owner:** Independently verify GOV-047, complete the exact-only
+  GOV-048 validator admission, then implement P2-005 within its executable
+  packet. Later recipient adapters must establish credential, time, replay,
+  idempotency, rate/quota, and isolation facts from trusted services rather than
+  accept network-caller assertions.
+
 ### 2026-07-29 - P2-004 final-head CI assurance is bounded
 
 - **Task ID:** `SUT-AIOS-GOV-046`, `SUT-AIOS-P2-004`

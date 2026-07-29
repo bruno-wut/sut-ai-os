@@ -1,0 +1,134 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-048",
+  "title": "Admit exact P2-005 infrastructure-contract validator",
+  "status": "backlog",
+  "phase": "engineering-governance",
+  "workstream": "verification-admission",
+  "workflowId": "p2-005-validator-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit independent machine verification of the planned P2-005 static infrastructure contracts without broadening command execution or implementing infrastructure behavior.",
+  "technicalObjective": "Add one shell-free exact mapping for `node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs`, focused near-miss rejection coverage, and accurate verifier-policy documentation; do not create or execute the future product validator.",
+  "architectureReferences": [
+    "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-047"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-048/verification.md"
+  ],
+  "assumptions": [
+    "GOV-047 fixes one byte-for-byte future validator command; the P2-005 schema, policy, module, validator, and product documentation remain absent and outside GOV-048.",
+    "The verifier already provides a shell-false fixed-argument process runner; this task may add only one literal mapping and focused self-tests.",
+    "No account, domain, provider, adapter, credential, authentication, network, database, queue, workflow, deployment, product contract, or production operation is authorized."
+  ],
+  "acceptanceCriteria": [
+    "Only the exact literal `node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs` is newly admitted and maps to `node` with exactly one fixed repository-relative path argument through the existing `shell: false` runner.",
+    "Self-tests accept the exact literal and reject leading, doubled, and trailing whitespace; extra arguments; chaining and shell operators; redirects; command substitution; alternate and sibling paths; dot-path and traversal forms; absolute paths; and Windows path separators.",
+    "No generic Node or test-path pattern, arbitrary argument parsing, shell execution, mutation-capable command, product validator/schema/policy/module, SDK, adapter, authentication, network, storage, queue, workflow, deployment, external call, or production behavior is introduced.",
+    "Verification policy and a durable risk entry identify the exact admission, its non-product scope, and the remaining P2-005 implementation and independent-verification boundary.",
+    "Packet-authorized deterministic checks pass and implementation evidence is ready for separate independent Sol QA; the implementer does not run `verify:task` or act as completion authority."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-048/**",
+    "evidence/tasks/SUT-AIOS-GOV-048/**",
+    "evidence/verification/SUT-AIOS-GOV-048/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tests/**",
+    "schemas/**",
+    "packages/**",
+    "apps/**",
+    "services/**",
+    "policies/**",
+    "playbooks/**",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-048 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact literal mapping inspection",
+    "fixed argument and shell-free process inspection",
+    "focused near-miss rejection coverage",
+    "changed-path and forbidden-boundary inspection",
+    "independent Sol review",
+    "machine verification evidence",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "engineering-planner",
+  "allowedAgents": [
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic or pattern-based admission, arbitrary argument parsing, shell execution, mutation-capable command, P2-005 product implementation, infrastructure/provider behavior, live data access, external call, or scope outside the exact verifier mapping requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the exact P2-005 validator mapping, focused self-tests, verification-policy statement, GOV-048 risk entry, lifecycle record, and GOV-048 evidence; preserve GOV-047 design/evidence, the P2-005 backlog packet, terminal records, product paths, canonical sources, immutable snapshots, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-GOV-048/task.json",
+      "tasks/backlog/SUT-AIOS-P2-005/task.json",
+      "docs/infrastructure-contracts/P2-005_INFRASTRUCTURE_PORT_CONTRACT_V1_DESIGN.md",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "scripts/verify/verify-cli.mjs"
+    ]
+  },
+  "owner": "engineering-planner",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T15:40:00.000Z",
+  "updatedDate": "2026-07-29T15:40:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T15:40:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Created by GOV-047 to admit only the finite P2-005 validator literal before product activation."
+    }
+  ]
+}
