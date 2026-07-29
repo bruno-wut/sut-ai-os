@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-044",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "engineering-planner",
+  "reviewedAt": "2026-07-29T14:06:19.592Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: The design defines a single closed Draft 2020-12 proposal authority, exact finite fields/outcomes/reason codes/bounds, and a minimal runtime-safe semantic public interface that accepts no caller authority.",
+    "confirmed: The design requires diagnosis, evidence references, confidence, recommended action, alternatives, affected systems, requested capabilities, risk classification, approval requirement, verification plan, rollback plan, expected outcome, and an explicit non-authority posture.",
+    "confirmed: The design rejects self-approval, authorization, execution, verification, production eligibility, unknown capability, unsupported risk, invalid provenance, malformed input, and cross-field inconsistency fail closed without throwing.",
+    "confirmed: The design preserves deep-module and hexagonal boundaries: no provider, transport, persistence, workflow, policy, approval, executor, audit-store, SDK, network, or environment import in core contract logic.",
+    "confirmed: The P2-004 packet names exact allowed paths, task-specific verification evidence, real exact validator command, required checks, rollback, GOV-044/GOV-045 dependencies, and no production permissions.",
+    "confirmed: A distinct GOV-045 is specified only to admit `node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs` shell-free with fixed arguments; GOV-044 does not broaden command execution."
+  ],
+  "changedPaths": [
+    "docs/intervention-proposals/P2-004_INTERVENTION_PROPOSAL_CONTRACT_V1_DESIGN.md",
+    "docs/project/CURRENT_FOCUS.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-044/verification.md",
+    "tasks/backlog/SUT-AIOS-GOV-045/task.json",
+    "tasks/backlog/SUT-AIOS-P2-004/task.json",
+    "tasks/review/SUT-AIOS-GOV-044/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-044/verification-20260729140619592.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
