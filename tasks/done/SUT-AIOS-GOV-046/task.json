@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-046",
   "title": "Add P2-004 validator to final-head CI",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "ci-assurance",
   "workflowId": "p2-004-final-head-validator",
@@ -106,7 +106,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-046/task.json",
+      "tasks/done/SUT-AIOS-GOV-046/task.json",
       "tasks/verified/SUT-AIOS-P2-004/task.json",
       ".github/workflows/validate-governance.yml",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -116,9 +116,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T14:44:00.000Z",
-  "updatedDate": "2026-07-29T14:49:29.166Z",
+  "updatedDate": "2026-07-29T15:14:36.512Z",
   "completionEvidence": [
-    "evidence/tasks/SUT-AIOS-GOV-046/verification.md"
+    "evidence/tasks/SUT-AIOS-GOV-046/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-046/verification-20260729144920855.json"
   ],
   "worktree": null,
   "stateTransitions": [
@@ -156,6 +157,13 @@
       "at": "2026-07-29T14:49:29.166Z",
       "actor": "qa-verification",
       "reason": "Independent Sol review passed; exact CI-only scope, deterministic checks, and machine verification evidence accepted."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-07-29T15:14:36.512Z",
+      "actor": "qa-verification",
+      "reason": "PR #95 merged to main as commit 7d47b4298acb6bf5da35ad3f8edc2ad50325804d after independent Sol QA and green final-head CI; reconcile verified to done without changing delivery scope."
     }
   ]
 }
