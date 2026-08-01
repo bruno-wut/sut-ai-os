@@ -211,6 +211,15 @@
 
 This is the durable repository-wide register for issues, blockers, risks, failed checks, and unresolved warnings. Add a dated entry before task handoff; do not rely on chat-only reporting.
 
+### 2026-07-30 — P2-007 resource-budget validator admission is exact only
+
+- **Task ID:** `SUT-AIOS-GOV-054`
+- **Status:** Active
+- **Severity:** High
+- **Affected scope:** `scripts/verify/verify-cli.mjs`, `docs/verification/VERIFICATION_POLICY.md`, and future P2-007 verification
+- **Evidence:** GOV-054 admits only the byte-for-byte literal `node tests/resource-governance/validate-resource-budget-contract-v1.mjs`, maps it to `node` with one fixed repository-relative argument through the existing `shell: false` runner, and rejects whitespace, extra arguments, shell operators, alternate/sibling/dot/traversal paths, absolute forms, and Windows separators. This governance task does not create or execute the P2-007 product validator and does not authorize metering or resource-control behavior.
+- **Next action / owner:** Independent Sol QA must verify the exact mapping and evidence before P2-007 implementation can begin. Any broader command admission requires a separate approved governance task.
+
 ### 2026-07-29 — P2-004 validator admission is exact and non-product
 
 - **Task ID:** `SUT-AIOS-GOV-045`, `SUT-AIOS-P2-004`

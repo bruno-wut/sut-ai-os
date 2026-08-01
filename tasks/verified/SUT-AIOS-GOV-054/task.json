@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-054",
   "title": "Admit exact P2-007 resource-budget validator",
-  "status": "backlog",
+  "status": "verified",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-007-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-GOV-054/task.json",
+      "tasks/verified/SUT-AIOS-GOV-054/task.json",
       "tasks/backlog/SUT-AIOS-P2-007/task.json",
       "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -120,8 +120,10 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-07-30T00:00:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-01T06:01:07.568Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-054/verification-20260801060039833.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -129,6 +131,41 @@
       "at": "2026-07-30T00:00:00.000Z",
       "actor": "engineering-planner",
       "reason": "Created by GOV-053 to admit only the exact P2-007 validator literal before product activation."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-07-29T20:13:20.569Z",
+      "actor": "engineering-planner",
+      "reason": "GOV-053 completion is merged; exact scope, dependencies, commands, and Sol route are confirmed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-07-29T20:14:09.851Z",
+      "actor": "engineering-planner",
+      "reason": "Isolated worktree created from main; the approved exact-command admission is ready for bounded Sol implementation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T06:01:07.521Z",
+      "actor": "engineering-planner",
+      "reason": "Implementation complete; independent Sol QA has accepted the exact mapping and generated machine evidence."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-01T06:01:07.568Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA passed after correcting the local main baseline; exact admission, near-miss rejection coverage, evidence, and boundaries verified."
     }
-  ]
+  ],
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/.codex/worktrees/fbec/SUT_AI_OS-worktrees/SUT-AIOS-GOV-054",
+    "branch": "task/SUT-AIOS-GOV-054-admit-exact-p2-007-resource-budget-validator",
+    "primaryBranch": "main",
+    "createdAt": "2026-07-29T20:13:21.277Z",
+    "createdBy": "engineering-planner"
+  }
 }
