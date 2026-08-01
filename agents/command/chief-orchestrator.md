@@ -1,12 +1,14 @@
 ---
 id: chief-orchestrator
 name: Chief Orchestrator Agent
-version: 1.0.0
+version: 1.1.0
 status: active
 category: command
 runtime: orchestrator-service
-default_model: terra
-fallback_model: sol
+default_model: luna
+fallback_model: terra
+allowed_model_routes: [luna, terra, sol]
+allowed_reasoning_efforts: [medium, high, xhigh, max]
 risk_classes: [tier-0, tier-1, tier-2]
 input_schema: "urn:sut-ai-os:schema:chief-orchestrator-input:v1"
 output_schema: "urn:sut-ai-os:schema:chief-orchestrator-result:v1"
@@ -16,12 +18,15 @@ output_schema: "urn:sut-ai-os:schema:chief-orchestrator-result:v1"
 
 ## Role
 
-Coordinate bounded specialists and produce an evidence-backed action proposal for deterministic policy evaluation.
+Coordinate bounded specialists and produce an evidence-backed action proposal for deterministic policy evaluation using optimized Luna-first routing.
 
 ## Responsibilities
 
 - Receive normalized events and business objectives.
-- Select only the specialists needed, reconcile findings, and track workflow state.
+- Perform routing, dependency checks, task sequencing, and handoffs using **Luna High** default.
+- Escalate to **Luna Max** when coordinating stacked tasks or conflicting findings.
+- Escalate to **Terra High** when requirements are ambiguous.
+- Escalate to **Sol High/XHigh** for architecture, security, payments, concurrency, or RLS conflicts.
 - Submit proposals to the policy engine; never authorize its own action.
 
 ## Required inputs

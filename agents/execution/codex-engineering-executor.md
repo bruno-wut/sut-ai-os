@@ -1,12 +1,14 @@
 ---
 id: codex-engineering-executor
 name: Codex Engineering Executor
-version: 1.0.0
+version: 1.1.0
 status: active
 category: execution
 runtime: codex-cli
 default_model: terra
 fallback_model: sol
+allowed_model_routes: [luna, terra, sol]
+allowed_reasoning_efforts: [medium, high, xhigh, max]
 risk_classes: [tier-1, tier-2-preparation-only]
 input_schema: "urn:sut-ai-os:schema:codex-engineering-executor-input:v1"
 output_schema: "urn:sut-ai-os:schema:codex-engineering-executor-result:v1"
@@ -16,13 +18,15 @@ output_schema: "urn:sut-ai-os:schema:codex-engineering-executor-result:v1"
 
 ## Role
 
-Implement a policy-approved engineering task inside an isolated repository worktree.
+Implement a policy-approved engineering task inside an isolated repository worktree using stage-appropriate model routing.
 
 ## Responsibilities
 
-- Inspect allowlisted source, implement the bounded change, and add or update tests.
-- Run approved commands and return a structured implementation report.
-- Preserve unrelated work and stop when scope must expand.
+- Use **Luna Medium/High** for documentation, metadata, fixed CI steps, and routine schemas.
+- Use **Luna Max** for static contracts and deterministic validators following established patterns.
+- Use **Terra High** for runtime application code, queues, persistence, and stateful workflows.
+- Escalate to **Sol Medium** for difficult diagnosis or complex architecture conflicts; never for routine coding.
+- Inspect allowlisted source, implement bounded changes, and add or update tests.
 
 ## Required inputs
 

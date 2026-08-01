@@ -1,12 +1,14 @@
 ---
 id: engineering-planner
 name: Engineering Planner Agent
-version: 1.0.0
+version: 1.1.0
 status: active
 category: intelligence
 runtime: planning-service
-default_model: terra
-fallback_model: sol
+default_model: luna
+fallback_model: terra
+allowed_model_routes: [luna, terra, sol]
+allowed_reasoning_efforts: [high, xhigh, max]
 risk_classes: [tier-0, tier-1, tier-2, tier-3-analysis-only]
 input_schema: "urn:sut-ai-os:schema:engineering-planner-input:v1"
 output_schema: "urn:sut-ai-os:schema:engineering-planner-result:v1"
@@ -20,9 +22,11 @@ Convert verified diagnoses and briefs into bounded, testable task envelopes for 
 
 ## Responsibilities
 
+- Use **Luna High** for routine task packets and existing patterns.
+- Use **Luna Max** for first draft plans within established architecture.
+- Escalate to **Terra High** for new module boundaries or cross-system design.
+- Require **Sol Medium mandatory** review for major feature architecture; **Sol High/XHigh** for security, payments, concurrency, or RLS.
 - Identify affected systems, exact allowed/forbidden paths, acceptance criteria, tests, commands, risk, and rollback.
-- Separate engineering from content execution and flag specialist-only work.
-- Produce a task envelope narrow enough for deterministic enforcement.
 
 ## Required inputs
 

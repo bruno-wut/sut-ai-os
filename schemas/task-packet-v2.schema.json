@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/task-packet-v2.schema.json",
+  "title": "Sri U-Thong AI OS task packet V2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "taskId",
+    "title",
+    "status",
+    "phase",
+    "workstream",
+    "workflowId",
+    "playbookId",
+    "playbookMode",
+    "businessObjective",
+    "technicalObjective",
+    "architectureReferences",
+    "dependencies",
+    "evidence",
+    "assumptions",
+    "acceptanceCriteria",
+    "allowedPaths",
+    "forbiddenPaths",
+    "allowedCommands",
+    "requiredChecks",
+    "requiredTests",
+    "productionWritePermission",
+    "pullRequestRequirement",
+    "riskLevel",
+    "autonomyTier",
+    "defaultAgent",
+    "allowedAgents",
+    "routingPolicy",
+    "workspaceWrite",
+    "solEscalationTriggers",
+    "rollbackExpectations",
+    "outputSchema",
+    "contextBudget",
+    "owner",
+    "reviewer",
+    "createdDate",
+    "updatedDate",
+    "completionEvidence",
+    "stateTransitions"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": "2.0.0" },
+    "taskId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$" },
+    "title": { "type": "string", "minLength": 3, "maxLength": 200 },
+    "status": { "enum": ["backlog", "ready", "active", "blocked", "review", "revision-required", "verified", "done", "cancelled", "archived"] },
+    "phase": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "workstream": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "workflowId": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "playbookId": { "type": ["string", "null"], "maxLength": 120 },
+    "playbookMode": { "enum": ["shadow", "enabled"] },
+    "businessObjective": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "technicalObjective": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "architectureReferences": { "$ref": "#/$defs/stringList" },
+    "dependencies": { "$ref": "#/$defs/stringList" },
+    "evidence": { "$ref": "#/$defs/stringList" },
+    "assumptions": { "$ref": "#/$defs/stringList" },
+    "acceptanceCriteria": { "$ref": "#/$defs/stringList" },
+    "allowedPaths": { "$ref": "#/$defs/stringList" },
+    "forbiddenPaths": { "$ref": "#/$defs/stringList" },
+    "allowedCommands": { "$ref": "#/$defs/stringList" },
+    "requiredChecks": { "$ref": "#/$defs/stringList" },
+    "requiredTests": { "$ref": "#/$defs/stringList" },
+    "productionWritePermission": { "type": "boolean", "default": false },
+    "pullRequestRequirement": { "type": "boolean", "default": true },
+    "riskLevel": { "enum": ["low", "medium", "high", "critical"] },
+    "autonomyTier": { "enum": ["tier-0", "tier-1", "tier-2", "tier-3"] },
+    "defaultAgent": { "type": "string", "minLength": 3 },
+    "allowedAgents": { "$ref": "#/$defs/stringList" },
+    "routingPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementation", "semanticReview"],
+      "properties": {
+        "workClass": { "type": "string" },
+        "riskDomains": { "$ref": "#/$defs/stringList" },
+        "implementation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route", "effort"],
+          "properties": {
+            "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
+            "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
+          }
+        },
+        "semanticReview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route", "effort"],
+          "properties": {
+            "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
+            "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
+          }
+        },
+        "mergeRiskReview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "route", "effort"],
+          "properties": {
+            "required": { "type": "boolean" },
+            "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
+            "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
+          }
+        },
+        "fallback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route", "effort", "allowedReasons"],
+          "properties": {
+            "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
+            "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] },
+            "allowedReasons": { "$ref": "#/$defs/stringList" }
+          }
+        }
+      }
+    },
+    "workspaceWrite": { "type": "boolean", "default": false },
+    "solEscalationTriggers": { "$ref": "#/$defs/stringList" },
+    "rollbackExpectations": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "outputSchema": { "type": "string", "minLength": 1 },
+    "contextBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxBytes", "includedPaths"],
+      "properties": {
+        "maxBytes": { "type": "integer", "minimum": 1024, "maximum": 1048576 },
+        "includedPaths": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "owner": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "reviewer": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "createdDate": { "type": "string", "format": "date-time" },
+    "updatedDate": { "type": "string", "format": "date-time" },
+    "completionEvidence": { "$ref": "#/$defs/stringList" },
+    "worktree": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path", "branch", "primaryBranch", "createdAt", "createdBy"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "branch": { "type": "string", "pattern": "^task/" },
+        "primaryBranch": { "type": "string", "minLength": 1 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "minLength": 1 }
+      }
+    },
+    "stateTransitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "at", "actor", "reason"],
+        "properties": {
+          "from": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/status" }] },
+          "to": { "$ref": "#/$defs/status" },
+          "at": { "type": "string", "format": "date-time" },
+          "actor": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "status": { "enum": ["backlog", "ready", "active", "blocked", "review", "revision-required", "verified", "done", "cancelled", "archived"] },
+    "stringList": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 4000 }, "uniqueItems": true }
+  }
+}

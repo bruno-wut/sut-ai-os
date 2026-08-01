@@ -28,28 +28,32 @@ jobs:
         run: npm run task:validate -- --all
       - name: Run repository fast verification
         run: npm run verify:fast
-      - name: Run P2-007 resource budget contract validator
-        run: node tests/resource-governance/validate-resource-budget-contract-v1.mjs
-      - name: Run P2-006 data minimisation and retention contract validator
-        run: node tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs
-      - name: Run P2-005 infrastructure port contract validator
-        run: node tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs
-      - name: Run P2-004 intervention proposal contract validator
-        run: node tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs
-      - name: Run P2-002 intelligence provider contracts validator
-        run: node tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs
-      - name: Run P1-004 V1 policy contract validator
-        run: node tests/policy-definitions/validate-authorization-policies-v1.mjs
-      - name: Run P1-005 V2 policy contract validator
-        run: node tests/policy-definitions/validate-authorization-policies-v2.mjs
-      - name: Run P1-005 policy evaluator validator
-        run: node tests/policy-engine/validate-deterministic-policy-evaluator.mjs
-      - name: Run P1-006 playbook registry validator
-        run: node tests/playbooks/validate-playbook-registry-v1.mjs
-      - name: Run P1-007 kill-switch controls validator
-        run: node tests/orchestrator/validate-kill-switch-controls-v1.mjs
-      - name: Run P1-008 observe-only Staff OS control views validator
-        run: node tests/staff-os/validate-observe-only-control-views-v1.mjs
+      - name: Run Declarative Validator Registry
+        run: node scripts/verify/run-validator-registry.mjs
+      - name: Run Validator Registry Migration Parity Check
+        run: node tests/governance/validate-validator-registry-migration.mjs
 
-
-
+  reconciliation:
+    needs: validate
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: reconciliation-main
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Reconcile verified task to done post-merge
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_EVENT_AFTER: ${{ github.event.after }}
+        run: node scripts/task/reconcile-merged-task.mjs

@@ -1,0 +1,184 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-056",
+  "title": "Workflow Optimization and Model Routing Upgrade V2",
+  "status": "done",
+  "phase": "phase-2-governance",
+  "workstream": "workflow-optimization",
+  "workflowId": "implementation-gov-056",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Optimize master delivery workflow by moving from 7 PRs to 2 PRs per feature, implementing a Declarative Validator Registry, post-merge bot reconciliation, and optimizing agent model routing & effort tiers.",
+  "technicalObjective": "Implement Task Packet V2 schema (schemas/task-packet-v2.schema.json), SHA-bound review schema (schemas/review-result-v1.schema.json), validator registry schema & runner (schemas/validator-registry-v1.schema.json, policies/validator-registry-v1.json, scripts/verify/run-validator-registry.mjs), migration parity test (tests/governance/validate-validator-registry-migration.mjs), launcher context profiles & pre-execution fallbacks (scripts/codex/launch.mjs), and CI reconciliation job.",
+  "architectureReferences": [
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md",
+    "docs/project/TASK_WORKFLOW.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-054"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-056/verification.md"
+  ],
+  "assumptions": [
+    "SUT-AIOS-GOV-056 executes under the existing V1 task workflow one final time.",
+    "Task Packet V1 terminal done records remain 100% untouched and valid.",
+    "All new feature tasks following GOV-056 will use Task Packet V2 (schemaVersion 2.0.0) and the two-PR workflow."
+  ],
+  "acceptanceCriteria": [
+    "`schemas/task-packet-v2.schema.json` defines Draft 2020-12 schemaVersion 2.0.0 with stage-specific `routingPolicy` object as the single routing authority; task tools validate both V1 and V2 packets.",
+    "`schemas/review-result-v1.schema.json` defines Draft 2020-12 review schema bound to `taskId`, `baseSha`, `headSha`, `contextManifestHash`, `reviewedAt`, `outputHash`, `decision`, `blockingFindings`, `nonBlockingRisks`, `missingNegativeTests`, `architectureAssessment`, and `exactNextAction`.",
+    "`schemas/validator-registry-v1.schema.json` and `policies/validator-registry-v1.json` establish typed active validator declarations.",
+    "`scripts/verify/run-validator-registry.mjs` executes active validators shell-free under `tests/` with `process.execPath`, traversal/symlink rejection, timeout enforcement, and deterministic sorting.",
+    "`tests/governance/validate-validator-registry-migration.mjs` proves 100% parity with current hardcoded CI validator lists before hardcoded lists are refactored.",
+    "`scripts/codex/launch.mjs` extracts stage-specific `routingPolicy`, enforces agent `allowed_model_routes` / `allowed_reasoning_efforts`, restricts automatic fallback to provable pre-execution process start errors, implements generic context profiles, and validates review output against `review-result-v1.schema.json`.",
+    "`.github/workflows/validate-governance.yml` runs `run-validator-registry.mjs` in `validate` job and adds dependent `reconciliation` job running post-push on `main` to move verified packets to `done` idempotently.",
+    "`agents/command/chief-orchestrator.md`, `engineering-planner.md`, `codex-engineering-executor.md`, `qa-verification.md`, `REGISTRY.md`, `ROUTING.md`, `AGENTS.md`, `TASK_WORKFLOW.md`, `DEFINITION_OF_DONE.md`, `ENGINEERING_PRINCIPLES.md`, `AUTONOMY_BOUNDARIES.md` are updated with the 2-PR delivery flow, effort tiers, and model diversity rules.",
+    "All fast verification, task validation, governance validation, and parity tests pass with zero errors."
+  ],
+  "allowedPaths": [
+    "schemas/task-packet-v2.schema.json",
+    "schemas/review-result-v1.schema.json",
+    "schemas/validator-registry-v1.schema.json",
+    "policies/validator-registry-v1.json",
+    "scripts/review/validate-review-result.mjs",
+    "scripts/verify/run-validator-registry.mjs",
+    "tests/governance/validate-validator-registry-migration.mjs",
+    "scripts/codex/launch.mjs",
+    "scripts/codex/validate-routing.mjs",
+    "scripts/verify/verify-cli.mjs",
+    "scripts/github/validate-governance.mjs",
+    "scripts/task/task-cli.mjs",
+    ".github/workflows/validate-governance.yml",
+    "agents/command/chief-orchestrator.md",
+    "agents/intelligence/engineering-planner.md",
+    "agents/execution/codex-engineering-executor.md",
+    "agents/assurance/qa-verification.md",
+    "agents/REGISTRY.md",
+    "agents/ROUTING.md",
+    "AGENTS.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/AUTONOMY_BOUNDARIES.md",
+    "docs/handoffs/SUT-AIOS-GOV-056-ROLLBACK_PLAN.md",
+    "evidence/tasks/SUT-AIOS-GOV-056/**",
+    "evidence/verification/SUT-AIOS-GOV-056/**",
+    "tasks/**/SUT-AIOS-GOV-056/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "supabase/**",
+    "package.json",
+    "package-lock.json",
+    "tasks/done/**",
+    "tasks/verified/**"
+  ],
+  "allowedCommands": [
+    "node tests/governance/validate-validator-registry-migration.mjs",
+    "node scripts/review/validate-review-result.mjs",
+    "node scripts/verify/run-validator-registry.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "Task Packet V2 schema validation and backward compatibility with V1",
+    "Validator Registry V1 migration parity test pass",
+    "SHA-bound review result schema compilation and validation",
+    "Launcher generic context profiles and pre-execution fallback verification",
+    "CI reconciliation job configuration check",
+    "Fast verification and governance validation pass"
+  ],
+  "requiredTests": [
+    "node tests/governance/validate-validator-registry-migration.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "medium",
+  "autonomyTier": "tier-1",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification",
+    "chief-orchestrator"
+  ],
+  "modelRoute": "terra",
+  "defaultModel": "gpt-5.6-terra",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Escalate to Sol if schema compilation or launcher routing fails."
+  ],
+  "rollbackExpectations": "Follow docs/handoffs/SUT-AIOS-GOV-056-ROLLBACK_PLAN.md to revert repository changes via Git checkout / revert if workflow optimization issues arise.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/project/DEFINITION_OF_DONE.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-01T07:43:00.000Z",
+  "updatedDate": "2026-08-01T07:43:55.121Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-056/verification-20260801074348045.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-01T07:43:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-01T07:43:05.000Z",
+      "actor": "engineering-planner",
+      "reason": "Populated objectives, whitelists, criteria, and checks."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-01T07:43:25.131Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Scope and implementation plan approved"
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T07:43:51.182Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implementation complete and ready for review"
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-01T07:43:53.287Z",
+      "actor": "qa-verification",
+      "reason": "Independent verification passed with zero errors"
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-01T07:43:55.121Z",
+      "actor": "qa-verification",
+      "reason": "SUT-AIOS-GOV-056 workflow optimization and model routing upgrade fully implemented and verified"
+    }
+  ]
+}

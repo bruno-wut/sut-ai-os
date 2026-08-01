@@ -6,12 +6,12 @@ This is the canonical logical registry derived from `docs/architecture/source/Ag
 
 | ID | Name | Category | Status | Default / fallback | Definition |
 | --- | --- | --- | --- | --- | --- |
-| `chief-orchestrator` | Chief Orchestrator Agent | Command | Active | Terra / Sol | [Definition](command/chief-orchestrator.md) |
+| `chief-orchestrator` | Chief Orchestrator Agent | Command | Active | Luna / Terra | [Definition](command/chief-orchestrator.md) |
 | `data-anomaly-analyst` | Data and Anomaly Analyst Agent | Intelligence | Active | Luna / Terra | [Definition](intelligence/data-anomaly-analyst.md) |
 | `operational-incident-investigator` | Operational Incident Investigator Agent | Intelligence | Active | Terra / Sol | [Definition](intelligence/operational-incident-investigator.md) |
 | `seo-strategist` | SEO Strategist Agent | Intelligence | Active | Luna / Terra | [Definition](intelligence/seo-strategist.md) |
 | `content-brand` | Content and Brand Agent | Intelligence | Staged | Terra / Sol | [Definition](intelligence/content-brand.md) |
-| `engineering-planner` | Engineering Planner Agent | Intelligence | Active | Terra / Sol | [Definition](intelligence/engineering-planner.md) |
+| `engineering-planner` | Engineering Planner Agent | Intelligence | Active | Luna / Terra | [Definition](intelligence/engineering-planner.md) |
 | `codex-engineering-executor` | Codex Engineering Executor | Execution | Active | Terra / Sol | [Definition](execution/codex-engineering-executor.md) |
 | `codex-content-executor` | Codex SEO and Content Executor | Execution | Active | Terra / Sol | [Definition](execution/codex-content-executor.md) |
 | `qa-verification` | QA and Verification Agent | Assurance | Active | Terra / Sol | [Definition](assurance/qa-verification.md) |

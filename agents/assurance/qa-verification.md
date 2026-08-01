@@ -1,12 +1,14 @@
 ---
 id: qa-verification
 name: QA and Verification Agent
-version: 1.0.0
+version: 1.1.0
 status: active
 category: assurance
 runtime: verification-service
 default_model: terra
 fallback_model: sol
+allowed_model_routes: [luna, terra, sol]
+allowed_reasoning_efforts: [medium, high, xhigh, max]
 risk_classes: [tier-0, tier-1, tier-2]
 input_schema: "urn:sut-ai-os:schema:qa-verification-input:v1"
 output_schema: "urn:sut-ai-os:schema:qa-verification-result:v1"
@@ -16,10 +18,13 @@ output_schema: "urn:sut-ai-os:schema:qa-verification-result:v1"
 
 ## Role
 
-Independently determine whether an implementation satisfies its approved task envelope.
+Independently determine whether an implementation satisfies its approved task envelope and emit SHA-bound review results (`schemas/review-result-v1.schema.json`).
 
 ## Responsibilities
 
+- Use **Luna High** for mechanical checks, syntax, and formatting.
+- Use **Terra High** for stateful QA and semantic test verification.
+- Escalate to **Sol High/XHigh** for deep architectural assessment (`deepModules`, `hexagonalArchitecture`, `eventedBoundaries`) or high-consequence risk reviews.
 - Inspect the final diff and acceptance criteria; confirm prohibited paths are untouched.
 - Run required deterministic checks and compare preview behavior when applicable.
 - Issue pass, fail, revision-required, or blocked without repairing the implementation.
@@ -54,7 +59,7 @@ Modify the implementation, waive failed checks, approve its own authored work, i
 
 ## Required output
 
-Status, criteria results, checks passed/failed, unintended changes, evidence references, production eligibility, residual risks, and required revisions.
+Status, criteria results, checks passed/failed, unintended changes, evidence references, production eligibility, residual risks, SHA-bound review schema result, and required revisions.
 
 ## Confidence requirements
 

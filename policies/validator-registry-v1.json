@@ -1,0 +1,118 @@
+{
+  "$schema": "../schemas/validator-registry-v1.schema.json",
+  "schemaVersion": "1.0.0",
+  "validators": [
+    {
+      "validatorId": "p0-003-compatibility-baseline",
+      "ownerTaskId": "SUT-AIOS-P0-003",
+      "runtime": "node",
+      "path": "tests/compatibility/validate-finalized-platform-contracts.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-001-normalized-system-event",
+      "ownerTaskId": "SUT-AIOS-P1-001",
+      "runtime": "node",
+      "path": "tests/event-contracts/validate-normalized-system-event-contract.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-002-control-plane-schema",
+      "ownerTaskId": "SUT-AIOS-P1-002",
+      "runtime": "node",
+      "path": "tests/control-plane-schema/validate-control-plane-schema.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-003-append-only-audit-contract",
+      "ownerTaskId": "SUT-AIOS-P1-003",
+      "runtime": "node",
+      "path": "tests/audit/validate-append-only-audit-contract.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-004-authorization-policies",
+      "ownerTaskId": "SUT-AIOS-P1-004",
+      "runtime": "node",
+      "path": "tests/policy-definitions/validate-authorization-policies.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-005-data-minimisation-retention",
+      "ownerTaskId": "SUT-AIOS-P1-005",
+      "runtime": "node",
+      "path": "tests/data-governance/validate-data-minimisation-retention-contract-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-006-deterministic-analytics-calculators",
+      "ownerTaskId": "SUT-AIOS-P1-006",
+      "runtime": "node",
+      "path": "tests/analytics/validate-deterministic-analytics-calculators-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-007-intelligence-provider-contracts",
+      "ownerTaskId": "SUT-AIOS-P1-007",
+      "runtime": "node",
+      "path": "tests/ai-analysis/validate-intelligence-provider-contracts-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p1-008-intervention-proposal-contract",
+      "ownerTaskId": "SUT-AIOS-P1-008",
+      "runtime": "node",
+      "path": "tests/intervention-proposals/validate-intervention-proposal-contract-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p2-001-deterministic-policy-evaluator",
+      "ownerTaskId": "SUT-AIOS-P2-001",
+      "runtime": "node",
+      "path": "tests/policy-engine/validate-deterministic-policy-evaluator.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p2-002-playbook-registry",
+      "ownerTaskId": "SUT-AIOS-P2-002",
+      "runtime": "node",
+      "path": "tests/playbooks/validate-playbook-registry-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p2-004-kill-switch-controls",
+      "ownerTaskId": "SUT-AIOS-P2-004",
+      "runtime": "node",
+      "path": "tests/orchestrator/validate-kill-switch-controls-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p2-005-infrastructure-port-contract",
+      "ownerTaskId": "SUT-AIOS-P2-005",
+      "runtime": "node",
+      "path": "tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "gov-035-observe-only-control-views",
+      "ownerTaskId": "SUT-AIOS-GOV-035",
+      "runtime": "node",
+      "path": "tests/staff-os/validate-observe-only-control-views-v1.mjs",
+      "arguments": [],
+      "status": "active"
+    }
+  ]
+}

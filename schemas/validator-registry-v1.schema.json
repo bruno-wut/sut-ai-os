@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/validator-registry-v1.schema.json",
+  "title": "Sri U-Thong AI OS Declarative Validator Registry V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "validators"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "validators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["validatorId", "ownerTaskId", "runtime", "path", "arguments", "status"],
+        "properties": {
+          "validatorId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "ownerTaskId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$" },
+          "runtime": { "const": "node" },
+          "path": { "type": "string", "pattern": "^tests/[A-Za-z0-9_./-]+\\.mjs$" },
+          "arguments": { "type": "array", "maxItems": 0 },
+          "status": { "enum": ["active", "disabled"] }
+        }
+      }
+    }
+  }
+}
