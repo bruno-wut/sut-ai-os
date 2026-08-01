@@ -78,10 +78,19 @@
     "routingPolicy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["implementation", "semanticReview"],
+      "required": ["implementation", "planReview", "semanticReview"],
       "properties": {
         "workClass": { "type": "string" },
         "riskDomains": { "$ref": "#/$defs/stringList" },
+        "planReview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route", "effort"],
+          "properties": {
+            "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
+            "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
+          }
+        },
         "implementation": {
           "type": "object",
           "additionalProperties": false,

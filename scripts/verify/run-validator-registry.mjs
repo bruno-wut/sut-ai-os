@@ -3,9 +3,15 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const registryPath = path.join(root, "policies", "validator-registry-v1.json");
+const schemaPath = path.join(root, "schemas", "validator-registry-v1.schema.json");
+
+const ajv = new Ajv2020({ allErrors: true, strict: true, strictTypes: false });
+const schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+const validateRegistrySchema = ajv.compile(schema);
 
 function fail(msg) {
   process.stderr.write(`ERROR: ${msg}\n`);
@@ -29,13 +35,38 @@ export function runValidatorRegistry() {
     fail(`Invalid JSON in validator registry: ${e.message}`);
   }
 
-  if (!Array.isArray(registry.validators)) {
-    fail("Validator registry must contain a 'validators' array.");
+  // 1. Compile and validate registry schema via Ajv
+  if (!validateRegistrySchema(registry)) {
+    fail(`Validator registry failed schema validation:\n- ${ajv.errorsText(validateRegistrySchema.errors)}`);
   }
 
-  const activeValidators = registry.validators
-    .filter((v) => v.status === "active")
-    .sort((a, b) => a.validatorId.localeCompare(b.validatorId));
+  // 2. Validate uniqueness of IDs and paths, and at least 1 active validator
+  const ids = new Set();
+  const paths = new Set();
+  const activeValidators = [];
+
+  for (const entry of registry.validators) {
+    if (ids.has(entry.validatorId)) {
+      fail(`Duplicate validatorId detected in registry: ${entry.validatorId}`);
+    }
+    ids.add(entry.validatorId);
+
+    const normPath = slash(entry.path);
+    if (paths.has(normPath)) {
+      fail(`Duplicate path detected in registry: ${entry.path}`);
+    }
+    paths.add(normPath);
+
+    if (entry.status === "active") {
+      activeValidators.push(entry);
+    }
+  }
+
+  if (activeValidators.length === 0) {
+    fail("Validator registry must contain at least one active validator.");
+  }
+
+  activeValidators.sort((a, b) => a.validatorId.localeCompare(b.validatorId));
 
   const results = [];
   let allPassed = true;

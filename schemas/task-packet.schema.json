@@ -47,9 +47,7 @@
     "createdDate": { "type": "string", "format": "date-time" },
     "updatedDate": { "type": "string", "format": "date-time" },
     "completionEvidence": { "$ref": "#/$defs/stringList" },
-    "supersededBy": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$" },
-    "supersessionNote": { "type": "string", "minLength": 1, "maxLength": 1000 },
-    "worktree": { "type": ["object", "null"], "additionalProperties": true, "required": ["path", "primaryBranch", "createdAt"], "properties": { "path": { "type": "string", "minLength": 1 }, "branch": { "type": "string", "pattern": "^task/" }, "taskBranch": { "type": "string", "pattern": "^task/" }, "primaryBranch": { "type": "string", "minLength": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "createdBy": { "type": "string", "minLength": 1 } } },
+    "worktree": { "type": ["object", "null"], "additionalProperties": false, "required": ["path", "branch", "primaryBranch", "createdAt", "createdBy"], "properties": { "path": { "type": "string", "minLength": 1 }, "branch": { "type": "string", "pattern": "^task/" }, "primaryBranch": { "type": "string", "minLength": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "createdBy": { "type": "string", "minLength": 1 } } },
     "stateTransitions": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["from", "to", "at", "actor", "reason"], "properties": { "from": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/status" }] }, "to": { "$ref": "#/$defs/status" }, "at": { "type": "string", "format": "date-time" }, "actor": { "type": "string", "minLength": 1 }, "reason": { "type": "string", "minLength": 1, "maxLength": 1000 } } } }
   },
   "$defs": {

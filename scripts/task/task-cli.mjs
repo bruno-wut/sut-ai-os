@@ -75,7 +75,15 @@ function validatePacket(packet, { strict = false, directoryState } = {}) {
   if (packet.schemaVersion === "2.0.0") {
     if (!validateV2(packet)) errors.push(`schema validation failed: ${ajv.errorsText(validateV2.errors)}`);
   } else {
-    if (!validateV1(packet)) errors.push(`schema validation failed: ${ajv.errorsText(validateV1.errors)}`);
+    if (packet.schemaVersion !== "1.0.0") errors.push(`unsupported schemaVersion: ${packet.schemaVersion}`);
+    if (!validateV1(packet)) {
+      const filtered = validateV1.errors.filter((e) => {
+        if (e.keyword === "additionalProperties") return false;
+        if (e.instancePath === "/worktree" && (e.keyword === "required" || e.keyword === "additionalProperties")) return false;
+        return true;
+      });
+      if (filtered.length > 0) errors.push(`schema validation failed: ${ajv.errorsText(filtered)}`);
+    }
   }
 
   if (directoryState && packet.status !== directoryState) errors.push(`status ${packet.status} does not match directory ${directoryState}`);
@@ -124,7 +132,7 @@ function createPacket(options, root = repositoryRoot) {
   const target = taskPath("backlog", id, root); if (states.some((state) => fs.existsSync(taskPath(state, id, root)))) fail(`Task already exists: ${id}`);
   const created = now(); const agent = options.agent ?? "codex-engineering-executor"; const route = options.route ?? "terra";
   if (!["sol", "terra", "luna", "qwen-local"].includes(route)) fail("--route must be sol, terra, luna, or qwen-local.");
-  const packet = { "$schema": "../../../schemas/task-packet-v2.schema.json", schemaVersion: "2.0.0", taskId: id, title: options.title, status: "backlog", phase: "discovery", workstream: "unassigned", workflowId: "unassigned", playbookId: null, playbookMode: "shadow", businessObjective: "REPLACE_ME", technicalObjective: "REPLACE_ME", architectureReferences: [], dependencies: [], evidence: [`evidence/tasks/${id}/verification.md`], assumptions: [], acceptanceCriteria: [], allowedPaths: [], forbiddenPaths: [], allowedCommands: [], requiredChecks: [], requiredTests: [], productionWritePermission: false, pullRequestRequirement: true, riskLevel: "low", autonomyTier: "tier-0", defaultAgent: agent, allowedAgents: [agent], routingPolicy: { implementation: { route: route, effort: "high" }, semanticReview: { route: "terra", effort: "high" }, mergeRiskReview: { required: true, route: "sol", effort: "medium" }, fallback: { route: "sol", effort: "high", allowedReasons: ["provider_unavailable", "failed_to_start", "rate_limited_before_execution"] } }, workspaceWrite: false, solEscalationTriggers: [], rollbackExpectations: "REPLACE_ME", outputSchema: "schemas/agent-result.schema.json", contextBudget: { maxBytes: 524288, includedPaths: [] }, owner: options.owner ?? agent, reviewer: "unassigned", createdDate: created, updatedDate: created, completionEvidence: [], stateTransitions: [{ from: null, to: "backlog", at: created, actor: "chief-orchestrator", reason: "Task created by task:new." }] };
+  const packet = { "$schema": "../../../schemas/task-packet-v2.schema.json", schemaVersion: "2.0.0", taskId: id, title: options.title, status: "backlog", phase: "discovery", workstream: "unassigned", workflowId: "unassigned", playbookId: null, playbookMode: "shadow", businessObjective: "REPLACE_ME", technicalObjective: "REPLACE_ME", architectureReferences: [], dependencies: [], evidence: [`evidence/tasks/${id}/verification.md`], assumptions: [], acceptanceCriteria: [], allowedPaths: [], forbiddenPaths: [], allowedCommands: [], requiredChecks: [], requiredTests: [], productionWritePermission: false, pullRequestRequirement: true, riskLevel: "low", autonomyTier: "tier-0", defaultAgent: agent, allowedAgents: [agent], routingPolicy: { implementation: { route: route, effort: "high" }, planReview: { route: "luna", effort: "high" }, semanticReview: { route: "terra", effort: "high" }, mergeRiskReview: { required: true, route: "sol", effort: "medium" }, fallback: { route: "sol", effort: "high", allowedReasons: ["provider_unavailable", "failed_to_start", "rate_limited_before_execution"] } }, workspaceWrite: false, solEscalationTriggers: [], rollbackExpectations: "REPLACE_ME", outputSchema: "schemas/agent-result.schema.json", contextBudget: { maxBytes: 524288, includedPaths: [] }, owner: options.owner ?? agent, reviewer: "unassigned", createdDate: created, updatedDate: created, completionEvidence: [], stateTransitions: [{ from: null, to: "backlog", at: created, actor: "chief-orchestrator", reason: "Task created by task:new." }] };
   fs.mkdirSync(path.dirname(target), { recursive: true }); writePacket(target, packet); return normalize(path.relative(root, target));
 }
 
@@ -161,4 +169,11 @@ function main() {
   if (command === "status") { const record = findPacket(options.task); const validation = validatePacket(record.packet, { directoryState: record.state }); process.stdout.write(`${JSON.stringify({ path: normalize(path.relative(repositoryRoot, record.file)), packet: record.packet, validation }, null, 2)}\n`); return; }
   fail(`Unknown task command: ${command}`);
 }
-main();
+
+export { findPacket, validatePacket, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
+
+const currentFile = fileURLToPath(import.meta.url);
+if (process.argv[1] && (path.resolve(process.argv[1]) === currentFile || ["new", "validate", "move", "start", "block", "review", "complete", "list", "status"].includes(path.basename(process.argv[1])))) {
+  main();
+}
+

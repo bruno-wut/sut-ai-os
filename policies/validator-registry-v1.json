@@ -35,10 +35,10 @@
       "status": "active"
     },
     {
-      "validatorId": "p1-004-authorization-policies",
+      "validatorId": "p1-004-authorization-policies-v1",
       "ownerTaskId": "SUT-AIOS-P1-004",
       "runtime": "node",
-      "path": "tests/policy-definitions/validate-authorization-policies.mjs",
+      "path": "tests/policy-definitions/validate-authorization-policies-v1.mjs",
       "arguments": [],
       "status": "active"
     },
