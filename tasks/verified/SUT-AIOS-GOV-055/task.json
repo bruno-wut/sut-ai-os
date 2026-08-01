@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-055",
   "title": "Add P2-007 validator to final-head CI",
-  "status": "ready",
+  "status": "verified",
   "phase": "engineering-governance",
   "workstream": "ci-assurance",
   "workflowId": "p2-007-final-head-validator",
@@ -106,7 +106,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-GOV-055/task.json",
+      "tasks/verified/SUT-AIOS-GOV-055/task.json",
       "tasks/verified/SUT-AIOS-P2-007/task.json",
       ".github/workflows/validate-governance.yml",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -115,8 +115,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-01T07:02:02.389Z",
-  "updatedDate": "2026-08-01T07:02:55.301Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-01T07:06:20.589Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-055/verification-20260801070542986.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -131,6 +133,27 @@
       "at": "2026-08-01T07:02:55.301Z",
       "actor": "engineering-planner",
       "reason": "P2-007 final-head CI gap is confirmed; exact validator admission and bounded .github scope are ready for Sol implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-01T07:03:11.225Z",
+      "actor": "engineering-planner",
+      "reason": "Current main contains P2-007 verified and GOV-054 done; implement only the fixed final-head validator step."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T07:04:42.989Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Added exactly one fixed final-head P2-007 validator step after fast verification; bounded policy, risk, evidence, and implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-01T07:06:20.589Z",
+      "actor": "qa-verification-gov055",
+      "reason": "Independent Sol QA passed the exact fixed CI step admission and task verification; final-head CI must explicitly run the P2-007 validator before merge."
     }
   ]
 }

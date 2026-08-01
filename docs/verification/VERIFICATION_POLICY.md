@@ -58,4 +58,12 @@ retention or due state, schedule or perform deletion, aggregation, archival, or
 transfer, invoke storage, queues, workflows, AI, or external services, or
 create production capability.
 
+The same workflow executes the exact P2-007 validator
+`node tests/resource-governance/validate-resource-budget-contract-v1.mjs`
+as a distinct fixed step immediately after repository fast verification. This
+final-head check proves only the committed static resource-budget contract on
+the merge candidate. It does not establish live resource usage or capacity,
+control a workload, schedule, pause, requeue, block, notify, execute, affect
+booking operations, or create production capability.
+
 Large logs, traces, screenshots, and reports belong in `artifacts/`; result JSON stores concise references only. Do not add secrets or raw webhook payloads to evidence.

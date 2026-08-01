@@ -1,5 +1,27 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-01 - P2-007 final-head CI assurance is bounded
+
+- **Task ID:** `SUT-AIOS-GOV-055`, `SUT-AIOS-P2-007`
+- **Status:** Monitoring / ready for independent review
+- **Severity:** High
+- **Affected scope:** GitHub merge-candidate assurance for the static P2-007
+  resource-budget contract.
+- **Evidence:** GOV-055 adds one distinct fixed GitHub Actions step for the
+  already admitted exact P2-007 validator immediately after repository fast
+  verification. It adds no dynamic command construction, generic runner,
+  interpolated path or arguments, credential, external service, deployment,
+  P2-007 product change, resource-control behavior, booking action, or
+  production operation.
+- **Residual risk:** Passing final-head validation proves only the committed
+  static resource-budget contract. It cannot establish truthful live resource
+  usage, available capacity, operational workload controls, completed pause or
+  requeue actions, notification delivery, or booking isolation.
+- **Next action / owner:** Independent Sol QA must inspect the literal and its
+  ordering, changed-path boundary, and task-specific machine evidence. The
+  orchestrator must require green final-head CI that explicitly runs this step
+  before P2-007 may move from verified to done.
+
 ### 2026-08-01 - P2-007 classifies declared resource observations but cannot establish live capacity facts
 
 - **Task ID:** `SUT-AIOS-P2-007`
