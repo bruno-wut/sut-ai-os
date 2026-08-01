@@ -1,12 +1,14 @@
 # Workflow V2 Foundation verification
 
 - **Task:** `SUT-AIOS-GOV-056-FND`
+- **Implementation commit:** `684b7c5688e0c6925ed0bc9b0b6663c012ae870f`
+- **Canonical base:** `origin/main` at `7226268dece3bfcc191716b243f45711c2eb131c`
 - **Scope:** Task Packet V2 schema and V1/V2 validation; stage-specific routing authority; agent route and effort enforcement; inactive-agent and terminal-task rejection; structured SHA-bound review-result validation; required authoring and execution documentation.
 - **Explicit exclusions:** The hardcoded CI validator list remains authoritative. No reconciliation implementation, validator-registry takeover, GitHub write permission, bot commit, deployment, production behavior, provider fallback, telemetry, or routing optimization is included.
 
 ## Deterministic checks
 
-The following checks passed on the implementation tree before this evidence record was written:
+The following checks passed on the committed implementation tree `684b7c5688e0c6925ed0bc9b0b6663c012ae870f`:
 
 ```text
 node tests/task/validate-task-packet-v2.mjs
@@ -22,4 +24,4 @@ The focused tests cover valid V1 compatibility, valid V2 packets, malformed/unsu
 
 ## Independent review
 
-Terra semantic review and Sol architecture/safety review were requested against the exact final tree. The first Terra pass correctly blocked until this evidence path and the administrative-record allowlist were present; those blockers are recorded as resolved by the follow-up review on the final implementation SHA. No task is marked `verified` by this record alone; the task remains subject to the final exact-head review gate.
+Terra semantic review and Sol architecture/safety review were requested against the exact committed tree. The first Terra pass correctly blocked until this evidence path and the administrative-record allowlist were present; those blockers were resolved before this evidence commit. The Sol review also drove the task-state, V1 Markdown, task-ID, canonical-base, clean-head, environment, and normal-output safeguards. No task is marked `verified` by this record alone; the task remains subject to the final exact-head review gate.
