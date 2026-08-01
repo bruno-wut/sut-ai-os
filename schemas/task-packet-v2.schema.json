@@ -140,13 +140,16 @@
     "createdDate": { "type": "string", "format": "date-time" },
     "updatedDate": { "type": "string", "format": "date-time" },
     "completionEvidence": { "$ref": "#/$defs/stringList" },
+    "supersededBy": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$" },
+    "supersessionNote": { "type": "string", "minLength": 1, "maxLength": 1000 },
     "worktree": {
       "type": ["object", "null"],
-      "additionalProperties": false,
-      "required": ["path", "branch", "primaryBranch", "createdAt", "createdBy"],
+      "additionalProperties": true,
+      "required": ["path", "primaryBranch", "createdAt"],
       "properties": {
         "path": { "type": "string", "minLength": 1 },
         "branch": { "type": "string", "pattern": "^task/" },
+        "taskBranch": { "type": "string", "pattern": "^task/" },
         "primaryBranch": { "type": "string", "minLength": 1 },
         "createdAt": { "type": "string", "format": "date-time" },
         "createdBy": { "type": "string", "minLength": 1 }

@@ -35,6 +35,8 @@ function main() {
     "tests/orchestrator/validate-kill-switch-controls-v1.mjs",
     "tests/infrastructure-contracts/validate-infrastructure-port-contract-v1.mjs",
     "tests/staff-os/validate-observe-only-control-views-v1.mjs",
+    "tests/policy-definitions/validate-authorization-policies-v2.mjs",
+    "tests/resource-governance/validate-resource-budget-contract-v1.mjs",
   ];
 
   const registeredPaths = registry.validators.map((v) => slash(v.path));

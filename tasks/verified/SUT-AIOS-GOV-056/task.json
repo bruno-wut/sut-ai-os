@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-056",
   "title": "Workflow Optimization and Model Routing Upgrade V2",
-  "status": "done",
+  "status": "verified",
   "phase": "phase-2-governance",
   "workstream": "workflow-optimization",
   "workflowId": "implementation-gov-056",
@@ -104,7 +104,7 @@
   ],
   "productionWritePermission": false,
   "pullRequestRequirement": true,
-  "riskLevel": "medium",
+  "riskLevel": "high",
   "autonomyTier": "tier-1",
   "defaultAgent": "codex-engineering-executor",
   "allowedAgents": [
@@ -133,9 +133,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-01T07:43:00.000Z",
-  "updatedDate": "2026-08-01T07:43:55.121Z",
+  "updatedDate": "2026-08-01T08:13:27.624Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-056/verification-20260801074348045.json"
+    "evidence/verification/SUT-AIOS-GOV-056/verification-20260801074348045.json",
+    "evidence/tasks/SUT-AIOS-GOV-056/verification.md"
   ],
   "stateTransitions": [
     {
@@ -175,10 +176,31 @@
     },
     {
       "from": "verified",
-      "to": "done",
-      "at": "2026-08-01T07:43:55.121Z",
+      "to": "revision-required",
+      "at": "2026-08-01T08:04:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "User requested revisions"
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-01T08:13:14.686Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Restarting execution after plan revisions."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T08:13:20.822Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Ready for QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-01T08:13:27.624Z",
       "actor": "qa-verification",
-      "reason": "SUT-AIOS-GOV-056 workflow optimization and model routing upgrade fully implemented and verified"
+      "reason": "Tested V1/V2 schema compatibility"
     }
   ]
 }

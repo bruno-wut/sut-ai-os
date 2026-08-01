@@ -113,6 +113,22 @@
       "path": "tests/staff-os/validate-observe-only-control-views-v1.mjs",
       "arguments": [],
       "status": "active"
+    },
+    {
+      "validatorId": "p2-006-authorization-policies-v2",
+      "ownerTaskId": "SUT-AIOS-P2-006",
+      "runtime": "node",
+      "path": "tests/policy-definitions/validate-authorization-policies-v2.mjs",
+      "arguments": [],
+      "status": "active"
+    },
+    {
+      "validatorId": "p2-007-resource-budget-contract",
+      "ownerTaskId": "SUT-AIOS-P2-007",
+      "runtime": "node",
+      "path": "tests/resource-governance/validate-resource-budget-contract-v1.mjs",
+      "arguments": [],
+      "status": "active"
     }
   ]
 }
