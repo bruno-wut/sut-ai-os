@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-007",
   "title": "Define deterministic resource-budget and quota contracts",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-2",
   "workstream": "resource-governance",
   "workflowId": "implementation-p2-007",
@@ -113,7 +113,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P2-007/task.json",
+      "tasks/done/SUT-AIOS-P2-007/task.json",
       "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "policies/resource-budget-policy-v1.json",
@@ -125,7 +125,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.719Z",
-  "updatedDate": "2026-08-01T06:35:47.292Z",
+  "updatedDate": "2026-08-01T06:46:04.711Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P2-007/verification-20260801063534448.json"
   ],
@@ -164,6 +164,13 @@
       "at": "2026-08-01T06:35:47.292Z",
       "actor": "qa-verification-2",
       "reason": "Fresh independent Sol QA passed after canonical-base correction and timestamp remediation; 669-case validator and static boundaries verified."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-01T06:46:04.711Z",
+      "actor": "engineering-planner",
+      "reason": "PR #118 merged to main at 95f8649c5ed81f9c3c73e5a2958746945af010ed after independent Sol QA and green final-head CI; reconcile verified to done."
     }
   ],
   "worktree": {
