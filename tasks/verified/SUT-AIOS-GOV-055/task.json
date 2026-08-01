@@ -1,0 +1,159 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-055",
+  "title": "Add P2-007 validator to final-head CI",
+  "status": "verified",
+  "phase": "engineering-governance",
+  "workstream": "ci-assurance",
+  "workflowId": "p2-007-final-head-validator",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Ensure each P2-007 merge candidate executes its static resource-budget validator in final-head CI without granting CI or the contract resource authority.",
+  "technicalObjective": "Add one fixed GitHub Actions step for the already admitted P2-007 validator and document bounded final-head assurance; do not change P2-007 product artifacts or add generic command execution.",
+  "architectureReferences": [
+    "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/TASK_WORKFLOW.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-054",
+    "SUT-AIOS-P2-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-055/verification.md"
+  ],
+  "assumptions": [
+    "GOV-054 admits the exact literal node tests/resource-governance/validate-resource-budget-contract-v1.mjs with shell:false fixed arguments.",
+    "P2-007 is independently verified but remains verified until this final-head CI assurance is merged and PR #119 is rebased and rechecked.",
+    "No resource meter, quota action, provider, queue, workflow, scheduler, notifier, booking capacity, external service, or production operation is authorized."
+  ],
+  "acceptanceCriteria": [
+    "The Governance / validate workflow invokes exactly node tests/resource-governance/validate-resource-budget-contract-v1.mjs as a distinct fixed step after repository fast verification.",
+    "No generic or dynamic command, shell execution, interpolated path/arguments, matrix, credential, external service, deployment, or P2-007 product change is added.",
+    "Verification policy and a durable risk entry state that the fixed final-head step proves only the static P2-007 merge candidate and creates no resource-control, scheduling, execution, notification, booking, or production capability.",
+    "Packet checks, independent Sol review, task-specific machine evidence, and final-head CI explicitly show the P2-007 validator ran and passed."
+  ],
+  "allowedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-055/**",
+    "evidence/tasks/SUT-AIOS-GOV-055/**",
+    "evidence/verification/SUT-AIOS-GOV-055/**"
+  ],
+  "forbiddenPaths": [
+    "docs/architecture/source/**",
+    "reference/finalized-platform/**",
+    "tasks/done/**",
+    "tasks/verified/**",
+    "tests/**",
+    "schemas/**",
+    "packages/**",
+    "policies/**",
+    "apps/**",
+    "services/**",
+    "playbooks/**",
+    "scripts/**",
+    "package.json",
+    "package-lock.json",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-055 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "literal CI step inspection",
+    "changed-path and forbidden-boundary inspection",
+    "independent Sol review",
+    "machine evidence explicitly recording P2-007 validator execution",
+    "final-head CI"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any generic or dynamic CI execution, shell invocation, credential, external service, deployment, resource-control behavior, or P2-007 product change requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the fixed P2-007 CI step, policy statement, GOV-055 packet/evidence/risk entry, and lifecycle record; preserve P2-007 implementation/evidence, GOV-054 history, terminal records, canonical sources, immutable snapshots, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/verified/SUT-AIOS-GOV-055/task.json",
+      "tasks/verified/SUT-AIOS-P2-007/task.json",
+      ".github/workflows/validate-governance.yml",
+      "docs/verification/VERIFICATION_POLICY.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-01T07:02:02.389Z",
+  "updatedDate": "2026-08-01T07:06:20.589Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-055/verification-20260801070542986.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-01T07:02:02.389Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after P2-007 review found final-head CI did not execute its exact admitted validator."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-01T07:02:55.301Z",
+      "actor": "engineering-planner",
+      "reason": "P2-007 final-head CI gap is confirmed; exact validator admission and bounded .github scope are ready for Sol implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-01T07:03:11.225Z",
+      "actor": "engineering-planner",
+      "reason": "Current main contains P2-007 verified and GOV-054 done; implement only the fixed final-head validator step."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T07:04:42.989Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Added exactly one fixed final-head P2-007 validator step after fast verification; bounded policy, risk, evidence, and implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-01T07:06:20.589Z",
+      "actor": "qa-verification-gov055",
+      "reason": "Independent Sol QA passed the exact fixed CI step admission and task verification; final-head CI must explicitly run the P2-007 validator before merge."
+    }
+  ]
+}
