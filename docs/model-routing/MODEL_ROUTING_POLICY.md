@@ -50,7 +50,7 @@ The launcher treats the selected sandbox and exact command arguments as the loca
 5. `qwen-local` is isolated from hosted routes and is allowed only when the packet explicitly selects it.
 6. Risk, data classification, policy, tools, paths, commands, approvals, and verification override model convenience.
 
-V2 review results are accepted only from a clean committed head and are bound to the configured `GOVERNED_BASE_SHA`, or the fetched `origin/main` commit when no explicit SHA is configured. Local Qwen launches require explicit `--local-provider` and `--local-model` arguments and receive a minimal environment allowlist.
+V2 review results are accepted only from a clean committed head and are bound to fetched `origin/main`; an explicit `GOVERNED_BASE_SHA` must exactly match that ref. Local Qwen launches require explicit `--local-provider` and `--local-model` arguments and receive a minimal environment allowlist.
 
 ## Route policy
 

@@ -56,7 +56,17 @@ assert.throws(() => assertProfileAuthorization("implementation", activeV2, v2Acc
 assert.doesNotThrow(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "qa-verification"));
 assert.throws(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "codex-engineering-executor"), /independent/);
 assert.match(comparisonBaseSha(), /^[0-9a-f]{40}$/);
+const previousBaseSha = process.env.GOVERNED_BASE_SHA;
+const previousBaseRef = process.env.GOVERNED_BASE_REF;
+process.env.GOVERNED_BASE_SHA = "f".repeat(40);
+assert.throws(() => comparisonBaseSha(), /does not match fetched origin\/main/);
+if (previousBaseSha === undefined) delete process.env.GOVERNED_BASE_SHA;
+else process.env.GOVERNED_BASE_SHA = previousBaseSha;
+process.env.GOVERNED_BASE_REF = "HEAD";
+assert.throws(() => comparisonBaseSha(), /canonical origin\/main ref/);
+if (previousBaseRef === undefined) delete process.env.GOVERNED_BASE_REF;
+else process.env.GOVERNED_BASE_REF = previousBaseRef;
 assert.equal(allowedEfforts.sol.has("low"), false, "Sol low is prohibited");
 assert.equal(allowedEfforts.terra.has("max"), false, "Terra max is prohibited");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 23 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks: 25 }) + "\n");

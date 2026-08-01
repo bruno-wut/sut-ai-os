@@ -8,7 +8,7 @@ V1 packets remain valid against [task-packet.schema.json](../../schemas/task-pac
 
 V2 routing has no implicit fallback. `implementation`, `planReview`, `semanticReview`, and `mergeRiskReview` each declare the route and reasoning effort for that stage. The launcher rejects route or effort command-line overrides, inactive agents, terminal tasks, and agent declarations that do not permit the selected route or effort.
 
-Only `active` implementation tasks and `review` review tasks are executable. A review must use a clean committed head and binds its base to `GOVERNED_BASE_SHA` when configured, otherwise the fetched `origin/main` commit; the mutable local `main` branch is not authoritative. Local Qwen execution requires an explicit provider and installed model and receives only the launcher environment allowlist.
+Only `active` implementation tasks and `review` review tasks are executable. A review must use a clean committed head and binds its base to fetched `origin/main`; `GOVERNED_BASE_SHA` is accepted only when it exactly matches that canonical ref, and `GOVERNED_BASE_REF` may only name `origin/main`. The mutable local `main` branch is not authoritative. Local Qwen execution requires an explicit provider and installed model and receives only the launcher environment allowlist.
 
 `productionWritePermission` defaults to `false`; `pullRequestRequirement` defaults to `true`. New playbooks start at `tier-0` and `shadow` mode. Packets must explicitly enable `workspaceWrite` before the existing Codex launcher will request workspace-write mode.
 

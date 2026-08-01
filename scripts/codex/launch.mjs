@@ -56,12 +56,12 @@ function gitSha(base = "HEAD") {
 
 function comparisonBaseSha() {
   const configured = process.env.GOVERNED_BASE_SHA;
-  const ref = process.env.GOVERNED_BASE_REF ?? "origin/main";
-  const value = configured ?? gitSha(ref);
-  if (!/^[0-9a-f]{40}$/i.test(value ?? "")) throw new Error("Cannot determine the canonical review comparison base SHA");
-  const exists = spawnSync("git", ["cat-file", "-e", `${value}^{commit}`], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
-  if (exists.status !== 0) throw new Error("Configured review comparison base SHA is not a repository commit");
-  return value;
+  const configuredRef = process.env.GOVERNED_BASE_REF;
+  if (configuredRef && configuredRef !== "origin/main") throw new Error("GOVERNED_BASE_REF must be the canonical origin/main ref");
+  const canonical = gitSha("origin/main");
+  if (!/^[0-9a-f]{40}$/i.test(canonical ?? "")) throw new Error("Cannot determine the canonical review comparison base SHA");
+  if (configured && configured !== canonical) throw new Error("GOVERNED_BASE_SHA does not match fetched origin/main");
+  return canonical;
 }
 
 function isTaskId(value) {
