@@ -51,7 +51,9 @@ Threshold classification requires all of the following:
 
 - available budget authority and valid configuration;
 - a `fresh` meter with complete bounded integer measurements, a canonical UTC
-  timestamp, and declared age no greater than 300 seconds;
+  timestamp, and declared age no greater than 300 seconds. Calendar validity,
+  including month lengths and leap days, is evaluator-enforced semantic
+  validation beyond Draft 2020-12 pattern support;
 - the `staff_control` or `ai_workload` zone, isolated from booking quotas,
   credentials, deployments, and failure boundaries;
 - bounded batch or governed-summary work with deduplication, idempotency,

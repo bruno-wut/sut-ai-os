@@ -122,7 +122,7 @@ reasons(evaluateResourceBudget(canonicalObservation({ hardLimitUnits: 0 })), ["H
 reasons(evaluateResourceBudget(canonicalObservation({ observedAt: null })), ["METERING_TIMESTAMP_MISSING"], "missing timestamp", "requeue_candidate");
 reasons(evaluateResourceBudget(canonicalObservation({ meterAgeSeconds: null })), ["METER_AGE_INVALID"], "missing meter age", "requeue_candidate");
 reasons(evaluateResourceBudget(canonicalObservation({ meterAgeSeconds: 301 })), ["METER_STALE"], "stale age", "requeue_candidate");
-for (const [field, value] of [["usedUnits", -1], ["usedUnits", 1.5], ["usedUnits", Number.MAX_SAFE_INTEGER + 1], ["reservedUnits", -1], ["hardLimitUnits", -1], ["hardLimitUnits", 1.5], ["observedAt", "2026-08-01"], ["meterAgeSeconds", -1]]) reasons(evaluateResourceBudget(canonicalObservation({ [field]: value })), [field === "meterAgeSeconds" ? "METER_AGE_INVALID" : "MALFORMED_OBSERVATION"], `invalid ${field}`);
+for (const [field, value] of [["usedUnits", -1], ["usedUnits", 1.5], ["usedUnits", Number.MAX_SAFE_INTEGER + 1], ["reservedUnits", -1], ["hardLimitUnits", -1], ["hardLimitUnits", 1.5], ["observedAt", "2026-08-01"], ["observedAt", "2026-02-31T00:00:00Z"], ["observedAt", "2025-02-29T00:00:00Z"], ["observedAt", "2024-02-30T00:00:00Z"], ["meterAgeSeconds", -1]]) reasons(evaluateResourceBudget(canonicalObservation({ [field]: value })), [field === "meterAgeSeconds" ? "METER_AGE_INVALID" : "MALFORMED_OBSERVATION"], `invalid ${field}`);
 
 reasons(evaluateResourceBudget(canonicalObservation({ resourceDimension: "unknown_dimension" })), ["UNKNOWN_RESOURCE_DIMENSION"], "unknown dimension");
 reasons(evaluateResourceBudget(canonicalObservation({ unit: "tokens" })), ["UNIT_MISMATCH"], "unit mismatch");

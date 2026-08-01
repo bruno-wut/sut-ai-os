@@ -6,7 +6,16 @@ const BOOKING_FIELDS = Object.freeze(["bookingWorkload", "sharesQuotaWithBooking
 const AUTHORITY_FIELDS = Object.freeze(["callerSuppliesPolicy", "callerSuppliesThresholds", "decisionAuthorizesScheduling", "decisionAuthorizesExecution", "decisionAuthorizesNotification", "decisionAuthorizesProductionWrite", "productionWriteGranted"]);
 const INJECTED_AUTHORITY_FIELDS = new Set(["schema", "policy", "contract", "validator", "configuration", "thresholds", "resourceBudgetPolicy", "adapter", "dependencies"]);
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
-const TIMESTAMP = /^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$/;
+const TIMESTAMP = /^([0-9]{4})-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$/;
+function validTimestamp(value) {
+  const match = TIMESTAMP.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const daysInMonth = [31, (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+  return day <= daysInMonth;
+}
 
 const DIMENSIONS = Object.freeze([
   Object.freeze({ resourceDimension: "worker_requests", unit: "requests" }),
@@ -186,7 +195,7 @@ function semanticReasons(value) {
   if (value.hardLimitUnits === null || value.hardLimitUnits === 0) reasons.add("HARD_LIMIT_MISSING");
   else if (!isSafePositiveInteger(value.hardLimitUnits)) reasons.add("MALFORMED_OBSERVATION");
   if (value.observedAt === null) reasons.add("METERING_TIMESTAMP_MISSING");
-  else if (typeof value.observedAt !== "string" || !TIMESTAMP.test(value.observedAt)) reasons.add("MALFORMED_OBSERVATION");
+  else if (typeof value.observedAt !== "string" || !validTimestamp(value.observedAt)) reasons.add("MALFORMED_OBSERVATION");
   if (!isSafeNonNegativeInteger(value.meterAgeSeconds)) reasons.add("METER_AGE_INVALID");
   else if (value.meterAgeSeconds > CEILINGS.maxMeterAgeSeconds) reasons.add("METER_STALE");
 
