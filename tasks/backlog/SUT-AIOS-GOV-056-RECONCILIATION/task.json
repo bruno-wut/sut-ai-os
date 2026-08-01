@@ -1,0 +1,133 @@
+{
+  "$schema": "../../../schemas/task-packet-v2.schema.json",
+  "schemaVersion": "2.0.0",
+  "status": "backlog",
+  "phase": "phase-2-governance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-1",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification",
+    "chief-orchestrator"
+  ],
+  "routingPolicy": {
+    "implementation": {
+      "route": "terra",
+      "effort": "high"
+    },
+    "planReview": {
+      "route": "luna",
+      "effort": "high"
+    },
+    "semanticReview": {
+      "route": "terra",
+      "effort": "high"
+    },
+    "mergeRiskReview": {
+      "required": true,
+      "route": "sol",
+      "effort": "medium"
+    }
+  },
+  "workspaceWrite": false,
+  "solEscalationTriggers": [
+    "Escalate to Sol for schema or routing-policy security defects."
+  ],
+  "rollbackExpectations": "Keep reconciliation disabled in shadow mode and revert any controlled activation through a separately reviewed Git revert.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "schemas/task-packet-v2.schema.json",
+      "schemas/review-result-v1.schema.json"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-01T12:40:00.000Z",
+  "updatedDate": "2026-08-01T12:40:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-01T12:40:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created as a bounded staged Workflow V2 task."
+    }
+  ],
+  "taskId": "SUT-AIOS-GOV-056-RECONCILIATION",
+  "title": "Idempotent Post-Merge Reconciliation",
+  "workstream": "governance-follow-up",
+  "workflowId": "post-merge-reconciliation",
+  "businessObjective": "Move verified tasks to done after merge only through a proven, bounded, idempotent reconciliation flow.",
+  "technicalObjective": "Prove reconciliation in shadow mode, prevent recursive push-triggered runs, make repeated invocation a no-op, and activate it under controlled human-reviewed conditions.",
+  "dependencies": [
+    "SUT-AIOS-GOV-056-FND"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-056-RECONCILIATION/verification.md"
+  ],
+  "assumptions": [
+    "The Foundation PR does not enable reconciliation.",
+    "The existing reconciliation implementation is not trusted until the second-workflow-invocation defect is covered."
+  ],
+  "acceptanceCriteria": [
+    "Shadow mode proves no repository mutation.",
+    "A reconciliation push cannot recursively trigger an uncontrolled second run.",
+    "Repeated invocation against the same merge is idempotent.",
+    "The evidence covers the reconciliation commit and its second workflow invocation.",
+    "Controlled activation is separately reviewed and can fail closed."
+  ],
+  "allowedPaths": [
+    "scripts/task/reconcile-merged-task.mjs",
+    "tests/task/reconcile-merged-task.test.mjs",
+    ".github/workflows/validate-governance.yml",
+    "schemas/merge-event-v1.schema.json",
+    "schemas/reconciliation-result-v1.schema.json",
+    "evidence/tasks/SUT-AIOS-GOV-056-RECONCILIATION/**",
+    "tasks/**/SUT-AIOS-GOV-056-RECONCILIATION/**"
+  ],
+  "forbiddenPaths": [
+    "policies/validator-registry-v1.json",
+    "scripts/verify/run-validator-registry.mjs",
+    "package.json",
+    "package-lock.json",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**"
+  ],
+  "allowedCommands": [
+    "node tests/task/reconcile-merged-task.test.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "Recursive-trigger prevention",
+    "Idempotent repeated invocation",
+    "Shadow-mode no-write proof",
+    "Second workflow invocation evidence",
+    "Independent review"
+  ],
+  "requiredTests": [
+    "node tests/task/reconcile-merged-task.test.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ]
+}

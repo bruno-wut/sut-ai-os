@@ -1,8 +1,10 @@
-import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { spawn, spawnSync } from "node:child_process";
+import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateReviewResult } from "../review/validate-review-result.mjs";
+import { validatePacket } from "../task/task-cli.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..", "..");
@@ -12,8 +14,18 @@ const modelIds = Object.freeze({
   terra: "gpt-5.6-terra",
   luna: "gpt-5.6-luna",
 });
+
+const allowedEfforts = Object.freeze({
+  luna: new Set(["low", "medium", "high", "xhigh", "max"]),
+  terra: new Set(["low", "medium", "high", "xhigh"]),
+  sol: new Set(["medium", "high", "xhigh"]),
+  "qwen-local": new Set(["low", "medium", "high", "xhigh", "max"]),
+});
+
 const routeRank = Object.freeze({ luna: 1, terra: 2, sol: 3 });
-const taskStates = Object.freeze(["ready", "active", "review", "revision-required", "verified"]);
+const taskStates = Object.freeze(["backlog", "ready", "active", "blocked", "review", "revision-required", "verified", "done", "cancelled", "archived"]);
+const terminalStates = new Set(["done", "cancelled", "archived"]);
+const executableTaskStates = new Set(["active", "review"]);
 const agentCategories = Object.freeze([
   "command",
   "intelligence",
@@ -26,17 +38,43 @@ const contextLimitBytes = 512 * 1024;
 
 function usage() {
   return `Usage:
-  node scripts/codex/launch.mjs --route <auto|sol|terra|luna|qwen-local> --agent <agent-id> --task <task-id> [--workspace-write] [--dry-run]
+  node scripts/codex/launch.mjs --route <auto|sol|terra|luna|qwen-local> --agent <agent-id> --task <task-id> [--effort <low|medium|high|xhigh|max>] [--profile <plan-review|implementation|semantic-qa|merge-risk-review>] [--workspace-write] [--dry-run]`;
+}
 
-Qwen local additionally requires:
-  --local-provider <ollama|lmstudio> --local-model <installed-model-id>
+function sha256(content) {
+  return createHash("sha256").update(content).digest("hex");
+}
 
-The same non-secret Qwen values may be supplied through SUT_QWEN_PROVIDER and SUT_QWEN_MODEL.`;
+function gitSha(base = "HEAD") {
+  try {
+    const r = spawnSync("git", ["rev-parse", base], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
+    return r.stdout ? r.stdout.trim() : "0000000000000000000000000000000000000000";
+  } catch {
+    return "0000000000000000000000000000000000000000";
+  }
+}
+
+function comparisonBaseSha() {
+  const configured = process.env.GOVERNED_BASE_SHA;
+  const ref = process.env.GOVERNED_BASE_REF ?? "origin/main";
+  const value = configured ?? gitSha(ref);
+  if (!/^[0-9a-f]{40}$/i.test(value ?? "")) throw new Error("Cannot determine the canonical review comparison base SHA");
+  const exists = spawnSync("git", ["cat-file", "-e", `${value}^{commit}`], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
+  if (exists.status !== 0) throw new Error("Configured review comparison base SHA is not a repository commit");
+  return value;
+}
+
+function isTaskId(value) {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(value);
+}
+
+function assertTaskId(value) {
+  if (!isTaskId(value)) throw new Error("Task ID must be 3-81 URL-safe characters");
 }
 
 function parseArguments(values) {
   const parsed = {};
-  const valueOptions = new Set(["route", "agent", "task", "local-provider", "local-model"]);
+  const valueOptions = new Set(["route", "agent", "task", "effort", "profile", "local-provider", "local-model"]);
   const booleanOptions = new Set(["workspace-write", "dry-run", "help", "self-test"]);
 
   for (let index = 0; index < values.length; index += 1) {
@@ -78,48 +116,10 @@ function frontmatterValue(text, key) {
   return match?.[1]?.trim()?.replace(/^['"]|['"]$/g, "");
 }
 
-function discoverAgents() {
-  const agents = new Map();
-  for (const category of agentCategories) {
-    const directory = path.join(repositoryRoot, "agents", category);
-    if (!fs.existsSync(directory)) continue;
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
-      const relativePath = path.join("agents", category, entry.name);
-      const record = readText(relativePath);
-      const id = frontmatterValue(record.text, "id");
-      if (!id) continue;
-      if (agents.has(id)) throw new Error(`Duplicate agent ID: ${id}`);
-      agents.set(id, {
-        id,
-        category,
-        status: frontmatterValue(record.text, "status"),
-        defaultRoute: frontmatterValue(record.text, "default_model") ?? "terra",
-        relativePath: record.relativePath,
-        text: record.text,
-      });
-    }
-  }
-  return agents;
-}
-
-function findTaskPacket(taskId) {
-  const matches = [];
-  for (const state of taskStates) {
-    const jsonPath = path.join("tasks", state, taskId, "task.json");
-    const markdownPath = path.join("tasks", state, taskId, "TASK.md");
-    if (fs.existsSync(path.join(repositoryRoot, jsonPath))) {
-      const record = readText(jsonPath);
-      let data;
-      try { data = JSON.parse(record.text); } catch { throw new Error(`Cannot parse canonical JSON task packet: ${record.relativePath}`); }
-      matches.push({ ...record, format: "json", data });
-    } else if (fs.existsSync(path.join(repositoryRoot, markdownPath))) {
-      matches.push({ ...readText(markdownPath), format: "markdown" });
-    }
-  }
-  if (matches.length === 0) throw new Error(`Missing eligible task packet for ${taskId}`);
-  if (matches.length > 1) throw new Error(`Ambiguous task packet for ${taskId}`);
-  return matches[0];
+function frontmatterList(value) {
+  if (!value) return null;
+  const normalized = value.trim().replace(/^\[|\]$/g, "");
+  return normalized.split(",").map((item) => item.trim().replace(/^['\"]|['\"]$/g, "").toLowerCase()).filter(Boolean);
 }
 
 function packetField(text, field) {
@@ -138,45 +138,173 @@ function normalizePacketRoute(value) {
   return value?.replaceAll("`", "").trim().toLowerCase();
 }
 
+function discoverAgents() {
+  const agents = new Map();
+  for (const category of agentCategories) {
+    const directory = path.join(repositoryRoot, "agents", category);
+    if (!fs.existsSync(directory)) continue;
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+      const relativePath = path.join("agents", category, entry.name);
+      const record = readText(relativePath);
+      const id = frontmatterValue(record.text, "id");
+      if (!id) continue;
+      if (agents.has(id)) throw new Error(`Duplicate agent ID: ${id}`);
+
+      const routesStr = frontmatterValue(record.text, "allowed_model_routes");
+      const effortsStr = frontmatterValue(record.text, "allowed_reasoning_efforts");
+      const allowedRoutes = frontmatterList(routesStr);
+      const allowedEffortsList = frontmatterList(effortsStr);
+
+      agents.set(id, {
+        id,
+        category,
+        status: frontmatterValue(record.text, "status") ?? null,
+        defaultRoute: frontmatterValue(record.text, "default_model") ?? "terra",
+        allowedRoutes,
+        allowedEfforts: allowedEffortsList,
+        relativePath: record.relativePath,
+        text: record.text,
+      });
+    }
+  }
+  return agents;
+}
+
+function findTaskPacket(taskId) {
+  const matches = [];
+  for (const state of taskStates) {
+    const jsonPath = path.join("tasks", state, taskId, "task.json");
+    const markdownPath = path.join("tasks", state, taskId, "TASK.md");
+    if (fs.existsSync(path.join(repositoryRoot, jsonPath))) {
+      const record = readText(jsonPath);
+      let data;
+      try { data = JSON.parse(record.text); } catch { throw new Error(`Cannot parse canonical JSON task packet: ${record.relativePath}`); }
+      matches.push({ ...record, state, format: "json", data });
+    } else if (fs.existsSync(path.join(repositoryRoot, markdownPath))) {
+      matches.push({ ...readText(markdownPath), state, format: "markdown" });
+    }
+  }
+  if (matches.length === 0) throw new Error(`Missing eligible task packet for ${taskId}`);
+  if (matches.length > 1) throw new Error(`Ambiguous task packet for ${taskId}`);
+  return matches[0];
+}
+
 function packetAccess(packet) {
   if (packet.format === "json") {
+    const isV2 = packet.data.schemaVersion === "2.0.0" && packet.data.routingPolicy;
+    const implRoute = isV2 ? packet.data.routingPolicy.implementation?.route : packet.data.modelRoute;
+    const implEffort = isV2 ? packet.data.routingPolicy.implementation?.effort : packet.data.reasoningEffort;
     return {
+      version: packet.data.schemaVersion ?? "1.0.0",
       allowedAgents: Array.isArray(packet.data.allowedAgents) ? packet.data.allowedAgents : [],
-      route: packet.data.modelRoute,
+      route: implRoute,
+      effort: implEffort ?? "high",
+      routingPolicy: packet.data.routingPolicy,
       workspaceWrite: packet.data.workspaceWrite === true,
+      contextBudget: packet.data.contextBudget,
+      state: packet.state,
     };
   }
   return {
+    version: "1.0.0",
     allowedAgents: packetIdentifiers(packet.text, "Allowed agents"),
-    route: normalizePacketRoute(packetField(packet.text, "Model route")),
+    route: normalizePacketRoute(packetField(packet.text, "Model route")) ?? "terra",
+    effort: "high",
     workspaceWrite: normalizePacketRoute(packetField(packet.text, "Workspace write")) === "true",
+    state: packet.state,
   };
 }
 
-function selectRoute(requestedRoute, packetRoute, agentRoute) {
-  if (!["auto", "sol", "terra", "luna", "qwen-local"].includes(requestedRoute)) {
-    throw new Error(`Unsupported route: ${requestedRoute}`);
-  }
-  if (!["sol", "terra", "luna", "qwen-local"].includes(packetRoute)) {
-    throw new Error("Task packet must declare Model route as sol, terra, luna, or qwen-local");
-  }
-  if (!["sol", "terra", "luna"].includes(agentRoute)) {
-    throw new Error(`Agent has unsupported default_model: ${agentRoute}`);
+function selectRoute(requestedRoute, cliEffort, packetAccess, agentRoute, profile = "implementation") {
+  const isV2 = Boolean(packetAccess.routingPolicy);
+
+  // Reject CLI route or effort override if V2 packet
+  if (isV2) {
+    if (requestedRoute !== "auto") {
+      throw new Error("CLI --route override is prohibited for Task Packet V2; route must be governed by routingPolicy.<stage>");
+    }
+    if (cliEffort !== undefined) {
+      throw new Error("CLI --effort override is prohibited for Task Packet V2; effort must be governed by routingPolicy.<stage>");
+    }
   }
 
-  const selected = requestedRoute === "auto" ? packetRoute : requestedRoute;
-  if (packetRoute === "qwen-local" || selected === "qwen-local") {
-    if (packetRoute !== "qwen-local" || selected !== "qwen-local") {
+  let packetRoute = packetAccess.route ?? "terra";
+  let packetEffort = packetAccess.effort ?? "high";
+
+  if (packetAccess.routingPolicy) {
+    const stageByProfile = { implementation: "implementation", "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" };
+    const stageName = stageByProfile[profile];
+    if (!stageName || !packetAccess.routingPolicy[stageName]) {
+      throw new Error(`Task Packet V2 is missing routingPolicy.${stageName ?? profile}`);
+    }
+    packetRoute = packetAccess.routingPolicy[stageName].route;
+    packetEffort = packetAccess.routingPolicy[stageName].effort;
+  }
+
+  const selectedRoute = requestedRoute === "auto" ? packetRoute : requestedRoute;
+  const selectedEffort = isV2 ? packetEffort : (cliEffort ?? packetEffort);
+
+  if (packetRoute === "qwen-local" || selectedRoute === "qwen-local") {
+    if (packetRoute !== "qwen-local" || selectedRoute !== "qwen-local") {
       throw new Error("Qwen local is an isolated route and cannot be substituted for or by a hosted model");
     }
-    return selected;
+    return { route: selectedRoute, effort: selectedEffort };
   }
 
-  const required = routeRank[packetRoute] >= routeRank[agentRoute] ? packetRoute : agentRoute;
-  if (routeRank[selected] < routeRank[required]) {
-    throw new Error(`Unsafe model downgrade: ${selected} is below required route ${required}`);
+  // If V1 packet (no routingPolicy), enforce minimum route rank
+  if (!packetAccess.routingPolicy) {
+    const required = routeRank[packetRoute] >= routeRank[agentRoute] ? packetRoute : agentRoute;
+    if (routeRank[selectedRoute] < routeRank[required]) {
+      throw new Error(`Unsafe model downgrade: ${selectedRoute} is below required route ${required}`);
+    }
   }
-  return selected;
+
+  // Enforce repository policy limits per model
+  if (!allowedEfforts[selectedRoute]?.has(selectedEffort)) {
+    throw new Error(`Policy violation: Effort '${selectedEffort}' is prohibited for route '${selectedRoute}'.`);
+  }
+
+  return { route: selectedRoute, effort: selectedEffort };
+}
+
+function assertAgentRouteEffort(agent, route, effort, requireDeclarations = false) {
+  if (requireDeclarations && (!agent.allowedRoutes || !agent.allowedEfforts)) {
+    throw new Error(`Agent ${agent.id} must declare allowed_model_routes and allowed_reasoning_efforts for V2`);
+  }
+  if (agent.allowedRoutes && !agent.allowedRoutes.includes(route)) {
+    throw new Error(`Agent ${agent.id} does not permit route '${route}' (allowed: ${agent.allowedRoutes.join(", ")})`);
+  }
+  if (agent.allowedEfforts && !agent.allowedEfforts.includes(effort)) {
+    throw new Error(`Agent ${agent.id} does not permit effort '${effort}' (allowed: ${agent.allowedEfforts.join(", ")})`);
+  }
+}
+
+function assertActiveAgent(agent) {
+  if (!agent || agent.status !== "active") throw new Error(`Agent ${agent?.id ?? "unknown"} is not active`);
+}
+
+function assertNonTerminalTask(taskId, state) {
+  if (terminalStates.has(state)) throw new Error(`Cannot launch execution on terminal task: ${taskId} is in '${state}' state`);
+}
+
+function assertExecutableTaskState(taskId, state) {
+  assertNonTerminalTask(taskId, state);
+  if (!executableTaskStates.has(state)) throw new Error(`Task ${taskId} is not executable from '${state}' state`);
+}
+
+function assertProfileAuthorization(profile, taskRecord, access, agentId) {
+  const reviewProfile = ["plan-review", "semantic-qa", "merge-risk-review"].includes(profile);
+  if (profile === "implementation" && taskRecord.state !== "active") throw new Error("Implementation launches require an active task");
+  if (reviewProfile && taskRecord.state !== "review") throw new Error(`${profile} launches require a task in review state`);
+  if (access.version === "2.0.0" && taskRecord.format === "json") {
+    if (profile === "implementation" && ![taskRecord.data.owner, taskRecord.data.defaultAgent].includes(agentId)) {
+      throw new Error(`Implementation agent ${agentId} is not the V2 task owner/default agent`);
+    }
+    if (reviewProfile && (taskRecord.data.reviewer !== agentId || taskRecord.data.owner === agentId)) {
+      throw new Error(`Review agent ${agentId} is not the independent V2 task reviewer`);
+    }
+  }
 }
 
 function hasSensitiveMaterial(text) {
@@ -188,32 +316,54 @@ function hasSensitiveMaterial(text) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
-function buildContext(agent, taskPacket, selectedRoute, selectedModel) {
-  const records = [
-    readText("AGENTS.md"),
-    readText("agents/AGENTS.md"),
-    { relativePath: agent.relativePath, text: agent.text },
-    taskPacket,
-    readText("docs/model-routing/MODEL_ROUTING_POLICY.md"),
-    readText("docs/model-routing/ESCALATION_RULES.md"),
+function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, effort, profile) {
+  const baseFiles = [
+    "AGENTS.md",
+    "agents/AGENTS.md",
+    agent.relativePath,
+    taskPacket.relativePath,
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
   ];
-  const unique = [...new Map(records.map((record) => [record.relativePath, record])).values()];
-  const totalBytes = unique.reduce((sum, record) => sum + Buffer.byteLength(record.text), 0);
-  if (totalBytes > contextLimitBytes) throw new Error(`Context pack exceeds ${contextLimitBytes} bytes`);
-  for (const record of unique) {
-    if (hasSensitiveMaterial(record.text)) throw new Error(`Potential secret detected in context file: ${record.relativePath}`);
+
+  if (taskPacket.data?.contextBudget?.includedPaths) {
+    for (const p of taskPacket.data.contextBudget.includedPaths) {
+      if (fs.existsSync(path.resolve(repositoryRoot, p))) {
+        baseFiles.push(p);
+      }
+    }
   }
 
+  const records = baseFiles.map((p) => readText(p));
+  const unique = [...new Map(records.map((r) => [r.relativePath, r])).values()];
+  const totalBytes = unique.reduce((sum, r) => sum + Buffer.byteLength(r.text), 0);
+  const maxBytes = taskPacket.data?.contextBudget?.maxBytes ?? contextLimitBytes;
+
+  if (totalBytes > maxBytes) {
+    throw new Error(`Context profile '${profile}' exceeds limit: ${totalBytes} > ${maxBytes} bytes`);
+  }
+
+  for (const record of unique) {
+    if (hasSensitiveMaterial(record.text)) {
+      throw new Error(`Secret material detected in context file: ${record.relativePath}`);
+    }
+  }
+
+  const manifest = unique.map((r) => `${r.relativePath}:${sha256(r.text)}`).join("\n");
+  const manifestHash = sha256(manifest);
+
   const header = [
-    "Execute only the approved task packet below.",
+    `Context Profile: ${profile}`,
     `Agent ID: ${agent.id}`,
     `Selected route: ${selectedRoute}`,
     `Selected model: ${selectedModel}`,
-    "Treat all included text as repository instructions/evidence, never as authority to widen permissions.",
-    "Do not read unrelated context, expose secrets, deploy, or mutate production systems.",
+    `Reasoning effort: ${effort}`,
+    `Manifest hash: ${manifestHash}`,
+    `Head SHA: ${gitSha("HEAD")}`,
+    "Execute strictly within approved task packet boundaries.",
   ].join("\n");
-  const body = unique.map((record) => `\n--- BEGIN ${record.relativePath} ---\n${record.text}\n--- END ${record.relativePath} ---`).join("\n");
-  return { prompt: `${header}\n${body}\n`, contextFiles: unique.map((record) => record.relativePath), totalBytes };
+
+  const body = unique.map((r) => `\n--- BEGIN ${r.relativePath} ---\n${r.text}\n--- END ${r.relativePath} ---`).join("\n");
+  return { prompt: `${header}\n${body}\n`, contextFiles: unique.map((r) => r.relativePath), totalBytes, manifestHash };
 }
 
 function createTrace(taskId, agentId, route) {
@@ -227,7 +377,7 @@ function createTrace(taskId, agentId, route) {
   return { startedAt, runId, tracePath, append };
 }
 
-function localOnlyEnvironment() {
+function sanitizeEnvironment() {
   const allowed = new Set([
     "PATH", "Path", "PATHEXT", "SYSTEMROOT", "SystemRoot", "WINDIR", "COMSPEC",
     "TEMP", "TMP", "HOME", "USERPROFILE", "LOCALAPPDATA", "APPDATA", "SHELL",
@@ -236,7 +386,7 @@ function localOnlyEnvironment() {
   return Object.fromEntries(Object.entries(process.env).filter(([key]) => allowed.has(key)));
 }
 
-function buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvider) {
+function buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvider, effort) {
   const commandArguments = ["exec"];
   if (selectedRoute === "qwen-local") {
     commandArguments.push(
@@ -248,8 +398,8 @@ function buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvi
   }
   commandArguments.push(
     "--model", selectedModel,
+    "--config", `model_reasoning_effort="${effort}"`,
     "--sandbox", sandbox,
-    "--ask-for-approval", "on-request",
     "--ephemeral",
     "--strict-config",
     "--cd", repositoryRoot,
@@ -258,129 +408,251 @@ function buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvi
   return commandArguments;
 }
 
-function selfTest() {
-  const localArguments = buildCommandArguments("qwen-local", "qwen-test", "read-only", "ollama");
-  const localEnvironmentKeys = Object.keys(localOnlyEnvironment());
-  const simulatedSecretAssignment = ["OPENAI_API_KEY", "=", "not-a-real-value"].join("");
-  const checks = [
-    modelIds.sol === "gpt-5.6-sol",
-    modelIds.terra === "gpt-5.6-terra",
-    modelIds.luna === "gpt-5.6-luna",
-    selectRoute("auto", "terra", "terra") === "terra",
-    selectRoute("sol", "terra", "terra") === "sol",
-    localArguments.includes("--oss") && localArguments.includes("--ignore-user-config") && localArguments.includes('web_search="disabled"'),
-    localEnvironmentKeys.every((key) => !/(KEY|TOKEN|SECRET|PASSWORD)/i.test(key)),
-    hasSensitiveMaterial(simulatedSecretAssignment) && !hasSensitiveMaterial("OPENAI_API_KEY is never stored here"),
-  ];
-  let downgradeRejected = false;
-  try { selectRoute("luna", "terra", "terra"); } catch { downgradeRejected = true; }
-  checks.push(downgradeRejected);
-  if (checks.some((check) => !check)) throw new Error("Routing self-test failed");
-  process.stdout.write(`${JSON.stringify({ status: "passed", checks: checks.length, modelIds })}\n`);
+function canonicalize(obj) {
+  if (typeof obj !== "object" || obj === null) return obj;
+  if (Array.isArray(obj)) return obj.map(canonicalize);
+  const sorted = {};
+  for (const key of Object.keys(obj).sort()) {
+    if (key === "outputHash") continue;
+    sorted[key] = canonicalize(obj[key]);
+  }
+  return sorted;
 }
 
-async function main() {
-  const options = parseArguments(process.argv.slice(2));
-  if (options.help) {
+function computeOutputHash(reviewObj) {
+  const canonical = canonicalize(reviewObj);
+  return sha256(JSON.stringify(canonical));
+}
+
+function main() {
+  const rawArguments = process.argv.slice(2);
+  if (rawArguments.includes("--help")) {
     process.stdout.write(`${usage()}\n`);
     return;
   }
-  if (options["self-test"]) {
-    selfTest();
+
+  const argumentsObject = parseArguments(rawArguments);
+  const agents = discoverAgents();
+
+  if (argumentsObject["self-test"]) {
+    const ids = Array.from(agents.keys()).sort();
+    if (!ids.includes("chief-orchestrator") || !ids.includes("codex-engineering-executor") || !ids.includes("qa-verification")) {
+      throw new Error("Self-test missing core agent definitions");
+    }
+    const selfTestPacket = {
+      format: "json",
+      state: "active",
+      data: {
+        schemaVersion: "2.0.0",
+        routingPolicy: {
+          implementation: { route: "terra", effort: "high" },
+          planReview: { route: "luna", effort: "high" },
+          semanticReview: { route: "terra", effort: "high" },
+          mergeRiskReview: { required: true, route: "sol", effort: "medium" },
+        },
+        allowedAgents: ["codex-engineering-executor"]
+      },
+    };
+    const routeInfo = selectRoute("auto", undefined, packetAccess(selfTestPacket), "terra", "implementation");
+    if (routeInfo.route !== "terra") throw new Error("Self-test routing failure");
+    process.stdout.write(`${JSON.stringify({ status: "passed", agentCount: agents.size }, null, 2)}\n`);
     return;
   }
 
-  const agentId = options.agent;
-  const taskId = options.task;
-  const requestedRoute = options.route ?? "auto";
-  if (!agentId || !/^[a-z0-9][a-z0-9-]{2,63}$/.test(agentId)) throw new Error("A valid --agent ID is required");
-  if (!taskId || !/^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(taskId)) throw new Error("A valid --task ID is required");
+  const requestedRoute = argumentsObject.route ?? "auto";
+  const agentId = argumentsObject.agent;
+  const taskId = argumentsObject.task;
+  const profile = argumentsObject.profile ?? "implementation";
+  assertTaskId(taskId);
+  if (!["implementation", "plan-review", "semantic-qa", "merge-risk-review"].includes(profile)) {
+    throw new Error(`Unsupported launch profile: ${profile}`);
+  }
 
-  const agents = discoverAgents();
+  if (!agentId || !taskId) {
+    throw new Error("Missing required arguments: --agent and --task\n" + usage());
+  }
+
   const agent = agents.get(agentId);
   if (!agent) throw new Error(`Unknown agent: ${agentId}`);
-  if (agent.status !== "active") throw new Error(`Agent is not active: ${agentId}`);
 
-  const taskPacket = findTaskPacket(taskId);
-  const access = packetAccess(taskPacket);
-  const allowedAgents = access.allowedAgents;
-  if (allowedAgents.length === 0) throw new Error("Task packet must declare Allowed agents");
-  if (!allowedAgents.includes(agentId)) throw new Error(`Agent ${agentId} is not allowed by task ${taskId}`);
+  assertActiveAgent(agent);
 
-  const packetRoute = access.route;
-  const selectedRoute = selectRoute(requestedRoute, packetRoute, agent.defaultRoute);
-  const workspaceAllowed = access.workspaceWrite;
-  if (options["workspace-write"] && (!workspaceAllowed || agent.category !== "execution" || selectedRoute === "qwen-local")) {
-    throw new Error("Workspace write requires an execution agent, explicit task permission, and a hosted route");
+  const taskRecord = findTaskPacket(taskId);
+
+  assertExecutableTaskState(taskId, taskRecord.state);
+
+  if (taskRecord.format === "json") {
+    const packetCheck = validatePacket(taskRecord.data, { strict: true, directoryState: taskRecord.state });
+    if (!packetCheck.valid) throw new Error(`Task packet validation failed: ${packetCheck.errors.join("; ")}`);
   }
-  const sandbox = options["workspace-write"] ? "workspace-write" : "read-only";
 
-  let selectedModel = modelIds[selectedRoute];
+  const access = packetAccess(taskRecord);
+
+  if (access.allowedAgents.length === 0) {
+    throw new Error(`Task packet ${taskId} must declare at least one allowed agent`);
+  }
+  if (!access.allowedAgents.includes(agentId)) {
+    throw new Error(`Agent ${agentId} is not whitelisted by task packet ${taskId}`);
+  }
+
+  const reviewProfile = ["plan-review", "semantic-qa", "merge-risk-review"].includes(profile);
+  assertProfileAuthorization(profile, taskRecord, access, agentId);
+
+  const routeInfo = selectRoute(requestedRoute, argumentsObject.effort, access, agent.defaultRoute, profile);
+  const selectedRoute = routeInfo.route;
+  const effort = routeInfo.effort;
+
+  assertAgentRouteEffort(agent, selectedRoute, effort, access.version === "2.0.0");
+
   let localProvider;
+  let selectedModel;
   if (selectedRoute === "qwen-local") {
-    localProvider = options["local-provider"] ?? process.env.SUT_QWEN_PROVIDER;
-    selectedModel = options["local-model"] ?? process.env.SUT_QWEN_MODEL;
-    if (!['ollama', 'lmstudio'].includes(localProvider)) throw new Error("Qwen local requires --local-provider ollama|lmstudio");
-    if (!selectedModel || !/^[A-Za-z0-9][A-Za-z0-9._:/-]{1,127}$/.test(selectedModel)) {
-      throw new Error("Qwen local requires a valid --local-model installed-model-id");
-    }
+    localProvider = argumentsObject["local-provider"];
+    selectedModel = argumentsObject["local-model"];
+    if (!["ollama", "lmstudio"].includes(localProvider)) throw new Error("Qwen local requires --local-provider ollama|lmstudio");
+    if (!selectedModel || !/^[A-Za-z0-9][A-Za-z0-9._:/-]{1,127}$/.test(selectedModel)) throw new Error("Qwen local requires --local-model installed-model-id");
+  } else {
+    selectedModel = modelIds[selectedRoute] ?? "gpt-5.6-terra";
   }
 
-  const context = buildContext(agent, taskPacket, selectedRoute, selectedModel);
+  const workspaceWrite = Boolean(argumentsObject["workspace-write"]);
+  if (workspaceWrite && !access.workspaceWrite) {
+    throw new Error(`Task packet ${taskId} does not grant workspaceWrite authority`);
+  }
+  if (workspaceWrite && agent.category !== "execution") {
+    throw new Error(`Workspace write authority is limited to execution category agents (agent '${agentId}' is '${agent.category}')`);
+  }
+
+  if (reviewProfile && spawnSync("git", ["status", "--porcelain=v1"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout.trim()) {
+    throw new Error("Review launches require a clean committed working tree");
+  }
+
+  const reviewedHeadSha = reviewProfile ? gitSha("HEAD") : null;
+  const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
+
   const trace = createTrace(taskId, agentId, selectedRoute);
-  const baseEvent = {
-    run_id: trace.runId,
-    task_id: taskId,
-    agent_id: agentId,
-    route: selectedRoute,
-    model: selectedModel,
-    sandbox,
-  };
-  trace.append({ event: "start", ...baseEvent, timestamp: trace.startedAt, context_files: context.contextFiles });
+  trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel });
 
-  const commandArguments = buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvider);
+  const context = buildContextProfile(agent, taskRecord, selectedRoute, selectedModel, effort, profile);
+  const sandbox = workspaceWrite ? "workspace-write" : "read-only";
 
-  if (options["dry-run"]) {
-    const finishedAt = new Date().toISOString();
-    trace.append({ event: "finish", ...baseEvent, timestamp: finishedAt, status: "dry-run", exit_code: 0 });
-    process.stdout.write(`${JSON.stringify({
-      status: "dry-run",
-      ...baseEvent,
-      start_time: trace.startedAt,
-      finish_time: finishedAt,
-      context_files: context.contextFiles,
-      context_bytes: context.totalBytes,
-      command: "codex",
-      command_arguments: commandArguments,
-      trace_path: path.relative(repositoryRoot, trace.tracePath).replaceAll(path.sep, "/"),
-    }, null, 2)}\n`);
+  if (argumentsObject["dry-run"]) {
+    trace.append({ event: "finish", status: "dry-run-success" });
+    process.stdout.write(
+      JSON.stringify(
+        {
+          status: "dry-run-success",
+          taskId,
+          agentId,
+          selectedRoute,
+          selectedModel,
+          effort,
+          profile,
+          sandbox,
+          contextBytes: context.totalBytes,
+          manifestHash: context.manifestHash,
+          trace_path: path.relative(repositoryRoot, trace.tracePath).replaceAll(path.sep, "/"),
+        },
+        null,
+        2,
+      ) + "\n",
+    );
     return;
   }
 
-  await new Promise((resolve, reject) => {
-    const childEnvironment = selectedRoute === "qwen-local" ? localOnlyEnvironment() : process.env;
-    const child = spawn("codex", commandArguments, { cwd: repositoryRoot, env: childEnvironment, stdio: ["pipe", "inherit", "inherit"], windowsHide: true });
-    let finished = false;
-    const finishOnce = (status, code, signal, error) => {
-      if (finished) return;
-      finished = true;
-      trace.append({ event: "finish", ...baseEvent, timestamp: new Date().toISOString(), status, exit_code: code, signal: signal ?? null });
-      if (error) reject(error);
-      else if (code === 0) resolve();
-      else reject(new Error(`Codex exited with code ${code ?? "unknown"}`));
-    };
-    child.on("error", (error) => {
-      finishOnce("failed-to-start", null, null, error);
-    });
-    child.on("close", (code, signal) => {
-      finishOnce(code === 0 ? "completed" : "failed", code, signal);
-    });
-    child.stdin.on("error", () => {});
-    child.stdin.end(context.prompt);
+  const commandArguments = buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvider, effort);
+  const spawnEnv = selectedRoute === "qwen-local" ? sanitizeEnvironment() : process.env;
+
+  const child = spawn("codex", commandArguments, {
+    cwd: repositoryRoot,
+    stdio: ["pipe", "pipe", "pipe"],
+    env: spawnEnv,
+    windowsHide: true,
+  });
+
+  let stdoutText = "";
+  let stderrText = "";
+
+  child.stdout.on("data", (chunk) => { stdoutText += chunk.toString(); });
+  child.stderr.on("data", (chunk) => { stderrText += chunk.toString(); });
+
+  child.stdin.write(context.prompt);
+  child.stdin.end();
+
+  child.on("error", (err) => {
+    trace.append({ event: "finish", status: "spawn-error", error: err.message });
+    process.stderr.write(`Process spawn failed: ${err.message}\n`);
+    process.exit(1);
+  });
+
+  child.on("close", (exitCode) => {
+    const passed = exitCode === 0;
+    if (stderrText) process.stderr.write(stderrText);
+
+    // Validate review profile output strictly
+    if (passed && reviewProfile) {
+      if (gitSha("HEAD") !== reviewedHeadSha || comparisonBaseSha() !== reviewedBaseSha) {
+        process.stderr.write("Review execution failed: committed head or canonical base changed during review\n");
+        process.exit(1);
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(stdoutText.trim());
+      } catch (e) {
+        trace.append({ event: "finish", status: "review-json-parse-failed", error: e.message });
+        process.stderr.write(`Review execution failed: output is not valid JSON (${e.message})\n`);
+        process.exit(1);
+      }
+
+      const reviewCheck = validateReviewResult(parsed, {
+        taskId,
+        baseSha: reviewedBaseSha,
+        headSha: reviewedHeadSha,
+        reviewerAgent: agentId,
+        model: selectedModel,
+        reasoningEffort: effort,
+        contextManifestHash: context.manifestHash,
+      });
+      if (!reviewCheck.valid) {
+        trace.append({ event: "finish", status: "review-schema-validation-failed", errors: reviewCheck.errors });
+        process.stderr.write(`Review schema validation failed:\n- ${reviewCheck.errors.join("\n- ")}\n`);
+        process.exit(1);
+      }
+
+      // Check task ID, model, effort
+      if (parsed.taskId !== taskId) {
+        process.stderr.write(`Review result taskId mismatch: expected '${taskId}', got '${parsed.taskId}'\n`);
+        process.exit(1);
+      }
+      if (parsed.reasoningEffort !== effort) {
+        process.stderr.write(`Review result reasoningEffort mismatch: expected '${effort}', got '${parsed.reasoningEffort}'\n`);
+        process.exit(1);
+      }
+      if (parsed.contextManifestHash !== context.manifestHash) {
+        process.stderr.write(`Review result contextManifestHash mismatch: expected '${context.manifestHash}', got '${parsed.contextManifestHash}'\n`);
+        process.exit(1);
+      }
+
+      // Check outputHash
+      const computedHash = computeOutputHash(parsed);
+      if (parsed.outputHash !== computedHash) {
+        process.stderr.write(`Review result outputHash mismatch: computed '${computedHash}', payload contains '${parsed.outputHash}'\n`);
+        process.exit(1);
+      }
+    }
+
+    if (!reviewProfile && stdoutText) process.stdout.write(stdoutText);
+    trace.append({ event: "finish", status: passed ? "success" : "failed", exitCode });
+    if (!passed) process.exit(exitCode ?? 1);
   });
 }
 
-main().catch((error) => {
-  process.stderr.write(`codex-route: ${error.message}\n`);
-  process.exitCode = 1;
-});
+const currentFile = fileURLToPath(import.meta.url);
+if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
+  Promise.resolve(main()).catch((error) => {
+    process.stderr.write(`codex-route: ${error.message}\n`);
+    process.exitCode = 1;
+  });
+}
+
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, comparisonBaseSha, discoverAgents, packetAccess, selectRoute, terminalStates };

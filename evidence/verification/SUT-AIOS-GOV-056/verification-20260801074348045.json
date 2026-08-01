@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-056",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-terra",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-01T07:43:48.045Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/governance/validate-validator-registry-migration.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: `schemas/task-packet-v2.schema.json` defines Draft 2020-12 schemaVersion 2.0.0 with stage-specific `routingPolicy` object as the single routing authority; task tools validate both V1 and V2 packets.",
+    "confirmed: `schemas/review-result-v1.schema.json` defines Draft 2020-12 review schema bound to `taskId`, `baseSha`, `headSha`, `contextManifestHash`, `reviewedAt`, `outputHash`, `decision`, `blockingFindings`, `nonBlockingRisks`, `missingNegativeTests`, `architectureAssessment`, and `exactNextAction`.",
+    "confirmed: `schemas/validator-registry-v1.schema.json` and `policies/validator-registry-v1.json` establish typed active validator declarations.",
+    "confirmed: `scripts/verify/run-validator-registry.mjs` executes active validators shell-free under `tests/` with `process.execPath`, traversal/symlink rejection, timeout enforcement, and deterministic sorting.",
+    "confirmed: `tests/governance/validate-validator-registry-migration.mjs` proves 100% parity with current hardcoded CI validator lists before hardcoded lists are refactored.",
+    "confirmed: `scripts/codex/launch.mjs` extracts stage-specific `routingPolicy`, enforces agent `allowed_model_routes` / `allowed_reasoning_efforts`, restricts automatic fallback to provable pre-execution process start errors, implements generic context profiles, and validates review output against `review-result-v1.schema.json`.",
+    "confirmed: `.github/workflows/validate-governance.yml` runs `run-validator-registry.mjs` in `validate` job and adds dependent `reconciliation` job running post-push on `main` to move verified packets to `done` idempotently.",
+    "confirmed: `agents/command/chief-orchestrator.md`, `engineering-planner.md`, `codex-engineering-executor.md`, `qa-verification.md`, `REGISTRY.md`, `ROUTING.md`, `AGENTS.md`, `TASK_WORKFLOW.md`, `DEFINITION_OF_DONE.md`, `ENGINEERING_PRINCIPLES.md`, `AUTONOMY_BOUNDARIES.md` are updated with the 2-PR delivery flow, effort tiers, and model diversity rules.",
+    "confirmed: All fast verification, task validation, governance validation, and parity tests pass with zero errors."
+  ],
+  "changedPaths": [
+    ".github/workflows/validate-governance.yml",
+    "agents/REGISTRY.md",
+    "agents/ROUTING.md",
+    "agents/assurance/qa-verification.md",
+    "agents/command/chief-orchestrator.md",
+    "agents/execution/codex-engineering-executor.md",
+    "agents/intelligence/engineering-planner.md",
+    "docs/handoffs/SUT-AIOS-GOV-056-ROLLBACK_PLAN.md",
+    "policies/validator-registry-v1.json",
+    "schemas/review-result-v1.schema.json",
+    "schemas/task-packet-v2.schema.json",
+    "schemas/validator-registry-v1.schema.json",
+    "scripts/codex/launch.mjs",
+    "scripts/codex/validate-routing.mjs",
+    "scripts/review/validate-review-result.mjs",
+    "scripts/verify/run-validator-registry.mjs",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/active/SUT-AIOS-GOV-056/task.json",
+    "tests/governance/validate-validator-registry-migration.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-056/verification-20260801074348045.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}

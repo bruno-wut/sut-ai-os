@@ -7,6 +7,8 @@ category: execution
 runtime: codex-cli
 default_model: terra
 fallback_model: sol
+allowed_model_routes: [luna, terra, sol]
+allowed_reasoning_efforts: [low, medium, high, xhigh, max]
 risk_classes: [tier-1, tier-2-preparation-only]
 input_schema: "urn:sut-ai-os:schema:codex-engineering-executor-input:v1"
 output_schema: "urn:sut-ai-os:schema:codex-engineering-executor-result:v1"

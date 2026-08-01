@@ -1,5 +1,16 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-01 - GOV-056 atomic MVP superseded by staged Foundation rollout
+
+- **Task ID:** `SUT-AIOS-GOV-056`
+- **Status:** Revision-required; prior verification superseded
+- **Severity:** High
+- **Affected scope:** The unmerged atomic Workflow V2 MVP and its proposed reconciliation/validator-registry activation.
+- **Confirmed defects:** Reconciliation push recursively triggers another reconciliation run and is not idempotent; validator parity allows required validators to be registered but disabled; deterministic sorting is claimed without an assertion; a task `allowedPaths` entry conflicts with `forbiddenPaths` for `tasks/verified`; and existing evidence does not cover the reconciliation commit's second workflow invocation.
+- **Decision:** Proceed only with the bounded Workflow V2 Foundation task `SUT-AIOS-GOV-056-FND`. Keep reconciliation and declarative validator-registry activation as separate follow-up tasks; do not enable either in the Foundation PR.
+- **Evidence:** `evidence/tasks/SUT-AIOS-GOV-056/verification-superseded.md`
+- **Next action / owner:** Chief Orchestrator to obtain independent review of the exact Foundation diff before preparing its draft PR.
+
 ### 2026-08-01 - P2-007 final-head CI assurance is bounded
 
 - **Task ID:** `SUT-AIOS-GOV-055`, `SUT-AIOS-P2-007`

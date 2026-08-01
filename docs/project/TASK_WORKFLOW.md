@@ -4,7 +4,11 @@ Every implementation begins with one canonical JSON packet at `tasks/<status>/<t
 
 ## Required packet contract
 
-Start from [TASK_PACKET.template.json](../../tasks/templates/TASK_PACKET.template.json) and validate against [task-packet.schema.json](../../schemas/task-packet.schema.json). A packet records its business and technical objectives, architecture sources, dependencies, evidence, assumptions, acceptance criteria, allowed and forbidden paths, allowed commands, checks, tests, permissions, risk and autonomy tier, model route, ownership, context budget, rollback plan, completion evidence, and append-only state history.
+V1 packets remain valid against [task-packet.schema.json](../../schemas/task-packet.schema.json). New work should use the closed [task-packet-v2.schema.json](../../schemas/task-packet-v2.schema.json). V2 replaces top-level route/effort authority with stage-specific `routingPolicy`; the packet records objectives, evidence, allowlists, checks, permissions, risk, ownership, context budget, rollback plan, and append-only state history.
+
+V2 routing has no implicit fallback. `implementation`, `planReview`, `semanticReview`, and `mergeRiskReview` each declare the route and reasoning effort for that stage. The launcher rejects route or effort command-line overrides, inactive agents, terminal tasks, and agent declarations that do not permit the selected route or effort.
+
+Only `active` implementation tasks and `review` review tasks are executable. A review must use a clean committed head and binds its base to `GOVERNED_BASE_SHA` when configured, otherwise the fetched `origin/main` commit; the mutable local `main` branch is not authoritative. Local Qwen execution requires an explicit provider and installed model and receives only the launcher environment allowlist.
 
 `productionWritePermission` defaults to `false`; `pullRequestRequirement` defaults to `true`. New playbooks start at `tier-0` and `shadow` mode. Packets must explicitly enable `workspaceWrite` before the existing Codex launcher will request workspace-write mode.
 
@@ -37,6 +41,6 @@ The direct cross-platform entry points are `scripts/task/new`, `validate`, `move
 
 ## Branches, reviews, and evidence
 
-One packet normally maps to one branch and one pull request. The packet must say when an exception is approved. The implementer cannot be the only completion authority: a separate reviewer records verification before `verified` and then `done`.
+One packet normally maps to one branch and one pull request. The packet must say when an exception is approved. The implementer cannot be the only completion authority: a separate reviewer records verification before `verified`. Review results use `schemas/review-result-v1.schema.json` and bind the task, comparison base, reviewed head, reviewer, model, effort, context manifest, and canonical output hash.
 
 Place concise durable conclusions in `evidence/tasks/<task-id>/`. Put large raw logs, screenshots, traces, and test payloads in `artifacts/` and reference their path, hash, and summary from evidence; do not paste them into packet context. Update [ISSUES_AND_RISKS.md](ISSUES_AND_RISKS.md) before handoff whenever a risk, blocker, failed check, or unresolved warning appears.

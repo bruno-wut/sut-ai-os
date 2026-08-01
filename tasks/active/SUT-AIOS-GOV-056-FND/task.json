@@ -1,0 +1,181 @@
+{
+  "$schema": "../../../schemas/task-packet-v2.schema.json",
+  "schemaVersion": "2.0.0",
+  "status": "active",
+  "phase": "phase-2-governance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-1",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification",
+    "chief-orchestrator"
+  ],
+  "routingPolicy": {
+    "implementation": {
+      "route": "terra",
+      "effort": "high"
+    },
+    "planReview": {
+      "route": "luna",
+      "effort": "high"
+    },
+    "semanticReview": {
+      "route": "terra",
+      "effort": "high"
+    },
+    "mergeRiskReview": {
+      "required": true,
+      "route": "sol",
+      "effort": "medium"
+    }
+  },
+  "workspaceWrite": false,
+  "solEscalationTriggers": [
+    "Escalate to Sol for schema or routing-policy security defects."
+  ],
+  "rollbackExpectations": "Revert the Foundation PR through a separately reviewed Git revert; do not enable reconciliation or validator-registry automation.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "schemas/task-packet-v2.schema.json",
+      "schemas/review-result-v1.schema.json"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-01T12:40:00.000Z",
+  "updatedDate": "2026-08-01T12:42:23.976Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-01T12:40:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created as a bounded staged Workflow V2 task."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-01T12:42:07.034Z",
+      "actor": "engineering-planner",
+      "reason": "Foundation packet bounded and approved for implementation."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-01T12:42:23.976Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implement only the Workflow V2 Foundation scope."
+    }
+  ],
+  "taskId": "SUT-AIOS-GOV-056-FND",
+  "title": "Workflow V2 Foundation",
+  "workstream": "workflow-foundation",
+  "workflowId": "workflow-v2-foundation",
+  "businessObjective": "Establish the smallest safe contract for authoring and executing future V2 tasks without activating reconciliation or validator-registry automation.",
+  "technicalObjective": "Add the closed Task Packet V2 schema, preserve V1 validation, make stage-specific routingPolicy the only V2 route/effort authority, enforce agent and task safety gates, and validate structured SHA-bound review results.",
+  "dependencies": [
+    "SUT-AIOS-GOV-056"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-056-FND/verification.md"
+  ],
+  "assumptions": [
+    "The existing hardcoded CI validator list remains authoritative.",
+    "Reconciliation and declarative validator-registry activation are separate future tasks.",
+    "No production or GitHub write behavior is in scope."
+  ],
+  "acceptanceCriteria": [
+    "Task Packet V2 is a closed schema with stage-specific routingPolicy and no top-level V2 route or effort authority.",
+    "The task validator accepts valid V1 packets and valid V2 packets while rejecting malformed or unsupported versions.",
+    "The launcher selects V2 route and reasoning effort only from routingPolicy.<stage> and rejects CLI overrides.",
+    "The launcher enforces declared agent routes and reasoning-effort limits, rejects inactive agents, and rejects terminal tasks.",
+    "Review-result validation requires structured task, base SHA, head SHA, reviewer, model, effort, context hash, output hash, decision, and findings fields and verifies the canonical output hash.",
+    "Required deterministic tests and independent review cover the exact final Foundation diff."
+  ],
+  "allowedPaths": [
+    "schemas/task-packet-v2.schema.json",
+    "schemas/review-result-v1.schema.json",
+    "scripts/task/task-cli.mjs",
+    "scripts/codex/launch.mjs",
+    "scripts/codex/validate-routing.mjs",
+    "scripts/review/validate-review-result.mjs",
+    "agents/ROUTING.md",
+    "agents/command/chief-orchestrator.md",
+    "agents/intelligence/engineering-planner.md",
+    "agents/execution/codex-engineering-executor.md",
+    "agents/assurance/qa-verification.md",
+    "AGENTS.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/DEFINITION_OF_DONE.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "tests/task/validate-task-packet-v2.mjs",
+    "tests/review/validate-review-binding.mjs",
+    "tests/codex/validate-routing-negative-cases.mjs",
+    "evidence/tasks/SUT-AIOS-GOV-056-FND/**",
+    "evidence/tasks/SUT-AIOS-GOV-056/**",
+    "evidence/verification/SUT-AIOS-GOV-056/**",
+    "tasks/**/SUT-AIOS-GOV-056-FND/**",
+    "tasks/revision-required/SUT-AIOS-GOV-056/**",
+    "tasks/backlog/SUT-AIOS-GOV-056-REGISTRY/**",
+    "tasks/backlog/SUT-AIOS-GOV-056-RECONCILIATION/**"
+  ],
+  "forbiddenPaths": [
+    "policies/validator-registry-v1.json",
+    "schemas/validator-registry-v1.schema.json",
+    "scripts/verify/run-validator-registry.mjs",
+    "scripts/task/reconcile-merged-task.mjs",
+    "tests/task/reconcile-merged-task.test.mjs",
+    ".github/workflows/**",
+    "package.json",
+    "package-lock.json",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    "credentials/**",
+    "secrets/**"
+  ],
+  "allowedCommands": [
+    "node tests/task/validate-task-packet-v2.mjs",
+    "node tests/review/validate-review-binding.mjs",
+    "node tests/codex/validate-routing-negative-cases.mjs",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/task/validate --self-test",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "V1/V2 schema validation",
+    "Stage route and effort enforcement",
+    "Terminal-task and inactive-agent rejection",
+    "SHA-bound review-result validation",
+    "Exact final-diff independent review"
+  ],
+  "requiredTests": [
+    "node tests/task/validate-task-packet-v2.mjs",
+    "node tests/review/validate-review-binding.mjs",
+    "node tests/codex/validate-routing-negative-cases.mjs",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ]
+}

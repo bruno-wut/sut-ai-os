@@ -37,18 +37,20 @@ its own intervention proposal.
 | `terra` | `gpt-5.6-terra` | Default implementation and ordinary engineering work |
 | `luna` | `gpt-5.6-luna` | Clear, bounded, repetitive discovery/preparation work |
 
-The current official Codex manual documents `codex exec --model <id>`, the three IDs above, `--sandbox`, `--ask-for-approval`, `--strict-config`, and `codex exec -` for stdin prompts. It also documents `--oss --local-provider ollama|lmstudio` for local models.
+The current Codex CLI documents `codex exec --model <id>`, the three IDs above, `--sandbox`, `--strict-config`, and `codex exec -` for stdin prompts. It also documents `--oss --local-provider ollama|lmstudio` for local models.
 
-The installed Windows app exposes a Codex executable alias, but this shell receives `Access is denied` for both `codex --version` and `codex --help`. Therefore this repository uses equivalent CLI-flag wrappers and does not modify or depend on unvalidated global profile files. If the local CLI rejects a documented flag or model, the run fails closed.
+The launcher treats the selected sandbox and exact command arguments as the local execution boundary. If the local CLI rejects a documented flag or model, the run fails closed.
 
 ## Selection precedence
 
-1. The eligible canonical JSON task packet must declare `allowedAgents` and `modelRoute` (legacy Markdown packets use `Allowed agents` and `Model route`).
+1. A V1 packet must declare `allowedAgents` and `modelRoute` (legacy Markdown packets use `Allowed agents` and `Model route`); a V2 packet must declare `allowedAgents` and stage-specific `routingPolicy`.
 2. The selected agent must exist in `agents/REGISTRY.md`, be `active`, and be listed in the task packet.
-3. `codex:agent` uses the task packet route. When no explicit routing policy applies during planning, Terra is the policy default.
+3. V1 launches use the packet route. V2 launches use only `routingPolicy.<stage>.route` and `routingPolicy.<stage>.effort`.
 4. An explicit wrapper may escalate Luna → Terra → Sol, but may never downgrade below either the packet route or the agent's `default_model`.
 5. `qwen-local` is isolated from hosted routes and is allowed only when the packet explicitly selects it.
 6. Risk, data classification, policy, tools, paths, commands, approvals, and verification override model convenience.
+
+V2 review results are accepted only from a clean committed head and are bound to the configured `GOVERNED_BASE_SHA`, or the fetched `origin/main` commit when no explicit SHA is configured. Local Qwen launches require explicit `--local-provider` and `--local-model` arguments and receive a minimal environment allowlist.
 
 ## Route policy
 

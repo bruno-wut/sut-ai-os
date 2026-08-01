@@ -69,4 +69,4 @@ The implementer must not be the sole completion authority. Record review and ver
 
 ## Autonomy and model routing
 
-Use [AUTONOMY_BOUNDARIES.md](docs/project/AUTONOMY_BOUNDARIES.md) and [ENGINEERING_PRINCIPLES.md](docs/project/ENGINEERING_PRINCIPLES.md). Terra is the ordinary implementation default; Luna handles bounded discovery and routine preparation; Sol handles architecture, security, payment, concurrency, RLS, and difficult escalation; local Qwen is untrusted offline preprocessing whose output requires verification.
+Use [AUTONOMY_BOUNDARIES.md](docs/project/AUTONOMY_BOUNDARIES.md) and [ENGINEERING_PRINCIPLES.md](docs/project/ENGINEERING_PRINCIPLES.md). Terra is the ordinary implementation default; Luna handles bounded discovery and routine preparation; Sol handles architecture, security, payment, concurrency, RLS, and difficult escalation; local Qwen is untrusted offline preprocessing whose output requires verification. V2 task packets use stage-specific `routingPolicy` as the sole route/effort authority and structured SHA-bound review results.
