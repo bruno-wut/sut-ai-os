@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-055",
   "title": "Add P2-007 validator to final-head CI",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "ci-assurance",
   "workflowId": "p2-007-final-head-validator",
@@ -106,7 +106,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-055/task.json",
+      "tasks/done/SUT-AIOS-GOV-055/task.json",
       "tasks/verified/SUT-AIOS-P2-007/task.json",
       ".github/workflows/validate-governance.yml",
       "docs/verification/VERIFICATION_POLICY.md"
@@ -115,7 +115,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-01T07:02:02.389Z",
-  "updatedDate": "2026-08-01T07:06:20.589Z",
+  "updatedDate": "2026-08-01T07:27:52.509Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-055/verification-20260801070542986.json"
   ],
@@ -154,6 +154,13 @@
       "at": "2026-08-01T07:06:20.589Z",
       "actor": "qa-verification-gov055",
       "reason": "Independent Sol QA passed the exact fixed CI step admission and task verification; final-head CI must explicitly run the P2-007 validator before merge."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-01T07:27:52.509Z",
+      "actor": "engineering-planner",
+      "reason": "PR #120 merged to main at 2b28158637d820dc5c0bd7e90e96fc0167523417 after independent Sol QA, explicit P2-007 CI execution, and green final-head CI; reconcile verified to done."
     }
   ]
 }
