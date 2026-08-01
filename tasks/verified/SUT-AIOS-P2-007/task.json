@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-007",
   "title": "Define deterministic resource-budget and quota contracts",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "resource-governance",
   "workflowId": "implementation-p2-007",
@@ -113,7 +113,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-007/task.json",
+      "tasks/verified/SUT-AIOS-P2-007/task.json",
       "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "policies/resource-budget-policy-v1.json",
@@ -125,8 +125,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.719Z",
-  "updatedDate": "2026-07-30T00:00:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-01T06:35:47.292Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P2-007/verification-20260801063534448.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -134,6 +136,41 @@
       "at": "2026-07-29T12:21:28.719Z",
       "actor": "chief-orchestrator",
       "reason": "Created by GOV-043 for the required resource authority."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-01T06:15:51.702Z",
+      "actor": "engineering-planner",
+      "reason": "GOV-054 is done on main; all dependencies, exact scope, commands, and Sol route are confirmed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-01T06:16:08.014Z",
+      "actor": "engineering-planner",
+      "reason": "Isolated worktree created from current main; approved finite static resource-budget contract is ready for bounded Sol implementation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T06:26:48.645Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Finite static resource-budget schema, canonical policy, private-authority total evaluator, exact 657-case validator, documentation, risk record, and implementer checks are ready for independent Sol QA."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-01T06:35:47.292Z",
+      "actor": "qa-verification-2",
+      "reason": "Fresh independent Sol QA passed after canonical-base correction and timestamp remediation; 669-case validator and static boundaries verified."
     }
-  ]
+  ],
+  "worktree": {
+    "path": "C:/Users/Bruno Browny/Documents/SUT_AI_OS-worktrees/SUT-AIOS-P2-007",
+    "branch": "task/SUT-AIOS-P2-007-define-deterministic-resource-budget-and-quota-c",
+    "primaryBranch": "main",
+    "createdAt": "2026-08-01T06:15:52.500Z",
+    "createdBy": "engineering-planner"
+  }
 }

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sut-ai-os.local/schemas/resource-budget-contract-v1.schema.json",
+  "title": "SUT AI OS resource budget policy V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "policyId", "resourceDimensions", "thresholdBasisPoints", "budgetStates", "meterStates", "budgetAuthorityStates", "configurationStates", "workloadZones", "decisionOutcomes", "workloadCeilings", "decisionRules", "bookingIsolation", "reasonPrecedence", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "policyId": { "const": "resource-budget-policy-v1" },
+    "resourceDimensions": {
+      "type": "array", "minItems": 11, "maxItems": 11,
+      "prefixItems": [
+        { "$ref": "#/$defs/workerRequestsDimension" }, { "$ref": "#/$defs/workerCpuDimension" },
+        { "$ref": "#/$defs/queueOperationsDimension" }, { "$ref": "#/$defs/workflowStepsDimension" },
+        { "$ref": "#/$defs/persistenceSizeDimension" }, { "$ref": "#/$defs/persistenceGrowthDimension" },
+        { "$ref": "#/$defs/persistenceEgressDimension" }, { "$ref": "#/$defs/runnerMinutesDimension" },
+        { "$ref": "#/$defs/aiInvocationsDimension" }, { "$ref": "#/$defs/aiTokensDimension" },
+        { "$ref": "#/$defs/notificationMessagesDimension" }
+      ], "items": false
+    },
+    "thresholdBasisPoints": { "$ref": "#/$defs/thresholdBasisPoints" },
+    "budgetStates": { "const": ["below_warning", "warning_50", "warning_75", "warning_90", "hard_limit_reached", "hard_limit_exceeded"] },
+    "meterStates": { "const": ["fresh", "missing", "unavailable", "stale", "inconsistent", "uncertain", "unknown"] },
+    "budgetAuthorityStates": { "const": ["available", "missing", "unavailable", "inconsistent", "unknown"] },
+    "configurationStates": { "const": ["valid", "missing", "unsupported", "inconsistent", "unknown"] },
+    "workloadZones": { "const": ["staff_control", "ai_workload"] },
+    "decisionOutcomes": { "const": ["continue_candidate", "warn_continue_candidate", "throttle_candidate", "pause_candidate", "requeue_candidate", "block_candidate"] },
+    "workloadCeilings": { "$ref": "#/$defs/workloadCeilings" },
+    "decisionRules": { "$ref": "#/$defs/decisionRules" },
+    "bookingIsolation": { "$ref": "#/$defs/bookingIsolationPolicy" },
+    "reasonPrecedence": { "const": ["INTERNAL_AUTHORITY_UNAVAILABLE", "CALLER_AUTHORITY_INJECTION", "MALFORMED_OBSERVATION", "UNSUPPORTED_SCHEMA_VERSION", "UNKNOWN_RESOURCE_DIMENSION", "UNIT_MISMATCH", "UNSUPPORTED_WORKLOAD_ZONE", "BOOKING_WORKLOAD_PROHIBITED", "BOOKING_QUOTA_BOUNDARY_VIOLATION", "BOOKING_CREDENTIAL_BOUNDARY_VIOLATION", "BOOKING_DEPLOYMENT_BOUNDARY_VIOLATION", "BOOKING_FAILURE_BOUNDARY_VIOLATION", "BUDGET_AUTHORITY_MISSING", "BUDGET_AUTHORITY_UNAVAILABLE", "BUDGET_AUTHORITY_INCONSISTENT", "BUDGET_AUTHORITY_UNKNOWN", "CONFIGURATION_MISSING", "UNSUPPORTED_CONFIGURATION", "CONFIGURATION_INCONSISTENT", "CONFIGURATION_UNKNOWN", "METER_MISSING", "METER_UNAVAILABLE", "METER_STALE", "METER_INCONSISTENT", "METER_UNCERTAIN", "METER_UNKNOWN", "METRIC_MISSING", "HARD_LIMIT_MISSING", "METERING_TIMESTAMP_MISSING", "METER_AGE_INVALID", "UNBOUNDED_BATCHING", "DEDUPLICATION_REQUIRED", "IDEMPOTENCY_REQUIRED", "BACKPRESSURE_REQUIRED", "RATE_LIMIT_REQUIRED", "CONCURRENCY_LIMIT_REQUIRED", "RETRY_LIMIT_REQUIRED", "RETRY_ATTEMPT_INVALID", "DEAD_LETTER_HANDLING_REQUIRED", "PRIORITY_QUEUE_REQUIRED", "CONTINUOUS_OR_PER_EVENT_SUMMARY_PROHIBITED", "PER_INTERACTION_WORK_PROHIBITED", "PER_EVENT_AI_INVOCATION_PROHIBITED", "WORKLOAD_CEILING_EXCEEDED", "SELF_AUTHORIZATION_CLAIM", "PRODUCTION_WRITE_CLAIM"] },
+    "authority": { "$ref": "#/$defs/policyAuthority" }
+  },
+  "$defs": {
+    "dimension": { "type": "object", "additionalProperties": false, "required": ["resourceDimension", "unit"], "properties": { "resourceDimension": { "type": "string" }, "unit": { "type": "string" } } },
+    "workerRequestsDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "worker_requests" }, "unit": { "const": "requests" } } }] },
+    "workerCpuDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "worker_cpu_milliseconds" }, "unit": { "const": "milliseconds" } } }] },
+    "queueOperationsDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "queue_operations" }, "unit": { "const": "operations" } } }] },
+    "workflowStepsDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "workflow_steps" }, "unit": { "const": "steps" } } }] },
+    "persistenceSizeDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "persistence_size_bytes" }, "unit": { "const": "bytes" } } }] },
+    "persistenceGrowthDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "persistence_growth_bytes" }, "unit": { "const": "bytes" } } }] },
+    "persistenceEgressDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "persistence_egress_bytes" }, "unit": { "const": "bytes" } } }] },
+    "runnerMinutesDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "runner_minutes" }, "unit": { "const": "minutes" } } }] },
+    "aiInvocationsDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "ai_invocations" }, "unit": { "const": "invocations" } } }] },
+    "aiTokensDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "ai_tokens" }, "unit": { "const": "tokens" } } }] },
+    "notificationMessagesDimension": { "allOf": [{ "$ref": "#/$defs/dimension" }, { "properties": { "resourceDimension": { "const": "notification_messages" }, "unit": { "const": "messages" } } }] },
+    "thresholdBasisPoints": { "type": "object", "additionalProperties": false, "required": ["warning50", "warning75", "warning90", "hardLimit"], "properties": { "warning50": { "const": 5000 }, "warning75": { "const": 7500 }, "warning90": { "const": 9000 }, "hardLimit": { "const": 10000 } } },
+    "workloadCeilings": { "type": "object", "additionalProperties": false, "required": ["maxBatchSize", "maxRateLimitPerMinute", "maxConcurrency", "maxRetryLimit", "maxMeterAgeSeconds"], "properties": { "maxBatchSize": { "const": 500 }, "maxRateLimitPerMinute": { "const": 1000 }, "maxConcurrency": { "const": 8 }, "maxRetryLimit": { "const": 3 }, "maxMeterAgeSeconds": { "const": 300 } } },
+    "decisionRules": { "type": "object", "additionalProperties": false, "required": ["below_warning", "warning_50", "warning_75", "warning_90_safe_requeue", "warning_90_default", "hard_limit_reached", "hard_limit_exceeded", "invalid_boundary_or_workload", "uncertain_safe_requeue", "uncertain_default"], "properties": { "below_warning": { "const": "continue_candidate" }, "warning_50": { "const": "warn_continue_candidate" }, "warning_75": { "const": "throttle_candidate" }, "warning_90_safe_requeue": { "const": "requeue_candidate" }, "warning_90_default": { "const": "pause_candidate" }, "hard_limit_reached": { "const": "block_candidate" }, "hard_limit_exceeded": { "const": "block_candidate" }, "invalid_boundary_or_workload": { "const": "block_candidate" }, "uncertain_safe_requeue": { "const": "requeue_candidate" }, "uncertain_default": { "const": "pause_candidate" } } },
+    "bookingIsolationPolicy": { "type": "object", "additionalProperties": false, "required": ["bookingWorkload", "sharesQuotaWithBooking", "sharesCredentialsWithBooking", "sharesDeploymentWithBooking", "sharesFailureBoundaryWithBooking"], "properties": { "bookingWorkload": { "const": false }, "sharesQuotaWithBooking": { "const": false }, "sharesCredentialsWithBooking": { "const": false }, "sharesDeploymentWithBooking": { "const": false }, "sharesFailureBoundaryWithBooking": { "const": false } } },
+    "policyAuthority": { "type": "object", "additionalProperties": false, "required": ["nonAuthoritative", "schedulingAuthorized", "executionAuthorized", "notificationAuthorized", "productionWriteAuthorized", "capacityReservationAuthorized", "bookingEffectAuthorized"], "properties": { "nonAuthoritative": { "const": true }, "schedulingAuthorized": { "const": false }, "executionAuthorized": { "const": false }, "notificationAuthorized": { "const": false }, "productionWriteAuthorized": { "const": false }, "capacityReservationAuthorized": { "const": false }, "bookingEffectAuthorized": { "const": false } } },
+    "safeNonNegativeIntegerOrNull": { "type": ["integer", "null"], "minimum": 0, "maximum": 9007199254740991 },
+    "positiveSafeIntegerOrNull": { "type": ["integer", "null"], "minimum": 1, "maximum": 9007199254740991 },
+    "workloadControls": { "type": "object", "additionalProperties": false, "required": ["batchingMode", "batchSize", "deduplicationRequired", "idempotencyRequired", "backpressureRequired", "rateLimitPerMinute", "concurrencyLimit", "retryLimit", "retryAttempt", "deadLetterHandlingRequired", "priorityQueueRequired", "summaryMode", "perGuestInteractionUnitOfWork", "perEventAiInvocation", "safeToRequeue"], "properties": {
+      "batchingMode": { "enum": ["bounded_batch", "scheduled_summary", "governed_case", "per_event", "unbounded"] },
+      "batchSize": { "$ref": "#/$defs/positiveSafeIntegerOrNull" },
+      "deduplicationRequired": { "type": "boolean" }, "idempotencyRequired": { "type": "boolean" }, "backpressureRequired": { "type": "boolean" },
+      "rateLimitPerMinute": { "$ref": "#/$defs/positiveSafeIntegerOrNull" }, "concurrencyLimit": { "$ref": "#/$defs/positiveSafeIntegerOrNull" },
+      "retryLimit": { "$ref": "#/$defs/safeNonNegativeIntegerOrNull" }, "retryAttempt": { "$ref": "#/$defs/safeNonNegativeIntegerOrNull" },
+      "deadLetterHandlingRequired": { "type": "boolean" }, "priorityQueueRequired": { "type": "boolean" },
+      "summaryMode": { "enum": ["scheduled_summary", "governed_case", "continuous", "per_event"] },
+      "perGuestInteractionUnitOfWork": { "type": "boolean" }, "perEventAiInvocation": { "type": "boolean" }, "safeToRequeue": { "type": "boolean" }
+    } },
+    "bookingIsolationClaim": { "type": "object", "additionalProperties": false, "required": ["bookingWorkload", "sharesQuotaWithBooking", "sharesCredentialsWithBooking", "sharesDeploymentWithBooking", "sharesFailureBoundaryWithBooking"], "properties": { "bookingWorkload": { "type": "boolean" }, "sharesQuotaWithBooking": { "type": "boolean" }, "sharesCredentialsWithBooking": { "type": "boolean" }, "sharesDeploymentWithBooking": { "type": "boolean" }, "sharesFailureBoundaryWithBooking": { "type": "boolean" } } },
+    "observationAuthorityClaims": { "type": "object", "additionalProperties": false, "required": ["callerSuppliesPolicy", "callerSuppliesThresholds", "decisionAuthorizesScheduling", "decisionAuthorizesExecution", "decisionAuthorizesNotification", "decisionAuthorizesProductionWrite", "productionWriteGranted"], "properties": { "callerSuppliesPolicy": { "type": "boolean" }, "callerSuppliesThresholds": { "type": "boolean" }, "decisionAuthorizesScheduling": { "type": "boolean" }, "decisionAuthorizesExecution": { "type": "boolean" }, "decisionAuthorizesNotification": { "type": "boolean" }, "decisionAuthorizesProductionWrite": { "type": "boolean" }, "productionWriteGranted": { "type": "boolean" } } },
+    "resourceBudgetObservation": { "type": "object", "additionalProperties": false, "required": ["schemaVersion", "observationId", "resourceDimension", "unit", "workloadZone", "budgetAuthorityState", "configurationState", "meterState", "usedUnits", "reservedUnits", "hardLimitUnits", "observedAt", "meterAgeSeconds", "workloadControls", "bookingIsolation", "authorityClaims"], "properties": {
+      "schemaVersion": { "type": "string" }, "observationId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+      "resourceDimension": { "type": "string" }, "unit": { "type": "string" },
+      "workloadZone": { "enum": ["staff_control", "ai_workload", "guest_public", "booking_control_plane"] },
+      "budgetAuthorityState": { "enum": ["available", "missing", "unavailable", "inconsistent", "unknown"] },
+      "configurationState": { "enum": ["valid", "missing", "unsupported", "inconsistent", "unknown"] },
+      "meterState": { "enum": ["fresh", "missing", "unavailable", "stale", "inconsistent", "uncertain", "unknown"] },
+      "usedUnits": { "$ref": "#/$defs/safeNonNegativeIntegerOrNull" }, "reservedUnits": { "$ref": "#/$defs/safeNonNegativeIntegerOrNull" }, "hardLimitUnits": { "$ref": "#/$defs/positiveSafeIntegerOrNull" },
+      "observedAt": { "type": ["string", "null"], "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$", "description": "Canonical UTC RFC 3339 shape. Calendar validity (including month lengths and leap days) is enforced by the deterministic evaluator because Draft 2020-12 pattern cannot express it." },
+      "meterAgeSeconds": { "$ref": "#/$defs/safeNonNegativeIntegerOrNull" }, "workloadControls": { "$ref": "#/$defs/workloadControls" }, "bookingIsolation": { "$ref": "#/$defs/bookingIsolationClaim" }, "authorityClaims": { "$ref": "#/$defs/observationAuthorityClaims" }
+    } },
+    "budgetState": { "enum": ["below_warning", "warning_50", "warning_75", "warning_90", "hard_limit_reached", "hard_limit_exceeded"] },
+    "decisionOutcome": { "enum": ["continue_candidate", "warn_continue_candidate", "throttle_candidate", "pause_candidate", "requeue_candidate", "block_candidate"] },
+    "reasonCode": { "enum": ["INTERNAL_AUTHORITY_UNAVAILABLE", "CALLER_AUTHORITY_INJECTION", "MALFORMED_OBSERVATION", "UNSUPPORTED_SCHEMA_VERSION", "UNKNOWN_RESOURCE_DIMENSION", "UNIT_MISMATCH", "UNSUPPORTED_WORKLOAD_ZONE", "BOOKING_WORKLOAD_PROHIBITED", "BOOKING_QUOTA_BOUNDARY_VIOLATION", "BOOKING_CREDENTIAL_BOUNDARY_VIOLATION", "BOOKING_DEPLOYMENT_BOUNDARY_VIOLATION", "BOOKING_FAILURE_BOUNDARY_VIOLATION", "BUDGET_AUTHORITY_MISSING", "BUDGET_AUTHORITY_UNAVAILABLE", "BUDGET_AUTHORITY_INCONSISTENT", "BUDGET_AUTHORITY_UNKNOWN", "CONFIGURATION_MISSING", "UNSUPPORTED_CONFIGURATION", "CONFIGURATION_INCONSISTENT", "CONFIGURATION_UNKNOWN", "METER_MISSING", "METER_UNAVAILABLE", "METER_STALE", "METER_INCONSISTENT", "METER_UNCERTAIN", "METER_UNKNOWN", "METRIC_MISSING", "HARD_LIMIT_MISSING", "METERING_TIMESTAMP_MISSING", "METER_AGE_INVALID", "UNBOUNDED_BATCHING", "DEDUPLICATION_REQUIRED", "IDEMPOTENCY_REQUIRED", "BACKPRESSURE_REQUIRED", "RATE_LIMIT_REQUIRED", "CONCURRENCY_LIMIT_REQUIRED", "RETRY_LIMIT_REQUIRED", "RETRY_ATTEMPT_INVALID", "DEAD_LETTER_HANDLING_REQUIRED", "PRIORITY_QUEUE_REQUIRED", "CONTINUOUS_OR_PER_EVENT_SUMMARY_PROHIBITED", "PER_INTERACTION_WORK_PROHIBITED", "PER_EVENT_AI_INVOCATION_PROHIBITED", "WORKLOAD_CEILING_EXCEEDED", "SELF_AUTHORIZATION_CLAIM", "PRODUCTION_WRITE_CLAIM"] },
+    "classifiedValue": { "type": "object", "additionalProperties": false, "required": ["schemaVersion", "observationId", "resourceDimension", "budgetState", "usageBasisPoints", "reasonCode", "outcome", "failClosed", "nonAuthoritative", "schedulingAuthorized", "executionAuthorized", "notificationAuthorized", "productionWriteAuthorized"], "properties": { "schemaVersion": { "const": "1.0.0" }, "observationId": { "type": "string" }, "resourceDimension": { "type": "string" }, "budgetState": { "$ref": "#/$defs/budgetState" }, "usageBasisPoints": { "type": "integer", "minimum": 0, "maximum": 10001 }, "reasonCode": { "enum": ["WITHIN_BUDGET", "WARNING_50_REACHED", "WARNING_75_REACHED", "WARNING_90_REACHED", "HARD_LIMIT_REACHED", "HARD_LIMIT_EXCEEDED"] }, "outcome": { "$ref": "#/$defs/decisionOutcome" }, "failClosed": { "type": "boolean" }, "nonAuthoritative": { "const": true }, "schedulingAuthorized": { "const": false }, "executionAuthorized": { "const": false }, "notificationAuthorized": { "const": false }, "productionWriteAuthorized": { "const": false } } },
+    "rejection": { "type": "object", "additionalProperties": false, "required": ["schemaVersion", "failClosed", "outcome", "reasonCodes"], "properties": { "schemaVersion": { "const": "1.0.0" }, "failClosed": { "const": true }, "outcome": { "enum": ["pause_candidate", "requeue_candidate", "block_candidate"] }, "reasonCodes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/reasonCode" } } } },
+    "resourceBudgetDecision": { "oneOf": [
+      { "type": "object", "additionalProperties": false, "required": ["ok", "value", "rejection"], "properties": { "ok": { "const": true }, "value": { "$ref": "#/$defs/classifiedValue" }, "rejection": { "type": "null" } } },
+      { "type": "object", "additionalProperties": false, "required": ["ok", "value", "rejection"], "properties": { "ok": { "const": false }, "value": { "type": "null" }, "rejection": { "$ref": "#/$defs/rejection" } } }
+    ] }
+  }
+}

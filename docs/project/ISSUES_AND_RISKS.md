@@ -1,5 +1,27 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-01 - P2-007 classifies declared resource observations but cannot establish live capacity facts
+
+- **Task ID:** `SUT-AIOS-P2-007`
+- **Status:** Monitoring / implementation ready for independent review
+- **Severity:** High
+- **Affected scope:** Future Staff OS and AI OS resource metering, workload
+  controls, adapter composition, saturation handling, and booking isolation.
+- **Evidence:** The static schema, canonical finite policy, private-authority
+  deep module, documentation, and exact validator classify eleven dimensions,
+  50/75/90/hard-limit boundaries, uncertain metering, bounded workload claims,
+  and booking separation. Caller authorities cannot redirect classification;
+  hostile input fails closed without throwing; all results remain
+  non-authoritative.
+- **Residual risk:** P2-007 cannot prove that a provider meter or account limit
+  is truthful, a declared timestamp or age is current, batching/backpressure/
+  retry controls operate, a requeue or alert occurred, or booking capacity is
+  externally isolated. It performs no resource-control action.
+- **Next action / owner:** Independent Sol QA must inspect the final authority,
+  import boundary, threshold matrix, hostile-input behavior, and machine
+  evidence. P5-006 must later verify trusted adapters, saturation behavior, and
+  booking isolation before higher-volume activation.
+
 ### 2026-07-30 - P2-006 final-head CI assurance is bounded
 
 - **Task ID:** `SUT-AIOS-GOV-052`, `SUT-AIOS-P2-006`

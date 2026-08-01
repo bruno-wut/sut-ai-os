@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P2-007",
+  "status": "fail",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-01T06:33:21.434Z",
+  "checks": [
+    "changed-path-inspection: fail",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node tests/resource-governance/validate-resource-budget-contract-v1.mjs: pass",
+    "node scripts/task/validate --all: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Create only `schemas/resource-budget-contract-v1.schema.json`, `policies/resource-budget-policy-v1.json`, `packages/resource-governance-contracts/src/resource-budget-contract-v1.mjs`, `tests/resource-governance/validate-resource-budget-contract-v1.mjs`, bounded P2-007 documentation, evidence, and lifecycle state.",
+    "confirmed: The closed V1 policy implements exactly eleven resource dimensions, their units, 5000/7500/9000/10000 basis-point thresholds, six budget states, seven meter states, five budget-authority states, five configuration states, two internal workload zones, six non-authoritative outcomes, workload ceilings, booking isolation, decision rules, reason precedence, and false authority claims from the GOV-053 design.",
+    "confirmed: The runtime-safe deep module exports only `evaluateResourceBudget(observation)`, obtains canonical schema/policy authority internally, accepts no injected authority or infrastructure, returns recursively frozen plain data, does not mutate input, and never throws for malformed, cyclic, throwing, or adversarial input.",
+    "confirmed: Only available budget authority, valid configuration, fresh bounded metering, complete safe-integer measurements, valid workload controls, and isolated Staff/AI zones reach deterministic integer threshold classification; all missing, unavailable, stale, inconsistent, uncertain, unknown, unsupported, malformed, shared-booking, or unbounded cases fail closed with ordered finite reasons.",
+    "confirmed: Threshold mapping is exact: below 50 continue candidate, 50 warning candidate, 75 throttle candidate, 90 pause or safe-requeue candidate, and at/over hard limit block candidate; every result remains non-authoritative and authorizes no scheduling, execution, notification, production write, or booking effect.",
+    "confirmed: Workload semantics require bounded batching, deduplication, idempotency, backpressure, rate/concurrency/retry ceilings, retry-attempt bounds, dead-letter handling, priority queues, and scheduled-summary or governed-case operation; per-interaction work, continuous/per-event summaries, and per-event AI are rejected.",
+    "confirmed: The exact validator compiles Draft 2020-12 authorities, validates result exclusivity, covers every dimension/state/outcome/threshold edge, real exploit paths, booking isolation, workload mutations, authority injection, malformed totality, private imports, and operational non-authority; all packet-authorized checks and independent Sol QA pass."
+  ],
+  "changedPaths": [
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/resource-governance/RESOURCE_BUDGET_CONTRACT_V1.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-054/verification.md",
+    "evidence/tasks/SUT-AIOS-P2-007/verification.md",
+    "evidence/verification/SUT-AIOS-GOV-054/verification-20260801055938918.json",
+    "evidence/verification/SUT-AIOS-GOV-054/verification-20260801060039833.json",
+    "packages/resource-governance-contracts/src/resource-budget-contract-v1.mjs",
+    "policies/resource-budget-policy-v1.json",
+    "schemas/resource-budget-contract-v1.schema.json",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/done/SUT-AIOS-GOV-054/task.json",
+    "tasks/review/SUT-AIOS-P2-007/task.json",
+    "tests/resource-governance/validate-resource-budget-contract-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": false,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P2-007/verification-20260801063321434.json"
+  ],
+  "risks": [],
+  "recommendation": "revision_required"
+}
