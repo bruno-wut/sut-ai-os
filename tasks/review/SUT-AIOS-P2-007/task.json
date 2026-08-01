@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-007",
   "title": "Define deterministic resource-budget and quota contracts",
-  "status": "ready",
+  "status": "review",
   "phase": "phase-2",
   "workstream": "resource-governance",
   "workflowId": "implementation-p2-007",
@@ -113,7 +113,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P2-007/task.json",
+      "tasks/review/SUT-AIOS-P2-007/task.json",
       "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
       "policies/resource-budget-policy-v1.json",
@@ -125,7 +125,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.719Z",
-  "updatedDate": "2026-08-01T06:15:52.500Z",
+  "updatedDate": "2026-08-01T06:26:48.645Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -141,6 +141,20 @@
       "at": "2026-08-01T06:15:51.702Z",
       "actor": "engineering-planner",
       "reason": "GOV-054 is done on main; all dependencies, exact scope, commands, and Sol route are confirmed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-01T06:16:08.014Z",
+      "actor": "engineering-planner",
+      "reason": "Isolated worktree created from current main; approved finite static resource-budget contract is ready for bounded Sol implementation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-01T06:26:48.645Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Finite static resource-budget schema, canonical policy, private-authority total evaluator, exact 657-case validator, documentation, risk record, and implementer checks are ready for independent Sol QA."
     }
   ],
   "worktree": {
