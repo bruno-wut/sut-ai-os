@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import os from "node:os";
+import path from "node:path";
 import {
   allowedEfforts,
   assertActiveAgent,
@@ -7,7 +9,9 @@ import {
   assertNonTerminalTask,
   assertProfileAuthorization,
   assertTaskId,
+  assertWorkspaceWriteAuthority,
   comparisonBaseSha,
+  gitSha,
   packetAccess,
   selectRoute
 } from "../../scripts/codex/launch.mjs";
@@ -55,6 +59,7 @@ assert.doesNotThrow(() => assertProfileAuthorization("implementation", activeV2,
 assert.throws(() => assertProfileAuthorization("implementation", activeV2, v2Access, "qa-verification"), /owner/);
 assert.doesNotThrow(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "qa-verification"));
 assert.throws(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "codex-engineering-executor"), /independent/);
+assert.throws(() => assertWorkspaceWriteAuthority("qwen-local", true, { workspaceWrite: true }, "SUT-TEST-QWEN", { id: "codex-engineering-executor", category: "execution" }), /qwen-local is read-only/);
 assert.match(comparisonBaseSha(), /^[0-9a-f]{40}$/);
 const previousBaseSha = process.env.GOVERNED_BASE_SHA;
 const previousBaseRef = process.env.GOVERNED_BASE_REF;
@@ -66,7 +71,12 @@ process.env.GOVERNED_BASE_REF = "HEAD";
 assert.throws(() => comparisonBaseSha(), /canonical origin\/main ref/);
 if (previousBaseRef === undefined) delete process.env.GOVERNED_BASE_REF;
 else process.env.GOVERNED_BASE_REF = previousBaseRef;
+const previousGitDir = process.env.GIT_DIR;
+process.env.GIT_DIR = path.join(os.tmpdir(), "sut-ai-os-gov056-missing-git-dir-8d6f6b");
+assert.equal(gitSha("HEAD"), null, "Git SHA lookup must fail closed when Git cannot resolve the object");
+if (previousGitDir === undefined) delete process.env.GIT_DIR;
+else process.env.GIT_DIR = previousGitDir;
 assert.equal(allowedEfforts.sol.has("low"), false, "Sol low is prohibited");
 assert.equal(allowedEfforts.terra.has("max"), false, "Terra max is prohibited");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 25 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks: 27 }) + "\n");

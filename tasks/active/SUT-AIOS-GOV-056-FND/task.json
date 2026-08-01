@@ -122,6 +122,7 @@
     "AGENTS.md",
     "docs/project/TASK_WORKFLOW.md",
     "docs/project/DEFINITION_OF_DONE.md",
+    "docs/project/ISSUES_AND_RISKS.md",
     "docs/model-routing/MODEL_ROUTING_POLICY.md",
     "tests/task/validate-task-packet-v2.mjs",
     "tests/review/validate-review-binding.mjs",

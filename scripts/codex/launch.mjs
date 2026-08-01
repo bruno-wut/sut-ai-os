@@ -48,9 +48,14 @@ function sha256(content) {
 function gitSha(base = "HEAD") {
   try {
     const r = spawnSync("git", ["rev-parse", base], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
-    return r.stdout ? r.stdout.trim() : "0000000000000000000000000000000000000000";
+    if (r.error || r.status !== 0) return null;
+    const value = r.stdout?.trim();
+    if (!/^[0-9a-f]{40}$/i.test(value ?? "")) return null;
+    const object = spawnSync("git", ["cat-file", "-e", `${value}^{commit}`], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
+    if (object.error || object.status !== 0) return null;
+    return value;
   } catch {
-    return "0000000000000000000000000000000000000000";
+    return null;
   }
 }
 
@@ -307,6 +312,18 @@ function assertProfileAuthorization(profile, taskRecord, access, agentId) {
   }
 }
 
+function assertWorkspaceWriteAuthority(selectedRoute, workspaceWrite, access, taskId, agent) {
+  if (selectedRoute === "qwen-local" && workspaceWrite) {
+    throw new Error("qwen-local is read-only and cannot request workspace-write");
+  }
+  if (workspaceWrite && !access.workspaceWrite) {
+    throw new Error(`Task packet ${taskId} does not grant workspaceWrite authority`);
+  }
+  if (workspaceWrite && agent.category !== "execution") {
+    throw new Error(`Workspace write authority is limited to execution category agents (agent '${agent.id}' is '${agent.category}')`);
+  }
+}
+
 function hasSensitiveMaterial(text) {
   const patterns = [
     /-----BEGIN [A-Z ]*PRIVATE KEY-----/i,
@@ -516,18 +533,14 @@ function main() {
   }
 
   const workspaceWrite = Boolean(argumentsObject["workspace-write"]);
-  if (workspaceWrite && !access.workspaceWrite) {
-    throw new Error(`Task packet ${taskId} does not grant workspaceWrite authority`);
-  }
-  if (workspaceWrite && agent.category !== "execution") {
-    throw new Error(`Workspace write authority is limited to execution category agents (agent '${agentId}' is '${agent.category}')`);
-  }
+  assertWorkspaceWriteAuthority(selectedRoute, workspaceWrite, access, taskId, agent);
 
   if (reviewProfile && spawnSync("git", ["status", "--porcelain=v1"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout.trim()) {
     throw new Error("Review launches require a clean committed working tree");
   }
 
   const reviewedHeadSha = reviewProfile ? gitSha("HEAD") : null;
+  if (reviewProfile && !reviewedHeadSha) throw new Error("Cannot determine committed review head SHA");
   const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
 
   const trace = createTrace(taskId, agentId, selectedRoute);
@@ -655,4 +668,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, comparisonBaseSha, discoverAgents, packetAccess, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, comparisonBaseSha, discoverAgents, gitSha, packetAccess, selectRoute, terminalStates };

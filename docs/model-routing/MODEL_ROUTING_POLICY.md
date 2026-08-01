@@ -47,7 +47,7 @@ The launcher treats the selected sandbox and exact command arguments as the loca
 2. The selected agent must exist in `agents/REGISTRY.md`, be `active`, and be listed in the task packet.
 3. V1 launches use the packet route. V2 launches use only `routingPolicy.<stage>.route` and `routingPolicy.<stage>.effort`.
 4. An explicit wrapper may escalate Luna → Terra → Sol, but may never downgrade below either the packet route or the agent's `default_model`.
-5. `qwen-local` is isolated from hosted routes and is allowed only when the packet explicitly selects it.
+5. `qwen-local` is isolated from hosted routes, is allowed only when the packet explicitly selects it, and is always read-only.
 6. Risk, data classification, policy, tools, paths, commands, approvals, and verification override model convenience.
 
 V2 review results are accepted only from a clean committed head and are bound to fetched `origin/main`; an explicit `GOVERNED_BASE_SHA` must exactly match that ref. Local Qwen launches require explicit `--local-provider` and `--local-model` arguments and receive a minimal environment allowlist.
@@ -89,7 +89,7 @@ Every launch:
 - rejects model downgrades and unauthorized Qwen substitution;
 - loads only root/scoped instructions, the exact agent definition, exact task packet, and routing/escalation policy;
 - scans loaded context for common secret patterns and applies a 512 KiB limit;
-- defaults to read-only; workspace write requires an execution agent, packet opt-in, and `--workspace-write`;
+- defaults to read-only; hosted workspace write requires an execution agent, packet opt-in, and `--workspace-write`; qwen-local rejects workspace-write;
 - passes the context via stdin so it is not exposed in the command line;
 - records only model/route, agent/task IDs, context filenames, sandbox, timestamps, and exit state in ignored local traces;
 - never logs prompts, task contents, environment values, credentials, or model output.
