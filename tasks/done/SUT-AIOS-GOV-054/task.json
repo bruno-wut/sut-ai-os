@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-054",
   "title": "Admit exact P2-007 resource-budget validator",
-  "status": "verified",
+  "status": "done",
   "phase": "engineering-governance",
   "workstream": "verification-admission",
   "workflowId": "p2-007-validator-admission",
@@ -110,7 +110,7 @@
     "maxBytes": 524288,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-054/task.json",
+      "tasks/done/SUT-AIOS-GOV-054/task.json",
       "tasks/backlog/SUT-AIOS-P2-007/task.json",
       "docs/resource-governance/P2-007_RESOURCE_BUDGET_CONTRACT_V1_DESIGN.md",
       "docs/verification/VERIFICATION_POLICY.md",
@@ -120,7 +120,7 @@
   "owner": "engineering-planner",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-30T00:00:00.000Z",
-  "updatedDate": "2026-08-01T06:01:07.568Z",
+  "updatedDate": "2026-08-01T06:03:42.239Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-054/verification-20260801060039833.json"
   ],
@@ -159,6 +159,13 @@
       "at": "2026-08-01T06:01:07.568Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA passed after correcting the local main baseline; exact admission, near-miss rejection coverage, evidence, and boundaries verified."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-01T06:03:42.239Z",
+      "actor": "engineering-planner",
+      "reason": "PR #116 merged to main at 6373160cf743eaac7f6762e7e8f257c192125c92 after independent Sol QA and green final-head CI; reconcile verified to done."
     }
   ],
   "worktree": {
