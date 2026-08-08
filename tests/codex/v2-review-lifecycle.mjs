@@ -8,6 +8,7 @@ import { createPacket, findPacket, readPacketAt, transition, validatePacket, val
 import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
+const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-external-"));
 const id = "SUT-TEST-V2-REVIEW";
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
@@ -92,14 +93,24 @@ try {
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
   assert.throws(() => transition(id, "verified", "Missing evidence must fail.", "qa-verification", root, { evidence: "evidence/tasks/SUT-TEST-V2-REVIEW/missing.md", reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /does not exist/, "verified transition rejects a missing evidence reference");
   assert.equal(findPacket(id, root).state, "review", "missing evidence rejection leaves the task in review");
+  const externalEvidence = path.join(externalRoot, "outside.md");
+  fs.writeFileSync(externalEvidence, "outside repository\n");
+  const linkedEvidenceDirectory = path.join(root, "evidence", "linked-external");
+  fs.symlinkSync(externalRoot, linkedEvidenceDirectory, process.platform === "win32" ? "junction" : "dir");
+  const beforeEscapeAttempts = JSON.stringify(findPacket(id, root).packet);
+  for (const evidence of [path.join("evidence", "linked-external", "outside.md"), externalEvidence, path.relative(root, externalEvidence), "evidence"]) {
+    assert.throws(() => transition(id, "verified", "Escaping evidence must fail.", "qa-verification", root, { evidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /repository file/, `unsafe evidence reference is rejected: ${evidence}`);
+    assert.equal(JSON.stringify(findPacket(id, root).packet), beforeEscapeAttempts, "unsafe evidence rejection leaves the packet unchanged");
+  }
   assert.equal(verificationWorktreeIsClean(" M scripts/codex/launch.mjs", record.packet, headSha), false, "verification rejects unreviewed implementation changes");
   assert.equal(verificationWorktreeIsClean("M  scripts/codex/launch.mjs", record.packet, headSha, "scripts/codex/launch.mjs"), false, "caller-supplied evidence cannot exempt staged implementation changes");
   assert.equal(verificationWorktreeIsClean("?? evidence/tasks/OTHER/verification.md", record.packet, headSha, "evidence/tasks/OTHER/verification.md"), false, "other-task evidence cannot bypass review cleanliness");
   assert.equal(reviewWorktreeIsClean(` M tasks/review/${id}/task.json`, id, headSha), false, "Codex app review rejects a dirty task packet");
-  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
+  const nonCanonicalEvidence = `${path.posix.dirname(paths.at(-1))}/../${id}/${path.posix.basename(paths.at(-1))}`;
+  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: nonCanonicalEvidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
-  assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records durable review evidence");
+  assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records normalized durable review evidence");
 
   const repositoryRoot = path.resolve(import.meta.dirname, "../..");
   const appRoot = path.join(root, "codex-app-fixture");
@@ -150,7 +161,8 @@ try {
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 33 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 41 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
+  fs.rmSync(externalRoot, { recursive: true, force: true });
 }

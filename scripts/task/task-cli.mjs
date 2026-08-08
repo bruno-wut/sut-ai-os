@@ -237,13 +237,17 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   if (terminalStates.has(state)) fail(`Terminal packet cannot be changed: ${id} is ${state}`);
   if (!states.includes(to) || !transitions[state].includes(to)) fail(`Invalid transition: ${state} -> ${to}`);
   if (!nonEmptyString(reason)) fail("A non-empty --reason is required.");
+  let normalizedEvidence;
   if (options.evidence) {
     const evidenceReference = normalize(options.evidence);
+    if (path.isAbsolute(options.evidence)) fail(`Evidence reference must be an existing repository file: ${evidenceReference}`);
     const evidenceFile = path.resolve(root, evidenceReference);
-    const relativeEvidence = normalize(path.relative(root, evidenceFile));
+    let canonicalRoot; let canonicalEvidence;
     let evidenceStat;
-    try { evidenceStat = fs.statSync(evidenceFile); } catch { fail(`Evidence reference does not exist: ${evidenceReference}`); }
-    if (path.isAbsolute(options.evidence) || relativeEvidence.startsWith("../") || relativeEvidence === ".." || !evidenceStat.isFile()) fail(`Evidence reference must be an existing repository file: ${evidenceReference}`);
+    try { canonicalRoot = fs.realpathSync(root); canonicalEvidence = fs.realpathSync(evidenceFile); evidenceStat = fs.statSync(canonicalEvidence); } catch { fail(`Evidence reference does not exist: ${evidenceReference}`); }
+    const relativeEvidence = normalize(path.relative(canonicalRoot, canonicalEvidence));
+    if (relativeEvidence.startsWith("../") || relativeEvidence === ".." || path.isAbsolute(relativeEvidence) || !evidenceStat.isFile()) fail(`Evidence reference must be an existing repository file: ${evidenceReference}`);
+    normalizedEvidence = relativeEvidence;
   }
   if (to === "active") { const candidate = { ...packet, status: to, stateTransitions: [...packet.stateTransitions, { from: state, to, at: now(), actor, reason }] }; const check = validatePacket(candidate, { strict: true, directoryState: to }); if (!check.valid) fail(`Cannot start invalid task:\n- ${check.errors.join("\n- ")}`); }
   if (to === "verified" && !options.evidence) fail("Verification requires --evidence <durable-reference>.");
@@ -256,12 +260,12 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
     const canonicalBase = reviewBaseSha(root);
     if (canonicalBase && options.reviewBaseSha && options.reviewBaseSha !== canonicalBase) fail("Cannot verify V2 task against a non-canonical review base SHA.");
     const statusText = options.reviewStatusText ?? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
-    if (!verificationWorktreeIsClean(statusText, packet, reviewHead, options.evidence)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
+    if (!verificationWorktreeIsClean(statusText, packet, reviewHead, normalizedEvidence)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
     packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead };
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
   packet.status = to; packet.updatedDate = now();
-  if (options.evidence) packet.completionEvidence = [...new Set([...(packet.completionEvidence ?? []), options.evidence])];
+  if (normalizedEvidence) packet.completionEvidence = [...new Set([...(packet.completionEvidence ?? []), normalizedEvidence])];
   packet.stateTransitions.push({ from: state, to, at: packet.updatedDate, actor, reason });
   const destination = taskPath(to, id, root); const sourceDirectory = path.dirname(file); const destinationDirectory = path.dirname(destination);
   const oldRelative = normalize(path.relative(root, file)); const newRelative = normalize(path.relative(root, destination));
