@@ -97,6 +97,15 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
     if (!validation.valid) errors.push(`${stage} artifact is invalid: ${validation.errors.join("; ")}`);
     if (result.stage !== stage) errors.push(`${stage} artifact stage does not match its required stage`);
     if (result.decision !== "pass") errors.push(`${stage} artifact decision is not pass`);
+    if (result.tracePath.startsWith("artifacts/traces/codex-app/")) {
+      const traceFile = path.join(root, result.tracePath);
+      let trace;
+      try { trace = JSON.parse(fs.readFileSync(traceFile, "utf8")); } catch { errors.push(`${stage} app trace is missing or invalid`); continue; }
+      for (const key of ["runId", "taskId", "baseSha", "headSha", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash"]) {
+        if (trace[key] !== result[key]) errors.push(`${stage} app trace ${key} does not bind review result`);
+      }
+      if (trace.source !== "codex-app") errors.push(`${stage} trace is not a Codex app envelope`);
+    }
   }
   return errors;
 }

@@ -494,6 +494,16 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
   return path.relative(root, destination).replaceAll(path.sep, "/");
 }
 
+function persistCodexAppReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
+  const tracePath = `artifacts/traces/codex-app/${reviewResult.runId}.json`;
+  if (reviewResult.tracePath !== tracePath) throw new Error("Codex app review tracePath must match its runId");
+  const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash };
+  const target = path.join(root, tracePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(trace, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+  return persistReviewResult(reviewResult, { taskId, profile, headSha, root });
+}
+
 function main() {
   const rawArguments = process.argv.slice(2);
   if (rawArguments.includes("--help")) {
@@ -712,4 +722,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistCodexAppReviewResult, persistReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };

@@ -48,7 +48,7 @@ export function validateReviewResult(data, expected = {}) {
     if (expected[field] !== undefined && data[field] !== expected[field]) errors.push(`${field} does not match the expected bound value`);
   }
   if (typeof data.outputHash === "string" && data.outputHash !== computeReviewOutputHash(data)) errors.push("outputHash does not match the canonical review result");
-  if (typeof data.tracePath === "string" && data.tracePath.startsWith("codex-app/runs/") && data.tracePath !== `codex-app/runs/${data.runId}`) {
+  if (typeof data.tracePath === "string" && data.tracePath.startsWith("artifacts/traces/codex-app/") && data.tracePath !== `artifacts/traces/codex-app/${data.runId}.json`) {
     errors.push("Codex app tracePath must match runId");
   }
 

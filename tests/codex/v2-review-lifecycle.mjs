@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertProfileAuthorization, buildLauncherBoundReviewResult, persistReviewResult } from "../../scripts/codex/launch.mjs";
+import { assertProfileAuthorization, buildLauncherBoundReviewResult, persistCodexAppReviewResult, persistReviewResult } from "../../scripts/codex/launch.mjs";
 import { createPacket, findPacket, transition, validateRequiredReviewArtifacts, writePacket } from "../../scripts/task/task-cli.mjs";
 import { validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
@@ -69,6 +69,12 @@ try {
     assert.equal(fs.existsSync(path.join(root, reviewPath)), true, `${profile} result is persisted`);
     paths.push(reviewPath);
   }
+
+  const appReview = buildLauncherBoundReviewResult(assessment("app envelope passed"), {
+    taskId: id, baseSha, headSha, reviewerAgent: "engineering-planner", model: "gpt-5.6-sol", reasoningEffort: "high", contextManifestHash,
+    reviewedAt: "2026-08-08T12:00:00.000Z", stage: "planReview", runId: "019fe075-fc27-7e11-bd10-56816ba4a9db", tracePath: "artifacts/traces/codex-app/019fe075-fc27-7e11-bd10-56816ba4a9db.json"
+  });
+  assert.throws(() => persistCodexAppReviewResult({ ...appReview, tracePath: "artifacts/traces/codex-app/not-the-run.json" }, { taskId: id, profile: "plan-review", headSha, root }), /must match/, "app producer rejects a substituted trace");
 
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha });
