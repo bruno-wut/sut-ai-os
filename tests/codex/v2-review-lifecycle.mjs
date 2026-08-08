@@ -55,6 +55,8 @@ try {
     ["semantic-qa", "qa-verification", "gpt-5.6-luna", "luna", "semantic review passed"],
     ["merge-risk-review", "qa-verification", "gpt-5.6-sol", "sol", "merge-risk review passed"]
   ];
+  fs.mkdirSync(path.join(root, "evidence"), { recursive: true });
+  fs.writeFileSync(path.join(root, "evidence", "missing.json"), "{}\n");
   const paths = [];
   for (const [profile, agent, model, route, nextAction] of profiles) {
     const stage = { "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" }[profile];
