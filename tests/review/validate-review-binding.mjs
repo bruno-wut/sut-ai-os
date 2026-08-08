@@ -29,6 +29,9 @@ const review = {
 review.outputHash = computeReviewOutputHash(review);
 
 assert.equal(validateReviewResult(review).valid, true, "valid structured review passes");
+const appReview = { ...review, runId: "019fe062-387c-7361-9de9-48682bf11b99", tracePath: "codex-app/runs/019fe062-387c-7361-9de9-48682bf11b99" };
+appReview.outputHash = computeReviewOutputHash(appReview);
+assert.equal(validateReviewResult(appReview).valid, true, "Codex app review trace is accepted");
 assert.equal(validateReviewResult(review, {
   taskId: review.taskId,
   baseSha: review.baseSha,
@@ -49,4 +52,4 @@ const passingWithBlocker = { ...review, blockingFindings: ["must fail"] };
 passingWithBlocker.outputHash = computeReviewOutputHash(passingWithBlocker);
 assert.equal(validateReviewResult(passingWithBlocker).valid, false, "pass with blocking findings is rejected");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 5 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks: 6 }) + "\n");
