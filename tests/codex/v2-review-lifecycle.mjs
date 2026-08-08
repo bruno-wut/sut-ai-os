@@ -120,9 +120,20 @@ try {
   tamperedReview.outputHash = "0".repeat(64);
   fs.writeFileSync(firstReviewFile, `${JSON.stringify(tamperedReview, null, 2)}\n`);
   const beforeTamperedDone = JSON.stringify(findPacket(id, root).packet);
-  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: paths.at(-1) }), /Cannot complete invalid V2 task packet/, "done transition revalidates bound review artifacts");
+  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: paths.at(-1) }), /Cannot complete invalid task packet/, "done transition revalidates bound review artifacts");
   assert.equal(JSON.stringify(findPacket(id, root).packet), beforeTamperedDone, "tampered review rejection leaves the verified packet unchanged");
   fs.writeFileSync(firstReviewFile, originalFirstReview);
+  const verifiedPacketFile = findPacket(id, root).file;
+  const originalVerifiedPacket = fs.readFileSync(verifiedPacketFile, "utf8");
+  for (const schemaVersion of ["1.0.0", "9.9.9", null]) {
+    const tamperedPacket = JSON.parse(originalVerifiedPacket);
+    if (schemaVersion === null) delete tamperedPacket.schemaVersion; else tamperedPacket.schemaVersion = schemaVersion;
+    fs.writeFileSync(verifiedPacketFile, `${JSON.stringify(tamperedPacket, null, 2)}\n`);
+    const tamperedPacketBytes = fs.readFileSync(verifiedPacketFile, "utf8");
+    assert.throws(() => transition(id, "done", "Invalid discriminator must fail.", "qa-verification", root, { evidence: paths.at(-1) }), /Cannot complete invalid task packet/, `done rejects schemaVersion ${schemaVersion ?? "missing"}`);
+    assert.equal(fs.readFileSync(verifiedPacketFile, "utf8"), tamperedPacketBytes, "invalid discriminator rejection preserves the verified packet bytes");
+  }
+  fs.writeFileSync(verifiedPacketFile, originalVerifiedPacket);
 
   const repositoryRoot = path.resolve(import.meta.dirname, "../..");
   const appRoot = path.join(root, "codex-app-fixture");
@@ -173,7 +184,17 @@ try {
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 47 }) + "\n");
+  const v1TaskId = "SUT-AIOS-GOV-009";
+  const v1Source = path.join(repositoryRoot, "tasks", "verified", v1TaskId, "task.json");
+  const v1Destination = path.join(root, "tasks", "verified", v1TaskId, "task.json");
+  fs.mkdirSync(path.dirname(v1Destination), { recursive: true });
+  fs.copyFileSync(v1Source, v1Destination);
+  const v1Evidence = `evidence/tasks/${v1TaskId}/verification.md`;
+  fs.mkdirSync(path.dirname(path.join(root, v1Evidence)), { recursive: true });
+  fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
+  transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
+  assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 54 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

@@ -264,9 +264,9 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
     packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead };
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
-  if (to === "done" && packet.schemaVersion === "2.0.0") {
+  if (to === "done") {
     const verifiedCheck = validatePacket(packet, { strict: true, directoryState: state, root });
-    if (!verifiedCheck.valid) fail(`Cannot complete invalid V2 task packet:\n- ${verifiedCheck.errors.join("\n- ")}`);
+    if (!verifiedCheck.valid) fail(`Cannot complete invalid task packet:\n- ${verifiedCheck.errors.join("\n- ")}`);
   }
   packet.status = to; packet.updatedDate = now();
   if (normalizedEvidence) packet.completionEvidence = [...new Set([...(packet.completionEvidence ?? []), normalizedEvidence])];
