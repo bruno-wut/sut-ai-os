@@ -98,7 +98,7 @@ try {
   const linkedEvidenceDirectory = path.join(root, "evidence", "linked-external");
   fs.symlinkSync(externalRoot, linkedEvidenceDirectory, process.platform === "win32" ? "junction" : "dir");
   const beforeEscapeAttempts = JSON.stringify(findPacket(id, root).packet);
-  for (const evidence of [path.join("evidence", "linked-external", "outside.md"), externalEvidence, path.relative(root, externalEvidence), "evidence"]) {
+  for (const evidence of [path.join("evidence", "linked-external", "outside.md"), externalEvidence, path.relative(root, externalEvidence), "evidence", `${paths.at(-1)}:hidden`]) {
     assert.throws(() => transition(id, "verified", "Escaping evidence must fail.", "qa-verification", root, { evidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /repository file/, `unsafe evidence reference is rejected: ${evidence}`);
     assert.equal(JSON.stringify(findPacket(id, root).packet), beforeEscapeAttempts, "unsafe evidence rejection leaves the packet unchanged");
   }
@@ -111,6 +111,9 @@ try {
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records normalized durable review evidence");
+  const beforeDoneAds = JSON.stringify(final.packet);
+  assert.throws(() => transition(id, "done", "ADS evidence must fail.", "qa-verification", root, { evidence: `${paths.at(-1)}:hidden` }), /repository file/, "done transition rejects NTFS alternate-data-stream evidence");
+  assert.equal(JSON.stringify(findPacket(id, root).packet), beforeDoneAds, "ADS evidence rejection leaves the verified packet unchanged");
 
   const repositoryRoot = path.resolve(import.meta.dirname, "../..");
   const appRoot = path.join(root, "codex-app-fixture");
@@ -161,7 +164,7 @@ try {
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 41 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 45 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

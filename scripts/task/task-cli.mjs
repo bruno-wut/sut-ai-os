@@ -240,7 +240,7 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   let normalizedEvidence;
   if (options.evidence) {
     const evidenceReference = normalize(options.evidence);
-    if (path.isAbsolute(options.evidence)) fail(`Evidence reference must be an existing repository file: ${evidenceReference}`);
+    if (path.isAbsolute(options.evidence) || evidenceReference.includes(":")) fail(`Evidence reference must be an existing repository file: ${evidenceReference}`);
     const evidenceFile = path.resolve(root, evidenceReference);
     let canonicalRoot; let canonicalEvidence;
     let evidenceStat;
