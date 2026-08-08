@@ -114,6 +114,15 @@ try {
   const beforeDoneAds = JSON.stringify(final.packet);
   assert.throws(() => transition(id, "done", "ADS evidence must fail.", "qa-verification", root, { evidence: `${paths.at(-1)}:hidden` }), /repository file/, "done transition rejects NTFS alternate-data-stream evidence");
   assert.equal(JSON.stringify(findPacket(id, root).packet), beforeDoneAds, "ADS evidence rejection leaves the verified packet unchanged");
+  const firstReviewFile = path.join(root, paths[0]);
+  const originalFirstReview = fs.readFileSync(firstReviewFile, "utf8");
+  const tamperedReview = JSON.parse(originalFirstReview);
+  tamperedReview.outputHash = "0".repeat(64);
+  fs.writeFileSync(firstReviewFile, `${JSON.stringify(tamperedReview, null, 2)}\n`);
+  const beforeTamperedDone = JSON.stringify(findPacket(id, root).packet);
+  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: paths.at(-1) }), /Cannot complete invalid V2 task packet/, "done transition revalidates bound review artifacts");
+  assert.equal(JSON.stringify(findPacket(id, root).packet), beforeTamperedDone, "tampered review rejection leaves the verified packet unchanged");
+  fs.writeFileSync(firstReviewFile, originalFirstReview);
 
   const repositoryRoot = path.resolve(import.meta.dirname, "../..");
   const appRoot = path.join(root, "codex-app-fixture");
@@ -164,7 +173,7 @@ try {
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 45 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 47 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });
