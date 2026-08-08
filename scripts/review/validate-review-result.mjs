@@ -31,6 +31,19 @@ export function computeReviewOutputHash(data) {
   return createHash("sha256").update(JSON.stringify(canonicalize(data))).digest("hex");
 }
 
+export function computeAppReviewContextManifestHash(binding) {
+  const manifest = {
+    taskId: binding.taskId,
+    baseSha: binding.baseSha,
+    headSha: binding.headSha,
+    stage: binding.stage,
+    reviewerAgent: binding.reviewerAgent,
+    model: binding.model,
+    reasoningEffort: binding.reasoningEffort,
+  };
+  return createHash("sha256").update(JSON.stringify(canonicalize(manifest))).digest("hex");
+}
+
 export function validateReviewResult(data, expected = {}) {
   if (typeof data !== "object" || data === null) {
     return { valid: false, errors: ["Data is not an object"] };

@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
+import { computeAppReviewContextManifestHash, computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
 import { validatePacket } from "../task/task-cli.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -464,6 +464,15 @@ function buildLauncherBoundReviewResult(assessment, binding) {
   return result;
 }
 
+function buildCodexAppBoundReviewResult(assessment, binding) {
+  const appBinding = {
+    ...binding,
+    contextManifestHash: computeAppReviewContextManifestHash(binding),
+    tracePath: `artifacts/traces/codex-app/${binding.runId}.json`,
+  };
+  return buildLauncherBoundReviewResult(assessment, appBinding);
+}
+
 function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
   const stage = stageByProfile[profile];
   if (!stage || stage === "implementation") throw new Error(`No review artifact path for profile: ${profile}`);
@@ -497,6 +506,7 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
 function persistCodexAppReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
   const tracePath = `artifacts/traces/codex-app/${reviewResult.runId}.json`;
   if (reviewResult.tracePath !== tracePath) throw new Error("Codex app review tracePath must match its runId");
+  if (reviewResult.contextManifestHash !== computeAppReviewContextManifestHash(reviewResult)) throw new Error("Codex app review context manifest does not match its bound execution context");
   const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash };
   const target = path.join(root, tracePath);
   fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -722,4 +732,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistCodexAppReviewResult, persistReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildCodexAppBoundReviewResult, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistCodexAppReviewResult, persistReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };

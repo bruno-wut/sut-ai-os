@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
-import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
+import { computeAppReviewContextManifestHash, computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..", "..");
@@ -82,6 +82,16 @@ function reviewBaseSha(root) {
   return /^[0-9a-f]{40}$/i.test(value) ? value : null;
 }
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
+function verificationWorktreeIsClean(statusText, packet, headSha) {
+  const reviewPaths = new Set(["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])]
+    .map((stage) => `?? evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`));
+  const evidencePrefix = `evidence/tasks/${packet.taskId}/`;
+  return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => {
+    if (reviewPaths.has(line)) return true;
+    const file = line.slice(3).replaceAll("\\", "/");
+    return file.startsWith(evidencePrefix);
+  });
+}
 function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root)) {
   const errors = [];
   if (!/^[0-9a-f]{40}$/i.test(headSha ?? "")) return ["cannot determine committed review head SHA"];
@@ -105,6 +115,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         if (trace[key] !== result[key]) errors.push(`${stage} app trace ${key} does not bind review result`);
       }
       if (trace.source !== "codex-app") errors.push(`${stage} trace is not a Codex app envelope`);
+      if (result.contextManifestHash !== computeAppReviewContextManifestHash(result)) errors.push(`${stage} app context manifest does not match the expected bound context`);
     }
   }
   return errors;
@@ -163,6 +174,9 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   if (to === "verified" && packet.schemaVersion === "2.0.0") {
     const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha, options.reviewBaseSha);
     if (reviewErrors.length > 0) fail(`Cannot verify V2 task without passing exact-head review artifacts:\n- ${reviewErrors.join("\n- ")}`);
+    const reviewHead = options.reviewHeadSha ?? reviewHeadSha(root);
+    const statusText = options.reviewStatusText ?? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
+    if (!verificationWorktreeIsClean(statusText, packet, reviewHead)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
   packet.status = to; packet.updatedDate = now();
@@ -205,7 +219,7 @@ function selfTest() {
       review.outputHash = computeReviewOutputHash(review);
       const reviewFile = path.join(root, "evidence", "reviews", id, `${stage}-${reviewHead}.json`); fs.mkdirSync(path.dirname(reviewFile), { recursive: true }); fs.writeFileSync(reviewFile, `${JSON.stringify(review)}\n`, "utf8");
     }
-    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40) }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
+    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), reviewStatusText: "" }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }
     const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done" });
     if (!terminalRejected || !check.valid || final.packet.completionEvidence.length !== 2) fail("self-test assertions failed");
@@ -228,7 +242,7 @@ function main() {
   fail(`Unknown task command: ${command}`);
 }
 
-export { findPacket, validatePacket, validateRequiredReviewArtifacts, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
+export { findPacket, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && (path.resolve(process.argv[1]) === currentFile || ["new", "validate", "move", "start", "block", "review", "complete", "list", "status"].includes(path.basename(process.argv[1])))) {

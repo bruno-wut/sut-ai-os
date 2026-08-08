@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertProfileAuthorization, buildLauncherBoundReviewResult, persistCodexAppReviewResult, persistReviewResult } from "../../scripts/codex/launch.mjs";
-import { createPacket, findPacket, transition, validateRequiredReviewArtifacts, writePacket } from "../../scripts/task/task-cli.mjs";
-import { validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
+import { assertProfileAuthorization, buildCodexAppBoundReviewResult, buildLauncherBoundReviewResult, persistCodexAppReviewResult, persistReviewResult } from "../../scripts/codex/launch.mjs";
+import { createPacket, findPacket, transition, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
+import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
 const id = "SUT-TEST-V2-REVIEW";
@@ -63,21 +63,25 @@ try {
     assert.equal(validateReviewResult(review).valid, true, `${profile} result is SHA-bound and valid`);
     if (profile === "plan-review") {
       assert.throws(() => persistReviewResult({ ...review, stage: "semanticReview" }, { taskId: id, profile, headSha, root }), /does not match requested/, "persist rejects a profile/stage mismatch");
-      assert.throws(() => transition(id, "verified", "Incomplete reviews must fail.", "qa-verification", root, { evidence: "evidence/missing.json", reviewHeadSha: headSha, reviewBaseSha: baseSha }), /missing required/, "verified rejects incomplete V2 review evidence");
+      assert.throws(() => transition(id, "verified", "Incomplete reviews must fail.", "qa-verification", root, { evidence: "evidence/missing.json", reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /missing required/, "verified rejects incomplete V2 review evidence");
     }
     const reviewPath = persistReviewResult(review, { taskId: id, profile, headSha, root });
     assert.equal(fs.existsSync(path.join(root, reviewPath)), true, `${profile} result is persisted`);
     paths.push(reviewPath);
   }
 
-  const appReview = buildLauncherBoundReviewResult(assessment("app envelope passed"), {
-    taskId: id, baseSha, headSha, reviewerAgent: "engineering-planner", model: "gpt-5.6-sol", reasoningEffort: "high", contextManifestHash,
-    reviewedAt: "2026-08-08T12:00:00.000Z", stage: "planReview", runId: "019fe075-fc27-7e11-bd10-56816ba4a9db", tracePath: "artifacts/traces/codex-app/019fe075-fc27-7e11-bd10-56816ba4a9db.json"
+  const appReview = buildCodexAppBoundReviewResult(assessment("app envelope passed"), {
+    taskId: id, baseSha, headSha, reviewerAgent: "engineering-planner", model: "gpt-5.6-sol", reasoningEffort: "high",
+    reviewedAt: "2026-08-08T12:00:00.000Z", stage: "planReview", runId: "019fe075-fc27-7e11-bd10-56816ba4a9db"
   });
   assert.throws(() => persistCodexAppReviewResult({ ...appReview, tracePath: "artifacts/traces/codex-app/not-the-run.json" }, { taskId: id, profile: "plan-review", headSha, root }), /must match/, "app producer rejects a substituted trace");
+  const wrongContext = { ...appReview, contextManifestHash: "d".repeat(64) };
+  wrongContext.outputHash = computeReviewOutputHash(wrongContext);
+  assert.throws(() => persistCodexAppReviewResult(wrongContext, { taskId: id, profile: "plan-review", headSha, root }), /context manifest/, "app producer rejects a substituted context manifest");
 
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
-  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha });
+  assert.equal(verificationWorktreeIsClean(" M scripts/codex/launch.mjs", record.packet, headSha), false, "verification rejects unreviewed implementation changes");
+  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records durable review evidence");
