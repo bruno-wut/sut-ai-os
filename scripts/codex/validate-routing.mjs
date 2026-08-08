@@ -22,7 +22,7 @@ function run(argumentsList, expectedSuccess, label) {
 
 const internalCheck = run(["--self-test"], true, "internal route/model mapping");
 const foundationTask = "SUT-AIOS-GOV-056-FND";
-const terraCheck = run(["--route", "auto", "--agent", "codex-engineering-executor", "--task", foundationTask, "--dry-run"], true, "Terra implementation dry-run");
+const terraCheck = run(["--route", "auto", "--agent", "codex-engineering-executor", "--task", "SUT-AIOS-GOV-003", "--dry-run"], true, "Terra implementation dry-run");
 const legacyCheck = run(["--route", "auto", "--agent", "codex-engineering-executor", "--task", "SUT-AIOS-GOV-002", "--workspace-write", "--dry-run"], true, "V1 Markdown compatibility dry-run");
 const terraResult = JSON.parse(terraCheck.stdout);
 const tracePath = path.join(repositoryRoot, terraResult.trace_path);
@@ -39,12 +39,12 @@ const checks = [
   { label: internalCheck.label, status: internalCheck.status },
   { label: terraCheck.label, status: terraCheck.status },
   { label: legacyCheck.label, status: legacyCheck.status },
-  run(["--route", "auto", "--agent", "codex-engineering-executor", "--task", foundationTask, "--dry-run"], true, "automatic V2 packet route"),
-  run(["--route", "sol", "--agent", "codex-engineering-executor", "--task", foundationTask, "--dry-run"], false, "V2 CLI route override"),
-  run(["--route", "luna", "--agent", "codex-engineering-executor", "--task", foundationTask, "--dry-run"], false, "V2 CLI downgrade override"),
-  run(["--route", "terra", "--agent", "not-a-real-agent", "--task", foundationTask, "--dry-run"], false, "unknown agent"),
+  run(["--route", "auto", "--agent", "engineering-planner", "--task", foundationTask, "--profile", "plan-review", "--dry-run"], true, "automatic V2 review route"),
+  run(["--route", "sol", "--agent", "engineering-planner", "--task", foundationTask, "--profile", "plan-review", "--dry-run"], false, "V2 CLI route override"),
+  run(["--route", "luna", "--agent", "engineering-planner", "--task", foundationTask, "--profile", "plan-review", "--dry-run"], false, "V2 CLI downgrade override"),
+  run(["--route", "terra", "--agent", "not-a-real-agent", "--task", foundationTask, "--profile", "plan-review", "--dry-run"], false, "unknown agent"),
   run(["--route", "terra", "--agent", "codex-engineering-executor", "--task", "MISSING-TASK", "--dry-run"], false, "missing task packet"),
-  run(["--route", "qwen-local", "--agent", "codex-engineering-executor", "--task", foundationTask, "--local-provider", "ollama", "--local-model", "qwen-placeholder", "--dry-run"], false, "unauthorized Qwen substitution"),
+  run(["--route", "qwen-local", "--agent", "engineering-planner", "--task", foundationTask, "--profile", "plan-review", "--local-provider", "ollama", "--local-model", "qwen-placeholder", "--dry-run"], false, "unauthorized Qwen substitution"),
   run(["--route", "auto", "--agent", "codex-engineering-executor", "--task", "SUT-AIOS-GOV-005", "--dry-run"], false, "terminal task execution rejection"),
   { label: "start/finish/model trace without prompt or secret fields", status: "passed" },
 ];

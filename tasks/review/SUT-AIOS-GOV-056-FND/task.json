@@ -1,7 +1,7 @@
 {
   "$schema": "../../../schemas/task-packet-v2.schema.json",
   "schemaVersion": "2.0.0",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "playbookId": null,
   "playbookMode": "shadow",
@@ -62,7 +62,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-01T12:40:00.000Z",
-  "updatedDate": "2026-08-08T12:00:00.000Z",
+  "updatedDate": "2026-08-08T08:05:01.321Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -85,6 +85,13 @@
       "at": "2026-08-01T12:42:23.976Z",
       "actor": "codex-engineering-executor",
       "reason": "Implement only the Workflow V2 Foundation scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-08T08:05:01.321Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded Foundation repair submitted for exact-head stage review."
     }
   ],
   "taskId": "SUT-AIOS-GOV-056-FND",
