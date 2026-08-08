@@ -104,7 +104,7 @@ function verificationWorktreeIsClean(statusText, packet, headSha, evidencePath) 
     if (reviewPaths.has(line)) return true;
     const file = line.slice(3).replaceAll("\\", "/");
     if (line.startsWith("?? ") && file.startsWith(`evidence/reviews/${packet.taskId}/runs/`) && file.endsWith(".json")) return true;
-    return nonEmptyString(evidencePath) && file === normalize(evidencePath);
+    return line.startsWith("?? ") && nonEmptyString(evidencePath) && packet.evidence?.includes(normalize(evidencePath)) && file === normalize(evidencePath);
   });
 }
 function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root)) {
@@ -134,6 +134,8 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       if (!Array.isArray(trace.contextManifest) || trace.contextManifest.length === 0) errors.push(`${stage} app trace has no governed context manifest`);
       else {
         const seen = new Set();
+        const taskEntries = trace.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`);
+        if (taskEntries.length !== 1 || typeof trace.reviewedTaskPacketText !== "string") errors.push(`${stage} app trace must bind exactly one reviewed task packet snapshot`);
         for (const entry of trace.contextManifest) {
           if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} app trace context entry is invalid`); continue; }
           seen.add(entry.path);
@@ -151,6 +153,32 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         }
         const actualManifestHash = sha256(trace.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
         if (actualManifestHash !== result.contextManifestHash) errors.push(`${stage} app context manifest hash does not match governed files`);
+      }
+    } else {
+      const expectedTracePath = `artifacts/traces/codex-routing/${packet.taskId}/${result.runId}-${result.reviewerAgent}-${expected.route}.jsonl`;
+      if (result.tracePath !== expectedTracePath) { errors.push(`${stage} launcher trace path does not match its bound task, run, reviewer, and route`); continue; }
+      let events;
+      try { events = fs.readFileSync(path.join(root, result.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
+      catch { errors.push(`${stage} launcher trace is missing or invalid`); continue; }
+      const boundEvents = events.filter((event) => event?.event === "review-bound");
+      if (boundEvents.length !== 1) { errors.push(`${stage} launcher trace must contain exactly one review-bound event`); continue; }
+      const bound = boundEvents[0];
+      for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) {
+        if (bound[key] !== result[key]) errors.push(`${stage} launcher trace ${key} does not bind review result`);
+      }
+      if (!events.some((event) => event?.event === "finish" && event?.status === "success")) errors.push(`${stage} launcher trace does not record successful completion`);
+      if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || typeof bound.reviewedTaskPacketText !== "string") {
+        errors.push(`${stage} launcher trace must bind exactly one reviewed task packet snapshot`);
+      } else {
+        const taskEntry = bound.contextManifest.find((entry) => entry.path === `tasks/review/${packet.taskId}/task.json`);
+        if (sha256(bound.reviewedTaskPacketText) !== taskEntry.sha256) errors.push(`${stage} launcher task snapshot does not match its context hash`);
+        else {
+          let reviewedPacket;
+          try { reviewedPacket = JSON.parse(bound.reviewedTaskPacketText); } catch { errors.push(`${stage} launcher task snapshot is invalid JSON`); continue; }
+          if (JSON.stringify(reviewScopeProjection(reviewedPacket)) !== JSON.stringify(reviewScopeProjection(packet))) errors.push(`${stage} launcher reviewed task scope does not match the current packet`);
+        }
+        const manifestHash = sha256(bound.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+        if (manifestHash !== result.contextManifestHash) errors.push(`${stage} launcher context manifest hash does not match its bound files`);
       }
     }
   }
@@ -217,6 +245,8 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
     const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha, options.reviewBaseSha);
     if (reviewErrors.length > 0) fail(`Cannot verify V2 task without passing exact-head review artifacts:\n- ${reviewErrors.join("\n- ")}`);
     const reviewHead = options.reviewHeadSha ?? reviewHeadSha(root);
+    const canonicalBase = reviewBaseSha(root);
+    if (canonicalBase && options.reviewBaseSha && options.reviewBaseSha !== canonicalBase) fail("Cannot verify V2 task against a non-canonical review base SHA.");
     const statusText = options.reviewStatusText ?? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
     if (!verificationWorktreeIsClean(statusText, packet, reviewHead, options.evidence)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
     packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead };

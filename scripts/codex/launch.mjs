@@ -759,6 +759,21 @@ function main() {
         process.exit(1);
       }
 
+      trace.append({
+        event: "review-bound",
+        runId: launcherReview.runId,
+        taskId: launcherReview.taskId,
+        baseSha: launcherReview.baseSha,
+        headSha: launcherReview.headSha,
+        stage: launcherReview.stage,
+        reviewerAgent: launcherReview.reviewerAgent,
+        model: launcherReview.model,
+        reasoningEffort: launcherReview.reasoningEffort,
+        contextManifestHash: launcherReview.contextManifestHash,
+        outputHash: launcherReview.outputHash,
+        contextManifest: context.contextManifest,
+        reviewedTaskPacketText: taskRecord.text,
+      });
       const reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
       process.stdout.write(`${JSON.stringify({ status: "review-persisted", taskId, stage: launcherReview.stage, decision: launcherReview.decision, reviewPath })}\n`);
     }

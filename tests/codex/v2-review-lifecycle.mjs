@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -10,7 +11,7 @@ const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle
 const id = "SUT-TEST-V2-REVIEW";
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
-const contextManifestHash = "c".repeat(64);
+const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 function assessment(nextAction) {
   return {
@@ -45,6 +46,9 @@ try {
   assert.doesNotThrow(() => assertProfileAuthorization("implementation", { format: "json", state: "active", data: record.packet }, access, "codex-engineering-executor"));
   transition(id, "review", "Fixture is ready for independent review.", "codex-engineering-executor", root);
   record = findPacket(id, root);
+  const reviewedTaskPacketText = fs.readFileSync(record.file, "utf8");
+  const contextManifest = [{ path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) }];
+  const contextManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
 
   const profiles = [
     ["plan-review", "engineering-planner", "gpt-5.6-sol", "sol", "plan review passed"],
@@ -58,20 +62,35 @@ try {
     const review = buildLauncherBoundReviewResult(assessment(nextAction), {
       taskId: id, baseSha, headSha, reviewerAgent: agent, model, reasoningEffort: "high",
       contextManifestHash, reviewedAt: "2026-08-08T12:00:00.000Z", stage,
-      runId: `fixture-${route}-${agent}`, tracePath: `artifacts/traces/codex-routing/fixture-${route}-${agent}.jsonl`
+      runId: `fixture-${route}-${agent}`, tracePath: `artifacts/traces/codex-routing/${id}/fixture-${route}-${agent}-${agent}-${route}.jsonl`
     });
     assert.equal(validateReviewResult(review).valid, true, `${profile} result is SHA-bound and valid`);
     if (profile === "plan-review") {
       assert.throws(() => persistReviewResult({ ...review, stage: "semanticReview" }, { taskId: id, profile, headSha, root }), /does not match requested/, "persist rejects a profile/stage mismatch");
       assert.throws(() => transition(id, "verified", "Incomplete reviews must fail.", "qa-verification", root, { evidence: "evidence/missing.json", reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /missing required/, "verified rejects incomplete V2 review evidence");
     }
+    const traceFile = path.join(root, review.tracePath);
+    fs.mkdirSync(path.dirname(traceFile), { recursive: true });
+    const traceSerialized = [
+      JSON.stringify({ event: "start", taskId: id, agentId: agent, route, model }),
+      JSON.stringify({ event: "review-bound", runId: review.runId, taskId: id, baseSha, headSha, stage, reviewerAgent: agent, model, reasoningEffort: "high", contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskPacketText }),
+      JSON.stringify({ event: "finish", status: "success", exitCode: 0 })
+    ].join("\n") + "\n";
+    fs.writeFileSync(traceFile, traceSerialized);
     const reviewPath = persistReviewResult(review, { taskId: id, profile, headSha, root });
+    if (profile === "plan-review") {
+      fs.unlinkSync(traceFile);
+      assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha).join("; "), /launcher trace is missing/, "missing launcher trace fails closed");
+      fs.writeFileSync(traceFile, traceSerialized);
+    }
     assert.equal(fs.existsSync(path.join(root, reviewPath)), true, `${profile} result is persisted`);
     paths.push(reviewPath);
   }
 
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
   assert.equal(verificationWorktreeIsClean(" M scripts/codex/launch.mjs", record.packet, headSha), false, "verification rejects unreviewed implementation changes");
+  assert.equal(verificationWorktreeIsClean("M  scripts/codex/launch.mjs", record.packet, headSha, "scripts/codex/launch.mjs"), false, "caller-supplied evidence cannot exempt staged implementation changes");
+  assert.equal(verificationWorktreeIsClean("?? evidence/tasks/OTHER/verification.md", record.packet, headSha, "evidence/tasks/OTHER/verification.md"), false, "other-task evidence cannot bypass review cleanliness");
   assert.equal(reviewWorktreeIsClean(` M tasks/review/${id}/task.json`, id, headSha), false, "Codex app review rejects a dirty task packet");
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
   const final = findPacket(id, root);
@@ -104,6 +123,14 @@ try {
       const traversal = structuredClone(prepared);
       traversal.reviewResult.runId = "../escape";
       assert.throws(() => persistCodexAppReviewResult(traversal, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /run ID is invalid/, "invalid app run IDs are rejected before persistence");
+      const traceFile = path.join(appRoot, prepared.reviewResult.tracePath);
+      const originalTrace = fs.readFileSync(traceFile, "utf8");
+      const incompleteTrace = JSON.parse(originalTrace);
+      delete incompleteTrace.reviewedTaskPacketText;
+      incompleteTrace.contextManifest = incompleteTrace.contextManifest.filter((entry) => entry.path !== `tasks/review/${appTaskId}/task.json`);
+      fs.writeFileSync(traceFile, `${JSON.stringify(incompleteTrace, null, 2)}\n`);
+      assert.match(validateRequiredReviewArtifacts(readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json")), appRoot, appHead, appBase).join("; "), /exactly one reviewed task packet/, "app envelope without the governed task snapshot fails closed");
+      fs.writeFileSync(traceFile, originalTrace);
     }
   }
   const appPacket = readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json"));
@@ -119,7 +146,7 @@ try {
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 27 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 31 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
