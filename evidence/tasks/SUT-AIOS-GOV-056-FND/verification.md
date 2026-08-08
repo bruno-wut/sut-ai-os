@@ -6,6 +6,10 @@
 - **Scope:** Task Packet V2 schema and V1/V2 validation; stage-specific routing authority; agent route and effort enforcement; inactive-agent and terminal-task rejection; structured SHA-bound review-result validation; required authoring and execution documentation.
 - **Explicit exclusions:** The hardcoded CI validator list remains authoritative. No reconciliation implementation, validator-registry takeover, GitHub write permission, bot commit, deployment, production behavior, provider fallback, telemetry, or routing optimization is included.
 
+## Routing adjustment
+
+The approved stage configuration is Chief Orchestrator `luna/high`, Plan Review `sol/high`, Implementation `terra/high`, routine Semantic QA `luna/high`, and Merge Safety `sol/high`. The agent defaults and the Foundation `routingPolicy` match those pairs. `luna/max` semantic QA and `sol/xhigh` escalation require an explicitly revised high-complexity V2 packet; no fallback or automatic escalation was introduced.
+
 ## Deterministic checks
 
 The following checks passed on the committed implementation tree ending at `2929246378a89a168178b91f00a4f4e4acb7b4b0`:
@@ -21,6 +25,8 @@ git diff --check
 ```
 
 The focused tests cover valid V1 compatibility, valid V2 packets, malformed/unsupported packets, stage routing, CLI override rejection, agent route/effort rejection, inactive agents, terminal tasks, SHA/head identity binding, context binding, canonical output-hash rejection, rejection of non-canonical review comparison bases, Qwen read-only enforcement, and fail-closed Git SHA lookup.
+
+The routing-negative suite additionally asserts all four agent defaults and the Plan Review, routine Semantic QA, and Merge Safety stage pairs; it passed with 31 checks after the routing adjustment.
 
 ## Independent review
 

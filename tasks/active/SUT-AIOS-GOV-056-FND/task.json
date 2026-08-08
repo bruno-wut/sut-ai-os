@@ -26,22 +26,22 @@
       "effort": "high"
     },
     "planReview": {
-      "route": "luna",
+      "route": "sol",
       "effort": "high"
     },
     "semanticReview": {
-      "route": "terra",
+      "route": "luna",
       "effort": "high"
     },
     "mergeRiskReview": {
       "required": true,
       "route": "sol",
-      "effort": "medium"
+      "effort": "high"
     }
   },
   "workspaceWrite": false,
   "solEscalationTriggers": [
-    "Escalate to Sol for schema or routing-policy security defects."
+    "Escalate only genuine high-risk schema or routing-policy complexity through a revised V2 packet that selects Sol at xhigh effort."
   ],
   "rollbackExpectations": "Revert the Foundation PR through a separately reviewed Git revert; do not enable reconciliation or validator-registry automation.",
   "outputSchema": "schemas/agent-result.schema.json",
@@ -57,7 +57,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-01T12:40:00.000Z",
-  "updatedDate": "2026-08-01T12:42:23.976Z",
+  "updatedDate": "2026-08-08T12:00:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {

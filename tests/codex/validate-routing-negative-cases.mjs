@@ -11,6 +11,7 @@ import {
   assertTaskId,
   assertWorkspaceWriteAuthority,
   comparisonBaseSha,
+  discoverAgents,
   gitSha,
   packetAccess,
   selectRoute
@@ -22,14 +23,15 @@ const access = {
   effort: "high",
   routingPolicy: {
     implementation: { route: "terra", effort: "high" },
-    planReview: { route: "luna", effort: "high" },
-    semanticReview: { route: "terra", effort: "high" },
-    mergeRiskReview: { required: true, route: "sol", effort: "medium" }
+    planReview: { route: "sol", effort: "high" },
+    semanticReview: { route: "luna", effort: "high" },
+    mergeRiskReview: { required: true, route: "sol", effort: "high" }
   }
 };
 
-assert.deepEqual(selectRoute("auto", undefined, access, "terra", "plan-review"), { route: "luna", effort: "high" });
-assert.deepEqual(selectRoute("auto", undefined, access, "terra", "merge-risk-review"), { route: "sol", effort: "medium" });
+assert.deepEqual(selectRoute("auto", undefined, access, "terra", "plan-review"), { route: "sol", effort: "high" });
+assert.deepEqual(selectRoute("auto", undefined, access, "terra", "semantic-qa"), { route: "luna", effort: "high" });
+assert.deepEqual(selectRoute("auto", undefined, access, "terra", "merge-risk-review"), { route: "sol", effort: "high" });
 assert.throws(() => selectRoute("luna", undefined, access, "terra", "implementation"), /override/);
 assert.throws(() => selectRoute("auto", "low", access, "terra", "implementation"), /override/);
 assert.throws(() => selectRoute("auto", undefined, { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: undefined } }, "terra", "semantic-qa"), /missing routingPolicy/);
@@ -79,4 +81,10 @@ else process.env.GIT_DIR = previousGitDir;
 assert.equal(allowedEfforts.sol.has("low"), false, "Sol low is prohibited");
 assert.equal(allowedEfforts.terra.has("max"), false, "Terra max is prohibited");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 27 }) + "\n");
+const configuredAgents = discoverAgents();
+assert.equal(configuredAgents.get("chief-orchestrator").defaultRoute, "luna");
+assert.equal(configuredAgents.get("engineering-planner").defaultRoute, "sol");
+assert.equal(configuredAgents.get("codex-engineering-executor").defaultRoute, "terra");
+assert.equal(configuredAgents.get("qa-verification").defaultRoute, "luna");
+
+process.stdout.write(JSON.stringify({ status: "passed", checks: 31 }) + "\n");

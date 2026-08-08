@@ -17,6 +17,8 @@ Model route is constrained by each definition's `default_model` and `fallback_mo
 
 V1 packets continue to use their legacy `modelRoute` and wrapper compatibility rules. V2 packets must declare stage-specific `routingPolicy` in `schemas/task-packet-v2.schema.json`; that field is the sole source of route and reasoning-effort values for each launch stage. The launcher rejects CLI route/effort overrides for V2, inactive agents, terminal tasks, agent route violations, and agent effort violations. No provider fallback is implied by this foundation.
 
+The current V2 stage defaults are Chief Orchestrator `luna/high`, Plan Review `sol/high`, Implementation `terra/high`, routine Semantic QA `luna/high`, and Merge Safety `sol/high`. `luna/max` semantic QA and `sol/xhigh` escalation require an explicitly revised high-complexity packet; they are not automatic upgrades.
+
 ## Workflow routes
 
 | Trigger | Route | Deterministic gates |

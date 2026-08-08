@@ -463,9 +463,9 @@ function main() {
         schemaVersion: "2.0.0",
         routingPolicy: {
           implementation: { route: "terra", effort: "high" },
-          planReview: { route: "luna", effort: "high" },
-          semanticReview: { route: "terra", effort: "high" },
-          mergeRiskReview: { required: true, route: "sol", effort: "medium" },
+          planReview: { route: "sol", effort: "high" },
+          semanticReview: { route: "luna", effort: "high" },
+          mergeRiskReview: { required: true, route: "sol", effort: "high" },
         },
         allowedAgents: ["codex-engineering-executor"]
       },

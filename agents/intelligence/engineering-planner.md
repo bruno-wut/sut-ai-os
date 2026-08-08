@@ -5,7 +5,7 @@ version: 1.0.0
 status: active
 category: intelligence
 runtime: planning-service
-default_model: terra
+default_model: sol
 fallback_model: sol
 allowed_model_routes: [luna, terra, sol]
 allowed_reasoning_efforts: [low, medium, high, xhigh, max]

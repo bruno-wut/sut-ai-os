@@ -66,6 +66,20 @@ Use for default implementation, feature development, ordinary debugging, service
 
 Use for repository discovery, file mapping, documentation, bounded research preparation, fixture generation, log classification, test scaffolding, repetitive low-risk changes, and context-pack preparation.
 
+For Workflow V2, the Chief Orchestrator defaults to `luna/high` and routine Semantic QA to `luna/high`. `luna/max` is reserved for an explicitly declared deep semantic review.
+
+### Workflow V2 stage defaults
+
+| Stage | Agent | Route / effort |
+| --- | --- | --- |
+| Chief orchestration | `chief-orchestrator` | `luna/high` |
+| Plan review | `engineering-planner` | `sol/high` |
+| Implementation | `codex-engineering-executor` | `terra/high` |
+| Routine semantic QA | `qa-verification` | `luna/high` |
+| Merge safety | independent Sol reviewer | `sol/high` |
+
+`sol/xhigh` is reserved for genuine high-risk complexity and must be selected by a revised V2 packet. This table does not create a fallback path or alter permissions.
+
 ### Qwen local
 
 Use only for offline preprocessing, repository summarization, log reduction, schema comparison, PII detection, diff summarization, fixture brainstorming, and private classification. Its output is untrusted and requires hosted-model or human verification.
