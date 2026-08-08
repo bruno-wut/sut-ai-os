@@ -33,10 +33,21 @@ try {
   writePacket(record.file, packet);
 
   assert.equal(validatePacket(packet, { strict: true, directoryState: "backlog" }).valid, true, "a valid V2 packet is accepted");
+  assert.deepEqual(packet.routingPolicy, {
+    implementation: { route: "terra", effort: "high" },
+    planReview: { route: "sol", effort: "high" },
+    semanticReview: { route: "luna", effort: "high" },
+    mergeRiskReview: { required: true, route: "sol", effort: "high" }
+  }, "new V2 packets receive the canonical routine stage routing");
+  assert.equal(packet.routingComplexity, "routine", "new V2 packets require routine routing complexity by default");
 
   const missingRouting = { ...packet };
   delete missingRouting.routingPolicy;
   assert.equal(validatePacket(missingRouting, { strict: true, directoryState: "backlog" }).valid, false, "V2 without routingPolicy is rejected");
+
+  const missingRoutingComplexity = { ...packet };
+  delete missingRoutingComplexity.routingComplexity;
+  assert.equal(validatePacket(missingRoutingComplexity, { strict: true, directoryState: "backlog" }).valid, false, "V2 without routingComplexity is rejected");
 
   const emptyAgents = { ...packet, allowedAgents: [] };
   assert.equal(validatePacket(emptyAgents, { strict: true, directoryState: "backlog" }).valid, false, "V2 without an allowed agent is rejected");
@@ -47,7 +58,7 @@ try {
   const unsupported = { ...packet, schemaVersion: "3.0.0" };
   assert.equal(validatePacket(unsupported, { strict: true, directoryState: "backlog" }).valid, false, "unsupported packet versions are rejected");
 
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 7 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 9 }) + "\n");
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }

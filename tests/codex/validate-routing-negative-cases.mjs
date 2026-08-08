@@ -21,6 +21,7 @@ const access = {
   version: "2.0.0",
   route: "terra",
   effort: "high",
+  routingComplexity: "routine",
   routingPolicy: {
     implementation: { route: "terra", effort: "high" },
     planReview: { route: "sol", effort: "high" },
@@ -32,6 +33,14 @@ const access = {
 assert.deepEqual(selectRoute("auto", undefined, access, "terra", "plan-review"), { route: "sol", effort: "high" });
 assert.deepEqual(selectRoute("auto", undefined, access, "terra", "semantic-qa"), { route: "luna", effort: "high" });
 assert.deepEqual(selectRoute("auto", undefined, access, "terra", "merge-risk-review"), { route: "sol", effort: "high" });
+const routineDeepSemantic = { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: { route: "luna", effort: "max" } } };
+assert.throws(() => selectRoute("auto", undefined, routineDeepSemantic, "terra", "semantic-qa"), /routingComplexity/);
+const routineDeepEscalation = { ...access, routingPolicy: { ...access.routingPolicy, mergeRiskReview: { required: true, route: "sol", effort: "xhigh" } } };
+assert.throws(() => selectRoute("auto", undefined, routineDeepEscalation, "terra", "merge-risk-review"), /routingComplexity/);
+const highComplexityDeepSemantic = { ...routineDeepSemantic, routingComplexity: "high-complexity" };
+assert.deepEqual(selectRoute("auto", undefined, highComplexityDeepSemantic, "terra", "semantic-qa"), { route: "luna", effort: "max" });
+const highComplexityDeepEscalation = { ...routineDeepEscalation, routingComplexity: "high-complexity" };
+assert.deepEqual(selectRoute("auto", undefined, highComplexityDeepEscalation, "terra", "merge-risk-review"), { route: "sol", effort: "xhigh" });
 assert.throws(() => selectRoute("luna", undefined, access, "terra", "implementation"), /override/);
 assert.throws(() => selectRoute("auto", "low", access, "terra", "implementation"), /override/);
 assert.throws(() => selectRoute("auto", undefined, { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: undefined } }, "terra", "semantic-qa"), /missing routingPolicy/);
@@ -87,4 +96,4 @@ assert.equal(configuredAgents.get("engineering-planner").defaultRoute, "sol");
 assert.equal(configuredAgents.get("codex-engineering-executor").defaultRoute, "terra");
 assert.equal(configuredAgents.get("qa-verification").defaultRoute, "luna");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 31 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks: 35 }) + "\n");

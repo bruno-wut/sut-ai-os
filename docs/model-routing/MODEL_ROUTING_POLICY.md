@@ -78,7 +78,7 @@ For Workflow V2, the Chief Orchestrator defaults to `luna/high` and routine Sema
 | Routine semantic QA | `qa-verification` | `luna/high` |
 | Merge safety | independent Sol reviewer | `sol/high` |
 
-`sol/xhigh` is reserved for genuine high-risk complexity and must be selected by a revised V2 packet. This table does not create a fallback path or alter permissions.
+`sol/xhigh` is reserved for genuine high-risk complexity and requires `routingComplexity: high-complexity` in the V2 packet; `luna/max` follows the same rule for deep semantic QA. This table does not create a fallback path or alter permissions.
 
 ### Qwen local
 

@@ -34,6 +34,7 @@
     "defaultAgent",
     "allowedAgents",
     "routingPolicy",
+    "routingComplexity",
     "workspaceWrite",
     "solEscalationTriggers",
     "rollbackExpectations",
@@ -121,6 +122,7 @@
         }
       }
     },
+    "routingComplexity": { "enum": ["routine", "high-complexity"] },
     "workspaceWrite": { "type": "boolean", "default": false },
     "solEscalationTriggers": { "$ref": "#/$defs/stringList" },
     "rollbackExpectations": { "type": "string", "minLength": 1, "maxLength": 4000 },

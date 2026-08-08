@@ -26,19 +26,20 @@
       "effort": "high"
     },
     "planReview": {
-      "route": "luna",
+      "route": "sol",
       "effort": "high"
     },
     "semanticReview": {
-      "route": "terra",
+      "route": "luna",
       "effort": "high"
     },
     "mergeRiskReview": {
       "required": true,
       "route": "sol",
-      "effort": "medium"
+      "effort": "high"
     }
   },
+  "routingComplexity": "routine",
   "workspaceWrite": false,
   "solEscalationTriggers": [
     "Escalate to Sol for schema or routing-policy security defects."

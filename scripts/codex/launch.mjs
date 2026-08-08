@@ -206,6 +206,7 @@ function packetAccess(packet) {
       route: implRoute,
       effort: implEffort ?? "high",
       routingPolicy: packet.data.routingPolicy,
+      routingComplexity: packet.data.routingComplexity,
       workspaceWrite: packet.data.workspaceWrite === true,
       contextBudget: packet.data.contextBudget,
       state: packet.state,
@@ -245,6 +246,11 @@ function selectRoute(requestedRoute, cliEffort, packetAccess, agentRoute, profil
     }
     packetRoute = packetAccess.routingPolicy[stageName].route;
     packetEffort = packetAccess.routingPolicy[stageName].effort;
+  }
+
+  const reservedDeepReview = (packetRoute === "luna" && packetEffort === "max") || (packetRoute === "sol" && packetEffort === "xhigh");
+  if (isV2 && reservedDeepReview && packetAccess.routingComplexity !== "high-complexity") {
+    throw new Error("luna/max semantic review and sol/xhigh escalation require routingComplexity: high-complexity");
   }
 
   const selectedRoute = requestedRoute === "auto" ? packetRoute : requestedRoute;
@@ -467,6 +473,7 @@ function main() {
           semanticReview: { route: "luna", effort: "high" },
           mergeRiskReview: { required: true, route: "sol", effort: "high" },
         },
+        routingComplexity: "routine",
         allowedAgents: ["codex-engineering-executor"]
       },
     };

@@ -39,6 +39,7 @@
       "effort": "high"
     }
   },
+  "routingComplexity": "routine",
   "workspaceWrite": false,
   "solEscalationTriggers": [
     "Escalate only genuine high-risk schema or routing-policy complexity through a revised V2 packet that selects Sol at xhigh effort."
@@ -100,9 +101,9 @@
     "No production or GitHub write behavior is in scope."
   ],
   "acceptanceCriteria": [
-    "Task Packet V2 is a closed schema with stage-specific routingPolicy and no top-level V2 route or effort authority.",
+    "Task Packet V2 is a closed schema with stage-specific routingPolicy, explicit routingComplexity, and no top-level V2 route or effort authority.",
     "The task validator accepts valid V1 packets and valid V2 packets while rejecting malformed or unsupported versions.",
-    "The launcher selects V2 route and reasoning effort only from routingPolicy.<stage> and rejects CLI overrides.",
+    "The launcher selects V2 route and reasoning effort only from routingPolicy.<stage>, rejects CLI overrides, and requires explicit high-complexity routing for luna/max or sol/xhigh.",
     "The launcher enforces declared agent routes and reasoning-effort limits, rejects inactive agents, and rejects terminal tasks.",
     "Review-result validation requires structured task, base SHA, head SHA, reviewer, model, effort, context hash, output hash, decision, and findings fields and verifies the canonical output hash.",
     "Required deterministic tests and independent review cover the exact final Foundation diff."
