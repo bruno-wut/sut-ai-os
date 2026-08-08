@@ -110,7 +110,7 @@
     "The launcher selects V2 route and reasoning effort only from routingPolicy.<stage>, rejects CLI overrides, and requires explicit high-complexity routing for luna/max or sol/xhigh.",
     "The launcher enforces declared agent routes and reasoning-effort limits, rejects inactive agents, and rejects terminal tasks.",
     "Review-result validation requires structured task, base SHA, head SHA, reviewer, model, effort, context hash, launcher run/trace, output hash, decision, and findings fields; the launcher creates the identity envelope and persists validated stage results.",
-    "A deterministic lifecycle fixture authorizes implementation and all three independent review stages, persists their exact-SHA artifacts, and reaches verified only with durable review evidence.",
+    "A deterministic lifecycle fixture authorizes implementation and all three independent review stages, permits only same-task stage artifacts between reviews, persists their exact-SHA artifacts, and rejects verified until every configured passing artifact binds the review head.",
     "Required deterministic tests and independent review cover the exact final Foundation diff."
   ],
   "allowedPaths": [

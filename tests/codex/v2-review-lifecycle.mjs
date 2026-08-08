@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { assertProfileAuthorization, buildLauncherBoundReviewResult, persistReviewResult } from "../../scripts/codex/launch.mjs";
-import { createPacket, findPacket, transition, writePacket } from "../../scripts/task/task-cli.mjs";
+import { createPacket, findPacket, transition, validateRequiredReviewArtifacts, writePacket } from "../../scripts/task/task-cli.mjs";
 import { validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
@@ -61,16 +61,21 @@ try {
       runId: `fixture-${route}-${agent}`, tracePath: `artifacts/traces/codex-routing/fixture-${route}-${agent}.jsonl`
     });
     assert.equal(validateReviewResult(review).valid, true, `${profile} result is SHA-bound and valid`);
+    if (profile === "plan-review") {
+      assert.throws(() => persistReviewResult({ ...review, stage: "semanticReview" }, { taskId: id, profile, headSha, root }), /does not match requested/, "persist rejects a profile/stage mismatch");
+      assert.throws(() => transition(id, "verified", "Incomplete reviews must fail.", "qa-verification", root, { evidence: "evidence/missing.json", reviewHeadSha: headSha }), /missing required/, "verified rejects incomplete V2 review evidence");
+    }
     const reviewPath = persistReviewResult(review, { taskId: id, profile, headSha, root });
     assert.equal(fs.existsSync(path.join(root, reviewPath)), true, `${profile} result is persisted`);
     paths.push(reviewPath);
   }
 
-  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1) });
+  assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha), [], "all required review artifacts bind the exact review head");
+  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records durable review evidence");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 14 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 17 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }

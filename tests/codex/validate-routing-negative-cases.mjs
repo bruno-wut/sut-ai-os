@@ -14,6 +14,7 @@ import {
   discoverAgents,
   gitSha,
   packetAccess,
+  reviewWorktreeIsClean,
   selectRoute
 } from "../../scripts/codex/launch.mjs";
 
@@ -91,6 +92,10 @@ if (previousGitDir === undefined) delete process.env.GIT_DIR;
 else process.env.GIT_DIR = previousGitDir;
 assert.equal(allowedEfforts.sol.has("low"), false, "Sol low is prohibited");
 assert.equal(allowedEfforts.terra.has("max"), false, "Terra max is prohibited");
+assert.equal(reviewWorktreeIsClean("", "SUT-AIOS-GOV-056-FND"), true, "review starts from a clean committed tree");
+assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-AIOS-GOV-056-FND/planReview-" + "a".repeat(40) + ".json\n", "SUT-AIOS-GOV-056-FND"), true, "a prior stage artifact does not block the same-head review sequence");
+assert.equal(reviewWorktreeIsClean(" M scripts/codex/launch.mjs\n", "SUT-AIOS-GOV-056-FND"), false, "implementation changes still block review");
+assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-OTHER/planReview.json\n", "SUT-AIOS-GOV-056-FND"), false, "another task artifact blocks review");
 
 const configuredAgents = discoverAgents();
 assert.equal(configuredAgents.get("chief-orchestrator").defaultRoute, "luna");
@@ -103,4 +108,4 @@ for (const agentId of ["chief-orchestrator", "engineering-planner", "codex-engin
   assert.equal(selectRoute("auto", undefined, legacyTerraAccess, configuredAgents.get(agentId).defaultRoute).route, "terra", `V1 Terra route remains stable for ${agentId}`);
 }
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 41 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks: 45 }) + "\n");

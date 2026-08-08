@@ -470,7 +470,14 @@ function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
   return path.join(root, "evidence", "reviews", taskId, `${stage}-${headSha}.json`);
 }
 
+function reviewWorktreeIsClean(statusText, taskId) {
+  const allowedPrefix = `?? evidence/reviews/${taskId}/`;
+  return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => line === allowedPrefix || line.startsWith(allowedPrefix));
+}
+
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
+  const expectedStage = stageByProfile[profile];
+  if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
   const expected = { taskId, headSha };
   const validation = validateReviewResult(reviewResult, expected);
   if (!validation.valid) throw new Error(`Refusing to persist invalid review result: ${validation.errors.join("; ")}`);
@@ -582,7 +589,8 @@ function main() {
   const workspaceWrite = Boolean(argumentsObject["workspace-write"]);
   assertWorkspaceWriteAuthority(selectedRoute, workspaceWrite, access, taskId, agent);
 
-  if (reviewProfile && spawnSync("git", ["status", "--porcelain=v1"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout.trim()) {
+  const reviewStatus = reviewProfile ? spawnSync("git", ["status", "--porcelain=v1"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout : "";
+  if (reviewProfile && !reviewWorktreeIsClean(reviewStatus, taskId)) {
     throw new Error("Review launches require a clean committed working tree");
   }
 
@@ -705,4 +713,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistReviewResult, reviewArtifactPath, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };
