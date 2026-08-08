@@ -13,6 +13,12 @@ Routing selects a bounded role and model; it never grants permission. The determ
 
 Model route is constrained by each definition's `default_model` and `fallback_model`. A fallback may not widen tools, data, paths, commands, risk tier, or approval authority.
 
+## Task Packet V2 authority
+
+V1 packets continue to use their legacy `modelRoute` and wrapper compatibility rules. V2 packets must declare stage-specific `routingPolicy` in `schemas/task-packet-v2.schema.json`; that field is the sole source of route and reasoning-effort values for each launch stage. The launcher rejects CLI route/effort overrides for V2, inactive agents, terminal tasks, agent route violations, and agent effort violations. No provider fallback is implied by this foundation.
+
+The current V2 stage defaults are Chief Orchestrator `luna/high`, Plan Review `sol/high`, Implementation `terra/high`, routine Semantic QA `luna/high`, and Merge Safety `sol/high`. `luna/max` semantic QA and `sol/xhigh` escalation require `routingComplexity: high-complexity` in the V2 packet; they are not automatic upgrades.
+
 ## Workflow routes
 
 | Trigger | Route | Deterministic gates |
@@ -32,6 +38,7 @@ Model route is constrained by each definition's `default_model` and `fallback_mo
 - A model does not choose its own role, tools, or successor.
 - The Chief Orchestrator may request a route but deterministic registry/policy code authorizes it.
 - Executors receive only one immutable, approved task envelope and cannot call other executors.
+- Structured review results must bind task ID, base SHA, head SHA, reviewer, model, effort, context manifest hash, and canonical output hash.
 - QA must be an independent run and cannot repair the work it judges.
 - Notification, approval, deployment, audit, metrics, and policy controls remain deterministic services, not agents.
 - Tier 3 requests are blocked or sent to a specialist-led process; they are not routed to ordinary executors.

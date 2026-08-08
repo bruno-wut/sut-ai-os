@@ -1,0 +1,35 @@
+# Workflow V2 Foundation verification
+
+- **Task:** `SUT-AIOS-GOV-056-FND`
+- **Implementation commits:** `684b7c5688e0c6925ed0bc9b0b6663c012ae870f`, `fd94b38f167d252132ef8917649b0cce214e4ecc`, `2929246378a89a168178b91f00a4f4e4acb7b4b0`, `e6f1ee1bd28f56cb4c992377f2ea17cbf368974e`, `fa2aecb077992c84aab73ee2f4992efbefaf2c75`
+- **Canonical base:** `origin/main` at `7226268dece3bfcc191716b243f45711c2eb131c`
+- **Scope:** Task Packet V2 schema and V1/V2 validation; stage-specific routing authority; agent route and effort enforcement; inactive-agent and terminal-task rejection; structured SHA-bound review-result validation; required authoring and execution documentation.
+- **Explicit exclusions:** The hardcoded CI validator list remains authoritative. No reconciliation implementation, validator-registry takeover, GitHub write permission, bot commit, deployment, production behavior, provider fallback, telemetry, or routing optimization is included.
+
+## Routing adjustment
+
+The approved stage configuration is Chief Orchestrator `luna/high`, Plan Review `sol/high`, Implementation `terra/high`, routine Semantic QA `luna/high`, and Merge Safety `sol/high`. The agent defaults, Foundation packet, deferred V2 packets, and `task:new` template match those pairs. `routingComplexity: high-complexity` is required before a V2 packet can select `luna/max` deep semantic QA or `sol/xhigh` escalation; no fallback or automatic escalation was introduced.
+
+## Deterministic checks
+
+The following checks passed on the committed implementation tree ending at `fa2aecb077992c84aab73ee2f4992efbefaf2c75`:
+
+```text
+node tests/task/validate-task-packet-v2.mjs
+node tests/review/validate-review-binding.mjs
+node tests/codex/validate-routing-negative-cases.mjs
+node scripts/codex/validate-routing.mjs
+node scripts/task/validate --all
+npm run verify:fast
+git diff --check
+```
+
+The focused tests cover valid V1 compatibility, valid V2 packets, malformed/unsupported packets, stage routing, CLI override rejection, agent route/effort rejection, inactive agents, terminal tasks, SHA/head identity binding, context binding, canonical output-hash rejection, rejection of non-canonical review comparison bases, Qwen read-only enforcement, and fail-closed Git SHA lookup.
+
+The routing-negative suite additionally asserts all four agent defaults, the Plan Review/routine Semantic QA/Merge Safety stage pairs, and rejection/acceptance of the two reserved high-complexity route-effort combinations; it passed with 35 checks. The V2 packet suite passed with 9 checks and asserts that the normal `task:new` path emits the canonical routine stage routing and `routingComplexity: routine`.
+
+## Independent review
+
+Terra semantic review and Sol architecture/safety review were requested against exact committed trees. The first Terra pass correctly blocked until this evidence path and the administrative-record allowlist were present; those blockers were resolved before this evidence update. The Sol review also drove the task-state, V1 Markdown, task-ID, canonical-base, clean-head, environment, and normal-output safeguards. A later Terra pass identified the non-canonical comparison-base override; `fd94b38f167d252132ef8917649b0cce214e4ecc` pins the base to fetched `origin/main` and adds rejection tests. The subsequent Sol exact-head review identified three safety blockers: the risk-register path was missing from the packet allowlist, Qwen workspace-write was not rejected, and Git SHA resolution could fail open; `2929246378a89a168178b91f00a4f4e4acb7b4b0` resolves all three with deterministic coverage. No task is marked `verified` by this record alone; the task remains subject to the final exact-head review gate.
+
+The routing-adjustment reviewers correctly blocked `e6f1ee1bd28f56cb4c992377f2ea17cbf368974e` because the normal template and deferred V2 packets retained obsolete stage defaults, because deep-route selection was documented but not enforced, and because the complete suite had not been recorded on the adjusted head. `fa2aecb077992c84aab73ee2f4992efbefaf2c75` resolves those findings and the complete suite above was rerun. No task is marked `verified` by this record alone; the task remains subject to the final exact-head review gate.
