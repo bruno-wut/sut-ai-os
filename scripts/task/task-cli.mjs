@@ -76,10 +76,16 @@ function reviewHeadSha(root) {
   const value = result.status === 0 ? result.stdout.trim() : "";
   return /^[0-9a-f]{40}$/i.test(value) ? value : null;
 }
+function reviewBaseSha(root) {
+  const result = spawnSync("git", ["rev-parse", "origin/main"], { cwd: root, encoding: "utf8", windowsHide: true });
+  const value = result.status === 0 ? result.stdout.trim() : "";
+  return /^[0-9a-f]{40}$/i.test(value) ? value : null;
+}
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
-function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root)) {
+function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root)) {
   const errors = [];
   if (!/^[0-9a-f]{40}$/i.test(headSha ?? "")) return ["cannot determine committed review head SHA"];
+  if (!baseSha) return ["cannot determine canonical review base SHA"];
   const stages = ["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])];
   for (const stage of stages) {
     const expected = packet.routingPolicy?.[stage];
@@ -87,7 +93,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
     if (!fs.existsSync(file)) { errors.push(`missing required ${stage} artifact for review head`); continue; }
     let result;
     try { result = JSON.parse(fs.readFileSync(file, "utf8")); } catch { errors.push(`invalid JSON in ${stage} artifact`); continue; }
-    const validation = validateReviewResult(result, { taskId: packet.taskId, headSha, reviewerAgent: expected.agent, model: modelForRoute(expected.route), reasoningEffort: expected.effort });
+    const validation = validateReviewResult(result, { taskId: packet.taskId, baseSha, headSha, reviewerAgent: expected.agent, model: modelForRoute(expected.route), reasoningEffort: expected.effort });
     if (!validation.valid) errors.push(`${stage} artifact is invalid: ${validation.errors.join("; ")}`);
     if (result.stage !== stage) errors.push(`${stage} artifact stage does not match its required stage`);
     if (result.decision !== "pass") errors.push(`${stage} artifact decision is not pass`);
@@ -146,7 +152,7 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   if (to === "active") { const candidate = { ...packet, status: to, stateTransitions: [...packet.stateTransitions, { from: state, to, at: now(), actor, reason }] }; const check = validatePacket(candidate, { strict: true, directoryState: to }); if (!check.valid) fail(`Cannot start invalid task:\n- ${check.errors.join("\n- ")}`); }
   if (to === "verified" && !options.evidence) fail("Verification requires --evidence <durable-reference>.");
   if (to === "verified" && packet.schemaVersion === "2.0.0") {
-    const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha);
+    const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha, options.reviewBaseSha);
     if (reviewErrors.length > 0) fail(`Cannot verify V2 task without passing exact-head review artifacts:\n- ${reviewErrors.join("\n- ")}`);
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
@@ -190,7 +196,7 @@ function selfTest() {
       review.outputHash = computeReviewOutputHash(review);
       const reviewFile = path.join(root, "evidence", "reviews", id, `${stage}-${reviewHead}.json`); fs.mkdirSync(path.dirname(reviewFile), { recursive: true }); fs.writeFileSync(reviewFile, `${JSON.stringify(review)}\n`, "utf8");
     }
-    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
+    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40) }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }
     const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done" });
     if (!terminalRejected || !check.valid || final.packet.completionEvidence.length !== 2) fail("self-test assertions failed");

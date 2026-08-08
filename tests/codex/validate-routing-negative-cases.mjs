@@ -92,10 +92,11 @@ if (previousGitDir === undefined) delete process.env.GIT_DIR;
 else process.env.GIT_DIR = previousGitDir;
 assert.equal(allowedEfforts.sol.has("low"), false, "Sol low is prohibited");
 assert.equal(allowedEfforts.terra.has("max"), false, "Terra max is prohibited");
-assert.equal(reviewWorktreeIsClean("", "SUT-AIOS-GOV-056-FND"), true, "review starts from a clean committed tree");
-assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-AIOS-GOV-056-FND/planReview-" + "a".repeat(40) + ".json\n", "SUT-AIOS-GOV-056-FND"), true, "a prior stage artifact does not block the same-head review sequence");
-assert.equal(reviewWorktreeIsClean(" M scripts/codex/launch.mjs\n", "SUT-AIOS-GOV-056-FND"), false, "implementation changes still block review");
-assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-OTHER/planReview.json\n", "SUT-AIOS-GOV-056-FND"), false, "another task artifact blocks review");
+const reviewHead = "a".repeat(40);
+assert.equal(reviewWorktreeIsClean("", "SUT-AIOS-GOV-056-FND", reviewHead), true, "review starts from a clean committed tree");
+assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-AIOS-GOV-056-FND/planReview-" + reviewHead + ".json\n", "SUT-AIOS-GOV-056-FND", reviewHead), true, "a prior stage artifact does not block the same-head review sequence");
+assert.equal(reviewWorktreeIsClean(" M scripts/codex/launch.mjs\n", "SUT-AIOS-GOV-056-FND", reviewHead), false, "implementation changes still block review");
+assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-AIOS-GOV-056-FND/planReview-" + "b".repeat(40) + ".json\n", "SUT-AIOS-GOV-056-FND", reviewHead), false, "stale review artifacts block review");
 
 const configuredAgents = discoverAgents();
 assert.equal(configuredAgents.get("chief-orchestrator").defaultRoute, "luna");

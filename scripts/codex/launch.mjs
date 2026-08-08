@@ -470,9 +470,9 @@ function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
   return path.join(root, "evidence", "reviews", taskId, `${stage}-${headSha}.json`);
 }
 
-function reviewWorktreeIsClean(statusText, taskId) {
-  const allowedPrefix = `?? evidence/reviews/${taskId}/`;
-  return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => line === allowedPrefix || line.startsWith(allowedPrefix));
+function reviewWorktreeIsClean(statusText, taskId, headSha) {
+  const allowed = new Set(["planReview", "semanticReview", "mergeRiskReview"].map((stage) => `?? evidence/reviews/${taskId}/${stage}-${headSha}.json`));
+  return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => allowed.has(line));
 }
 
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
@@ -589,13 +589,12 @@ function main() {
   const workspaceWrite = Boolean(argumentsObject["workspace-write"]);
   assertWorkspaceWriteAuthority(selectedRoute, workspaceWrite, access, taskId, agent);
 
-  const reviewStatus = reviewProfile ? spawnSync("git", ["status", "--porcelain=v1"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout : "";
-  if (reviewProfile && !reviewWorktreeIsClean(reviewStatus, taskId)) {
-    throw new Error("Review launches require a clean committed working tree");
-  }
-
   const reviewedHeadSha = reviewProfile ? gitSha("HEAD") : null;
   if (reviewProfile && !reviewedHeadSha) throw new Error("Cannot determine committed review head SHA");
+  const reviewStatus = reviewProfile ? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout : "";
+  if (reviewProfile && !reviewWorktreeIsClean(reviewStatus, taskId, reviewedHeadSha)) {
+    throw new Error("Review launches require a clean committed working tree");
+  }
   const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
 
   const trace = createTrace(taskId, agentId, selectedRoute);

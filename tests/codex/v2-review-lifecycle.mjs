@@ -63,15 +63,15 @@ try {
     assert.equal(validateReviewResult(review).valid, true, `${profile} result is SHA-bound and valid`);
     if (profile === "plan-review") {
       assert.throws(() => persistReviewResult({ ...review, stage: "semanticReview" }, { taskId: id, profile, headSha, root }), /does not match requested/, "persist rejects a profile/stage mismatch");
-      assert.throws(() => transition(id, "verified", "Incomplete reviews must fail.", "qa-verification", root, { evidence: "evidence/missing.json", reviewHeadSha: headSha }), /missing required/, "verified rejects incomplete V2 review evidence");
+      assert.throws(() => transition(id, "verified", "Incomplete reviews must fail.", "qa-verification", root, { evidence: "evidence/missing.json", reviewHeadSha: headSha, reviewBaseSha: baseSha }), /missing required/, "verified rejects incomplete V2 review evidence");
     }
     const reviewPath = persistReviewResult(review, { taskId: id, profile, headSha, root });
     assert.equal(fs.existsSync(path.join(root, reviewPath)), true, `${profile} result is persisted`);
     paths.push(reviewPath);
   }
 
-  assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha), [], "all required review artifacts bind the exact review head");
-  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha });
+  assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
+  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records durable review evidence");
