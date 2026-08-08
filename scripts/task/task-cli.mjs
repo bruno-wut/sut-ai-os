@@ -237,6 +237,14 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   if (terminalStates.has(state)) fail(`Terminal packet cannot be changed: ${id} is ${state}`);
   if (!states.includes(to) || !transitions[state].includes(to)) fail(`Invalid transition: ${state} -> ${to}`);
   if (!nonEmptyString(reason)) fail("A non-empty --reason is required.");
+  if (options.evidence) {
+    const evidenceReference = normalize(options.evidence);
+    const evidenceFile = path.resolve(root, evidenceReference);
+    const relativeEvidence = normalize(path.relative(root, evidenceFile));
+    let evidenceStat;
+    try { evidenceStat = fs.statSync(evidenceFile); } catch { fail(`Evidence reference does not exist: ${evidenceReference}`); }
+    if (path.isAbsolute(options.evidence) || relativeEvidence.startsWith("../") || relativeEvidence === ".." || !evidenceStat.isFile()) fail(`Evidence reference must be an existing repository file: ${evidenceReference}`);
+  }
   if (to === "active") { const candidate = { ...packet, status: to, stateTransitions: [...packet.stateTransitions, { from: state, to, at: now(), actor, reason }] }; const check = validatePacket(candidate, { strict: true, directoryState: to }); if (!check.valid) fail(`Cannot start invalid task:\n- ${check.errors.join("\n- ")}`); }
   if (to === "verified" && !options.evidence) fail("Verification requires --evidence <durable-reference>.");
   if (to === "verified" && packet.schemaVersion === "2.0.0") {
@@ -298,6 +306,9 @@ function selfTest() {
       const traceFile = path.join(root, review.tracePath); fs.mkdirSync(path.dirname(traceFile), { recursive: true }); fs.writeFileSync(traceFile, `${JSON.stringify(trace)}\n`, "utf8");
       const reviewFile = path.join(root, "evidence", "reviews", id, `${stage}-${reviewHead}.json`); fs.mkdirSync(path.dirname(reviewFile), { recursive: true }); fs.writeFileSync(reviewFile, `${JSON.stringify(review)}\n`, "utf8");
     }
+    fs.mkdirSync(path.join(root, "evidence"), { recursive: true });
+    fs.writeFileSync(path.join(root, "evidence", "self-test.md"), "verified fixture\n");
+    fs.writeFileSync(path.join(root, "evidence", "complete.md"), "completed fixture\n");
     transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), reviewStatusText: "" }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }
     const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done", root });

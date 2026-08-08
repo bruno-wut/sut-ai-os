@@ -88,6 +88,8 @@ try {
   }
 
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
+  assert.throws(() => transition(id, "verified", "Missing evidence must fail.", "qa-verification", root, { evidence: "evidence/tasks/SUT-TEST-V2-REVIEW/missing.md", reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /does not exist/, "verified transition rejects a missing evidence reference");
+  assert.equal(findPacket(id, root).state, "review", "missing evidence rejection leaves the task in review");
   assert.equal(verificationWorktreeIsClean(" M scripts/codex/launch.mjs", record.packet, headSha), false, "verification rejects unreviewed implementation changes");
   assert.equal(verificationWorktreeIsClean("M  scripts/codex/launch.mjs", record.packet, headSha, "scripts/codex/launch.mjs"), false, "caller-supplied evidence cannot exempt staged implementation changes");
   assert.equal(verificationWorktreeIsClean("?? evidence/tasks/OTHER/verification.md", record.packet, headSha, "evidence/tasks/OTHER/verification.md"), false, "other-task evidence cannot bypass review cleanliness");
@@ -146,7 +148,7 @@ try {
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 31 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 33 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
