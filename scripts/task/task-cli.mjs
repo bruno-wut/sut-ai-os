@@ -84,15 +84,27 @@ function reviewBaseSha(root) {
 }
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
 function sha256(value) { return createHash("sha256").update(value).digest("hex"); }
-function verificationWorktreeIsClean(statusText, packet, headSha) {
+function canonicalize(value) {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
+  return value;
+}
+function reviewScopeProjection(packet) {
+  const copy = structuredClone(packet);
+  for (const field of ["status", "updatedDate", "completionEvidence", "stateTransitions", "reviewVerification"]) delete copy[field];
+  if (Array.isArray(copy.contextBudget?.includedPaths)) {
+    copy.contextBudget.includedPaths = copy.contextBudget.includedPaths.map((item) => item.match(/^tasks\/(?:review|verified|done)\/[^/]+\/task\.json$/) ? "tasks/<lifecycle>/<task>/task.json" : item);
+  }
+  return canonicalize(copy);
+}
+function verificationWorktreeIsClean(statusText, packet, headSha, evidencePath) {
   const reviewPaths = new Set(["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])]
     .map((stage) => `?? evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`));
-  const evidencePrefix = `evidence/tasks/${packet.taskId}/`;
   return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => {
     if (reviewPaths.has(line)) return true;
     const file = line.slice(3).replaceAll("\\", "/");
     if (line.startsWith("?? ") && file.startsWith(`evidence/reviews/${packet.taskId}/runs/`) && file.endsWith(".json")) return true;
-    return file.startsWith(evidencePrefix);
+    return nonEmptyString(evidencePath) && file === normalize(evidencePath);
   });
 }
 function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root)) {
@@ -115,7 +127,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       const traceFile = path.join(root, result.tracePath);
       let trace;
       try { trace = JSON.parse(fs.readFileSync(traceFile, "utf8")); } catch { errors.push(`${stage} app trace is missing or invalid`); continue; }
-      for (const key of ["runId", "taskId", "baseSha", "headSha", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash"]) {
+      for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) {
         if (trace[key] !== result[key]) errors.push(`${stage} app trace ${key} does not bind review result`);
       }
       if (trace.source !== "codex-app") errors.push(`${stage} trace is not a Codex app envelope`);
@@ -125,7 +137,15 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         for (const entry of trace.contextManifest) {
           if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} app trace context entry is invalid`); continue; }
           seen.add(entry.path);
-          if (entry.path === `tasks/review/${packet.taskId}/task.json`) continue;
+          if (entry.path === `tasks/review/${packet.taskId}/task.json`) {
+            if (typeof trace.reviewedTaskPacketText !== "string" || sha256(trace.reviewedTaskPacketText) !== entry.sha256) errors.push(`${stage} reviewed task packet snapshot does not match its context hash`);
+            else {
+              let reviewedPacket;
+              try { reviewedPacket = JSON.parse(trace.reviewedTaskPacketText); } catch { errors.push(`${stage} reviewed task packet snapshot is invalid JSON`); continue; }
+              if (JSON.stringify(reviewScopeProjection(reviewedPacket)) !== JSON.stringify(reviewScopeProjection(packet))) errors.push(`${stage} reviewed task scope does not match the current packet`);
+            }
+            continue;
+          }
           const contextFile = path.resolve(root, entry.path);
           if (!fs.existsSync(contextFile) || sha256(fs.readFileSync(contextFile)) !== entry.sha256) errors.push(`${stage} governed context file does not match: ${entry.path}`);
         }
@@ -192,11 +212,13 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   if (to === "active") { const candidate = { ...packet, status: to, stateTransitions: [...packet.stateTransitions, { from: state, to, at: now(), actor, reason }] }; const check = validatePacket(candidate, { strict: true, directoryState: to }); if (!check.valid) fail(`Cannot start invalid task:\n- ${check.errors.join("\n- ")}`); }
   if (to === "verified" && !options.evidence) fail("Verification requires --evidence <durable-reference>.");
   if (to === "verified" && packet.schemaVersion === "2.0.0") {
+    const packetCheck = validatePacket(packet, { strict: true, directoryState: state, root });
+    if (!packetCheck.valid) fail(`Cannot verify invalid V2 task packet:\n- ${packetCheck.errors.join("\n- ")}`);
     const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha, options.reviewBaseSha);
     if (reviewErrors.length > 0) fail(`Cannot verify V2 task without passing exact-head review artifacts:\n- ${reviewErrors.join("\n- ")}`);
     const reviewHead = options.reviewHeadSha ?? reviewHeadSha(root);
     const statusText = options.reviewStatusText ?? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
-    if (!verificationWorktreeIsClean(statusText, packet, reviewHead)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
+    if (!verificationWorktreeIsClean(statusText, packet, reviewHead, options.evidence)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
     packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead };
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");

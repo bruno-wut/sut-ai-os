@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult } from "../../scripts/codex/launch.mjs";
+import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewWorktreeIsClean } from "../../scripts/codex/launch.mjs";
 import { createPacket, findPacket, readPacketAt, transition, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
-import { validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
+import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
 const id = "SUT-TEST-V2-REVIEW";
@@ -72,6 +72,7 @@ try {
 
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
   assert.equal(verificationWorktreeIsClean(" M scripts/codex/launch.mjs", record.packet, headSha), false, "verification rejects unreviewed implementation changes");
+  assert.equal(reviewWorktreeIsClean(` M tasks/review/${id}/task.json`, id, headSha), false, "Codex app review rejects a dirty task packet");
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
@@ -95,6 +96,15 @@ try {
     }
     const artifact = persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot });
     appStatus.push(`?? ${artifact}`, `?? ${prepared.reviewResult.tracePath}`);
+    if (stage === "planReview") {
+      const overwritten = structuredClone(prepared);
+      overwritten.reviewResult.exactNextAction = "different output using the same run";
+      overwritten.reviewResult.outputHash = computeReviewOutputHash(overwritten.reviewResult);
+      assert.throws(() => persistCodexAppReviewResult(overwritten, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /already exists/, "Codex app run envelopes are immutable");
+      const traversal = structuredClone(prepared);
+      traversal.reviewResult.runId = "../escape";
+      assert.throws(() => persistCodexAppReviewResult(traversal, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /run ID is invalid/, "invalid app run IDs are rejected before persistence");
+    }
   }
   const appPacket = readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json"));
   assert.deepEqual(validateRequiredReviewArtifacts(appPacket, appRoot, appHead, appBase), [], "Codex app artifacts and durable run envelopes validate");
@@ -102,11 +112,14 @@ try {
   const forgedValidation = validatePacket(forgedVerifiedPacket, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(forgedValidation.valid, false, "directly edited verified V2 packet cannot bypass review verification binding");
   assert.match(forgedValidation.errors.join("; "), /reviewVerification/, "direct verification bypass reports the missing binding");
+  const malformedPacket = structuredClone(appPacket);
+  delete malformedPacket.routingPolicy.semanticReview;
+  assert.equal(validatePacket(malformedPacket, { strict: true, directoryState: "review", root: appRoot }).valid, false, "malformed V2 routing cannot enter verification");
   transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, reviewStatusText: appStatus.join("\n") });
   const appFinal = findPacket(appTaskId, appRoot);
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 23 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 27 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }

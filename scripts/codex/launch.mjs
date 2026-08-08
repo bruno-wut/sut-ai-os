@@ -467,24 +467,37 @@ function buildLauncherBoundReviewResult(assessment, binding) {
 
 function prepareCodexAppReviewResult(assessment, { taskId, profile, runId, reviewedAt = new Date().toISOString() }) {
   assertTaskId(taskId);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(runId ?? "")) throw new Error("Codex app run ID is invalid");
   const taskRecord = findTaskPacket(taskId);
   const stageName = stageByProfile[profile];
   if (!stageName || stageName === "implementation") throw new Error(`Unsupported Codex app review profile: ${profile}`);
+  assertExecutableTaskState(taskId, taskRecord.state);
+  if (taskRecord.format !== "json") throw new Error("Codex app structured reviews require a JSON Task Packet V2");
+  const packetCheck = validatePacket(taskRecord.data, { strict: true, directoryState: taskRecord.state });
+  if (!packetCheck.valid) throw new Error(`Task packet validation failed: ${packetCheck.errors.join("; ")}`);
+  const access = packetAccess(taskRecord);
   const stage = taskRecord.data?.routingPolicy?.[stageName];
   if (!stage?.agent) throw new Error(`Task Packet V2 is missing routingPolicy.${stageName}.agent`);
   const agent = discoverAgents().get(stage.agent);
   assertActiveAgent(agent);
-  const model = modelIds[stage.route];
+  if (!access.allowedAgents.includes(stage.agent)) throw new Error(`Agent ${stage.agent} is not whitelisted by task packet ${taskId}`);
+  assertProfileAuthorization(profile, taskRecord, access, stage.agent);
+  const routeInfo = selectRoute("auto", undefined, access, agent.defaultRoute, profile);
+  assertAgentRouteEffort(agent, routeInfo.route, routeInfo.effort, true);
+  const model = modelIds[routeInfo.route];
   if (!model) throw new Error(`Codex app reviews require a hosted route for ${stageName}`);
-  const baseSha = comparisonBaseSha();
   const headSha = gitSha("HEAD");
-  const context = buildContextProfile(agent, taskRecord, stage.route, model, stage.effort, profile);
+  if (!headSha) throw new Error("Cannot determine committed review head SHA");
+  const reviewStatus = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout;
+  if (!reviewWorktreeIsClean(reviewStatus, taskId, headSha)) throw new Error("Codex app reviews require a clean committed working tree");
+  const baseSha = comparisonBaseSha();
+  const context = buildContextProfile(agent, taskRecord, routeInfo.route, model, routeInfo.effort, profile);
   const reviewResult = buildLauncherBoundReviewResult(assessment, {
-    taskId, baseSha, headSha, reviewerAgent: stage.agent, model, reasoningEffort: stage.effort,
+    taskId, baseSha, headSha, reviewerAgent: stage.agent, model, reasoningEffort: routeInfo.effort,
     contextManifestHash: context.manifestHash, reviewedAt, stage: stageName, runId,
     tracePath: `evidence/reviews/${taskId}/runs/${runId}.json`,
   });
-  return { reviewResult, contextManifest: context.contextManifest };
+  return { reviewResult, contextManifest: context.contextManifest, reviewedTaskPacketText: taskRecord.text };
 }
 
 function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
@@ -495,7 +508,11 @@ function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
 
 function reviewWorktreeIsClean(statusText, taskId, headSha) {
   const allowed = new Set(["planReview", "semanticReview", "mergeRiskReview"].map((stage) => `?? evidence/reviews/${taskId}/${stage}-${headSha}.json`));
-  return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => allowed.has(line));
+  return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => {
+    if (allowed.has(line)) return true;
+    const file = line.slice(3).replaceAll("\\", "/");
+    return line.startsWith("?? ") && file.startsWith(`evidence/reviews/${taskId}/runs/`) && file.endsWith(".json");
+  });
 }
 
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
@@ -518,15 +535,27 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
 }
 
 function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root = repositoryRoot }) {
-  const { reviewResult, contextManifest } = prepared;
+  const { reviewResult, contextManifest, reviewedTaskPacketText } = prepared;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(reviewResult?.runId ?? "")) throw new Error("Codex app run ID is invalid");
+  const expectedStage = stageByProfile[profile];
+  const resultValidation = validateReviewResult(reviewResult, { taskId, headSha });
+  if (!resultValidation.valid || reviewResult.stage !== expectedStage) throw new Error(`Refusing to persist invalid Codex app review: ${[...resultValidation.errors, ...(reviewResult.stage !== expectedStage ? ["stage does not match profile"] : [])].join("; ")}`);
   const tracePath = `evidence/reviews/${taskId}/runs/${reviewResult.runId}.json`;
   if (reviewResult.tracePath !== tracePath) throw new Error("Codex app review tracePath must match its runId");
+  if (!Array.isArray(contextManifest) || contextManifest.length === 0) throw new Error("Codex app review context manifest is missing");
   const manifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
   if (reviewResult.contextManifestHash !== manifestHash) throw new Error("Codex app review context manifest does not match its governed files");
-  const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash, contextManifest };
+  const taskEntry = contextManifest.find((entry) => entry.path === `tasks/review/${taskId}/task.json`);
+  if (!taskEntry || typeof reviewedTaskPacketText !== "string" || sha256(reviewedTaskPacketText) !== taskEntry.sha256) throw new Error("Codex app review does not bind the exact reviewed task packet");
+  const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, stage: reviewResult.stage, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash, outputHash: reviewResult.outputHash, contextManifest, reviewedTaskPacketText };
   const target = path.join(root, tracePath);
+  const traceSerialized = `${JSON.stringify(trace, null, 2)}\n`;
+  const resultTarget = reviewArtifactPath(taskId, profile, headSha, root);
+  const resultSerialized = `${JSON.stringify(reviewResult, null, 2)}\n`;
+  if (fs.existsSync(target) && fs.readFileSync(target, "utf8") !== traceSerialized) throw new Error(`Codex app run envelope already exists for ${reviewResult.runId}`);
+  if (fs.existsSync(resultTarget) && fs.readFileSync(resultTarget, "utf8") !== resultSerialized) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, `${JSON.stringify(trace, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+  if (!fs.existsSync(target)) fs.writeFileSync(target, traceSerialized, { encoding: "utf8", mode: 0o600 });
   return persistReviewResult(reviewResult, { taskId, profile, headSha, root });
 }
 
