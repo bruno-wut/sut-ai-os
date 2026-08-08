@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertProfileAuthorization, buildCodexAppBoundReviewResult, buildLauncherBoundReviewResult, persistCodexAppReviewResult, persistReviewResult } from "../../scripts/codex/launch.mjs";
-import { createPacket, findPacket, transition, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
-import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
+import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult } from "../../scripts/codex/launch.mjs";
+import { createPacket, findPacket, readPacketAt, transition, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
+import { validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
 const id = "SUT-TEST-V2-REVIEW";
@@ -70,22 +70,43 @@ try {
     paths.push(reviewPath);
   }
 
-  const appReview = buildCodexAppBoundReviewResult(assessment("app envelope passed"), {
-    taskId: id, baseSha, headSha, reviewerAgent: "engineering-planner", model: "gpt-5.6-sol", reasoningEffort: "high",
-    reviewedAt: "2026-08-08T12:00:00.000Z", stage: "planReview", runId: "019fe075-fc27-7e11-bd10-56816ba4a9db"
-  });
-  assert.throws(() => persistCodexAppReviewResult({ ...appReview, tracePath: "artifacts/traces/codex-app/not-the-run.json" }, { taskId: id, profile: "plan-review", headSha, root }), /must match/, "app producer rejects a substituted trace");
-  const wrongContext = { ...appReview, contextManifestHash: "d".repeat(64) };
-  wrongContext.outputHash = computeReviewOutputHash(wrongContext);
-  assert.throws(() => persistCodexAppReviewResult(wrongContext, { taskId: id, profile: "plan-review", headSha, root }), /context manifest/, "app producer rejects a substituted context manifest");
-
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
   assert.equal(verificationWorktreeIsClean(" M scripts/codex/launch.mjs", record.packet, headSha), false, "verification rejects unreviewed implementation changes");
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: paths.at(-1), reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records durable review evidence");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 17 }) + "\n");
+
+  const repositoryRoot = path.resolve(import.meta.dirname, "../..");
+  const appRoot = path.join(root, "codex-app-fixture");
+  fs.mkdirSync(appRoot, { recursive: true });
+  const appTaskId = "SUT-AIOS-GOV-056-FND";
+  const appHead = gitSha("HEAD");
+  const appBase = comparisonBaseSha();
+  const appProfiles = [["plan-review", "planReview"], ["semantic-qa", "semanticReview"], ["merge-risk-review", "mergeRiskReview"]];
+  const appStatus = [];
+  for (const [profile, stage] of appProfiles) {
+    const runId = `fixture-app-${stage}`;
+    const prepared = prepareCodexAppReviewResult(assessment(`${stage} app review passed`), { taskId: appTaskId, profile, runId, reviewedAt: "2026-08-08T12:00:00.000Z" });
+    for (const entry of prepared.contextManifest) {
+      const destination = path.join(appRoot, entry.path);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.copyFileSync(path.join(repositoryRoot, entry.path), destination);
+    }
+    const artifact = persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot });
+    appStatus.push(`?? ${artifact}`, `?? ${prepared.reviewResult.tracePath}`);
+  }
+  const appPacket = readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json"));
+  assert.deepEqual(validateRequiredReviewArtifacts(appPacket, appRoot, appHead, appBase), [], "Codex app artifacts and durable run envelopes validate");
+  const forgedVerifiedPacket = { ...appPacket, status: "verified" };
+  const forgedValidation = validatePacket(forgedVerifiedPacket, { strict: true, directoryState: "verified", root: appRoot });
+  assert.equal(forgedValidation.valid, false, "directly edited verified V2 packet cannot bypass review verification binding");
+  assert.match(forgedValidation.errors.join("; "), /reviewVerification/, "direct verification bypass reports the missing binding");
+  transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, reviewStatusText: appStatus.join("\n") });
+  const appFinal = findPacket(appTaskId, appRoot);
+  const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
+  assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 23 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }

@@ -37,7 +37,7 @@
     "reviewedAt": { "type": "string", "format": "date-time" },
     "stage": { "enum": ["planReview", "semanticReview", "mergeRiskReview"] },
     "runId": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
-    "tracePath": { "type": "string", "pattern": "^(artifacts/traces/codex-routing/|artifacts/traces/codex-app/)" },
+    "tracePath": { "type": "string", "pattern": "^(artifacts/traces/codex-routing/|evidence/reviews/[A-Za-z0-9._-]+/runs/)" },
     "outputHash": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
     "decision": { "enum": ["pass", "revision-required", "blocked"] },
     "blockingFindings": {

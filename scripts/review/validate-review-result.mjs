@@ -31,19 +31,6 @@ export function computeReviewOutputHash(data) {
   return createHash("sha256").update(JSON.stringify(canonicalize(data))).digest("hex");
 }
 
-export function computeAppReviewContextManifestHash(binding) {
-  const manifest = {
-    taskId: binding.taskId,
-    baseSha: binding.baseSha,
-    headSha: binding.headSha,
-    stage: binding.stage,
-    reviewerAgent: binding.reviewerAgent,
-    model: binding.model,
-    reasoningEffort: binding.reasoningEffort,
-  };
-  return createHash("sha256").update(JSON.stringify(canonicalize(manifest))).digest("hex");
-}
-
 export function validateReviewResult(data, expected = {}) {
   if (typeof data !== "object" || data === null) {
     return { valid: false, errors: ["Data is not an object"] };
@@ -61,7 +48,7 @@ export function validateReviewResult(data, expected = {}) {
     if (expected[field] !== undefined && data[field] !== expected[field]) errors.push(`${field} does not match the expected bound value`);
   }
   if (typeof data.outputHash === "string" && data.outputHash !== computeReviewOutputHash(data)) errors.push("outputHash does not match the canonical review result");
-  if (typeof data.tracePath === "string" && data.tracePath.startsWith("artifacts/traces/codex-app/") && data.tracePath !== `artifacts/traces/codex-app/${data.runId}.json`) {
+  if (typeof data.tracePath === "string" && data.tracePath.includes("/runs/") && data.tracePath !== `evidence/reviews/${data.taskId}/runs/${data.runId}.json`) {
     errors.push("Codex app tracePath must match runId");
   }
 

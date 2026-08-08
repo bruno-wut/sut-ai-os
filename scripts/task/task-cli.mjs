@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
-import { computeAppReviewContextManifestHash, computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
+import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..", "..");
@@ -82,6 +83,7 @@ function reviewBaseSha(root) {
   return /^[0-9a-f]{40}$/i.test(value) ? value : null;
 }
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
+function sha256(value) { return createHash("sha256").update(value).digest("hex"); }
 function verificationWorktreeIsClean(statusText, packet, headSha) {
   const reviewPaths = new Set(["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])]
     .map((stage) => `?? evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`));
@@ -89,6 +91,7 @@ function verificationWorktreeIsClean(statusText, packet, headSha) {
   return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => {
     if (reviewPaths.has(line)) return true;
     const file = line.slice(3).replaceAll("\\", "/");
+    if (line.startsWith("?? ") && file.startsWith(`evidence/reviews/${packet.taskId}/runs/`) && file.endsWith(".json")) return true;
     return file.startsWith(evidencePrefix);
   });
 }
@@ -107,7 +110,8 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
     if (!validation.valid) errors.push(`${stage} artifact is invalid: ${validation.errors.join("; ")}`);
     if (result.stage !== stage) errors.push(`${stage} artifact stage does not match its required stage`);
     if (result.decision !== "pass") errors.push(`${stage} artifact decision is not pass`);
-    if (result.tracePath.startsWith("artifacts/traces/codex-app/")) {
+    if (result.tracePath.includes("/runs/")) {
+      if (result.tracePath !== `evidence/reviews/${packet.taskId}/runs/${result.runId}.json`) errors.push(`${stage} app trace path does not match task and run ID`);
       const traceFile = path.join(root, result.tracePath);
       let trace;
       try { trace = JSON.parse(fs.readFileSync(traceFile, "utf8")); } catch { errors.push(`${stage} app trace is missing or invalid`); continue; }
@@ -115,12 +119,24 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         if (trace[key] !== result[key]) errors.push(`${stage} app trace ${key} does not bind review result`);
       }
       if (trace.source !== "codex-app") errors.push(`${stage} trace is not a Codex app envelope`);
-      if (result.contextManifestHash !== computeAppReviewContextManifestHash(result)) errors.push(`${stage} app context manifest does not match the expected bound context`);
+      if (!Array.isArray(trace.contextManifest) || trace.contextManifest.length === 0) errors.push(`${stage} app trace has no governed context manifest`);
+      else {
+        const seen = new Set();
+        for (const entry of trace.contextManifest) {
+          if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} app trace context entry is invalid`); continue; }
+          seen.add(entry.path);
+          if (entry.path === `tasks/review/${packet.taskId}/task.json`) continue;
+          const contextFile = path.resolve(root, entry.path);
+          if (!fs.existsSync(contextFile) || sha256(fs.readFileSync(contextFile)) !== entry.sha256) errors.push(`${stage} governed context file does not match: ${entry.path}`);
+        }
+        const actualManifestHash = sha256(trace.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+        if (actualManifestHash !== result.contextManifestHash) errors.push(`${stage} app context manifest hash does not match governed files`);
+      }
     }
   }
   return errors;
 }
-function validatePacket(packet, { strict = false, directoryState } = {}) {
+function validatePacket(packet, { strict = false, directoryState, root = repositoryRoot } = {}) {
   const errors = []; const warnings = [];
 
   if (packet.schemaVersion === "2.0.0") {
@@ -161,6 +177,10 @@ function validatePacket(packet, { strict = false, directoryState } = {}) {
   else if (missingExecution.length) warnings.push(`not execution-ready: ${missingExecution.join(", ")}`);
   if (packet.playbookId && packet.playbookMode !== "shadow" && packet.autonomyTier === "tier-0") warnings.push("tier-0 playbook is expected to remain in shadow mode");
   if (strict && missingExecution.length) errors.push("strict validation requires execution readiness");
+  if (packet.schemaVersion === "2.0.0" && ["verified", "done"].includes(packet.status)) {
+    if (!packet.reviewVerification) errors.push("verified V2 packet requires reviewVerification base/head binding");
+    else errors.push(...validateRequiredReviewArtifacts(packet, root, packet.reviewVerification.headSha, packet.reviewVerification.baseSha));
+  }
   return { valid: errors.length === 0, errors, warnings, executionReady: missingExecution.length === 0 };
 }
 
@@ -177,6 +197,7 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
     const reviewHead = options.reviewHeadSha ?? reviewHeadSha(root);
     const statusText = options.reviewStatusText ?? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
     if (!verificationWorktreeIsClean(statusText, packet, reviewHead)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
+    packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead };
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
   packet.status = to; packet.updatedDate = now();
@@ -221,7 +242,7 @@ function selfTest() {
     }
     transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), reviewStatusText: "" }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }
-    const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done" });
+    const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done", root });
     if (!terminalRejected || !check.valid || final.packet.completionEvidence.length !== 2) fail("self-test assertions failed");
     process.stdout.write(`${JSON.stringify({ status: "passed", checks: 4, taskId: id })}\n`);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
