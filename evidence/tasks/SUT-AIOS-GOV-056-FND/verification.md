@@ -1,7 +1,7 @@
 # Workflow V2 Foundation verification
 
 - **Task:** `SUT-AIOS-GOV-056-FND`
-- **Final implementation head tested:** `c1ef8be925bdbbf19cafe68a0a2562cb9f8c93de`
+- **Final implementation head tested:** `2856dd42e2266512df09af065581b904bb383d75`
 - **Canonical base:** `origin/main` at `7226268dece3bfcc191716b243f45711c2eb131c`
 - **Scope:** Task Packet V2 schema and V1/V2 validation; stage-specific routing authority; agent route and effort enforcement; inactive-agent and terminal-task rejection; structured SHA-bound review-result validation; required authoring and execution documentation.
 - **Explicit exclusions:** The hardcoded CI validator list remains authoritative. No reconciliation implementation, validator-registry takeover, GitHub write permission, bot commit, deployment, production behavior, provider fallback, telemetry, or routing optimization is included.
@@ -12,7 +12,7 @@ The approved stage configuration is Chief Orchestrator `luna/high`, Plan Review 
 
 ## Deterministic checks
 
-The complete packet-required suite passed on the clean committed implementation head `c1ef8be925bdbbf19cafe68a0a2562cb9f8c93de`:
+The complete packet-required suite passed on the clean committed implementation head `2856dd42e2266512df09af065581b904bb383d75`:
 
 ```text
 node tests/task/validate-task-packet-v2.mjs
@@ -26,7 +26,7 @@ npm run verify:fast
 git diff --check
 ```
 
-The focused suites passed with 13 Task Packet checks, 7 review-binding checks, 45 routing checks, 41 full V2 review-lifecycle checks, and 4 task self-test checks. They cover valid V1 compatibility, valid and malformed V2 packets, stage routing, CLI override rejection, agent route/effort enforcement, inactive and terminal task rejection, exact SHA/base/context/output binding, immutable app run envelopes, launcher trace binding, task-snapshot binding, missing, external, traversing, directory, symlink/junction, and noncanonical evidence references, canonical-base rejection, Qwen read-only enforcement, and fail-closed Git SHA lookup.
+The focused suites passed with 13 Task Packet checks, 7 review-binding checks, 45 routing checks, 45 full V2 review-lifecycle checks, and 4 task self-test checks. They cover valid V1 compatibility, valid and malformed V2 packets, stage routing, CLI override rejection, agent route/effort enforcement, inactive and terminal task rejection, exact SHA/base/context/output binding, immutable app run envelopes, launcher trace binding, task-snapshot binding, missing, external, traversing, directory, symlink/junction, noncanonical, and NTFS alternate-stream evidence references, canonical-base rejection, Qwen read-only enforcement, and fail-closed Git SHA lookup.
 
 The repository-wide task validator and `verify:fast` both passed. No validator-registry activation, reconciliation, GitHub write path, fallback, telemetry, deployment, or production behavior was exercised or enabled.
 
@@ -34,4 +34,4 @@ The repository-wide task validator and `verify:fast` both passed. No validator-r
 
 Terra semantic review and Sol architecture/safety review were requested against exact committed trees. The first Terra pass correctly blocked until this evidence path and the administrative-record allowlist were present; those blockers were resolved before this evidence update. The Sol review also drove the task-state, V1 Markdown, task-ID, canonical-base, clean-head, environment, and normal-output safeguards. A later Terra pass identified the non-canonical comparison-base override; `fd94b38f167d252132ef8917649b0cce214e4ecc` pins the base to fetched `origin/main` and adds rejection tests. The subsequent Sol exact-head review identified three safety blockers: the risk-register path was missing from the packet allowlist, Qwen workspace-write was not rejected, and Git SHA resolution could fail open; `2929246378a89a168178b91f00a4f4e4acb7b4b0` resolves all three with deterministic coverage. No task is marked `verified` by this record alone; the task remains subject to the final exact-head review gate.
 
-Subsequent exact-head reviewers found and drove bounded corrections for stage-specific reviewer authorization, durable Codex-app review artifacts, verified-state artifact revalidation, app preparation authorization, dirty-packet rejection, immutable run envelopes, exact reviewed-task snapshots, caller-supplied evidence bypasses, ordinary launcher-trace binding, durable evidence-reference existence, canonical evidence storage, and filesystem-resolved repository containment. Those corrections are included in `c1ef8be925bdbbf19cafe68a0a2562cb9f8c93de`, and the complete suite above was rerun on that clean commit. This record does not mark the task verified; independent Plan, Semantic, and Merge Safety review of the resulting exact review head remains the next gate.
+Subsequent exact-head reviewers found and drove bounded corrections for stage-specific reviewer authorization, durable Codex-app review artifacts, verified-state artifact revalidation, app preparation authorization, dirty-packet rejection, immutable run envelopes, exact reviewed-task snapshots, caller-supplied evidence bypasses, ordinary launcher-trace binding, durable evidence-reference existence, canonical evidence storage, filesystem-resolved repository containment, and NTFS alternate-stream rejection. Those corrections are included in `2856dd42e2266512df09af065581b904bb383d75`, and the complete suite above was rerun on that clean commit. This record does not mark the task verified; independent Plan, Semantic, and Merge Safety review of the resulting exact review head remains the next gate.
