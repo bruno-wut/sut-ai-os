@@ -34,10 +34,10 @@ try {
 
   assert.equal(validatePacket(packet, { strict: true, directoryState: "backlog" }).valid, true, "a valid V2 packet is accepted");
   assert.deepEqual(packet.routingPolicy, {
-    implementation: { route: "terra", effort: "high" },
-    planReview: { route: "sol", effort: "high" },
-    semanticReview: { route: "luna", effort: "high" },
-    mergeRiskReview: { required: true, route: "sol", effort: "high" }
+    implementation: { agent: "codex-engineering-executor", route: "terra", effort: "high" },
+    planReview: { agent: "engineering-planner", route: "sol", effort: "high" },
+    semanticReview: { agent: "qa-verification", route: "luna", effort: "high" },
+    mergeRiskReview: { agent: "qa-verification", required: true, route: "sol", effort: "high" }
   }, "new V2 packets receive the canonical routine stage routing");
   assert.equal(packet.routingComplexity, "routine", "new V2 packets require routine routing complexity by default");
 
@@ -52,13 +52,29 @@ try {
   const emptyAgents = { ...packet, allowedAgents: [] };
   assert.equal(validatePacket(emptyAgents, { strict: true, directoryState: "backlog" }).valid, false, "V2 without an allowed agent is rejected");
 
+  const missingStageAgent = structuredClone(packet);
+  delete missingStageAgent.routingPolicy.planReview.agent;
+  assert.equal(validatePacket(missingStageAgent, { strict: true, directoryState: "backlog" }).valid, false, "V2 without a stage reviewer is rejected");
+
+  const unlistedStageAgent = structuredClone(packet);
+  unlistedStageAgent.routingPolicy.planReview.agent = "unlisted-reviewer";
+  assert.equal(validatePacket(unlistedStageAgent, { strict: true, directoryState: "backlog" }).valid, false, "V2 rejects a stage agent that cannot launch");
+
+  const invalidSolEffort = structuredClone(packet);
+  invalidSolEffort.routingPolicy.planReview.effort = "low";
+  assert.equal(validatePacket(invalidSolEffort, { strict: true, directoryState: "backlog" }).valid, false, "V2 rejects Sol low at packet validation");
+
+  const invalidTerraEffort = structuredClone(packet);
+  invalidTerraEffort.routingPolicy.implementation.effort = "max";
+  assert.equal(validatePacket(invalidTerraEffort, { strict: true, directoryState: "backlog" }).valid, false, "V2 rejects Terra max at packet validation");
+
   const topLevelRoute = { ...packet, modelRoute: "terra" };
   assert.equal(validatePacket(topLevelRoute, { strict: true, directoryState: "backlog" }).valid, false, "V2 top-level route authority is rejected");
 
   const unsupported = { ...packet, schemaVersion: "3.0.0" };
   assert.equal(validatePacket(unsupported, { strict: true, directoryState: "backlog" }).valid, false, "unsupported packet versions are rejected");
 
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 9 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 13 }) + "\n");
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }

@@ -86,39 +86,47 @@
         "planReview": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["route", "effort"],
+          "required": ["agent", "route", "effort"],
           "properties": {
+            "agent": { "type": "string", "minLength": 1 },
             "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
             "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
-          }
+          },
+          "allOf": [{ "$ref": "#/$defs/routeEffortCompatibility" }]
         },
         "implementation": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["route", "effort"],
+          "required": ["agent", "route", "effort"],
           "properties": {
+            "agent": { "type": "string", "minLength": 1 },
             "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
             "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
-          }
+          },
+          "allOf": [{ "$ref": "#/$defs/routeEffortCompatibility" }]
         },
         "semanticReview": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["route", "effort"],
+          "required": ["agent", "route", "effort"],
           "properties": {
+            "agent": { "type": "string", "minLength": 1 },
             "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
             "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
-          }
+          },
+          "allOf": [{ "$ref": "#/$defs/routeEffortCompatibility" }]
         },
         "mergeRiskReview": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["required", "route", "effort"],
+          "required": ["agent", "required", "route", "effort"],
           "properties": {
+            "agent": { "type": "string", "minLength": 1 },
             "required": { "type": "boolean" },
             "route": { "enum": ["luna", "terra", "sol", "qwen-local"] },
             "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] }
-          }
+          },
+          "allOf": [{ "$ref": "#/$defs/routeEffortCompatibility" }]
         }
       }
     },
@@ -175,6 +183,18 @@
   },
   "$defs": {
     "status": { "enum": ["backlog", "ready", "active", "blocked", "review", "revision-required", "verified", "done", "cancelled", "archived"] },
-    "stringList": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 4000 }, "uniqueItems": true }
+    "stringList": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 4000 }, "uniqueItems": true },
+    "routeEffortCompatibility": {
+      "allOf": [
+        {
+          "if": { "properties": { "route": { "const": "sol" } }, "required": ["route"] },
+          "then": { "properties": { "effort": { "enum": ["medium", "high", "xhigh"] } } }
+        },
+        {
+          "if": { "properties": { "route": { "const": "terra" } }, "required": ["route"] },
+          "then": { "properties": { "effort": { "enum": ["low", "medium", "high", "xhigh"] } } }
+        }
+      ]
+    }
   }
 }

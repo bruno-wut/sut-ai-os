@@ -45,8 +45,9 @@ The launcher treats the selected sandbox and exact command arguments as the loca
 
 1. A V1 packet must declare `allowedAgents` and `modelRoute` (legacy Markdown packets use `Allowed agents` and `Model route`); a V2 packet must declare `allowedAgents` and stage-specific `routingPolicy`.
 2. The selected agent must exist in `agents/REGISTRY.md`, be `active`, and be listed in the task packet.
-3. V1 launches use the packet route. V2 launches use only `routingPolicy.<stage>.route` and `routingPolicy.<stage>.effort`.
+3. V1 launches use the packet route. V2 launches use only `routingPolicy.<stage>.agent`, `routingPolicy.<stage>.route`, and `routingPolicy.<stage>.effort`.
 4. An explicit wrapper may escalate Luna → Terra → Sol, but may never downgrade below either the packet route or the agent's `default_model`.
+4a. For legacy V1 packets, changed V2 agent defaults do not alter the packet route; an explicit wrapper may only select the packet route or a higher hosted route. V2 stage policy is authoritative.
 5. `qwen-local` is isolated from hosted routes, is allowed only when the packet explicitly selects it, and is always read-only.
 6. Risk, data classification, policy, tools, paths, commands, approvals, and verification override model convenience.
 

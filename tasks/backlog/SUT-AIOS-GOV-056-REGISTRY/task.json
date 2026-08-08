@@ -22,18 +22,22 @@
   ],
   "routingPolicy": {
     "implementation": {
+      "agent": "codex-engineering-executor",
       "route": "terra",
       "effort": "high"
     },
     "planReview": {
+      "agent": "engineering-planner",
       "route": "sol",
       "effort": "high"
     },
     "semanticReview": {
+      "agent": "qa-verification",
       "route": "luna",
       "effort": "high"
     },
     "mergeRiskReview": {
+      "agent": "qa-verification",
       "required": true,
       "route": "sol",
       "effort": "high"

@@ -23,19 +23,19 @@ const access = {
   effort: "high",
   routingComplexity: "routine",
   routingPolicy: {
-    implementation: { route: "terra", effort: "high" },
-    planReview: { route: "sol", effort: "high" },
-    semanticReview: { route: "luna", effort: "high" },
-    mergeRiskReview: { required: true, route: "sol", effort: "high" }
+    implementation: { agent: "codex-engineering-executor", route: "terra", effort: "high" },
+    planReview: { agent: "engineering-planner", route: "sol", effort: "high" },
+    semanticReview: { agent: "qa-verification", route: "luna", effort: "high" },
+    mergeRiskReview: { agent: "qa-verification", required: true, route: "sol", effort: "high" }
   }
 };
 
 assert.deepEqual(selectRoute("auto", undefined, access, "terra", "plan-review"), { route: "sol", effort: "high" });
 assert.deepEqual(selectRoute("auto", undefined, access, "terra", "semantic-qa"), { route: "luna", effort: "high" });
 assert.deepEqual(selectRoute("auto", undefined, access, "terra", "merge-risk-review"), { route: "sol", effort: "high" });
-const routineDeepSemantic = { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: { route: "luna", effort: "max" } } };
+const routineDeepSemantic = { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: { agent: "qa-verification", route: "luna", effort: "max" } } };
 assert.throws(() => selectRoute("auto", undefined, routineDeepSemantic, "terra", "semantic-qa"), /routingComplexity/);
-const routineDeepEscalation = { ...access, routingPolicy: { ...access.routingPolicy, mergeRiskReview: { required: true, route: "sol", effort: "xhigh" } } };
+const routineDeepEscalation = { ...access, routingPolicy: { ...access.routingPolicy, mergeRiskReview: { agent: "qa-verification", required: true, route: "sol", effort: "xhigh" } } };
 assert.throws(() => selectRoute("auto", undefined, routineDeepEscalation, "terra", "merge-risk-review"), /routingComplexity/);
 const highComplexityDeepSemantic = { ...routineDeepSemantic, routingComplexity: "high-complexity" };
 assert.deepEqual(selectRoute("auto", undefined, highComplexityDeepSemantic, "terra", "semantic-qa"), { route: "luna", effort: "max" });
@@ -63,13 +63,15 @@ const markdownAccess = packetAccess({ format: "markdown", text: "- **Allowed age
 assert.deepEqual(markdownAccess.allowedAgents, ["codex-engineering-executor", "qa-verification"]);
 assert.equal(markdownAccess.route, "terra");
 assert.equal(markdownAccess.workspaceWrite, true);
-const activeV2 = { format: "json", state: "active", data: { schemaVersion: "2.0.0", owner: "codex-engineering-executor", defaultAgent: "codex-engineering-executor", reviewer: "qa-verification" } };
+const activeV2 = { format: "json", state: "active", data: { schemaVersion: "2.0.0", owner: "codex-engineering-executor", defaultAgent: "codex-engineering-executor", reviewer: "qa-verification", routingPolicy: access.routingPolicy } };
 const reviewV2 = { ...activeV2, state: "review" };
 const v2Access = { version: "2.0.0" };
 assert.doesNotThrow(() => assertProfileAuthorization("implementation", activeV2, v2Access, "codex-engineering-executor"));
-assert.throws(() => assertProfileAuthorization("implementation", activeV2, v2Access, "qa-verification"), /owner/);
+assert.throws(() => assertProfileAuthorization("implementation", activeV2, v2Access, "qa-verification"), /not authorized/);
 assert.doesNotThrow(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "qa-verification"));
-assert.throws(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "codex-engineering-executor"), /independent/);
+assert.doesNotThrow(() => assertProfileAuthorization("plan-review", reviewV2, v2Access, "engineering-planner"));
+assert.doesNotThrow(() => assertProfileAuthorization("merge-risk-review", reviewV2, v2Access, "qa-verification"));
+assert.throws(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "codex-engineering-executor"), /not authorized/);
 assert.throws(() => assertWorkspaceWriteAuthority("qwen-local", true, { workspaceWrite: true }, "SUT-TEST-QWEN", { id: "codex-engineering-executor", category: "execution" }), /qwen-local is read-only/);
 assert.match(comparisonBaseSha(), /^[0-9a-f]{40}$/);
 const previousBaseSha = process.env.GOVERNED_BASE_SHA;
@@ -96,4 +98,9 @@ assert.equal(configuredAgents.get("engineering-planner").defaultRoute, "sol");
 assert.equal(configuredAgents.get("codex-engineering-executor").defaultRoute, "terra");
 assert.equal(configuredAgents.get("qa-verification").defaultRoute, "luna");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 35 }) + "\n");
+const legacyTerraAccess = { version: "1.0.0", route: "terra", effort: "high" };
+for (const agentId of ["chief-orchestrator", "engineering-planner", "codex-engineering-executor", "qa-verification"]) {
+  assert.equal(selectRoute("auto", undefined, legacyTerraAccess, configuredAgents.get(agentId).defaultRoute).route, "terra", `V1 Terra route remains stable for ${agentId}`);
+}
+
+process.stdout.write(JSON.stringify({ status: "passed", checks: 41 }) + "\n");

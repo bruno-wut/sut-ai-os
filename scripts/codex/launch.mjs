@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateReviewResult } from "../review/validate-review-result.mjs";
+import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
 import { validatePacket } from "../task/task-cli.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -35,6 +35,7 @@ const agentCategories = Object.freeze([
   "optional",
 ]);
 const contextLimitBytes = 512 * 1024;
+const stageByProfile = Object.freeze({ implementation: "implementation", "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" });
 
 function usage() {
   return `Usage:
@@ -239,7 +240,6 @@ function selectRoute(requestedRoute, cliEffort, packetAccess, agentRoute, profil
   let packetEffort = packetAccess.effort ?? "high";
 
   if (packetAccess.routingPolicy) {
-    const stageByProfile = { implementation: "implementation", "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" };
     const stageName = stageByProfile[profile];
     if (!stageName || !packetAccess.routingPolicy[stageName]) {
       throw new Error(`Task Packet V2 is missing routingPolicy.${stageName ?? profile}`);
@@ -263,11 +263,11 @@ function selectRoute(requestedRoute, cliEffort, packetAccess, agentRoute, profil
     return { route: selectedRoute, effort: selectedEffort };
   }
 
-  // If V1 packet (no routingPolicy), enforce minimum route rank
+  // V1 packets retain their packet-governed route so changed V2 agent defaults
+  // cannot silently escalate legacy task execution.
   if (!packetAccess.routingPolicy) {
-    const required = routeRank[packetRoute] >= routeRank[agentRoute] ? packetRoute : agentRoute;
-    if (routeRank[selectedRoute] < routeRank[required]) {
-      throw new Error(`Unsafe model downgrade: ${selectedRoute} is below required route ${required}`);
+    if (routeRank[selectedRoute] < routeRank[packetRoute]) {
+      throw new Error(`Unsafe model downgrade: ${selectedRoute} is below required route ${packetRoute}`);
     }
   }
 
@@ -309,10 +309,14 @@ function assertProfileAuthorization(profile, taskRecord, access, agentId) {
   if (profile === "implementation" && taskRecord.state !== "active") throw new Error("Implementation launches require an active task");
   if (reviewProfile && taskRecord.state !== "review") throw new Error(`${profile} launches require a task in review state`);
   if (access.version === "2.0.0" && taskRecord.format === "json") {
+    const stageName = stageByProfile[profile];
+    const stageAgent = taskRecord.data.routingPolicy?.[stageName]?.agent;
+    if (!stageAgent) throw new Error(`Task Packet V2 is missing routingPolicy.${stageName}.agent`);
+    if (stageAgent !== agentId) throw new Error(`Agent ${agentId} is not authorized for V2 ${stageName}`);
     if (profile === "implementation" && ![taskRecord.data.owner, taskRecord.data.defaultAgent].includes(agentId)) {
       throw new Error(`Implementation agent ${agentId} is not the V2 task owner/default agent`);
     }
-    if (reviewProfile && (taskRecord.data.reviewer !== agentId || taskRecord.data.owner === agentId)) {
+    if (reviewProfile && taskRecord.data.owner === agentId) {
       throw new Error(`Review agent ${agentId} is not the independent V2 task reviewer`);
     }
   }
@@ -431,20 +435,56 @@ function buildCommandArguments(selectedRoute, selectedModel, sandbox, localProvi
   return commandArguments;
 }
 
-function canonicalize(obj) {
-  if (typeof obj !== "object" || obj === null) return obj;
-  if (Array.isArray(obj)) return obj.map(canonicalize);
-  const sorted = {};
-  for (const key of Object.keys(obj).sort()) {
-    if (key === "outputHash") continue;
-    sorted[key] = canonicalize(obj[key]);
+function buildLauncherBoundReviewResult(assessment, binding) {
+  if (!assessment || typeof assessment !== "object" || Array.isArray(assessment)) {
+    throw new Error("Review execution failed: assessment must be a JSON object");
   }
-  return sorted;
+  const result = {
+    schemaVersion: "1.0.0",
+    taskId: binding.taskId,
+    baseSha: binding.baseSha,
+    headSha: binding.headSha,
+    reviewerAgent: binding.reviewerAgent,
+    model: binding.model,
+    reasoningEffort: binding.reasoningEffort,
+    contextManifestHash: binding.contextManifestHash,
+    reviewedAt: binding.reviewedAt,
+    stage: binding.stage,
+    runId: binding.runId,
+    tracePath: binding.tracePath,
+    outputHash: "",
+    decision: assessment.decision,
+    blockingFindings: assessment.blockingFindings,
+    nonBlockingRisks: assessment.nonBlockingRisks,
+    missingNegativeTests: assessment.missingNegativeTests,
+    architectureAssessment: assessment.architectureAssessment,
+    exactNextAction: assessment.exactNextAction,
+  };
+  result.outputHash = computeReviewOutputHash(result);
+  return result;
 }
 
-function computeOutputHash(reviewObj) {
-  const canonical = canonicalize(reviewObj);
-  return sha256(JSON.stringify(canonical));
+function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
+  const stage = stageByProfile[profile];
+  if (!stage || stage === "implementation") throw new Error(`No review artifact path for profile: ${profile}`);
+  return path.join(root, "evidence", "reviews", taskId, `${stage}-${headSha}.json`);
+}
+
+function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
+  const expected = { taskId, headSha };
+  const validation = validateReviewResult(reviewResult, expected);
+  if (!validation.valid) throw new Error(`Refusing to persist invalid review result: ${validation.errors.join("; ")}`);
+  const destination = reviewArtifactPath(taskId, profile, headSha, root);
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  const serialized = `${JSON.stringify(reviewResult, null, 2)}\n`;
+  if (fs.existsSync(destination) && fs.readFileSync(destination, "utf8") !== serialized) {
+    throw new Error(`Review artifact already exists for ${taskId} ${stageByProfile[profile]} at ${headSha}`);
+  }
+  if (!fs.existsSync(destination)) fs.writeFileSync(destination, serialized, { encoding: "utf8", mode: 0o600 });
+  const persisted = JSON.parse(fs.readFileSync(destination, "utf8"));
+  const persistedValidation = validateReviewResult(persisted, expected);
+  if (!persistedValidation.valid) throw new Error(`Persisted review result failed validation: ${persistedValidation.errors.join("; ")}`);
+  return path.relative(root, destination).replaceAll(path.sep, "/");
 }
 
 function main() {
@@ -468,10 +508,10 @@ function main() {
       data: {
         schemaVersion: "2.0.0",
         routingPolicy: {
-          implementation: { route: "terra", effort: "high" },
-          planReview: { route: "sol", effort: "high" },
-          semanticReview: { route: "luna", effort: "high" },
-          mergeRiskReview: { required: true, route: "sol", effort: "high" },
+          implementation: { agent: "codex-engineering-executor", route: "terra", effort: "high" },
+          planReview: { agent: "engineering-planner", route: "sol", effort: "high" },
+          semanticReview: { agent: "qa-verification", route: "luna", effort: "high" },
+          mergeRiskReview: { agent: "qa-verification", required: true, route: "sol", effort: "high" },
         },
         routingComplexity: "routine",
         allowedAgents: ["codex-engineering-executor"]
@@ -624,7 +664,7 @@ function main() {
         process.exit(1);
       }
 
-      const reviewCheck = validateReviewResult(parsed, {
+      const launcherReview = buildLauncherBoundReviewResult(parsed, {
         taskId,
         baseSha: reviewedBaseSha,
         headSha: reviewedHeadSha,
@@ -632,6 +672,14 @@ function main() {
         model: selectedModel,
         reasoningEffort: effort,
         contextManifestHash: context.manifestHash,
+        reviewedAt: new Date().toISOString(),
+        stage: stageByProfile[profile],
+        runId: trace.runId,
+        tracePath: path.relative(repositoryRoot, trace.tracePath).replaceAll(path.sep, "/"),
+      });
+      const reviewCheck = validateReviewResult(launcherReview, {
+        taskId, baseSha: reviewedBaseSha, headSha: reviewedHeadSha, reviewerAgent: agentId,
+        model: selectedModel, reasoningEffort: effort, contextManifestHash: context.manifestHash,
       });
       if (!reviewCheck.valid) {
         trace.append({ event: "finish", status: "review-schema-validation-failed", errors: reviewCheck.errors });
@@ -639,26 +687,8 @@ function main() {
         process.exit(1);
       }
 
-      // Check task ID, model, effort
-      if (parsed.taskId !== taskId) {
-        process.stderr.write(`Review result taskId mismatch: expected '${taskId}', got '${parsed.taskId}'\n`);
-        process.exit(1);
-      }
-      if (parsed.reasoningEffort !== effort) {
-        process.stderr.write(`Review result reasoningEffort mismatch: expected '${effort}', got '${parsed.reasoningEffort}'\n`);
-        process.exit(1);
-      }
-      if (parsed.contextManifestHash !== context.manifestHash) {
-        process.stderr.write(`Review result contextManifestHash mismatch: expected '${context.manifestHash}', got '${parsed.contextManifestHash}'\n`);
-        process.exit(1);
-      }
-
-      // Check outputHash
-      const computedHash = computeOutputHash(parsed);
-      if (parsed.outputHash !== computedHash) {
-        process.stderr.write(`Review result outputHash mismatch: computed '${computedHash}', payload contains '${parsed.outputHash}'\n`);
-        process.exit(1);
-      }
+      const reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
+      process.stdout.write(`${JSON.stringify({ status: "review-persisted", taskId, stage: launcherReview.stage, decision: launcherReview.decision, reviewPath })}\n`);
     }
 
     if (!reviewProfile && stdoutText) process.stdout.write(stdoutText);
@@ -675,4 +705,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, comparisonBaseSha, discoverAgents, gitSha, packetAccess, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistReviewResult, reviewArtifactPath, selectRoute, terminalStates };
