@@ -365,9 +365,25 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     if (result.error || result.status !== 0) throw new Error("Cannot build canonical merge-risk review context");
     return result.stdout ?? "";
   });
-  const changedPaths = run(["diff", "--name-only", baseSha, headSha, "--"]);
-  const diff = run(["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--"]);
-  return ["Generated merge-risk review material (read-only):", `Canonical base SHA: ${baseSha}`, `Reviewed head SHA: ${headSha}`, "Changed paths:", changedPaths.trim() || "(none)", "Exact canonical base-to-head diff:", diff.trim() || "(no textual diff)"].join("\n");
+  const changedPathOutput = run(["diff", "--name-only", "-z", baseSha, headSha, "--"]);
+  const changedPaths = changedPathOutput.split("\0").filter(Boolean);
+  for (const changedPath of changedPaths) {
+    if (/[\r\n\0]/.test(changedPath)) throw new Error("Cannot represent ambiguous changed path in merge-risk context");
+  }
+  const patches = changedPaths.map((changedPath) => {
+    const patch = run(["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--", changedPath]).trim();
+    if (!patch) throw new Error(`Canonical merge-risk diff is missing changed path: ${changedPath}`);
+    return `Changed path: ${JSON.stringify(changedPath)}\nPatch:\n${patch}`;
+  });
+  return [
+    "Generated merge-risk review material (read-only):",
+    `Canonical base SHA: ${baseSha}`,
+    `Reviewed head SHA: ${headSha}`,
+    "Changed paths:",
+    changedPaths.length ? changedPaths.map((changedPath) => JSON.stringify(changedPath)).join("\n") : "(none)",
+    "Exact canonical base-to-head patches:",
+    patches.length ? patches.join("\n\n") : "(no textual diff)",
+  ].join("\n");
 }
 
 function validateContextMaterial(records, generatedText, maxBytes) {
@@ -451,6 +467,7 @@ function buildReviewAssessmentPrompt(profile) {
 function parseReviewAssessment(stdoutText) {
   const trimmed = stdoutText.trim();
   if (!trimmed) throw new Error("review stdout is empty");
+  assertNoDuplicateJsonKeys(trimmed);
   let assessment;
   try {
     assessment = JSON.parse(trimmed);
@@ -466,6 +483,67 @@ function parseReviewAssessment(stdoutText) {
     throw new Error("review stdout must contain exactly the required assessment fields");
   }
   return assessment;
+}
+
+function assertNoDuplicateJsonKeys(jsonText) {
+  let index = 0;
+  const skipWhitespace = () => { while (/\s/.test(jsonText[index] ?? "")) index += 1; };
+  const parseString = () => {
+    const start = index;
+    index += 1;
+    while (index < jsonText.length) {
+      if (jsonText[index] === "\\") { index += 2; continue; }
+      if (jsonText[index] === '"') { index += 1; return JSON.parse(jsonText.slice(start, index)); }
+      index += 1;
+    }
+    throw new Error("review stdout contains an unterminated JSON string");
+  };
+  const parseValue = () => {
+    skipWhitespace();
+    if (jsonText[index] === "{") return parseObject();
+    if (jsonText[index] === "[") {
+      index += 1;
+      skipWhitespace();
+      if (jsonText[index] === "]") { index += 1; return; }
+      while (index < jsonText.length) {
+        parseValue();
+        skipWhitespace();
+        if (jsonText[index] === "]") { index += 1; return; }
+        if (jsonText[index] !== ",") throw new Error("review stdout contains invalid JSON array syntax");
+        index += 1;
+      }
+      throw new Error("review stdout contains an unterminated JSON array");
+    }
+    if (jsonText[index] === '"') { parseString(); return; }
+    const match = jsonText.slice(index).match(/^(?:-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)/);
+    if (!match) throw new Error("review stdout contains invalid JSON value syntax");
+    index += match[0].length;
+  };
+  const parseObject = () => {
+    index += 1;
+    const keys = new Set();
+    skipWhitespace();
+    if (jsonText[index] === "}") { index += 1; return; }
+    while (index < jsonText.length) {
+      if (jsonText[index] !== '"') throw new Error("review stdout contains invalid JSON object syntax");
+      const key = parseString();
+      if (keys.has(key)) throw new Error(`review stdout contains duplicate JSON member: ${key}`);
+      keys.add(key);
+      skipWhitespace();
+      if (jsonText[index] !== ":") throw new Error("review stdout contains invalid JSON object syntax");
+      index += 1;
+      parseValue();
+      skipWhitespace();
+      if (jsonText[index] === "}") { index += 1; return; }
+      if (jsonText[index] !== ",") throw new Error("review stdout contains invalid JSON object syntax");
+      index += 1;
+      skipWhitespace();
+    }
+    throw new Error("review stdout contains an unterminated JSON object");
+  };
+  parseValue();
+  skipWhitespace();
+  if (index !== jsonText.length) throw new Error("review stdout must be exactly one JSON object");
 }
 
 function createTrace(taskId, agentId, route) {
@@ -499,31 +577,75 @@ function childIsRunning(child) {
 }
 
 function terminateChildTree(child, options = {}) {
-  if (!childIsRunning(child)) return false;
+  if (!childIsRunning(child)) return Promise.resolve({ status: "already-exited" });
   const platform = options.platform ?? process.platform;
   if (platform === "win32") {
     const spawnFn = options.spawnFn ?? spawn;
-    const terminator = spawnFn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore", windowsHide: true });
-    terminator.on("error", () => {});
-    return true;
+    const timeoutMs = options.timeoutMs ?? 5000;
+    const schedule = options.setTimeoutFn ?? setTimeout;
+    const cancelSchedule = options.clearTimeoutFn ?? clearTimeout;
+    return new Promise((resolve) => {
+      let settled = false;
+      let timer = null;
+      let terminator;
+      const settle = (result) => {
+        if (settled) return;
+        settled = true;
+        if (timer) cancelSchedule(timer);
+        resolve(result);
+      };
+      try {
+        terminator = spawnFn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore", windowsHide: true });
+      } catch (error) {
+        settle({ status: "failed", reason: "spawn-error", message: error.message });
+        return;
+      }
+      terminator.once("error", (error) => settle({ status: "failed", reason: "spawn-error", message: error.message }));
+      terminator.once("close", (exitCode) => settle(exitCode === 0 ? { status: "terminated" } : { status: "failed", reason: "nonzero-exit", exitCode }));
+      timer = schedule(() => {
+        try { terminator.kill(); } catch { /* timeout remains the authoritative failure */ }
+        settle({ status: "failed", reason: "timeout" });
+      }, timeoutMs);
+      if (typeof timer?.unref === "function") timer.unref();
+    });
   }
   const signal = options.signal ?? "SIGKILL";
   try {
     (options.killProcessGroup ?? process.kill)(-child.pid, signal);
   } catch {
-    try { child.kill(signal); } catch { return false; }
+    try { child.kill(signal); } catch (error) { return Promise.resolve({ status: "failed", reason: "signal-error", message: error.message }); }
   }
-  return true;
+  return Promise.resolve({ status: "signalled" });
 }
 
 function createReviewCancellationController(child, emit, options = {}) {
   const platform = options.platform ?? process.platform;
   const graceMs = options.graceMs ?? 5000;
+  const settleMs = options.settleMs ?? 5000;
   const schedule = options.setTimeoutFn ?? setTimeout;
   const cancelSchedule = options.clearTimeoutFn ?? clearTimeout;
   const terminate = options.terminateChildTree ?? terminateChildTree;
+  const onTerminationFailure = options.onTerminationFailure ?? (() => {});
   let requested = false;
   let timer = null;
+  let settleTimer = null;
+  let termination = null;
+  let failureReported = false;
+  const reportFailure = (result, signal) => {
+    if (failureReported || !childIsRunning(child)) return result;
+    failureReported = true;
+    emit({ status: "cancellation-failed", signal });
+    onTerminationFailure(result);
+    return result;
+  };
+  const observeTermination = (resultPromise, signal, requireExit) => Promise.resolve(resultPromise).then((result) => {
+    if (result?.status === "failed") return reportFailure(result, signal);
+    if (requireExit && childIsRunning(child)) {
+      settleTimer = schedule(() => reportFailure({ status: "failed", reason: "child-still-running" }, signal), settleMs);
+      if (typeof settleTimer?.unref === "function") settleTimer.unref();
+    }
+    return result;
+  });
   const request = (signal) => {
     if (requested || !childIsRunning(child)) return false;
     requested = true;
@@ -533,14 +655,14 @@ function createReviewCancellationController(child, emit, options = {}) {
       // Resolve and terminate the tree while the original PID is still live;
       // never retain that PID for delayed reuse-prone escalation.
       emit({ status: "cancellation-escalated", signal });
-      terminate(child, { platform });
+      termination = observeTermination(terminate(child, { platform }), signal, true);
       return true;
     }
-    terminate(child, { platform, signal: signal === "SIGTERM" ? "SIGTERM" : "SIGINT" });
+    termination = observeTermination(terminate(child, { platform, signal: signal === "SIGTERM" ? "SIGTERM" : "SIGINT" }), signal, false);
     timer = schedule(() => {
       if (!childIsRunning(child)) return;
       emit({ status: "cancellation-escalated", signal });
-      terminate(child, { platform, signal: "SIGKILL" });
+      termination = observeTermination(terminate(child, { platform, signal: "SIGKILL" }), signal, true);
     }, graceMs);
     if (typeof timer?.unref === "function") timer.unref();
     return true;
@@ -548,7 +670,13 @@ function createReviewCancellationController(child, emit, options = {}) {
   return {
     request,
     get requested() { return requested; },
-    complete() { if (timer) cancelSchedule(timer); timer = null; },
+    get termination() { return termination; },
+    complete() {
+      if (timer) cancelSchedule(timer);
+      if (settleTimer) cancelSchedule(settleTimer);
+      timer = null;
+      settleTimer = null;
+    },
   };
 }
 
@@ -868,8 +996,18 @@ function main() {
   let stdoutText = "";
   let stderrText = "";
   const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
-  const cancellation = reviewProfile ? createReviewCancellationController(child, progress) : null;
   const terminal = reviewProfile ? createReviewTerminalController(trace, progress) : null;
+  const cancellation = reviewProfile ? createReviewCancellationController(child, progress, {
+    onTerminationFailure: (result) => {
+      process.stderr.write(`Review cancellation failed closed: ${result.reason ?? "unknown"}\n`);
+      terminal.complete("failed", 1);
+      for (const stream of [child.stdin, child.stdout, child.stderr]) {
+        try { stream.destroy(); } catch { /* fail-closed cleanup is best effort */ }
+      }
+      try { child.kill("SIGKILL"); } catch { /* the direct child may already be unavailable */ }
+      child.unref();
+    },
+  }) : null;
   const onSigint = () => cancellation?.request("SIGINT");
   const onSigterm = () => cancellation?.request("SIGTERM");
   if (reviewProfile) {

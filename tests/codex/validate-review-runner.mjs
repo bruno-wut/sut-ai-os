@@ -1,5 +1,15 @@
-import assert from "node:assert/strict";
+import nodeAssert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import { buildMergeRiskContext, buildReviewAssessmentPrompt, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial } from "../../scripts/codex/launch.mjs";
+
+let checks = 0;
+const assert = new Proxy(nodeAssert, {
+  get(target, property) {
+    const assertion = target[property];
+    if (typeof assertion !== "function") return assertion;
+    return (...args) => { checks += 1; return assertion(...args); };
+  }
+});
 
 const assessment = {
   decision: "pass",
@@ -22,6 +32,9 @@ for (const [profile, stage] of [["plan-review", "planReview"], ["semantic-qa", "
 }
 assert.equal(buildReviewAssessmentPrompt("implementation"), "", "implementation has no review assessment prompt");
 assert.deepEqual(parseReviewAssessment(`${JSON.stringify(assessment)}\n`), assessment, "one valid assessment object is accepted");
+const validAssessmentJson = JSON.stringify(assessment);
+assert.throws(() => parseReviewAssessment(validAssessmentJson.replace('"decision":"pass"', '"decision":"pass","decision":"blocked"')), /duplicate JSON member/, "duplicate top-level assessment fields are rejected");
+assert.throws(() => parseReviewAssessment(validAssessmentJson.replace('"deepModules":"bounded review surface"', '"deepModules":"bounded review surface","deepModules":"ambiguous"')), /duplicate JSON member/, "duplicate nested architecture fields are rejected");
 for (const output of ["", "review complete", "[]", "{}", `${JSON.stringify(assessment)}\n${JSON.stringify(assessment)}`, JSON.stringify({ ...assessment, unexpected: true })]) {
   assert.throws(() => parseReviewAssessment(output), /review stdout/, `invalid assessment output is rejected: ${JSON.stringify(output)}`);
 }
@@ -31,10 +44,11 @@ const progress = [];
 const child = { pid: 4242, exitCode: null, signalCode: null, kill: () => { throw new Error("Windows cancellation must not kill only the direct child"); } };
 const cancellation = createReviewCancellationController(child, (event) => progress.push(event), {
   platform: "win32",
-  terminateChildTree: (target, options) => windowsCalls.push({ pid: target.pid, platform: options.platform })
+  terminateChildTree: (target, options) => { windowsCalls.push({ pid: target.pid, platform: options.platform }); return Promise.resolve({ status: "terminated" }); }
 });
 assert.equal(cancellation.request("SIGINT"), true, "first cancellation is accepted");
 assert.equal(cancellation.request("SIGTERM"), false, "duplicate cancellation is ignored");
+assert.deepEqual(await cancellation.termination, { status: "terminated" }, "Windows cancellation exposes its confirmed termination result");
 assert.deepEqual(windowsCalls, [{ pid: 4242, platform: "win32" }], "Windows cancellation targets the original live child tree exactly once");
 assert.deepEqual(progress.map((event) => event.status), ["cancellation-requested", "cancellation-escalated"], "cancellation exposes structured progress without model output");
 
@@ -52,7 +66,7 @@ const posixCancellation = createReviewCancellationController(posixChild, () => {
   graceMs: 1,
   setTimeoutFn: (callback) => { scheduled = callback; return { unref() {} }; },
   clearTimeoutFn: () => { cleared = true; },
-  terminateChildTree: (_target, options) => posixSignals.push(`tree-${options.signal}`)
+  terminateChildTree: (_target, options) => { posixSignals.push(`tree-${options.signal}`); return Promise.resolve({ status: "signalled" }); }
 });
 assert.equal(posixCancellation.request("SIGTERM"), true, "POSIX cancellation starts gracefully");
 assert.deepEqual(posixSignals, ["tree-SIGTERM"], "POSIX cancellation first signals the isolated process group gracefully");
@@ -64,22 +78,78 @@ assert.equal(cleared, true, "completion clears pending escalation");
 
 const taskkillCalls = [];
 const sibling = { pid: 9999, exitCode: null, signalCode: null };
-assert.equal(terminateChildTree({ pid: 6262, exitCode: null, signalCode: null }, { platform: "win32", spawnFn: (command, args) => { taskkillCalls.push({ command, args }); return { on() {} }; } }), true, "live Windows child tree termination is dispatched");
+let taskkillProcess;
+const successfulTermination = terminateChildTree({ pid: 6262, exitCode: null, signalCode: null }, { platform: "win32", spawnFn: (command, args) => { taskkillCalls.push({ command, args }); taskkillProcess = new EventEmitter(); taskkillProcess.kill = () => {}; return taskkillProcess; } });
+taskkillProcess.emit("close", 0);
+assert.deepEqual(await successfulTermination, { status: "terminated" }, "live Windows child tree termination confirms taskkill success");
 assert.deepEqual(taskkillCalls, [{ command: "taskkill", args: ["/pid", "6262", "/t", "/f"] }], "taskkill is fixed to the launched PID and its descendants");
 assert.equal(sibling.pid, 9999, "unrelated sibling process is not selected");
+
+for (const [label, event, expectedReason] of [["missing command", "error", "spawn-error"], ["access denied", "error", "spawn-error"], ["nonzero exit", "close", "nonzero-exit"]]) {
+  let failedProcess;
+  const resultPromise = terminateChildTree({ pid: 6363, exitCode: null, signalCode: null }, { platform: "win32", spawnFn: () => { failedProcess = new EventEmitter(); failedProcess.kill = () => {}; return failedProcess; } });
+  failedProcess.emit(event, event === "error" ? new Error(label) : 5);
+  assert.equal((await resultPromise).reason, expectedReason, `${label} is an observable tree-termination failure`);
+}
+let timeoutCallback;
+let timeoutKilled = false;
+const timeoutResult = terminateChildTree({ pid: 6464, exitCode: null, signalCode: null }, {
+  platform: "win32",
+  spawnFn: () => { const process = new EventEmitter(); process.kill = () => { timeoutKilled = true; }; return process; },
+  setTimeoutFn: (callback) => { timeoutCallback = callback; return { unref() {} }; },
+  clearTimeoutFn: () => {}
+});
+timeoutCallback();
+assert.deepEqual(await timeoutResult, { status: "failed", reason: "timeout" }, "hung taskkill fails within the bounded timeout");
+assert.equal(timeoutKilled, true, "hung taskkill helper is stopped at the timeout");
+assert.deepEqual(await terminateChildTree({ pid: 6565, exitCode: 0, signalCode: null }, { platform: "win32", spawnFn: () => { throw new Error("must not spawn"); } }), { status: "already-exited" }, "already-exited child never reuses its PID");
+
+const failedCancellationProgress = [];
+const failedCancellationResults = [];
+const failedCancellationChild = { pid: 6666, exitCode: null, signalCode: null };
+const failedCancellation = createReviewCancellationController(failedCancellationChild, (event) => failedCancellationProgress.push(event), {
+  platform: "win32",
+  terminateChildTree: () => Promise.resolve({ status: "failed", reason: "access-denied" }),
+  onTerminationFailure: (result) => failedCancellationResults.push(result)
+});
+assert.equal(failedCancellation.request("SIGTERM"), true, "failed Windows cancellation is accepted once");
+await failedCancellation.termination;
+assert.deepEqual(failedCancellationProgress.map((event) => event.status), ["cancellation-requested", "cancellation-escalated", "cancellation-failed"], "tree-termination failure reaches one explicit fail-closed state");
+assert.deepEqual(failedCancellationResults, [{ status: "failed", reason: "access-denied" }], "tree-termination failure invokes bounded terminal handling");
+
+let childSettleCallback;
+const unclosedProgress = [];
+const unclosedFailures = [];
+const unclosedChild = { pid: 6767, exitCode: null, signalCode: null };
+const unclosedCancellation = createReviewCancellationController(unclosedChild, (event) => unclosedProgress.push(event), {
+  platform: "win32",
+  settleMs: 1,
+  setTimeoutFn: (callback) => { childSettleCallback = callback; return { unref() {} }; },
+  clearTimeoutFn: () => {},
+  terminateChildTree: () => Promise.resolve({ status: "terminated" }),
+  onTerminationFailure: (result) => unclosedFailures.push(result)
+});
+assert.equal(unclosedCancellation.request("SIGINT"), true, "confirmed taskkill starts a bounded child-exit wait");
+await unclosedCancellation.termination;
+childSettleCallback();
+assert.deepEqual(unclosedProgress.map((event) => event.status), ["cancellation-requested", "cancellation-escalated", "cancellation-failed"], "missing child close cannot remain indefinitely cancellation-requested");
+assert.deepEqual(unclosedFailures, [{ status: "failed", reason: "child-still-running" }], "missing child close reaches fail-closed terminal handling");
 
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
 const gitCalls = [];
-const mergeContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => { gitCalls.push(args); return args.includes("--name-only") ? "docs/a.md\n" : "diff --git a/docs/a.md b/docs/a.md\n"; } });
+const mergeContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => { gitCalls.push(args); return args.includes("--name-only") ? "docs/a.md\0tests/b.mjs\0" : `diff --git a/${args.at(-1)} b/${args.at(-1)}\n`; } });
 assert.deepEqual(gitCalls, [
-  ["diff", "--name-only", baseSha, headSha, "--"],
-  ["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--"]
-], "merge-risk context compares the exact immutable base and head without merge-base semantics");
+  ["diff", "--name-only", "-z", baseSha, headSha, "--"],
+  ["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--", "docs/a.md"],
+  ["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--", "tests/b.mjs"]
+], "merge-risk context compares exact immutable revisions and maps every changed path to its patch");
 assert.match(mergeContext, /docs\/a\.md/, "merge-risk context includes the exact changed path set");
+assert.match(mergeContext, /tests\/b\.mjs/, "merge-risk context includes every changed path patch");
 assert.match(mergeContext, /diff --git/, "merge-risk context includes the exact diff");
 assert.throws(() => buildMergeRiskContext("bad", headSha, { runGit: () => "" }), /invalid commit SHAs/, "invalid review bindings fail closed");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: () => { throw new Error("git failed"); } }), /git failed/, "Git failures fail context construction");
+assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: (args) => args.includes("--name-only") ? "missing.md\0" : "" }), /missing changed path/, "changed-path inventory without a corresponding patch fails closed");
 assert.equal(validateContextMaterial([{ relativePath: "safe.md", text: "safe" }], mergeContext, Buffer.byteLength(mergeContext) + 4), Buffer.byteLength(mergeContext) + 4, "generated context participates in the byte budget");
 assert.throws(() => validateContextMaterial([], mergeContext, 1), /exceeds limit/, "over-budget generated context fails closed");
 const sensitiveGeneratedContext = ["OPENAI", "_API_KEY=", "sk_", "abcdefghijklmnop"].join("");
@@ -94,4 +164,4 @@ assert.equal(terminal.status, "failed", "terminal state is retained");
 assert.deepEqual(terminalEvents, [{ status: "failed" }], "terminal progress is structured and singular");
 assert.deepEqual(traceEvents, [{ event: "finish", status: "failed", exitCode: 1 }], "terminal trace state is singular and redacted");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 32 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks }) + "\n");
