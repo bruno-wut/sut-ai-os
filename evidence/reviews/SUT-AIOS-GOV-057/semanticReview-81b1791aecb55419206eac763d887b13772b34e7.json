@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "81b1791aecb55419206eac763d887b13772b34e7",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "84b20b744a30673fb46396c957dc210b4f424d7c022b1cccd3471d78072946eb",
+  "reviewedAt": "2026-08-09T09:12:36.855Z",
+  "stage": "semanticReview",
+  "runId": "20260809091126406-942d406b",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809091126406-942d406b-qa-verification-luna.jsonl",
+  "outputHash": "27a0db7019b3c1eac433a11ebe8cebdbcd20d421f721c101901d46f5886b7ccb",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "On Windows, if the child closes before taskkill emits its outcome, the close handler cancels the settlement timer and immediately emits cancelled; a later taskkill failure is suppressed because the child is no longer running. This can report cancellation without confirming tree termination, violating fail-closed cancellation semantics."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add a deterministic test where the child-close event precedes taskkill spawn-error or nonzero completion, asserting cancellation-failed/failed terminal handling and no review persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher separates context construction, assessment parsing, binding, persistence, progress, and cancellation into bounded functions, but cancellation completion ordering needs correction.",
+    "hexagonalArchitecture": "Provider and production authority remain outside the runner; the local Codex child is isolated behind process-control and persistence adapters.",
+    "eventedBoundaries": "Structured progress events are generally well bounded and redacted, but Windows cancellation currently permits a terminal cancelled event before termination outcome confirmation."
+  },
+  "exactNextAction": "Make Windows cancellation await and record the taskkill outcome and child-close confirmation before emitting the terminal cancelled event; fail closed on either missing confirmation or termination failure, then add the ordering regression test."
+}

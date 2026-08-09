@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:10:23.233Z",
+  "updatedDate": "2026-08-09T09:13:11.894Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -330,6 +330,13 @@
       "at": "2026-08-09T09:10:23.233Z",
       "actor": "codex-engineering-executor",
       "reason": "Complete one-to-one changed-path patches now fit the existing context budget and every packet check passes; submit final head for independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:13:11.894Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Semantic review on 81b1791 found cancellation could report cancelled before a late Windows taskkill failure; terminal ordering must await both confirmations."
     }
   ]
 }
