@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "51e0519f1384cacac617d35335046270386e81a0",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "62abf0786b73981f52807329687aad9d207adc01b51385af81cfa3fdec74c041",
+  "reviewedAt": "2026-08-09T09:16:06.852Z",
+  "stage": "semanticReview",
+  "runId": "20260809091530372-98c7d36b",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809091530372-98c7d36b-qa-verification-luna.jsonl",
+  "outputHash": "2e6340faf7990abf134d6c0fce9d2fa5997fc8056c83aaee5eb6d78a06187eae",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Windows cancellation can emit cancelled before confirming the root child has closed: observeTermination schedules a settle failure but completeCancelledReview immediately calls cancellation.complete(), cancelling that timer. A late tree-termination or child-close failure can therefore be reported after cancelled, violating fail-closed cancellation and risking persistence ordering."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add a regression test proving cancellation remains unresolved until both taskkill success and root-child close, and emits failed rather than cancelled when either confirmation fails late."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review binding, parsing, persistence, and cancellation helpers are separated, but cancellation remains orchestration-heavy.",
+    "hexagonalArchitecture": "Provider selection and child execution remain bounded behind launcher interfaces without widening authority.",
+    "eventedBoundaries": "Structured progress events exist, but Windows cancellation does not yet provide a reliable terminal event boundary."
+  },
+  "exactNextAction": "Revise Windows cancellation completion to await successful tree termination and root-child close or bounded failure, add the late-failure regression test, and rerun all packet-required checks."
+}

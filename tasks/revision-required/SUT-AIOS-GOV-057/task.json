@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:14:37.547Z",
+  "updatedDate": "2026-08-09T09:16:43.041Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -351,6 +351,13 @@
       "at": "2026-08-09T09:14:37.547Z",
       "actor": "codex-engineering-executor",
       "reason": "Cancellation terminal ordering now awaits both tree-command outcome and root-child close; 65 focused checks and every packet command pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:16:43.041Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Semantic review on 51e0519 requires explicit controller-level proof that both taskkill success and root-child close precede a cancelled terminal outcome."
     }
   ]
 }
