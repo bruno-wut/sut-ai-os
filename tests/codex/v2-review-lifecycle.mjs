@@ -147,7 +147,9 @@ try {
   for (const [profile, stage] of appProfiles) {
     const runId = `fixture-app-${stage}`;
     const prepared = prepareCodexAppReviewResult(assessment(`${stage} app review passed`), { taskId: appTaskId, profile, runId, reviewedAt: "2026-08-08T12:00:00.000Z" });
+    assert.equal(prepared.contextManifest.some((entry) => entry.path === "generated/merge-risk-context"), stage === "mergeRiskReview", `${stage} binds generated merge-risk context only when required`);
     for (const entry of prepared.contextManifest) {
+      if (entry.path === "generated/merge-risk-context") continue;
       const destination = path.join(appRoot, entry.path);
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       fs.copyFileSync(path.join(repositoryRoot, entry.path), destination);

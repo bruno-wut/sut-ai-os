@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:42:35.839Z",
+  "updatedDate": "2026-08-09T08:52:45.252Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -274,6 +274,13 @@
       "at": "2026-08-09T08:42:35.839Z",
       "actor": "codex-engineering-executor",
       "reason": "Independent merge-risk review on c403c167 requires final-head verification refresh, Windows cancellation safety, and deterministic merge-risk-context coverage before merge."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:52:45.252Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the user-authorized bounded repair for the exact independent merge-risk findings; no scope, route, dependency, fallback, production, or P3-001 authority changes."
     }
   ]
 }

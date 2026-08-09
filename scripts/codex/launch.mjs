@@ -356,16 +356,28 @@ function hasSensitiveMaterial(text) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
-function buildMergeRiskContext(baseSha, headSha) {
-  const range = `${baseSha}...${headSha}`;
-  const run = (args) => {
+function buildMergeRiskContext(baseSha, headSha, options = {}) {
+  if (!/^[0-9a-f]{40}$/i.test(baseSha ?? "") || !/^[0-9a-f]{40}$/i.test(headSha ?? "")) {
+    throw new Error("Cannot build merge-risk context for invalid commit SHAs");
+  }
+  const run = options.runGit ?? ((args) => {
     const result = spawnSync("git", args, { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
     if (result.error || result.status !== 0) throw new Error("Cannot build canonical merge-risk review context");
     return result.stdout ?? "";
-  };
-  const changedPaths = run(["diff", "--name-only", range]);
-  const diff = run(["diff", "--no-ext-diff", "--no-renames", "--unified=40", range]);
+  });
+  const changedPaths = run(["diff", "--name-only", baseSha, headSha, "--"]);
+  const diff = run(["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--"]);
   return ["Generated merge-risk review material (read-only):", `Canonical base SHA: ${baseSha}`, `Reviewed head SHA: ${headSha}`, "Changed paths:", changedPaths.trim() || "(none)", "Exact canonical base-to-head diff:", diff.trim() || "(no textual diff)"].join("\n");
+}
+
+function validateContextMaterial(records, generatedText, maxBytes) {
+  const totalBytes = records.reduce((sum, record) => sum + Buffer.byteLength(record.text), 0) + Buffer.byteLength(generatedText);
+  if (totalBytes > maxBytes) throw new Error(`Context profile exceeds limit: ${totalBytes} > ${maxBytes} bytes`);
+  for (const record of records) {
+    if (hasSensitiveMaterial(record.text)) throw new Error(`Secret material detected in context file: ${record.relativePath}`);
+  }
+  if (generatedText && hasSensitiveMaterial(generatedText)) throw new Error("Secret material detected in generated merge-risk context");
+  return totalBytes;
 }
 
 function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, effort, profile) {
@@ -388,21 +400,18 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
   const records = baseFiles.map((p) => readText(p));
   const unique = [...new Map(records.map((r) => [r.relativePath, r])).values()];
   const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(comparisonBaseSha(), gitSha("HEAD")) : "";
-  const totalBytes = unique.reduce((sum, r) => sum + Buffer.byteLength(r.text), 0) + Buffer.byteLength(mergeRiskContext);
   const maxBytes = taskPacket.data?.contextBudget?.maxBytes ?? contextLimitBytes;
-
-  if (totalBytes > maxBytes) {
-    throw new Error(`Context profile '${profile}' exceeds limit: ${totalBytes} > ${maxBytes} bytes`);
-  }
-
-  for (const record of unique) {
-    if (hasSensitiveMaterial(record.text)) {
-      throw new Error(`Secret material detected in context file: ${record.relativePath}`);
+  let totalBytes;
+  try {
+    totalBytes = validateContextMaterial(unique, mergeRiskContext, maxBytes);
+  } catch (error) {
+    if (error.message.startsWith("Context profile exceeds limit:")) {
+      throw new Error(error.message.replace("Context profile", `Context profile '${profile}'`));
     }
+    throw error;
   }
-
-  if (mergeRiskContext && hasSensitiveMaterial(mergeRiskContext)) throw new Error("Secret material detected in generated merge-risk context");
   const contextManifest = unique.map((r) => ({ path: r.relativePath, sha256: sha256(r.text) }));
+  if (mergeRiskContext) contextManifest.push({ path: "generated/merge-risk-context", sha256: sha256(mergeRiskContext) });
   const manifest = contextManifest.map((r) => `${r.path}:${r.sha256}`).join("\n");
   const manifestHash = sha256(manifest);
 
@@ -485,18 +494,30 @@ function emitProgress(trace, details) {
   process.stderr.write(`${JSON.stringify(event)}\n`);
 }
 
-function terminateChildTree(child) {
-  if (!child?.pid) return;
-  if (process.platform === "win32") {
-    const terminator = spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore", windowsHide: true });
+function childIsRunning(child) {
+  return Boolean(child?.pid) && child.exitCode == null && child.signalCode == null;
+}
+
+function terminateChildTree(child, options = {}) {
+  if (!childIsRunning(child)) return false;
+  const platform = options.platform ?? process.platform;
+  if (platform === "win32") {
+    const spawnFn = options.spawnFn ?? spawn;
+    const terminator = spawnFn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore", windowsHide: true });
     terminator.on("error", () => {});
-    terminator.unref();
-    return;
+    return true;
   }
-  try { child.kill("SIGTERM"); } catch { /* the child may have already exited */ }
+  const signal = options.signal ?? "SIGKILL";
+  try {
+    (options.killProcessGroup ?? process.kill)(-child.pid, signal);
+  } catch {
+    try { child.kill(signal); } catch { return false; }
+  }
+  return true;
 }
 
 function createReviewCancellationController(child, emit, options = {}) {
+  const platform = options.platform ?? process.platform;
   const graceMs = options.graceMs ?? 5000;
   const schedule = options.setTimeoutFn ?? setTimeout;
   const cancelSchedule = options.clearTimeoutFn ?? clearTimeout;
@@ -504,13 +525,22 @@ function createReviewCancellationController(child, emit, options = {}) {
   let requested = false;
   let timer = null;
   const request = (signal) => {
-    if (requested) return false;
+    if (requested || !childIsRunning(child)) return false;
     requested = true;
     emit({ status: "cancellation-requested", signal });
-    try { child.kill(signal === "SIGTERM" ? "SIGTERM" : "SIGINT"); } catch { /* escalation handles a still-running child */ }
-    timer = schedule(() => {
+    if (platform === "win32") {
+      // Node cannot deliver console SIGINT/SIGTERM to a Windows child tree.
+      // Resolve and terminate the tree while the original PID is still live;
+      // never retain that PID for delayed reuse-prone escalation.
       emit({ status: "cancellation-escalated", signal });
-      terminate(child);
+      terminate(child, { platform });
+      return true;
+    }
+    terminate(child, { platform, signal: signal === "SIGTERM" ? "SIGTERM" : "SIGINT" });
+    timer = schedule(() => {
+      if (!childIsRunning(child)) return;
+      emit({ status: "cancellation-escalated", signal });
+      terminate(child, { platform, signal: "SIGKILL" });
     }, graceMs);
     if (typeof timer?.unref === "function") timer.unref();
     return true;
@@ -832,6 +862,7 @@ function main() {
     stdio: ["pipe", "pipe", "pipe"],
     env: spawnEnv,
     windowsHide: true,
+    detached: reviewProfile && process.platform !== "win32",
   });
 
   let stdoutText = "";
@@ -967,4 +998,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildReviewAssessmentPrompt, comparisonBaseSha, createReviewCancellationController, createReviewTerminalController, discoverAgents, gitSha, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, createReviewCancellationController, createReviewTerminalController, discoverAgents, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial };

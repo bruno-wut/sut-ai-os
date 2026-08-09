@@ -140,6 +140,10 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         for (const entry of trace.contextManifest) {
           if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} app trace context entry is invalid`); continue; }
           seen.add(entry.path);
+          if (entry.path === "generated/merge-risk-context") {
+            if (stage !== "mergeRiskReview" || !/^[0-9a-f]{64}$/i.test(entry.sha256)) errors.push(`${stage} generated merge-risk context binding is invalid`);
+            continue;
+          }
           if (entry.path === `tasks/review/${packet.taskId}/task.json`) {
             if (trace.reviewedTaskScopeHash !== computeReviewScopeHash(packet)) errors.push(`${stage} reviewed task scope does not match the current packet`);
             continue;
