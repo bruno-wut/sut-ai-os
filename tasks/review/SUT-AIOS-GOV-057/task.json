@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -150,7 +150,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T07:59:19.641Z",
+  "updatedDate": "2026-08-09T08:02:28.490Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -194,6 +194,13 @@
       "at": "2026-08-09T07:59:19.641Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume the bounded trace-minimisation repair required by the independent semantic review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:02:28.490Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Trace-minimisation revision passes all required deterministic checks on 620a02d; request fresh independent V2 reviews."
     }
   ]
 }
