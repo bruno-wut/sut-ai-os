@@ -1,6 +1,6 @@
 import nodeAssert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial } from "../../scripts/codex/launch.mjs";
+import { buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial, validateExactHeadVerification, validateMergeRiskPrerequisite } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -176,14 +176,14 @@ assert.deepEqual(confirmedTerminalEvents, [{ status: "cancelled" }], "both confi
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
 const gitCalls = [];
-const mergeContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => { gitCalls.push(args); return args.includes("--name-only") ? "docs/a.md\0tests/b.mjs\0" : `diff --git a/${args.at(-1)} b/${args.at(-1)}\n`; } });
+const mergeContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => { gitCalls.push(args); return args.includes("--name-only") ? "forbidden/old.mjs\0allowed/new.mjs\0" : `diff --git a/${args.at(-1)} b/${args.at(-1)}\n`; } });
 assert.deepEqual(gitCalls, [
-  ["diff", "--name-only", "-z", baseSha, headSha, "--"],
-  ["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", "docs/a.md"],
-  ["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", "tests/b.mjs"]
+  ["diff", "--no-renames", "--name-only", "-z", baseSha, headSha, "--"],
+  ["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", "forbidden/old.mjs"],
+  ["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", "allowed/new.mjs"]
 ], "merge-risk context compares exact immutable revisions and maps every changed path to its patch");
-assert.match(mergeContext, /docs\/a\.md/, "merge-risk context includes the exact changed path set");
-assert.match(mergeContext, /tests\/b\.mjs/, "merge-risk context includes every changed path patch");
+assert.match(mergeContext, /forbidden\/old\.mjs/, "no-rename inventory preserves a renamed source under a forbidden boundary");
+assert.match(mergeContext, /allowed\/new\.mjs/, "no-rename inventory preserves the renamed destination patch");
 assert.match(mergeContext, /diff --git/, "merge-risk context includes the exact diff");
 assert.throws(() => buildMergeRiskContext("bad", headSha, { runGit: () => "" }), /invalid commit SHAs/, "invalid review bindings fail closed");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: () => { throw new Error("git failed"); } }), /git failed/, "Git failures fail context construction");
@@ -192,6 +192,28 @@ assert.equal(validateContextMaterial([{ relativePath: "safe.md", text: "safe" }]
 assert.throws(() => validateContextMaterial([], mergeContext, 1), /exceeds limit/, "over-budget generated context fails closed");
 const sensitiveGeneratedContext = ["OPENAI", "_API_KEY=", "sk_", "abcdefghijklmnop"].join("");
 assert.throws(() => validateContextMaterial([], sensitiveGeneratedContext, 1000), /Secret material/, "sensitive generated context fails closed");
+
+const exactVerification = { schemaVersion: "1.0.0", taskId: "SUT-AIOS-GOV-057", headSha, status: "pass", reviewer: "qa-verification", productionEligible: false, checks: ["all checks passed"] };
+assert.equal(validateExactHeadVerification(exactVerification, exactVerification.taskId, headSha), true, "exact-head verification binds task, head, status, reviewer, and checks");
+assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: baseSha }, exactVerification.taskId, headSha), false, "stale verification head is rejected");
+assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: undefined }, exactVerification.taskId, headSha), false, "SHA-less verification is rejected");
+
+const prerequisite = buildLauncherBoundReviewResult(assessment, {
+  taskId: exactVerification.taskId,
+  stage: "planReview",
+  reviewerAgent: "engineering-planner",
+  model: "gpt-5.6-sol",
+  reasoningEffort: "high",
+  baseSha,
+  headSha,
+  contextManifestHash: "d".repeat(64),
+  reviewedAt: "2026-08-09T09:30:00.000Z",
+  runId: "trace-prerequisite",
+  tracePath: `evidence/reviews/${exactVerification.taskId}/runs/trace-prerequisite.json`,
+});
+assert.equal(validateMergeRiskPrerequisite(prerequisite, { taskId: exactVerification.taskId, baseSha, headSha, stage: "planReview" }), true, "merge-risk prerequisite accepts a passing same-head bound review");
+assert.equal(validateMergeRiskPrerequisite({ ...prerequisite, headSha: baseSha }, { taskId: exactVerification.taskId, baseSha, headSha, stage: "planReview" }), false, "merge-risk prerequisite rejects a stale review head");
+assert.equal(validateMergeRiskPrerequisite({ ...prerequisite, decision: "revision-required" }, { taskId: exactVerification.taskId, baseSha, headSha, stage: "planReview" }), false, "merge-risk prerequisite rejects a non-passing review");
 
 const terminalEvents = [];
 const traceEvents = [];

@@ -365,7 +365,7 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     if (result.error || result.status !== 0) throw new Error("Cannot build canonical merge-risk review context");
     return result.stdout ?? "";
   });
-  const changedPathOutput = run(["diff", "--name-only", "-z", baseSha, headSha, "--"]);
+  const changedPathOutput = run(["diff", "--no-renames", "--name-only", "-z", baseSha, headSha, "--"]);
   const changedPaths = changedPathOutput.split("\0").filter(Boolean);
   for (const changedPath of changedPaths) {
     if (/[\r\n\0]/.test(changedPath)) throw new Error("Cannot represent ambiguous changed path in merge-risk context");
@@ -413,6 +413,17 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
     }
   }
 
+  const taskId = taskPacket.data?.taskId;
+  const headSha = gitSha("HEAD");
+  const exactVerificationPath = taskId && headSha ? `evidence/verification/${taskId}/verification-${headSha}.json` : null;
+  if (exactVerificationPath && fs.existsSync(path.resolve(repositoryRoot, exactVerificationPath))) baseFiles.push(exactVerificationPath);
+  if (profile === "merge-risk-review" && taskId && headSha) {
+    for (const prerequisiteProfile of ["plan-review", "semantic-qa"]) {
+      const prerequisitePath = path.relative(repositoryRoot, reviewArtifactPath(taskId, prerequisiteProfile, headSha)).replaceAll(path.sep, "/");
+      if (fs.existsSync(path.resolve(repositoryRoot, prerequisitePath))) baseFiles.push(prerequisitePath);
+    }
+  }
+
   const records = baseFiles.map((p) => readText(p));
   const unique = [...new Map(records.map((r) => [r.relativePath, r])).values()];
   const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(comparisonBaseSha(), gitSha("HEAD")) : "";
@@ -426,6 +437,7 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
     }
     throw error;
   }
+
   const contextManifest = unique.map((r) => ({ path: r.relativePath, sha256: sha256(r.text) }));
   if (mergeRiskContext) contextManifest.push({ path: "generated/merge-risk-context", sha256: sha256(mergeRiskContext) });
   const manifest = contextManifest.map((r) => `${r.path}:${r.sha256}`).join("\n");
@@ -816,12 +828,58 @@ function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
 }
 
 function reviewWorktreeIsClean(statusText, taskId, headSha) {
-  const allowed = new Set(["planReview", "semanticReview", "mergeRiskReview"].map((stage) => `?? evidence/reviews/${taskId}/${stage}-${headSha}.json`));
+  const allowed = new Set([
+    ...["planReview", "semanticReview", "mergeRiskReview"].map((stage) => `?? evidence/reviews/${taskId}/${stage}-${headSha}.json`),
+    `?? evidence/verification/${taskId}/verification-${headSha}.json`,
+  ]);
   return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => {
     if (allowed.has(line)) return true;
     const file = line.slice(3).replaceAll("\\", "/");
     return line.startsWith("?? ") && file.startsWith(`evidence/reviews/${taskId}/runs/`) && file.endsWith(".json");
   });
+}
+
+function exactHeadVerificationPath(taskId, headSha, root = repositoryRoot) {
+  return path.join(root, "evidence", "verification", taskId, `verification-${headSha}.json`);
+}
+
+function validateExactHeadVerification(record, taskId, headSha) {
+  if (!record || typeof record !== "object" || Array.isArray(record)) return false;
+  return record.schemaVersion === "1.0.0"
+    && record.taskId === taskId
+    && record.headSha === headSha
+    && record.status === "pass"
+    && record.productionEligible === false
+    && typeof record.reviewer === "string"
+    && record.reviewer.length > 0
+    && Array.isArray(record.checks)
+    && record.checks.length > 0;
+}
+
+function requireExactHeadVerification(taskId, headSha) {
+  const target = exactHeadVerificationPath(taskId, headSha);
+  let record;
+  try { record = JSON.parse(fs.readFileSync(target, "utf8")); }
+  catch { throw new Error(`Exact-head verification evidence is missing for ${taskId} at ${headSha}`); }
+  if (!validateExactHeadVerification(record, taskId, headSha)) throw new Error(`Exact-head verification evidence is invalid for ${taskId} at ${headSha}`);
+  return target;
+}
+
+function validateMergeRiskPrerequisite(review, { taskId, baseSha, headSha, stage }) {
+  const validation = validateReviewResult(review, { taskId, baseSha, headSha });
+  return validation.valid && review.stage === stage && review.decision === "pass";
+}
+
+function requireMergeRiskPrerequisites(taskId, baseSha, headSha) {
+  for (const [profile, stage] of [["plan-review", "planReview"], ["semantic-qa", "semanticReview"]]) {
+    const target = reviewArtifactPath(taskId, profile, headSha);
+    let review;
+    try { review = JSON.parse(fs.readFileSync(target, "utf8")); }
+    catch { throw new Error(`Merge-risk review requires same-head ${stage} evidence`); }
+    if (!validateMergeRiskPrerequisite(review, { taskId, baseSha, headSha, stage })) {
+      throw new Error(`Merge-risk review requires a passing same-head ${stage} artifact`);
+    }
+  }
 }
 
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
@@ -970,6 +1028,8 @@ function main() {
     throw new Error("Review launches require a clean committed working tree");
   }
   const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
+  if (reviewProfile) requireExactHeadVerification(taskId, reviewedHeadSha);
+  if (profile === "merge-risk-review") requireMergeRiskPrerequisites(taskId, reviewedBaseSha, reviewedHeadSha);
 
   const trace = createTrace(taskId, agentId, selectedRoute);
   trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
@@ -1155,4 +1215,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateExactHeadVerification, validateMergeRiskPrerequisite };

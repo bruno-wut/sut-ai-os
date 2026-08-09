@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:26:36.047Z",
+  "updatedDate": "2026-08-09T09:26:36.630Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -401,6 +401,13 @@
       "at": "2026-08-09T09:26:36.047Z",
       "actor": "codex-engineering-executor",
       "reason": "Merge-risk review on 5374cae requires consistent no-rename path inventory, governed exact-head verification evidence, and enforced same-head prerequisite reviews."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:26:36.630Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the exact rename, exact-head evidence, and prerequisite-review corrections under the existing packet."
     }
   ]
 }
