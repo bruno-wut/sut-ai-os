@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -151,7 +151,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:15:59.106Z",
+  "updatedDate": "2026-08-09T08:16:25.531Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -237,6 +237,13 @@
       "at": "2026-08-09T08:15:59.106Z",
       "actor": "chief-orchestrator",
       "reason": "User approved workspace-write authority solely for the existing Terra implementation stage and exact GOV-057 allowlist."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:16:25.531Z",
+      "actor": "codex-engineering-executor",
+      "reason": "User-approved workspace-write amendment and all deterministic checks passed on 82ba2b4; request fresh independent V2 reviews."
     }
   ]
 }
