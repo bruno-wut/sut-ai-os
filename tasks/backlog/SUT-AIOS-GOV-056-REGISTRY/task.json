@@ -1,0 +1,140 @@
+{
+  "$schema": "../../../schemas/task-packet-v2.schema.json",
+  "schemaVersion": "2.0.0",
+  "status": "backlog",
+  "phase": "phase-2-governance",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-1",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification",
+    "chief-orchestrator"
+  ],
+  "routingPolicy": {
+    "implementation": {
+      "agent": "codex-engineering-executor",
+      "route": "terra",
+      "effort": "high"
+    },
+    "planReview": {
+      "agent": "engineering-planner",
+      "route": "sol",
+      "effort": "high"
+    },
+    "semanticReview": {
+      "agent": "qa-verification",
+      "route": "luna",
+      "effort": "high"
+    },
+    "mergeRiskReview": {
+      "agent": "qa-verification",
+      "required": true,
+      "route": "sol",
+      "effort": "high"
+    }
+  },
+  "routingComplexity": "routine",
+  "workspaceWrite": false,
+  "solEscalationTriggers": [
+    "Escalate to Sol for schema or routing-policy security defects."
+  ],
+  "rollbackExpectations": "Keep the hardcoded CI validator list authoritative and revert registry activation through a reviewed Git revert if parity or safety fails.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 524288,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "schemas/task-packet-v2.schema.json",
+      "schemas/review-result-v1.schema.json"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-01T12:40:00.000Z",
+  "updatedDate": "2026-08-01T12:40:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-01T12:40:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created as a bounded staged Workflow V2 task."
+    }
+  ],
+  "taskId": "SUT-AIOS-GOV-056-REGISTRY",
+  "title": "Declarative Validator Registry Activation",
+  "workstream": "governance-follow-up",
+  "workflowId": "validator-registry-activation",
+  "businessObjective": "Safely replace the hardcoded CI validator list only after a proven declarative registry is complete.",
+  "technicalObjective": "Prove exact active-set parity, reject registered-disabled required validators, assert deterministic ordering, and activate the registry without changing validator coverage or ownership.",
+  "dependencies": [
+    "SUT-AIOS-GOV-056-FND"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-056-REGISTRY/verification.md"
+  ],
+  "assumptions": [
+    "The Foundation PR leaves the hardcoded CI list authoritative.",
+    "This task must not start until an independently reviewed implementation exists."
+  ],
+  "acceptanceCriteria": [
+    "Required validators cannot be registered disabled.",
+    "The registry active set has exact parity with the hardcoded CI list before takeover.",
+    "Deterministic sorting is asserted by machine tests.",
+    "No validator is executed twice or omitted during activation."
+  ],
+  "allowedPaths": [
+    "policies/validator-registry-v1.json",
+    "schemas/validator-registry-v1.schema.json",
+    "scripts/verify/run-validator-registry.mjs",
+    "tests/governance/**",
+    "scripts/verify/verify-cli.mjs",
+    "evidence/tasks/SUT-AIOS-GOV-056-REGISTRY/**",
+    "tasks/**/SUT-AIOS-GOV-056-REGISTRY/**"
+  ],
+  "forbiddenPaths": [
+    "scripts/task/reconcile-merged-task.mjs",
+    ".github/workflows/**",
+    "package.json",
+    "package-lock.json",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**"
+  ],
+  "allowedCommands": [
+    "node tests/governance/validate-validator-registry-migration.mjs",
+    "node tests/governance/validate-validator-registry-runner.mjs",
+    "node scripts/verify/run-validator-registry.mjs",
+    "node scripts/task/validate --all",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "Exact hardcoded-list parity",
+    "Disabled-required rejection",
+    "Deterministic-order assertion",
+    "Independent review"
+  ],
+  "requiredTests": [
+    "node tests/governance/validate-validator-registry-migration.mjs",
+    "node tests/governance/validate-validator-registry-runner.mjs",
+    "node scripts/verify/run-validator-registry.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ]
+}

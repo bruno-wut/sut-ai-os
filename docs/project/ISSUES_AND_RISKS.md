@@ -1,5 +1,27 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-01 - GOV-056 atomic MVP superseded by staged Foundation rollout
+
+- **Task ID:** `SUT-AIOS-GOV-056`
+- **Status:** Revision-required; prior verification superseded
+- **Severity:** High
+- **Affected scope:** The unmerged atomic Workflow V2 MVP and its proposed reconciliation/validator-registry activation.
+- **Confirmed defects:** Reconciliation push recursively triggers another reconciliation run and is not idempotent; validator parity allows required validators to be registered but disabled; deterministic sorting is claimed without an assertion; a task `allowedPaths` entry conflicts with `forbiddenPaths` for `tasks/verified`; and existing evidence does not cover the reconciliation commit's second workflow invocation.
+- **Decision:** Proceed only with the bounded Workflow V2 Foundation task `SUT-AIOS-GOV-056-FND`. Keep reconciliation and declarative validator-registry activation as separate follow-up tasks; do not enable either in the Foundation PR.
+- **Evidence:** `evidence/tasks/SUT-AIOS-GOV-056/verification-superseded.md`
+- **Next action / owner:** Chief Orchestrator to obtain independent review of the exact Foundation diff before preparing its draft PR.
+
+### 2026-08-01 - GOV-056 Foundation exact-head safety findings resolved
+
+- **Task ID:** `SUT-AIOS-GOV-056-FND`
+- **Status:** Resolved in the unmerged Foundation branch; final exact-head review required
+- **Severity:** High
+- **Affected scope:** Foundation launcher, task packet allowlist, and review SHA handling
+- **Findings:** The Foundation packet initially omitted the changed risk-register path; Qwen-local allowed a workspace-write request despite its read-only policy; and Git SHA resolution could return a zero placeholder when Git failed.
+- **Resolution:** Added the risk-register path to the packet allowlist; rejected Qwen-local workspace-write; required successful `rev-parse`, 40-hex validation, and commit-object verification; added deterministic negative tests.
+- **Evidence:** `evidence/tasks/SUT-AIOS-GOV-056-FND/verification.md`
+- **Next action / owner:** Independent Terra and Sol review of the exact final committed head.
+
 ### 2026-08-01 - P2-007 final-head CI assurance is bounded
 
 - **Task ID:** `SUT-AIOS-GOV-055`, `SUT-AIOS-P2-007`

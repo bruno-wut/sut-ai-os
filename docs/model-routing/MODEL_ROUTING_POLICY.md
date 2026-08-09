@@ -37,18 +37,21 @@ its own intervention proposal.
 | `terra` | `gpt-5.6-terra` | Default implementation and ordinary engineering work |
 | `luna` | `gpt-5.6-luna` | Clear, bounded, repetitive discovery/preparation work |
 
-The current official Codex manual documents `codex exec --model <id>`, the three IDs above, `--sandbox`, `--ask-for-approval`, `--strict-config`, and `codex exec -` for stdin prompts. It also documents `--oss --local-provider ollama|lmstudio` for local models.
+The current Codex CLI documents `codex exec --model <id>`, the three IDs above, `--sandbox`, `--strict-config`, and `codex exec -` for stdin prompts. It also documents `--oss --local-provider ollama|lmstudio` for local models.
 
-The installed Windows app exposes a Codex executable alias, but this shell receives `Access is denied` for both `codex --version` and `codex --help`. Therefore this repository uses equivalent CLI-flag wrappers and does not modify or depend on unvalidated global profile files. If the local CLI rejects a documented flag or model, the run fails closed.
+The launcher treats the selected sandbox and exact command arguments as the local execution boundary. If the local CLI rejects a documented flag or model, the run fails closed.
 
 ## Selection precedence
 
-1. The eligible canonical JSON task packet must declare `allowedAgents` and `modelRoute` (legacy Markdown packets use `Allowed agents` and `Model route`).
+1. A V1 packet must declare `allowedAgents` and `modelRoute` (legacy Markdown packets use `Allowed agents` and `Model route`); a V2 packet must declare `allowedAgents` and stage-specific `routingPolicy`.
 2. The selected agent must exist in `agents/REGISTRY.md`, be `active`, and be listed in the task packet.
-3. `codex:agent` uses the task packet route. When no explicit routing policy applies during planning, Terra is the policy default.
+3. V1 launches use the packet route. V2 launches use only `routingPolicy.<stage>.agent`, `routingPolicy.<stage>.route`, and `routingPolicy.<stage>.effort`.
 4. An explicit wrapper may escalate Luna → Terra → Sol, but may never downgrade below either the packet route or the agent's `default_model`.
-5. `qwen-local` is isolated from hosted routes and is allowed only when the packet explicitly selects it.
+4a. For legacy V1 packets, changed V2 agent defaults do not alter the packet route; an explicit wrapper may only select the packet route or a higher hosted route. V2 stage policy is authoritative.
+5. `qwen-local` is isolated from hosted routes, is allowed only when the packet explicitly selects it, and is always read-only.
 6. Risk, data classification, policy, tools, paths, commands, approvals, and verification override model convenience.
+
+V2 review results are accepted only from a clean committed head and are bound to fetched `origin/main`; an explicit `GOVERNED_BASE_SHA` must exactly match that ref. Local Qwen launches require explicit `--local-provider` and `--local-model` arguments and receive a minimal environment allowlist.
 
 ## Route policy
 
@@ -63,6 +66,20 @@ Use for default implementation, feature development, ordinary debugging, service
 ### Luna
 
 Use for repository discovery, file mapping, documentation, bounded research preparation, fixture generation, log classification, test scaffolding, repetitive low-risk changes, and context-pack preparation.
+
+For Workflow V2, the Chief Orchestrator defaults to `luna/high` and routine Semantic QA to `luna/high`. `luna/max` is reserved for an explicitly declared deep semantic review.
+
+### Workflow V2 stage defaults
+
+| Stage | Agent | Route / effort |
+| --- | --- | --- |
+| Chief orchestration | `chief-orchestrator` | `luna/high` |
+| Plan review | `engineering-planner` | `sol/high` |
+| Implementation | `codex-engineering-executor` | `terra/high` |
+| Routine semantic QA | `qa-verification` | `luna/high` |
+| Merge safety | independent Sol reviewer | `sol/high` |
+
+`sol/xhigh` is reserved for genuine high-risk complexity and requires `routingComplexity: high-complexity` in the V2 packet; `luna/max` follows the same rule for deep semantic QA. This table does not create a fallback path or alter permissions.
 
 ### Qwen local
 
@@ -87,7 +104,7 @@ Every launch:
 - rejects model downgrades and unauthorized Qwen substitution;
 - loads only root/scoped instructions, the exact agent definition, exact task packet, and routing/escalation policy;
 - scans loaded context for common secret patterns and applies a 512 KiB limit;
-- defaults to read-only; workspace write requires an execution agent, packet opt-in, and `--workspace-write`;
+- defaults to read-only; hosted workspace write requires an execution agent, packet opt-in, and `--workspace-write`; qwen-local rejects workspace-write;
 - passes the context via stdin so it is not exposed in the command line;
 - records only model/route, agent/task IDs, context filenames, sandbox, timestamps, and exit state in ignored local traces;
 - never logs prompts, task contents, environment values, credentials, or model output.

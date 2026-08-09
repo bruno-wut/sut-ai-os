@@ -5,8 +5,10 @@ version: 1.0.0
 status: active
 category: intelligence
 runtime: planning-service
-default_model: terra
+default_model: sol
 fallback_model: sol
+allowed_model_routes: [luna, terra, sol]
+allowed_reasoning_efforts: [low, medium, high, xhigh, max]
 risk_classes: [tier-0, tier-1, tier-2, tier-3-analysis-only]
 input_schema: "urn:sut-ai-os:schema:engineering-planner-input:v1"
 output_schema: "urn:sut-ai-os:schema:engineering-planner-result:v1"

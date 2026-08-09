@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-056-FND",
+  "baseSha": "7226268dece3bfcc191716b243f45711c2eb131c",
+  "headSha": "d7eef983801d272c51e64c592389a9e7718c339d",
+  "reviewerAgent": "engineering-planner",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "e3eda487a3abde3bc6de127db0bf431c3bc047f7a9e0e971a3c8ac6768d4bb68",
+  "reviewedAt": "2026-08-08T08:10:27.097Z",
+  "stage": "planReview",
+  "runId": "20260808080908070-c84320fc",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-056-FND/20260808080908070-c84320fc-engineering-planner-sol.jsonl",
+  "outputHash": "d4d54c6397cad71b921505f86b2fb972acebd5c914ab088bdd3535ca1e8b6c85",
+  "decision": "blocked",
+  "blockingFindings": [
+    "Exact-head review could not be completed: the Windows sandbox helper failed with Access is denied before any packet-allowlisted command launched. No deterministic validation or final-diff result was obtained for head d7eef983801d272c51e64c592389a9e7718c339d."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Not assessable until the exact-head checks and diff can be inspected.",
+    "hexagonalArchitecture": "Not assessable from the supplied contract context alone.",
+    "eventedBoundaries": "No boundary widening is evident in the supplied plan, but exact-head verification remains blocked."
+  },
+  "exactNextAction": "Restore read-only sandbox execution and rerun launcher-bound planReview against the same clean committed head and context manifest; do not advance to semanticReview until all packet-required checks and git diff --check execute successfully."
+}

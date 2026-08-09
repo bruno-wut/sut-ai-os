@@ -1,0 +1,112 @@
+import assert from "node:assert/strict";
+import os from "node:os";
+import path from "node:path";
+import {
+  allowedEfforts,
+  assertActiveAgent,
+  assertAgentRouteEffort,
+  assertExecutableTaskState,
+  assertNonTerminalTask,
+  assertProfileAuthorization,
+  assertTaskId,
+  assertWorkspaceWriteAuthority,
+  comparisonBaseSha,
+  discoverAgents,
+  gitSha,
+  packetAccess,
+  reviewWorktreeIsClean,
+  selectRoute
+} from "../../scripts/codex/launch.mjs";
+
+const access = {
+  version: "2.0.0",
+  route: "terra",
+  effort: "high",
+  routingComplexity: "routine",
+  routingPolicy: {
+    implementation: { agent: "codex-engineering-executor", route: "terra", effort: "high" },
+    planReview: { agent: "engineering-planner", route: "sol", effort: "high" },
+    semanticReview: { agent: "qa-verification", route: "luna", effort: "high" },
+    mergeRiskReview: { agent: "qa-verification", required: true, route: "sol", effort: "high" }
+  }
+};
+
+assert.deepEqual(selectRoute("auto", undefined, access, "terra", "plan-review"), { route: "sol", effort: "high" });
+assert.deepEqual(selectRoute("auto", undefined, access, "terra", "semantic-qa"), { route: "luna", effort: "high" });
+assert.deepEqual(selectRoute("auto", undefined, access, "terra", "merge-risk-review"), { route: "sol", effort: "high" });
+const routineDeepSemantic = { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: { agent: "qa-verification", route: "luna", effort: "max" } } };
+assert.throws(() => selectRoute("auto", undefined, routineDeepSemantic, "terra", "semantic-qa"), /routingComplexity/);
+const routineDeepEscalation = { ...access, routingPolicy: { ...access.routingPolicy, mergeRiskReview: { agent: "qa-verification", required: true, route: "sol", effort: "xhigh" } } };
+assert.throws(() => selectRoute("auto", undefined, routineDeepEscalation, "terra", "merge-risk-review"), /routingComplexity/);
+const highComplexityDeepSemantic = { ...routineDeepSemantic, routingComplexity: "high-complexity" };
+assert.deepEqual(selectRoute("auto", undefined, highComplexityDeepSemantic, "terra", "semantic-qa"), { route: "luna", effort: "max" });
+const highComplexityDeepEscalation = { ...routineDeepEscalation, routingComplexity: "high-complexity" };
+assert.deepEqual(selectRoute("auto", undefined, highComplexityDeepEscalation, "terra", "merge-risk-review"), { route: "sol", effort: "xhigh" });
+assert.throws(() => selectRoute("luna", undefined, access, "terra", "implementation"), /override/);
+assert.throws(() => selectRoute("auto", "low", access, "terra", "implementation"), /override/);
+assert.throws(() => selectRoute("auto", undefined, { ...access, routingPolicy: { ...access.routingPolicy, semanticReview: undefined } }, "terra", "semantic-qa"), /missing routingPolicy/);
+
+const agent = { id: "qa-verification", status: "active", allowedRoutes: ["terra"], allowedEfforts: ["high"] };
+assert.doesNotThrow(() => assertAgentRouteEffort(agent, "terra", "high", true));
+assert.throws(() => assertAgentRouteEffort(agent, "sol", "high", true), /does not permit route/);
+assert.throws(() => assertAgentRouteEffort(agent, "terra", "medium", true), /does not permit effort/);
+assert.throws(() => assertAgentRouteEffort({ id: "missing-policy", status: "active" }, "terra", "high", true), /must declare/);
+assert.throws(() => assertActiveAgent({ id: "staged-agent", status: "staged" }), /not active/);
+assert.throws(() => assertNonTerminalTask("SUT-TEST-DONE", "done"), /terminal task/);
+assert.doesNotThrow(() => assertExecutableTaskState("SUT-TEST-ACTIVE", "active"));
+assert.throws(() => assertExecutableTaskState("SUT-TEST-BACKLOG", "backlog"), /not executable/);
+assert.throws(() => assertExecutableTaskState("SUT-TEST-BLOCKED", "blocked"), /not executable/);
+for (const invalidId of ["../escape", "C:\\absolute", "a/b", "a\\b", "/absolute/path"]) {
+  assert.throws(() => assertTaskId(invalidId), /Task ID/);
+}
+assert.doesNotThrow(() => assertTaskId("SUT-AIOS-GOV-056-FND"));
+const markdownAccess = packetAccess({ format: "markdown", text: "- **Allowed agents:** `codex-engineering-executor`, `qa-verification`\n- **Model route:** `terra`\n- **Workspace write:** `true`", state: "active" });
+assert.deepEqual(markdownAccess.allowedAgents, ["codex-engineering-executor", "qa-verification"]);
+assert.equal(markdownAccess.route, "terra");
+assert.equal(markdownAccess.workspaceWrite, true);
+const activeV2 = { format: "json", state: "active", data: { schemaVersion: "2.0.0", owner: "codex-engineering-executor", defaultAgent: "codex-engineering-executor", reviewer: "qa-verification", routingPolicy: access.routingPolicy } };
+const reviewV2 = { ...activeV2, state: "review" };
+const v2Access = { version: "2.0.0" };
+assert.doesNotThrow(() => assertProfileAuthorization("implementation", activeV2, v2Access, "codex-engineering-executor"));
+assert.throws(() => assertProfileAuthorization("implementation", activeV2, v2Access, "qa-verification"), /not authorized/);
+assert.doesNotThrow(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "qa-verification"));
+assert.doesNotThrow(() => assertProfileAuthorization("plan-review", reviewV2, v2Access, "engineering-planner"));
+assert.doesNotThrow(() => assertProfileAuthorization("merge-risk-review", reviewV2, v2Access, "qa-verification"));
+assert.throws(() => assertProfileAuthorization("semantic-qa", reviewV2, v2Access, "codex-engineering-executor"), /not authorized/);
+assert.throws(() => assertWorkspaceWriteAuthority("qwen-local", true, { workspaceWrite: true }, "SUT-TEST-QWEN", { id: "codex-engineering-executor", category: "execution" }), /qwen-local is read-only/);
+assert.match(comparisonBaseSha(), /^[0-9a-f]{40}$/);
+const previousBaseSha = process.env.GOVERNED_BASE_SHA;
+const previousBaseRef = process.env.GOVERNED_BASE_REF;
+process.env.GOVERNED_BASE_SHA = "f".repeat(40);
+assert.throws(() => comparisonBaseSha(), /does not match fetched origin\/main/);
+if (previousBaseSha === undefined) delete process.env.GOVERNED_BASE_SHA;
+else process.env.GOVERNED_BASE_SHA = previousBaseSha;
+process.env.GOVERNED_BASE_REF = "HEAD";
+assert.throws(() => comparisonBaseSha(), /canonical origin\/main ref/);
+if (previousBaseRef === undefined) delete process.env.GOVERNED_BASE_REF;
+else process.env.GOVERNED_BASE_REF = previousBaseRef;
+const previousGitDir = process.env.GIT_DIR;
+process.env.GIT_DIR = path.join(os.tmpdir(), "sut-ai-os-gov056-missing-git-dir-8d6f6b");
+assert.equal(gitSha("HEAD"), null, "Git SHA lookup must fail closed when Git cannot resolve the object");
+if (previousGitDir === undefined) delete process.env.GIT_DIR;
+else process.env.GIT_DIR = previousGitDir;
+assert.equal(allowedEfforts.sol.has("low"), false, "Sol low is prohibited");
+assert.equal(allowedEfforts.terra.has("max"), false, "Terra max is prohibited");
+const reviewHead = "a".repeat(40);
+assert.equal(reviewWorktreeIsClean("", "SUT-AIOS-GOV-056-FND", reviewHead), true, "review starts from a clean committed tree");
+assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-AIOS-GOV-056-FND/planReview-" + reviewHead + ".json\n", "SUT-AIOS-GOV-056-FND", reviewHead), true, "a prior stage artifact does not block the same-head review sequence");
+assert.equal(reviewWorktreeIsClean(" M scripts/codex/launch.mjs\n", "SUT-AIOS-GOV-056-FND", reviewHead), false, "implementation changes still block review");
+assert.equal(reviewWorktreeIsClean("?? evidence/reviews/SUT-AIOS-GOV-056-FND/planReview-" + "b".repeat(40) + ".json\n", "SUT-AIOS-GOV-056-FND", reviewHead), false, "stale review artifacts block review");
+
+const configuredAgents = discoverAgents();
+assert.equal(configuredAgents.get("chief-orchestrator").defaultRoute, "luna");
+assert.equal(configuredAgents.get("engineering-planner").defaultRoute, "sol");
+assert.equal(configuredAgents.get("codex-engineering-executor").defaultRoute, "terra");
+assert.equal(configuredAgents.get("qa-verification").defaultRoute, "luna");
+
+const legacyTerraAccess = { version: "1.0.0", route: "terra", effort: "high" };
+for (const agentId of ["chief-orchestrator", "engineering-planner", "codex-engineering-executor", "qa-verification"]) {
+  assert.equal(selectRoute("auto", undefined, legacyTerraAccess, configuredAgents.get(agentId).defaultRoute).route, "terra", `V1 Terra route remains stable for ${agentId}`);
+}
+
+process.stdout.write(JSON.stringify({ status: "passed", checks: 45 }) + "\n");
