@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "d66988dbd42ab4a0b2cdbda5553ac241e13834d8",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "8bcdbdff57a68878658705a15fcbeb92ef2f884b7730e107d2d80e60a0c00ed4",
+  "reviewedAt": "2026-08-09T09:52:53.470Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260809095050306-dc00a239",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809095050306-dc00a239-qa-verification-sol.jsonl",
+  "outputHash": "5afcdc90f1b26f1044d2860b7b5b63a3c55be1699e826cf3c69f3fe21e90122b",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "POSIX cancellation can still orphan a process-group descendant. The initial SIGINT or SIGTERM targets the group, but escalation runs only while the root child remains live. If the root exits while a descendant ignores the graceful signal, childIsRunning becomes false, SIGKILL is skipped, and completeCancelledReview reports cancelled without confirming that the process group is gone. The rollback statement also provides no cleanup procedure for such a surviving local process.",
+    "Launcher-trace prerequisite validation does not verify each contextManifest entry against the corresponding governed file. validateRequiredReviewArtifacts checks the claimed manifest hash, result fields, task-scope hash, and successful finish event, but unlike the Codex-app branch it does not rehash the launcher trace's context files. A forged launcher review and trace with internally consistent hashes can therefore satisfy the merge-risk prerequisite gate without proving the claimed governed context.",
+    "The CLI evidence-sequence gate is evaluated only before the review child starts. Exact-head verification, prerequisite reviews, and their uncommitted traces can change while merge-risk review is running; the launcher rechecks only HEAD and origin/main before persistence. This permits persistence against evidence that no longer matches the reviewed context, weakening the claimed exact evidence sequence."
+  ],
+  "nonBlockingRisks": [
+    "Review stdout and stderr remain accumulated without a byte ceiling; the supplied successful traces already show more than 120 KiB of stderr, and an excessive child response could exhaust launcher memory.",
+    "The legacy SHA-less verification record remains in the governed packet context beside the authoritative exact-head record and reports an older check count, creating avoidable evidence ambiguity.",
+    "The launcher still combines routing, context construction, process control, tracing, validation, evidence sequencing, and persistence, retaining broad regression coupling.",
+    "The task-local context cap has been raised repeatedly as same-task history grows, so another review iteration may require a further governed cap decision."
+  ],
+  "missingNegativeTests": [
+    "Spawn a POSIX process-group fixture whose root exits after SIGINT or SIGTERM while a descendant ignores that signal; require bounded group termination or a failed terminal result, never cancelled with the descendant alive.",
+    "Provide a launcher prerequisite trace with correct result fields, output hash, task-scope hash, and success event but forged contextManifest file hashes; require the merge-risk gate to reject it.",
+    "Alter the exact-head verification file, prerequisite review, or prerequisite trace after CLI preflight but before review persistence; require a final evidence-sequence revalidation to reject persistence.",
+    "Enforce and test bounded stdout and stderr accumulation with fail-closed process-tree termination and no review-result persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Focused helpers improve review parsing, cancellation, evidence sequencing, and persistence, but launch.mjs remains broad and the evidence invariant is split between preflight, persistence, and lifecycle validation without one immutable transaction boundary.",
+    "hexagonalArchitecture": "No provider fallback, production, deployment, dependency, schema, or P3-001 authority is introduced. However, the launcher adapter accepts internally consistent launcher-trace manifests without validating their governed file side of the boundary.",
+    "eventedBoundaries": "Structured redacted progress and singular terminal events are substantially improved, but POSIX root-child closure is incorrectly treated as sufficient process-group closure, and evidence can change between the preflight event and persistence boundary."
+  },
+  "exactNextAction": "Return GOV-057 to revision-required; make POSIX cancellation confirm or forcibly terminate the complete isolated process group, validate every launcher context-manifest entry against its governed file, rerun the shared evidence-sequence gate immediately before CLI persistence, add the descendant, forged-manifest, and evidence-drift negative tests, rerun every packet command on a new immutable head, and obtain fresh same-head plan, semantic, and merge-risk reviews without merging or deploying."
+}

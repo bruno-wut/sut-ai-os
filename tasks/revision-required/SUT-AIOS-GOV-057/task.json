@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:48:06.896Z",
+  "updatedDate": "2026-08-09T09:56:45.014Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -457,6 +457,13 @@
       "at": "2026-08-09T09:48:06.896Z",
       "actor": "codex-engineering-executor",
       "reason": "Trace-inclusive context fits the bounded 393216-byte cap and every packet-required deterministic check passes; submit the final immutable repair head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:56:45.014Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on d66988d requires complete POSIX process-group confirmation, governed-file rehashing for launcher traces, and final evidence-sequence revalidation before persistence."
     }
   ]
 }
