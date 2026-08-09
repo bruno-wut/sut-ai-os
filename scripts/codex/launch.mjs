@@ -631,6 +631,7 @@ function createReviewCancellationController(child, emit, options = {}) {
   let settleTimer = null;
   let termination = null;
   let failureReported = false;
+  let childClosed = false;
   const reportFailure = (result, signal) => {
     if (failureReported) return result;
     failureReported = true;
@@ -640,7 +641,7 @@ function createReviewCancellationController(child, emit, options = {}) {
   };
   const observeTermination = (resultPromise, signal, requireExit) => Promise.resolve(resultPromise).then((result) => {
     if (result?.status === "failed") return reportFailure(result, signal);
-    if (requireExit && childIsRunning(child)) {
+    if (requireExit && !childClosed) {
       settleTimer = schedule(() => reportFailure({ status: "failed", reason: "child-still-running" }, signal), settleMs);
       if (typeof settleTimer?.unref === "function") settleTimer.unref();
     }
@@ -671,6 +672,12 @@ function createReviewCancellationController(child, emit, options = {}) {
     request,
     get requested() { return requested; },
     get termination() { return termination; },
+    get childClosed() { return childClosed; },
+    confirmChildClosed() {
+      childClosed = true;
+      if (settleTimer) cancelSchedule(settleTimer);
+      settleTimer = null;
+    },
     complete() {
       if (timer) cancelSchedule(timer);
       if (settleTimer) cancelSchedule(settleTimer);
@@ -681,9 +688,10 @@ function createReviewCancellationController(child, emit, options = {}) {
 }
 
 async function completeCancelledReview(cancellation, terminal) {
+  cancellation.confirmChildClosed();
   const result = await cancellation.termination;
   cancellation.complete();
-  if (result?.status === "failed") {
+  if (result?.status === "failed" || !cancellation.childClosed) {
     terminal.complete("failed", 1);
     return "failed";
   }

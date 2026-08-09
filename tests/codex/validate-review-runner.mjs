@@ -155,6 +155,24 @@ assert.deepEqual(lateFailureProgress.map((event) => event.status), ["cancellatio
 assert.deepEqual(lateFailureResults, [{ status: "failed", reason: "nonzero-exit", exitCode: 5 }], "late taskkill failure reaches fail-closed handling");
 assert.deepEqual(lateTerminalEvents, [{ status: "failed" }], "late taskkill failure cannot emit a cancelled terminal state");
 
+let resolveConfirmedTaskkill;
+const confirmedChild = { pid: 6969, exitCode: null, signalCode: null };
+const confirmedCancellation = createReviewCancellationController(confirmedChild, () => {}, {
+  platform: "win32",
+  terminateChildTree: () => new Promise((resolve) => { resolveConfirmedTaskkill = resolve; })
+});
+assert.equal(confirmedCancellation.request("SIGTERM"), true, "successful cancellation begins without a terminal outcome");
+resolveConfirmedTaskkill({ status: "terminated" });
+await confirmedCancellation.termination;
+assert.equal(confirmedCancellation.childClosed, false, "taskkill success alone does not confirm root-child close");
+const confirmedTerminalEvents = [];
+const confirmedTerminal = createReviewTerminalController({ append: () => {} }, (event) => confirmedTerminalEvents.push(event), () => {});
+assert.deepEqual(confirmedTerminalEvents, [], "no terminal cancellation is emitted before child close");
+confirmedChild.exitCode = 0;
+assert.equal(await completeCancelledReview(confirmedCancellation, confirmedTerminal), "cancelled", "cancelled requires taskkill success and explicit child-close confirmation");
+assert.equal(confirmedCancellation.childClosed, true, "root-child close confirmation is retained by the controller");
+assert.deepEqual(confirmedTerminalEvents, [{ status: "cancelled" }], "both confirmations emit exactly one cancelled terminal outcome");
+
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
 const gitCalls = [];
