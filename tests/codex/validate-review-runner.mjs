@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertReviewRevisionUnchanged, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { assertReviewRevisionUnchanged, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -213,8 +213,10 @@ fs.mkdirSync(path.dirname(evidenceFile), { recursive: true });
 fs.writeFileSync(evidenceFile, `${JSON.stringify(exactVerification)}\n`);
 const evidenceManifest = [{ path: evidenceRelative, sha256: createHash("sha256").update(fs.readFileSync(evidenceFile)).digest("hex") }];
 assert.doesNotThrow(() => requireReviewEvidenceSequence({ taskRecord: { data: { taskId: exactVerification.taskId } }, profile: "plan-review", baseSha, headSha, contextManifest: evidenceManifest, root: evidenceRoot }), "unchanged exact-head evidence satisfies the shared preflight gate");
+assert.doesNotThrow(() => validateCurrentContextManifest(evidenceManifest, { root: evidenceRoot, profile: "plan-review" }), "unchanged CLI context satisfies final persistence validation");
 fs.writeFileSync(evidenceFile, `${JSON.stringify({ ...exactVerification, checks: ["changed during review"] })}\n`);
 assert.throws(() => requireReviewEvidenceSequence({ taskRecord: { data: { taskId: exactVerification.taskId } }, profile: "plan-review", baseSha, headSha, contextManifest: evidenceManifest, root: evidenceRoot }), /does not bind required evidence/, "evidence drift is rejected by final shared-gate revalidation");
+assert.throws(() => validateCurrentContextManifest(evidenceManifest, { root: evidenceRoot, profile: "plan-review" }), /context file changed before persistence/, "CLI final persistence validation rejects ordinary context drift");
 fs.rmSync(evidenceRoot, { recursive: true, force: true });
 
 const terminalEvents = [];
