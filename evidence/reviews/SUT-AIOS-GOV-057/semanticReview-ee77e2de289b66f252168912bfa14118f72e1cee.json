@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "ee77e2de289b66f252168912bfa14118f72e1cee",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "3cc28cbad8927b1714fdc8b2a21451d5b6e94c495fe7379d733290f65363cf4d",
+  "reviewedAt": "2026-08-09T09:09:20.208Z",
+  "stage": "semanticReview",
+  "runId": "20260809090828792-1922d566",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809090828792-1922d566-qa-verification-luna.jsonl",
+  "outputHash": "ac7366663d9529c59039cd3b6d6ca659611d16234745c9678eb04d8917be25ed",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, binding, persistence, context construction, and cancellation are separated into focused helpers with bounded responsibilities.",
+    "hexagonalArchitecture": "The launcher isolates the Codex process boundary from review validation, routing policy, and artifact persistence without widening external authority.",
+    "eventedBoundaries": "Structured JSONL progress events cover child start, output counts, completion, failure, and cancellation while redacting prompts and model output."
+  },
+  "exactNextAction": "Proceed to the configured independent merge-risk review for the immutable reviewed head."
+}
