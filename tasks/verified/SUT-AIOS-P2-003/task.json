@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-003",
   "title": "Generate observe-only executive briefing",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "executive-reporting",
   "workflowId": "implementation-p2-003",
@@ -36,12 +36,14 @@
     "Provider unavailability, insufficient evidence, and approval requirements are surfaced truthfully rather than converted into an allow or production action.",
     "Briefing inputs are approved aggregates and governed records only; raw guest interaction telemetry and per-event AI processing are rejected.",
     "Machine-readable contracts and deterministic failure behavior are documented.",
+    "The only package change authorized is the exact test:briefing script entry point; no dependencies, package-lock.json, other scripts, or production behavior may change.",
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
     "services/executive-briefing/**",
     "tests/executive-reporting/**",
     "docs/executive-reporting/**",
+    "package.json",
     "evidence/tasks/SUT-AIOS-P2-003/**",
     "evidence/verification/SUT-AIOS-P2-003/**",
     "tasks/**/SUT-AIOS-P2-003/**"
@@ -94,15 +96,17 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-003/task.json",
+      "tasks/verified/SUT-AIOS-P2-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-29T13:00:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-09T05:43:27.906Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-P2-003/verification.md"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -110,6 +114,55 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-09T05:11:19.839Z",
+      "actor": "chief-orchestrator",
+      "reason": "Dependencies are done on canonical origin/main; begin bounded observe-only executive-briefing task."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-09T05:11:23.598Z",
+      "actor": "chief-orchestrator",
+      "reason": "Start the approved Tier-0 observe-only executive-briefing implementation on the canonical task branch."
+    },
+    {
+      "from": "active",
+      "to": "blocked",
+      "at": "2026-08-09T05:14:05.093Z",
+      "actor": "chief-orchestrator",
+      "reason": "Required command npm run test:briefing is undefined in canonical package.json; package.json is outside the approved allowlist, so required verification cannot run without a packet amendment."
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-08-09T05:30:56.752Z",
+      "actor": "chief-orchestrator",
+      "reason": "User approved the minimal V1 amendment authorizing package.json and the exact test:briefing entry point; no product scope changed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-09T05:31:00.679Z",
+      "actor": "chief-orchestrator",
+      "reason": "Resume the approved V1 observe-only executive-briefing implementation after packet amendment validation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T05:40:43.120Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implementation and required deterministic checks passed on committed head 7888604; independent QA is now required."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-09T05:43:27.906Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed implementation head 7888604; deterministic checks and authorized-scope inspection passed. Human PR merge and canonical-main reconciliation remain."
     }
   ]
 }
