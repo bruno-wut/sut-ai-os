@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -43,6 +43,7 @@
     "docs/model-routing/MODEL_ROUTING_POLICY.md",
     "docs/project/ISSUES_AND_RISKS.md",
     "evidence/tasks/SUT-AIOS-GOV-057/**",
+    "evidence/verification/SUT-AIOS-GOV-057/**",
     "evidence/reviews/SUT-AIOS-GOV-057/**",
     "tasks/**/SUT-AIOS-GOV-057/**"
   ],
@@ -147,7 +148,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T07:51:56.117Z",
+  "updatedDate": "2026-08-09T07:56:14.033Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -170,6 +171,13 @@
       "at": "2026-08-09T07:51:56.117Z",
       "actor": "codex-engineering-executor",
       "reason": "Begin the approved local review-runner repair only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T07:56:14.033Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded review-runner repair and exact deterministic checks passed; request independent V2 stage reviews."
     }
   ]
 }

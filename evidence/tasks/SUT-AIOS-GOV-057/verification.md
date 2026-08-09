@@ -4,6 +4,25 @@
 
 Bounded Workflow V2 review-runner repair only. P3-001 and all production, deployment, provider, package, schema, and fallback behavior are excluded.
 
-## Required evidence
+## Implementation evidence
 
-Record the exact committed head, deterministic command results, changed-path inspection, cancellation behavior, review-artifact paths, limitations, and rollback note before verification.
+Committed implementation head: `27505c85fd3506f5178c85477fe0e3a6c069c54f`.
+
+- `node tests/codex/validate-review-runner.mjs` — passed (16 checks).
+- `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
+- `node tests/review/validate-review-binding.mjs` — passed (7 checks).
+- `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
+- `node scripts/task/validate --all` — passed.
+- `node scripts/github/validate-governance.mjs` — passed: branch match, forbidden-path scan, secret scan, schema, policy, and agent checks.
+- `npm run verify:fast` — passed.
+- `git diff --check` — passed.
+
+## Scope and limitations
+
+Changed paths are limited to the GOV-057 packet/evidence, local launcher, deterministic test, routing documentation, and risk register. No fallback, package/dependency, schema, production, provider, or P3-001 change was made.
+
+Before this implementation was committed, clean-head-only lifecycle and routing fixtures correctly rejected the dirty review worktree. They were rerun successfully on the committed head above. Independent V2 review artifacts and final verification evidence remain pending.
+
+## Rollback
+
+Revert the GOV-057 commit/PR. A cancelled review emits its terminal state and persists no review result.
