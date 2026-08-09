@@ -502,6 +502,9 @@ function parseReviewAssessment(stdoutText) {
   if (keys.length !== expected.length || keys.some((key, index) => key !== expected[index])) {
     throw new Error("review stdout must contain exactly the required assessment fields");
   }
+  if (assessment.decision === "pass" && Array.isArray(assessment.blockingFindings) && assessment.blockingFindings.length > 0) {
+    throw new Error("review stdout cannot combine decision pass with blocking findings");
+  }
   return assessment;
 }
 
@@ -765,6 +768,12 @@ function createReviewTerminalController(trace, emit, setExitCode = (code) => { p
     },
     get status() { return terminal; },
   };
+}
+
+function completeReviewPreflightFailure(error, { progress, terminal, writeError = (message) => process.stderr.write(message) }) {
+  progress({ status: "preflight-failed" });
+  writeError(`Review preflight failed: ${error.message}\n`);
+  terminal.complete("failed", 1);
 }
 
 function sanitizeEnvironment() {
@@ -1109,15 +1118,24 @@ function main() {
   if (reviewProfile && !reviewWorktreeIsClean(reviewStatus, taskId, reviewedHeadSha)) {
     throw new Error("Review launches require a clean committed working tree");
   }
-  const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
   const dryRun = Boolean(argumentsObject["dry-run"]);
 
   const trace = createTrace(taskId, agentId, selectedRoute);
   trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
-
-  const context = buildContextProfile(agent, taskRecord, selectedRoute, selectedModel, effort, profile);
-  if (reviewProfile && !dryRun) {
-    requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewedBaseSha, headSha: reviewedHeadSha, contextManifest: context.contextManifest });
+  const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
+  const terminal = reviewProfile ? createReviewTerminalController(trace, progress) : null;
+  let reviewedBaseSha = null;
+  let context;
+  try {
+    reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
+    context = buildContextProfile(agent, taskRecord, selectedRoute, selectedModel, effort, profile);
+    if (reviewProfile && !dryRun) {
+      requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewedBaseSha, headSha: reviewedHeadSha, contextManifest: context.contextManifest });
+    }
+  } catch (error) {
+    if (!reviewProfile) throw error;
+    completeReviewPreflightFailure(error, { progress, terminal });
+    return;
   }
   const sandbox = workspaceWrite ? "workspace-write" : "read-only";
 
@@ -1158,8 +1176,6 @@ function main() {
 
   let stdoutText = "";
   let stderrText = "";
-  const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
-  const terminal = reviewProfile ? createReviewTerminalController(trace, progress) : null;
   const cancellation = reviewProfile ? createReviewCancellationController(child, progress, {
     onTerminationFailure: (result) => {
       process.stderr.write(`Review cancellation failed closed: ${result.reason ?? "unknown"}\n`);
@@ -1310,4 +1326,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };

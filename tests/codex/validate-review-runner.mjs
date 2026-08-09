@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertReviewRevisionUnchanged, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { assertReviewRevisionUnchanged, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -36,6 +36,7 @@ for (const [profile, stage] of [["plan-review", "planReview"], ["semantic-qa", "
 }
 assert.equal(buildReviewAssessmentPrompt("implementation"), "", "implementation has no review assessment prompt");
 assert.deepEqual(parseReviewAssessment(`${JSON.stringify(assessment)}\n`), assessment, "one valid assessment object is accepted");
+assert.throws(() => parseReviewAssessment(JSON.stringify({ ...assessment, blockingFindings: ["contradiction"] })), /cannot combine decision pass/, "pass with blocking findings is rejected before launcher binding or persistence");
 const validAssessmentJson = JSON.stringify(assessment);
 assert.throws(() => parseReviewAssessment(validAssessmentJson.replace('"decision":"pass"', '"decision":"pass","decision":"blocked"')), /duplicate JSON member/, "duplicate top-level assessment fields are rejected");
 assert.throws(() => parseReviewAssessment(validAssessmentJson.replace('"deepModules":"bounded review surface"', '"deepModules":"bounded review surface","deepModules":"ambiguous"')), /duplicate JSON member/, "duplicate nested architecture fields are rejected");
@@ -227,5 +228,14 @@ assert.equal(terminal.complete("failed", 1), false, "duplicate terminal failures
 assert.equal(terminal.status, "failed", "terminal state is retained");
 assert.deepEqual(terminalEvents, [{ status: "failed" }], "terminal progress is structured and singular");
 assert.deepEqual(traceEvents, [{ event: "finish", status: "failed", exitCode: 1 }], "terminal trace state is singular and redacted");
+
+const preflightProgress = [];
+const preflightTrace = [];
+const preflightErrors = [];
+const preflightTerminal = createReviewTerminalController({ append: (event) => preflightTrace.push(event) }, (event) => preflightProgress.push(event), () => {});
+completeReviewPreflightFailure(new Error("context unavailable"), { progress: (event) => preflightProgress.push(event), terminal: preflightTerminal, writeError: (message) => preflightErrors.push(message) });
+assert.deepEqual(preflightProgress.map((event) => event.status), ["preflight-failed", "failed"], "preflight failure emits structured progress and one terminal state");
+assert.deepEqual(preflightTrace, [{ event: "finish", status: "failed", exitCode: 1 }], "preflight failure records exactly one JSONL terminal event");
+assert.match(preflightErrors[0], /context unavailable/, "preflight failure retains a concise diagnostic without governed context contents");
 
 process.stdout.write(JSON.stringify({ status: "passed", checks }) + "\n");
