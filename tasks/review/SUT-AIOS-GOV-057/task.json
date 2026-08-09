@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:20:29.203Z",
+  "updatedDate": "2026-08-09T08:36:26.725Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -260,6 +260,13 @@
       "at": "2026-08-09T08:20:29.203Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume the bounded merge-risk context repair required by the independent review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:36:26.725Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Merge-risk context repair passed clean-head deterministic checks; request final independent V2 reviews."
     }
   ]
 }
