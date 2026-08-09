@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "3d2b577cbb6109d73a2fcf5c1edd9f4c8c3649b7",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "11a5b1e3a52898c6e2f226aa481ed32f9563e7f3d23a6fc142d56e00c58488c6",
+  "reviewedAt": "2026-08-09T09:36:50.810Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260809093500468-26710a25",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809093500468-26710a25-qa-verification-sol.jsonl",
+  "outputHash": "2dc06ff54193a3c225f50fea31af7c3aaf6441532a49073dc440353258105171",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The new evidence-sequencing gates apply only in main(). The supported Codex-app path through prepareCodexAppReviewResult and persistCodexAppReviewResult can still prepare and persist a mergeRiskReview without requireExactHeadVerification or requireMergeRiskPrerequisites, so a governed review path can bypass the exact-head verification and same-head prerequisite sequence claimed by the task.",
+    "requireMergeRiskPrerequisites validates only the review JSON, task/base/head, stage, decision, schema, and output hash. It does not verify the prerequisite review's configured agent/model/effort or its launcher trace and successful terminal event. The supplied same-head artifacts cite traces that are absent from the governed context, so independent launcher-bound plan and semantic execution is not established and forged uncommitted artifacts could satisfy the merge-risk gate."
+  ],
+  "nonBlockingRisks": [
+    "Review stdout and stderr remain accumulated without a byte ceiling, allowing excessive child output to exhaust launcher memory.",
+    "The legacy SHA-less verification record remains explicitly included beside the authoritative exact-head record and reports an older check count, creating avoidable ambiguity for downstream evidence consumers.",
+    "persistCodexAppReviewResult accepts any hexadecimal reviewedTaskScopeHash and defers comparison with the current packet until lifecycle validation rather than rejecting the mismatch at persistence.",
+    "The launcher continues to combine routing, context generation, process control, tracing, review validation, and persistence, retaining broad regression coupling."
+  ],
+  "missingNegativeTests": [
+    "Exercise the Codex-app preparation and persistence path without exact-head verification and without same-head plan or semantic prerequisites; require rejection before merge-risk persistence.",
+    "Provide forged prerequisite artifacts with valid schemas and recomputed output hashes but missing or failed traces, wrong reviewer, wrong model, or wrong effort; require the merge-risk gate to reject each case.",
+    "Verify a POSIX root child closing while a process-group descendant remains live cannot emit cancelled and leave the descendant orphaned.",
+    "Enforce and test bounded stdout and stderr accumulation with fail-closed child-tree termination and no review persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Focused helpers improve parsing, cancellation, context construction, and binding, but launch.mjs remains a broad orchestration module and the evidence-sequencing invariant is not encapsulated consistently across CLI and Codex-app entry points.",
+    "hexagonalArchitecture": "No production, deployment, provider-fallback, dependency, schema, or P3-001 authority is widened; however, the Codex-app adapter bypasses repository evidence gates enforced by the CLI adapter, producing inconsistent governance at equivalent ports.",
+    "eventedBoundaries": "Cancellation and terminal progress are substantially more explicit and redacted, but prerequisite review provenance is not validated through its successful trace events before the merge-risk boundary is crossed."
+  },
+  "exactNextAction": "Return GOV-057 to revision-required; centralize exact-head verification and fully launcher-bound prerequisite validation in a shared gate used by both CLI and Codex-app review paths, validate configured reviewer/model/effort plus successful trace binding, add the bypass and forged-artifact negative tests, rerun every packet command on a new immutable head, and obtain fresh same-head plan, semantic, and merge-risk reviews without merging or deploying."
+}
