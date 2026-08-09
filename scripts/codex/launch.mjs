@@ -573,7 +573,7 @@ function createTrace(taskId, agentId, route, profile) {
   const startedAt = new Date().toISOString();
   const compact = startedAt.replace(/[-:.TZ]/g, "");
   const runId = `${compact}-${randomUUID().slice(0, 8)}`;
-  const traceDirectory = reviewProfiles.has(profile)
+  const traceDirectory = stageByProfile[profile] && stageByProfile[profile] !== "implementation"
     ? path.join(repositoryRoot, "evidence", "reviews", taskId, "traces")
     : path.join(repositoryRoot, "artifacts", "traces", "codex-routing", taskId);
   fs.mkdirSync(traceDirectory, { recursive: true });
