@@ -4,10 +4,10 @@
   "status": "pass",
   "reviewer": "qa-verification",
   "productionEligible": false,
-  "reviewedAt": "2026-08-09T09:14:04.887Z",
+  "reviewedAt": "2026-08-09T09:17:27.625Z",
   "checks": [
     "all commands rerun on the clean committed review head immediately before SHA-bound reviews",
-    "node tests/codex/validate-review-runner.mjs: passed (65 checks)",
+    "node tests/codex/validate-review-runner.mjs: passed (71 checks)",
     "node tests/codex/v2-review-lifecycle.mjs: passed (54 checks)",
     "node tests/review/validate-review-binding.mjs: passed (7 checks)",
     "node scripts/codex/validate-routing.mjs: passed",
