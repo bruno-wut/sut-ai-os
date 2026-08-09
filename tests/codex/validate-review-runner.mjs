@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { assertReviewRevisionUnchanged, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -202,6 +202,9 @@ const exactVerification = { schemaVersion: "1.0.0", taskId: "SUT-AIOS-GOV-057", 
 assert.equal(validateExactHeadVerification(exactVerification, exactVerification.taskId, headSha), true, "exact-head verification binds task, head, status, reviewer, and checks");
 assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: baseSha }, exactVerification.taskId, headSha), false, "stale verification head is rejected");
 assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: undefined }, exactVerification.taskId, headSha), false, "SHA-less verification is rejected");
+assert.doesNotThrow(() => assertReviewRevisionUnchanged({ headSha, baseSha }, headSha, baseSha), "unchanged app review revision satisfies the persistence boundary");
+assert.throws(() => assertReviewRevisionUnchanged({ headSha, baseSha }, baseSha, baseSha), /revision changed/, "app persistence rejects a changed review head");
+assert.throws(() => assertReviewRevisionUnchanged({ headSha, baseSha }, headSha, headSha), /revision changed/, "app persistence rejects a changed canonical base");
 
 const evidenceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-evidence-"));
 const evidenceRelative = `evidence/verification/${exactVerification.taskId}/verification-${headSha}.json`;

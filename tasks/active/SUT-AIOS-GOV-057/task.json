@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:00:47.123Z",
+  "updatedDate": "2026-08-09T10:00:47.674Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -485,6 +485,13 @@
       "at": "2026-08-09T10:00:47.123Z",
       "actor": "qa-verification",
       "reason": "Semantic review on b4803cb requires Codex-app persistence to recheck canonical revisions and every governed context file immediately before writing."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:00:47.674Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the Codex-app final revision and context revalidation required by semantic QA."
     }
   ]
 }

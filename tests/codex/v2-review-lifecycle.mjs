@@ -197,6 +197,26 @@ try {
       fs.writeFileSync(exactVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: appTaskId, headSha: appHead, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-08T12:00:00.000Z", checks: ["fixture checks passed"] }, null, 2)}\n`);
     }
     bindAppContextFile(prepared, exactVerificationRelative);
+    if (stage === "planReview") {
+      const driftEntry = prepared.contextManifest.find((entry) => ![exactVerificationRelative, `tasks/review/${appTaskId}/task.json`, "generated/merge-risk-context"].includes(entry.path));
+      const driftFile = path.join(appRoot, driftEntry.path);
+      const originalDriftFile = fs.readFileSync(driftFile);
+      fs.writeFileSync(driftFile, Buffer.concat([originalDriftFile, Buffer.from("drift")]));
+      assert.throws(() => persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /context file changed before persistence/, "Codex app persistence rejects governed context drift");
+      fs.writeFileSync(driftFile, originalDriftFile);
+
+      const forgedContext = structuredClone(prepared);
+      forgedContext.contextManifest.find((entry) => entry.path === driftEntry.path).sha256 = "e".repeat(64);
+      forgedContext.reviewResult.contextManifestHash = sha256(forgedContext.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+      forgedContext.reviewResult.outputHash = computeReviewOutputHash(forgedContext.reviewResult);
+      assert.throws(() => persistCodexAppReviewResult(forgedContext, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /context file changed before persistence/, "Codex app persistence rejects a forged ordinary context hash");
+
+      const escapingContext = structuredClone(prepared);
+      escapingContext.contextManifest.push({ path: "../escape.txt", sha256: "f".repeat(64) });
+      escapingContext.reviewResult.contextManifestHash = sha256(escapingContext.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+      escapingContext.reviewResult.outputHash = computeReviewOutputHash(escapingContext.reviewResult);
+      assert.throws(() => persistCodexAppReviewResult(escapingContext, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /path escapes repository/, "Codex app persistence rejects an escaping context path");
+    }
     if (stage === "mergeRiskReview") {
       for (const prerequisiteStage of ["planReview", "semanticReview"]) {
         const prerequisiteRelative = `evidence/reviews/${appTaskId}/${prerequisiteStage}-${appHead}.json`;

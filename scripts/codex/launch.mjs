@@ -915,6 +915,31 @@ function requireContextManifestFile(contextManifest, relativePath, root) {
   }
 }
 
+function validateCurrentContextManifest(contextManifest, { root = repositoryRoot, profile }) {
+  const rootRealPath = fs.realpathSync(root);
+  const seen = new Set();
+  for (const entry of contextManifest) {
+    if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || seen.has(entry.path)) throw new Error("Review context manifest contains an invalid or duplicate entry");
+    seen.add(entry.path);
+    if (entry.path === "generated/merge-risk-context") {
+      if (profile !== "merge-risk-review" || !/^[0-9a-f]{64}$/i.test(entry.sha256)) throw new Error("Generated merge-risk context binding is invalid");
+      continue;
+    }
+    if (path.isAbsolute(entry.path) || entry.path.includes("..")) throw new Error(`Review context path escapes repository: ${entry.path}`);
+    const target = path.resolve(root, entry.path);
+    const relative = path.relative(root, target);
+    if (relative.startsWith("..") || path.isAbsolute(relative) || !fs.existsSync(target)) throw new Error(`Review context path is missing or escapes repository: ${entry.path}`);
+    const realTarget = fs.realpathSync(target);
+    const realRelative = path.relative(rootRealPath, realTarget);
+    if (realRelative.startsWith("..") || path.isAbsolute(realRelative)) throw new Error(`Review context symlink escapes repository: ${entry.path}`);
+    if (sha256(fs.readFileSync(realTarget)) !== entry.sha256) throw new Error(`Review context file changed before persistence: ${entry.path}`);
+  }
+}
+
+function assertReviewRevisionUnchanged(reviewResult, currentHeadSha, currentBaseSha) {
+  if (reviewResult.headSha !== currentHeadSha || reviewResult.baseSha !== currentBaseSha) throw new Error("Codex app review revision changed before persistence");
+}
+
 function requireReviewEvidenceSequence({ taskRecord, profile, baseSha, headSha, contextManifest, root = repositoryRoot }) {
   const packet = taskRecord.data ?? taskRecord;
   const taskId = packet.taskId;
@@ -975,6 +1000,9 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   const resultSerialized = `${JSON.stringify(reviewResult, null, 2)}\n`;
   if (fs.existsSync(target) && fs.readFileSync(target, "utf8") !== traceSerialized) throw new Error(`Codex app run envelope already exists for ${reviewResult.runId}`);
   if (fs.existsSync(resultTarget) && fs.readFileSync(resultTarget, "utf8") !== resultSerialized) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
+  if (path.resolve(root) === path.resolve(repositoryRoot)) assertReviewRevisionUnchanged(reviewResult, gitSha("HEAD"), comparisonBaseSha());
+  validateCurrentContextManifest(contextManifest, { root, profile });
+  requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewResult.baseSha, headSha, contextManifest, root });
   fs.mkdirSync(path.dirname(target), { recursive: true });
   if (!fs.existsSync(target)) fs.writeFileSync(target, traceSerialized, { encoding: "utf8", mode: 0o600 });
   return persistReviewResult(reviewResult, { taskId, profile, headSha, root });
@@ -1280,4 +1308,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateExactHeadVerification };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateExactHeadVerification };
