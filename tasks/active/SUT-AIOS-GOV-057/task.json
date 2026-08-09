@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -26,7 +26,8 @@
     "The hardcoded CI validator list remains authoritative.",
     "P3-001 and every other task packet, implementation artifact, lifecycle state, and review evidence remain out of scope.",
     "The repair is local, read-only review orchestration only; it does not deploy, contact production systems, alter provider credentials, or change task routingPolicy authority.",
-    "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result."
+    "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result.",
+    "The user approved workspace-write authority solely for the designated Terra implementation stage within this packet's existing exact path allowlist; it does not grant production, provider, deployment, fallback, or cross-task authority."
   ],
   "acceptanceCriteria": [
     "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
@@ -130,7 +131,7 @@
     }
   },
   "routingComplexity": "routine",
-  "workspaceWrite": false,
+  "workspaceWrite": true,
   "solEscalationTriggers": [
     "Any proposal to add fallback, change routingPolicy semantics, change schemas, persist partial review output, contact a provider outside the existing Codex CLI process, or alter another task enters Sol escalation and requires a revised packet.",
     "Any cancellation design that could terminate unrelated processes or weaken evidence integrity requires Sol security review."
@@ -150,7 +151,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:08:52.349Z",
+  "updatedDate": "2026-08-09T08:15:59.106Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -229,6 +230,13 @@
       "at": "2026-08-09T08:08:52.349Z",
       "actor": "engineering-planner",
       "reason": "Independent plan review found the implementation-stage workspaceWrite authority is false; a narrowly approved packet amendment is required before further work."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:15:59.106Z",
+      "actor": "chief-orchestrator",
+      "reason": "User approved workspace-write authority solely for the existing Terra implementation stage and exact GOV-057 allowlist."
     }
   ]
 }
