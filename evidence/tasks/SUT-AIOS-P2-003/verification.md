@@ -3,7 +3,7 @@
 - **Task:** `SUT-AIOS-P2-003` — Generate observe-only executive briefing
 - **Branch:** `codex/SUT-AIOS-P2-003-executive-briefing`
 - **Recorded:** 2026-08-09
-- **Implementer outcome:** Ready for independent QA; not verified or complete.
+- **Implementer outcome:** Independent QA passed; task is verified pending human PR merge and canonical-main reconciliation.
 
 ## Scope and outcome
 
@@ -43,10 +43,23 @@ or external side effect was added.
 | Command | Result |
 | --- | --- |
 | `npm run test:briefing` | Passed: 17 focused canonical, approval-required, unavailable-provider, insufficient-evidence, raw/per-event telemetry, contract-tampering, hostile-input, empty-evidence, deterministic, freeze, and import-boundary cases. |
-| `npm run verify:fast` | Failed only at `node scripts/codex/validate-routing.mjs`; task-packet validation plus worktree and task self-tests passed. The routing dry-run requires a clean committed worktree for review, while this active implementation and its governed activation record are intentionally uncommitted and this packet forbids committing. No bypass was used. |
+| `npm run verify:fast` | Pre-commit run was blocked only by the routing dry-run clean-worktree safeguard. On clean implementation head `7888604`, passed including routing validation, task-packet validation, worktree self-test, and task self-test. No bypass was used. |
 | `git diff --check` | Passed with no whitespace errors (Git emitted only the existing package.json CRLF normalization warning). |
 
-## QA handoff and unresolved risks
+## Independent QA and unresolved risks
+
+Independent `qa-verification` review run `019fe507-da5a-7c83-96f8-4665822327fa`
+passed implementation head `7888604` against canonical base
+`dcf89c1e5e0007e1f392fad5a8bf134a19281ffe`. It found no blocking defects,
+confirmed authorized-path-only changes, the exact package-script-only change,
+unchanged dependencies and lockfile, untouched protected paths, no forbidden
+behavior, and successful secret inspection. The durable machine-readable record
+is `evidence/verification/SUT-AIOS-P2-003/qa-review.json`.
+
+The packet-only lifecycle move from `active` to `review` was then committed as
+`96d1fc4`; it does not change implementation behavior or scope.
+
+## Unresolved risks
 
 Independent QA must inspect the complete changed-path diff, confirm that the
 exact package-script change is the only `package.json` change, rerun the

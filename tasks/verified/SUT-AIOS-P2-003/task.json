@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-003",
   "title": "Generate observe-only executive briefing",
-  "status": "review",
+  "status": "verified",
   "phase": "phase-2",
   "workstream": "executive-reporting",
   "workflowId": "implementation-p2-003",
@@ -96,15 +96,17 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/review/SUT-AIOS-P2-003/task.json",
+      "tasks/verified/SUT-AIOS-P2-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-09T05:40:43.120Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-09T05:43:27.906Z",
+  "completionEvidence": [
+    "evidence/tasks/SUT-AIOS-P2-003/verification.md"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -154,6 +156,13 @@
       "at": "2026-08-09T05:40:43.120Z",
       "actor": "codex-engineering-executor",
       "reason": "Implementation and required deterministic checks passed on committed head 7888604; independent QA is now required."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-09T05:43:27.906Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA passed implementation head 7888604; deterministic checks and authorized-scope inspection passed. Human PR merge and canonical-main reconciliation remain."
     }
   ]
 }
