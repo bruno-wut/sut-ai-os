@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -140,7 +140,7 @@
   "rollbackExpectations": "Revert the single repair PR; cancellation leaves no review artifact, and existing P3-001 review evidence remains untouched.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
-      "maxBytes": 327680,
+    "maxBytes": 327680,
     "includedPaths": [
       "AGENTS.md",
       "docs/project/TASK_WORKFLOW.md",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:20:26.548Z",
+  "updatedDate": "2026-08-09T09:20:50.903Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -387,6 +387,13 @@
       "at": "2026-08-09T09:20:26.548Z",
       "actor": "codex-engineering-executor",
       "reason": "Apply the user-authorized bounded context cap increase only; preserve all routing, paths, commands, permissions, and product scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:20:50.903Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete exact context now fits the bounded 327680-byte task cap; routes, permissions, scope, and all deterministic checks remain unchanged."
     }
   ]
 }
