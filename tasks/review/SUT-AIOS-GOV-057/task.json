@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:46:54.436Z",
+  "updatedDate": "2026-08-09T09:48:06.896Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -450,6 +450,13 @@
       "at": "2026-08-09T09:46:54.436Z",
       "actor": "codex-engineering-executor",
       "reason": "Apply only the bounded context cap correction required to carry verified prerequisite traces; preserve all authority and product scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:48:06.896Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Trace-inclusive context fits the bounded 393216-byte cap and every packet-required deterministic check passes; submit the final immutable repair head."
     }
   ]
 }
