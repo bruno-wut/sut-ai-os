@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:26:36.630Z",
+  "updatedDate": "2026-08-09T09:32:46.107Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -408,6 +408,13 @@
       "at": "2026-08-09T09:26:36.630Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume only the exact rename, exact-head evidence, and prerequisite-review corrections under the existing packet."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:32:46.107Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact-head verification, same-head review sequencing, rename-safe merge context, and all packet-required deterministic checks pass; submit the bounded final repair head for independent review."
     }
   ]
 }

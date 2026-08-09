@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (71 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (77 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (7 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -28,6 +28,12 @@ POSIX reviews use an isolated process group; duplicate JSON members are rejected
 merge-risk context compares exact immutable commits and maps every changed path
 to its corresponding patch; and generated material is included by hash in the
 governed context manifest.
+
+The final evidence-sequence repair also uses `--no-renames` consistently for
+changed-path inventory and per-path patches, requires an uncommitted
+`verification-<head-sha>.json` record before any real review launch, and refuses
+merge-risk review until passing plan and semantic artifacts bind that same base
+and head. Those three inputs are included in the governed context manifest.
 
 ## Scope and limitations
 
