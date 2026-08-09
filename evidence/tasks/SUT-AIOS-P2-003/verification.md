@@ -1,39 +1,70 @@
-# SUT-AIOS-P2-003 blocked readiness evidence
+# SUT-AIOS-P2-003 Implementation Evidence
 
 - **Task:** `SUT-AIOS-P2-003` — Generate observe-only executive briefing
-- **Canonical base:** `origin/main` at `dcf89c1e5e0007e1f392fad5a8bf134a19281ffe`
 - **Branch:** `codex/SUT-AIOS-P2-003-executive-briefing`
 - **Recorded:** 2026-08-09
-- **Outcome:** Blocked before implementation
+- **Implementer outcome:** Ready for independent QA; not verified or complete.
 
-## Checks
+## Scope and outcome
+
+Implemented one local, deterministic Tier-0 composition boundary only:
+
+- `generateExecutiveBriefing(input)` in
+  `services/executive-briefing/src/generate-executive-briefing-v1.mjs`;
+- revalidation of deterministic metrics through P2-001's public calculator;
+- revalidation of structured intelligence through P2-002's public request and
+  result validators; and
+- revalidation of intervention proposals through P2-004's public validator.
+
+The returned frozen decision is explicitly `observe-only`, non-authoritative,
+has `productionWritePermission: false`, and sets `actionAuthority: "none"`.
+It reports, but never resolves, unavailable providers, insufficient evidence,
+and approval-required proposals. It rejects malformed input, named raw
+guest/per-event telemetry fields, mismatched deterministic metrics, invalid
+intelligence, and invalid intervention proposals fail closed.
+
+No schema, replacement authority, provider call, data retrieval, persistence,
+scheduler, workflow, policy evaluation, approval record, authorization,
+execution, verification claim, notification, deployment, database, credential,
+or external side effect was added.
+
+## Changed implementation paths
+
+- `services/executive-briefing/src/generate-executive-briefing-v1.mjs`
+- `tests/executive-reporting/validate-executive-briefing-v1.mjs`
+- `docs/executive-reporting/EXECUTIVE_BRIEFING_V1.md`
+- `package.json` — the packet-amended exact `test:briefing` script only.
+- `evidence/tasks/SUT-AIOS-P2-003/verification.md`
+- `tasks/active/SUT-AIOS-P2-003/task.json` and removal of its former blocked
+  packet are pre-existing governed activation changes on this assigned branch.
+
+## Deterministic implementation checks
 
 | Command | Result |
 | --- | --- |
-| `npm ci --ignore-scripts --no-audit --no-fund` | Passed; installed the locked `ajv@8.17.1` dependency only. |
-| `npm run task:validate -- --task SUT-AIOS-P2-003` | Passed; packet valid and execution-ready. |
-| `npm run test:briefing` | Blocked; canonical `package.json` has no `test:briefing` script. |
-| `npm run verify:fast` | Failed at the existing V2 routing dry-run because review launches require a clean committed worktree; packet/lifecycle evidence is intentionally uncommitted on this blocked branch. Task validation, worktree self-test, and task self-test passed within the aggregate run. |
+| `npm run test:briefing` | Passed: 17 focused canonical, approval-required, unavailable-provider, insufficient-evidence, raw/per-event telemetry, contract-tampering, hostile-input, empty-evidence, deterministic, freeze, and import-boundary cases. |
+| `npm run verify:fast` | Failed only at `node scripts/codex/validate-routing.mjs`; task-packet validation plus worktree and task self-tests passed. The routing dry-run requires a clean committed worktree for review, while this active implementation and its governed activation record are intentionally uncommitted and this packet forbids committing. No bypass was used. |
+| `git diff --check` | Passed with no whitespace errors (Git emitted only the existing package.json CRLF normalization warning). |
 
-The required `test:briefing` command is absent from the canonical package
-scripts, while `package.json` is outside this packet's allowed paths. No
-implementation, package-file, dependency-version, production, deployment,
-credential, payment, inventory, or external-system change was made.
+## QA handoff and unresolved risks
 
-The aggregate verification failure does not authorize bypassing the clean-head
-review safeguard or claiming repository-wide verification.
+Independent QA must inspect the complete changed-path diff, confirm that the
+exact package-script change is the only `package.json` change, rerun the
+admitted checks from the final reviewed head, perform the required secret and
+forbidden-path inspection, and create its machine evidence under
+`evidence/verification/SUT-AIOS-P2-003/`.
 
-## Required continuation gate
-
-An approved packet amendment must either admit an existing in-scope exact
-validator command or explicitly authorize the smallest package-script change.
-After amendment, revalidate the packet, return it through the governed
-`blocked` to `ready`/`active` lifecycle, and rerun all required checks. The
-task must not be marked verified or done from this record.
+The implementation cannot establish that an upstream source truthfully
+aggregated external data, that a provider is actually unavailable, or that a
+future approval occurs. Those facts remain outside this static Tier-0 boundary.
+The packet allowlist does not authorize edits to `docs/project/ISSUES_AND_RISKS.md`;
+QA or the task owner must record any durable risk-register update through its
+separately authorized workflow.
 
 ## Recovery
 
-The only task changes are the governed lifecycle transitions from `backlog` to
-`ready` to `active` to `blocked` and this blocker record. Revert those branch
-changes or resume with an approved amended packet; preserve canonical sources
-and all protected application boundaries.
+Rollback removes only the P2-003 executive-briefing service, validator,
+documentation, implementation evidence, and the packet-amended script entry.
+Preserve P2-001, P2-002, P2-004, P2-006, P2-007, all verification evidence,
+protected architecture sources, immutable compatibility snapshot, and external
+systems.
