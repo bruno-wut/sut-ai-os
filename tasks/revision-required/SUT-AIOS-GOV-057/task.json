@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:17:50.387Z",
+  "updatedDate": "2026-08-09T09:20:25.917Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -372,6 +372,13 @@
       "at": "2026-08-09T09:17:50.387Z",
       "actor": "codex-engineering-executor",
       "reason": "Controller now records explicit child-close confirmation and requires it with taskkill success before cancelled; 71 focused checks and all packet commands pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:20:25.917Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Durable same-task review history increased the exact merge-risk context to 272331 bytes, above this packet's 262144-byte cap; a bounded cap increase is required without changing included paths or authority."
     }
   ]
 }
