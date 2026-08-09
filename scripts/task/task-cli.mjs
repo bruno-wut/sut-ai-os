@@ -97,6 +97,7 @@ function reviewScopeProjection(packet) {
   }
   return canonicalize(copy);
 }
+function computeReviewScopeHash(packet) { return sha256(JSON.stringify(reviewScopeProjection(packet))); }
 function verificationWorktreeIsClean(statusText, packet, headSha, evidencePath) {
   const reviewPaths = new Set(["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])]
     .map((stage) => `?? evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`));
@@ -135,17 +136,12 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       else {
         const seen = new Set();
         const taskEntries = trace.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`);
-        if (taskEntries.length !== 1 || typeof trace.reviewedTaskPacketText !== "string") errors.push(`${stage} app trace must bind exactly one reviewed task packet snapshot`);
+        if (taskEntries.length !== 1 || !/^[0-9a-f]{64}$/i.test(trace.reviewedTaskScopeHash ?? "")) errors.push(`${stage} app trace must bind exactly one reviewed task scope hash`);
         for (const entry of trace.contextManifest) {
           if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} app trace context entry is invalid`); continue; }
           seen.add(entry.path);
           if (entry.path === `tasks/review/${packet.taskId}/task.json`) {
-            if (typeof trace.reviewedTaskPacketText !== "string" || sha256(trace.reviewedTaskPacketText) !== entry.sha256) errors.push(`${stage} reviewed task packet snapshot does not match its context hash`);
-            else {
-              let reviewedPacket;
-              try { reviewedPacket = JSON.parse(trace.reviewedTaskPacketText); } catch { errors.push(`${stage} reviewed task packet snapshot is invalid JSON`); continue; }
-              if (JSON.stringify(reviewScopeProjection(reviewedPacket)) !== JSON.stringify(reviewScopeProjection(packet))) errors.push(`${stage} reviewed task scope does not match the current packet`);
-            }
+            if (trace.reviewedTaskScopeHash !== computeReviewScopeHash(packet)) errors.push(`${stage} reviewed task scope does not match the current packet`);
             continue;
           }
           const contextFile = path.resolve(root, entry.path);
@@ -167,16 +163,11 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         if (bound[key] !== result[key]) errors.push(`${stage} launcher trace ${key} does not bind review result`);
       }
       if (!events.some((event) => event?.event === "finish" && event?.status === "success")) errors.push(`${stage} launcher trace does not record successful completion`);
-      if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || typeof bound.reviewedTaskPacketText !== "string") {
-        errors.push(`${stage} launcher trace must bind exactly one reviewed task packet snapshot`);
+      if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || !/^[0-9a-f]{64}$/i.test(bound.reviewedTaskScopeHash ?? "")) {
+        errors.push(`${stage} launcher trace must bind exactly one reviewed task scope hash`);
       } else {
         const taskEntry = bound.contextManifest.find((entry) => entry.path === `tasks/review/${packet.taskId}/task.json`);
-        if (sha256(bound.reviewedTaskPacketText) !== taskEntry.sha256) errors.push(`${stage} launcher task snapshot does not match its context hash`);
-        else {
-          let reviewedPacket;
-          try { reviewedPacket = JSON.parse(bound.reviewedTaskPacketText); } catch { errors.push(`${stage} launcher task snapshot is invalid JSON`); continue; }
-          if (JSON.stringify(reviewScopeProjection(reviewedPacket)) !== JSON.stringify(reviewScopeProjection(packet))) errors.push(`${stage} launcher reviewed task scope does not match the current packet`);
-        }
+        if (!taskEntry?.sha256 || bound.reviewedTaskScopeHash !== computeReviewScopeHash(packet)) errors.push(`${stage} launcher reviewed task scope does not match the current packet`);
         const manifestHash = sha256(bound.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
         if (manifestHash !== result.contextManifestHash) errors.push(`${stage} launcher context manifest hash does not match its bound files`);
       }
@@ -304,13 +295,14 @@ function selfTest() {
     const reviewHead = "b".repeat(40); record = findPacket(id, root);
     const reviewedTaskPacketText = fs.readFileSync(record.file, "utf8");
     const contextManifest = [{ path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) }];
+    const reviewedTaskScopeHash = computeReviewScopeHash(record.packet);
     const contextManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
     for (const stage of ["planReview", "semanticReview", "mergeRiskReview"]) {
       const route = record.packet.routingPolicy[stage].route;
       const runId = `self-test-${stage}`;
       const review = { schemaVersion: "1.0.0", taskId: id, baseSha: "a".repeat(40), headSha: reviewHead, reviewerAgent: record.packet.routingPolicy[stage].agent, model: modelForRoute(route), reasoningEffort: record.packet.routingPolicy[stage].effort, contextManifestHash, reviewedAt: now(), stage, runId, tracePath: `evidence/reviews/${id}/runs/${runId}.json`, outputHash: "", decision: "pass", blockingFindings: [], nonBlockingRisks: [], missingNegativeTests: [], architectureAssessment: { deepModules: "fixture", hexagonalArchitecture: "fixture", eventedBoundaries: "fixture" }, exactNextAction: "continue" };
       review.outputHash = computeReviewOutputHash(review);
-      const trace = { source: "codex-app", runId, taskId: id, baseSha: review.baseSha, headSha: reviewHead, stage, reviewerAgent: review.reviewerAgent, model: review.model, reasoningEffort: review.reasoningEffort, contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskPacketText };
+      const trace = { source: "codex-app", runId, taskId: id, baseSha: review.baseSha, headSha: reviewHead, stage, reviewerAgent: review.reviewerAgent, model: review.model, reasoningEffort: review.reasoningEffort, contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskScopeHash };
       const traceFile = path.join(root, review.tracePath); fs.mkdirSync(path.dirname(traceFile), { recursive: true }); fs.writeFileSync(traceFile, `${JSON.stringify(trace)}\n`, "utf8");
       const reviewFile = path.join(root, "evidence", "reviews", id, `${stage}-${reviewHead}.json`); fs.mkdirSync(path.dirname(reviewFile), { recursive: true }); fs.writeFileSync(reviewFile, `${JSON.stringify(review)}\n`, "utf8");
     }
@@ -340,7 +332,7 @@ function main() {
   fail(`Unknown task command: ${command}`);
 }
 
-export { findPacket, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
+export { computeReviewScopeHash, findPacket, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && (path.resolve(process.argv[1]) === currentFile || ["new", "validate", "move", "start", "block", "review", "complete", "list", "status"].includes(path.basename(process.argv[1])))) {

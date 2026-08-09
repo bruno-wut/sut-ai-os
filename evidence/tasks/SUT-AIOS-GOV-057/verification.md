@@ -23,6 +23,12 @@ Changed paths are limited to the GOV-057 packet/evidence, local launcher, determ
 
 Before this implementation was committed, clean-head-only lifecycle and routing fixtures correctly rejected the dirty review worktree. They were rerun successfully on the committed head above. Independent V2 review artifacts and final verification evidence remain pending.
 
+## Independent review history
+
+- Plan review on `fde14753edd530bee23e2fd3d98887f5b7fcd090` passed: `evidence/reviews/SUT-AIOS-GOV-057/planReview-fde14753edd530bee23e2fd3d98887f5b7fcd090.json`.
+- Semantic review on the same head required revision because CLI and Codex-app review traces retained full task-packet contents. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-fde14753edd530bee23e2fd3d98887f5b7fcd090.json`.
+- The follow-up removes that payload while retaining the context manifest and canonical review-scope hash. Fresh independent reviews will bind the resulting committed head.
+
 ## Rollback
 
 Revert the GOV-057 commit/PR. A cancelled review emits its terminal state and persists no review result.

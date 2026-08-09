@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
-import { validatePacket } from "../task/task-cli.mjs";
+import { computeReviewScopeHash, validatePacket } from "../task/task-cli.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..", "..");
@@ -599,7 +599,7 @@ function prepareCodexAppReviewResult(assessment, { taskId, profile, runId, revie
     contextManifestHash: context.manifestHash, reviewedAt, stage: stageName, runId,
     tracePath: `evidence/reviews/${taskId}/runs/${runId}.json`,
   });
-  return { reviewResult, contextManifest: context.contextManifest, reviewedTaskPacketText: taskRecord.text };
+  return { reviewResult, contextManifest: context.contextManifest, reviewedTaskScopeHash: computeReviewScopeHash(taskRecord.data) };
 }
 
 function reviewArtifactPath(taskId, profile, headSha, root = repositoryRoot) {
@@ -637,7 +637,7 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
 }
 
 function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root = repositoryRoot }) {
-  const { reviewResult, contextManifest, reviewedTaskPacketText } = prepared;
+  const { reviewResult, contextManifest, reviewedTaskScopeHash } = prepared;
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(reviewResult?.runId ?? "")) throw new Error("Codex app run ID is invalid");
   const expectedStage = stageByProfile[profile];
   const resultValidation = validateReviewResult(reviewResult, { taskId, headSha });
@@ -648,8 +648,8 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   const manifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
   if (reviewResult.contextManifestHash !== manifestHash) throw new Error("Codex app review context manifest does not match its governed files");
   const taskEntry = contextManifest.find((entry) => entry.path === `tasks/review/${taskId}/task.json`);
-  if (!taskEntry || typeof reviewedTaskPacketText !== "string" || sha256(reviewedTaskPacketText) !== taskEntry.sha256) throw new Error("Codex app review does not bind the exact reviewed task packet");
-  const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, stage: reviewResult.stage, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash, outputHash: reviewResult.outputHash, contextManifest, reviewedTaskPacketText };
+  if (!taskEntry || !/^[0-9a-f]{64}$/i.test(reviewedTaskScopeHash ?? "")) throw new Error("Codex app review does not bind the exact reviewed task scope");
+  const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, stage: reviewResult.stage, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash, outputHash: reviewResult.outputHash, contextManifest, reviewedTaskScopeHash };
   const target = path.join(root, tracePath);
   const traceSerialized = `${JSON.stringify(trace, null, 2)}\n`;
   const resultTarget = reviewArtifactPath(taskId, profile, headSha, root);
@@ -901,7 +901,7 @@ function main() {
         contextManifestHash: launcherReview.contextManifestHash,
         outputHash: launcherReview.outputHash,
         contextManifest: context.contextManifest,
-        reviewedTaskPacketText: taskRecord.text,
+        reviewedTaskScopeHash: computeReviewScopeHash(taskRecord.data),
       });
       const reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
       progress({ status: "review-persisted" });

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "fde14753edd530bee23e2fd3d98887f5b7fcd090",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "c79f49e187e59efa505312293f02a9120f1bddbdbc3b995c042e77141be6ea98",
+  "reviewedAt": "2026-08-09T07:58:33.163Z",
+  "stage": "semanticReview",
+  "runId": "20260809075715300-f0297973",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809075715300-f0297973-qa-verification-luna.jsonl",
+  "outputHash": "f9fdaa49987e9e3d9085dafea3967ccfde38ac92f7390bc092eaf3ab40e2b0e4",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Review traces persist the full reviewedTaskPacketText in both the CLI review-bound event and Codex-app run envelope. This violates the governed routing policy and data-minimisation requirement that traces contain metadata only and never task contents; retain only hashes and path metadata."
+  ],
+  "nonBlockingRisks": [
+    "No independent test output or final diff evidence is present in the governed context, so negative-case coverage and complete forbidden-path compliance cannot be independently confirmed."
+  ],
+  "missingNegativeTests": [
+    "Independent evidence for empty, malformed, multi-value, and schema-invalid review output cases is not included.",
+    "Independent evidence for SIGINT and SIGTERM cancellation, escalation, single terminal cancellation, and no-persistence behavior is not included."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher has useful pure helpers for parsing, binding, validation, persistence, and cancellation, but remains a broad orchestration module with substantial lifecycle responsibilities.",
+    "hexagonalArchitecture": "The Codex child-process and persistence boundaries are explicitly isolated behind command-building and persistence helpers; the trace payload currently crosses the boundary with excessive task content.",
+    "eventedBoundaries": "Child lifecycle, output accounting, failure, and cancellation are represented through structured JSONL progress events, with graceful signal handling and terminal cancellation paths."
+  },
+  "exactNextAction": "Remove full task-packet content from CLI and Codex-app trace payloads, preserve exact binding through hashes and path metadata only, then rerun all required review-runner, lifecycle, binding, routing, task, governance, and fast verification checks with independent evidence."
+}

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewWorktreeIsClean } from "../../scripts/codex/launch.mjs";
-import { createPacket, findPacket, readPacketAt, transition, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
+import { computeReviewScopeHash, createPacket, findPacket, readPacketAt, transition, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
 import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
@@ -48,6 +48,7 @@ try {
   transition(id, "review", "Fixture is ready for independent review.", "codex-engineering-executor", root);
   record = findPacket(id, root);
   const reviewedTaskPacketText = fs.readFileSync(record.file, "utf8");
+  const reviewedTaskScopeHash = computeReviewScopeHash(record.packet);
   const contextManifest = [{ path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) }];
   const contextManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
 
@@ -76,7 +77,7 @@ try {
     fs.mkdirSync(path.dirname(traceFile), { recursive: true });
     const traceSerialized = [
       JSON.stringify({ event: "start", taskId: id, agentId: agent, route, model }),
-      JSON.stringify({ event: "review-bound", runId: review.runId, taskId: id, baseSha, headSha, stage, reviewerAgent: agent, model, reasoningEffort: "high", contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskPacketText }),
+      JSON.stringify({ event: "review-bound", runId: review.runId, taskId: id, baseSha, headSha, stage, reviewerAgent: agent, model, reasoningEffort: "high", contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskScopeHash }),
       JSON.stringify({ event: "finish", status: "success", exitCode: 0 })
     ].join("\n") + "\n";
     fs.writeFileSync(traceFile, traceSerialized);
@@ -153,6 +154,9 @@ try {
     }
     const artifact = persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot });
     appStatus.push(`?? ${artifact}`, `?? ${prepared.reviewResult.tracePath}`);
+    const persistedTrace = JSON.parse(fs.readFileSync(path.join(appRoot, prepared.reviewResult.tracePath), "utf8"));
+    assert.equal("reviewedTaskPacketText" in persistedTrace, false, "Codex app trace excludes full task-packet contents");
+    assert.match(persistedTrace.reviewedTaskScopeHash, /^[0-9a-f]{64}$/i, "Codex app trace binds a canonical task scope hash");
     if (stage === "planReview") {
       const overwritten = structuredClone(prepared);
       overwritten.reviewResult.exactNextAction = "different output using the same run";
@@ -164,10 +168,10 @@ try {
       const traceFile = path.join(appRoot, prepared.reviewResult.tracePath);
       const originalTrace = fs.readFileSync(traceFile, "utf8");
       const incompleteTrace = JSON.parse(originalTrace);
-      delete incompleteTrace.reviewedTaskPacketText;
+      delete incompleteTrace.reviewedTaskScopeHash;
       incompleteTrace.contextManifest = incompleteTrace.contextManifest.filter((entry) => entry.path !== `tasks/review/${appTaskId}/task.json`);
       fs.writeFileSync(traceFile, `${JSON.stringify(incompleteTrace, null, 2)}\n`);
-      assert.match(validateRequiredReviewArtifacts(readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json")), appRoot, appHead, appBase).join("; "), /exactly one reviewed task packet/, "app envelope without the governed task snapshot fails closed");
+      assert.match(validateRequiredReviewArtifacts(readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json")), appRoot, appHead, appBase).join("; "), /exactly one reviewed task scope hash/, "app envelope without the governed task scope hash fails closed");
       fs.writeFileSync(traceFile, originalTrace);
     }
   }
