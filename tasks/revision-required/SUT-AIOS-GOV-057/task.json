@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:36:26.725Z",
+  "updatedDate": "2026-08-09T08:42:35.839Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -267,6 +267,13 @@
       "at": "2026-08-09T08:36:26.725Z",
       "actor": "codex-engineering-executor",
       "reason": "Merge-risk context repair passed clean-head deterministic checks; request final independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:42:35.839Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent merge-risk review on c403c167 requires final-head verification refresh, Windows cancellation safety, and deterministic merge-risk-context coverage before merge."
     }
   ]
 }
