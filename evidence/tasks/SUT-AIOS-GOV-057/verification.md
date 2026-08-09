@@ -73,6 +73,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic review on `51e0519f1384cacac617d35335046270386e81a0` required the cancellation controller itself to retain explicit root-child close confirmation. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-51e0519f1384cacac617d35335046270386e81a0.json`; the controller now requires and tests both confirmations before `cancelled`.
 - After that correction passed plan and semantic review on `baed0a9d72cb71417d8bddde00da8ce792c8fe8c`, the complete exact merge context measured 272331 bytes because durable same-task review history is itself part of the branch diff. The user-authorized packet amendment raises only this task's cap from 262144 to 327680 bytes, below the repository-wide 524288-byte ceiling; it changes no included path, route, effort, permission, command, or product scope.
 - After the shared gate added the required exact-head record and two prerequisite traces, merge preflight on `8a14b5813f7bac562de6426c566275ddf59f69a3` measured 346512 bytes. The task-local cap is therefore 393216 bytes, still below the repository ceiling, with no included-path, route, effort, permission, command, or product-scope change.
+- After both adapters converged on the complete final persistence gate, preflight on `b7e6daac52e571a33a4e43aa7b143642f9e2da9f` measured 405024 bytes. The final task-local cap is 458752 bytes, still below the repository ceiling, with the same unchanged authority and product scope.
 
 ## Rollback
 
