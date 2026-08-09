@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "5374caef54f6a6349682daf14180cb4c82a4a0f5",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "d60fee9718159e1eb129dec0e5e0f5f87c17696a46526eb697452a734615debf",
+  "reviewedAt": "2026-08-09T09:25:02.401Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260809092302324-1d01fcd5",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809092302324-1d01fcd5-qa-verification-sol.jsonl",
+  "outputHash": "c9cc6157bc4ce5e4de1bd450264360527c5fa551fb86080df4b9aa6268a0cad6",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The merge-risk context is not complete for renames. Its changed-path inventory uses `git diff --name-only` with normal rename detection, while per-path patches use `--no-renames`. A rename can therefore inventory only the destination and omit the source deletion, including a source under a forbidden boundary. The exact committed scope and rollback coverage are not reliably established.",
+    "Verification is not credibly bound to reviewed head 5374caef54f6a6349682daf14180cb4c82a4a0f5. The verification JSON is timestamped 2026-08-09T09:17:27.625Z, before the packet's 09:20 context-cap amendment and final review transition, and contains no implementation or review-head SHA. The Markdown assertion that checks were rerun on the clean final head is not independently auditable and conflicts with the recorded chronology.",
+    "The governed context contains no planReview or semanticReview artifact bound to head 5374caef54f6a6349682daf14180cb4c82a4a0f5; the newest supplied semantic pass is bound to baed0a9d72cb71417d8bddde00da8ce792c8fe8c. Consequently the packet-required exact-head independent review sequence and evidence integrity are not established for this merge-risk decision."
+  ],
+  "nonBlockingRisks": [
+    "Review stdout and stderr remain accumulated in memory without an explicit byte ceiling, permitting an unexpectedly large child output to exhaust launcher memory.",
+    "The launcher still combines routing, context generation, process control, tracing, assessment parsing, binding, and persistence, creating broad regression coupling.",
+    "persistCodexAppReviewResult checks reviewedTaskScopeHash only for hexadecimal form during persistence; mismatch with the current packet is detected later by lifecycle validation rather than at the persistence boundary."
+  ],
+  "missingNegativeTests": [
+    "Cover file renames, including a rename from a forbidden path to an allowed path, and prove the generated inventory and patches represent both source deletion and destination addition without relying on repository rename configuration.",
+    "Bind deterministic-check evidence to the exact tested commit and test rejection of stale or SHA-less verification records after packet, evidence, or lifecycle changes.",
+    "Require and test same-head planReview and semanticReview artifacts before mergeRiskReview can be accepted or used for verification.",
+    "Enforce and test a bounded stdout and stderr byte limit with fail-closed termination and no review persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The repair provides focused helpers for assessment parsing, context construction, cancellation, terminal control, and persistence, but launch.mjs remains a broad orchestration module and the rename-inconsistent diff adapter weakens its claimed complete merge-scope abstraction.",
+    "hexagonalArchitecture": "No production, deployment, provider-fallback, dependency, schema, P3-001, or external operational authority is widened. Repository review and process execution remain local adapters, although Codex-app scope validation should fail at persistence rather than only at later lifecycle verification.",
+    "eventedBoundaries": "Redacted progress and guarded terminal events substantially improve process lifecycle observability, and Windows cancellation now waits for termination outcome plus root-child close. The remaining blockers concern incomplete Git boundary representation and unproven exact-head evidence sequencing rather than cancellation event ordering."
+  },
+  "exactNextAction": "Return GOV-057 to revision-required; generate changed paths and per-path patches under one consistent no-rename, literal-pathspec policy that represents both sides of renames; add rename-boundary tests; rerun every packet command on a new immutable committed head; record auditable SHA-bound verification; obtain planReview and semanticReview passes for that same head; then request a fresh mergeRiskReview."
+}

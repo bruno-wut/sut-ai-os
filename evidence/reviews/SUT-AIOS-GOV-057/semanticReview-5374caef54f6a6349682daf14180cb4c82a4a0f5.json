@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "5374caef54f6a6349682daf14180cb4c82a4a0f5",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "d83a658c2db585136f66cfba75219b0134f6ccf58119d6fbc85a01aae9a599d4",
+  "reviewedAt": "2026-08-09T09:22:58.015Z",
+  "stage": "semanticReview",
+  "runId": "20260809092156948-7f3b0389",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809092156948-7f3b0389-qa-verification-luna.jsonl",
+  "outputHash": "8ac395f50c5b6970b43637a86fb23162d06d23ea3204360230463eb659293ede",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, binding, persistence, cancellation, and progress concerns are separated into focused modules.",
+    "hexagonalArchitecture": "Codex child-process execution is isolated behind launcher and termination boundaries; review policy remains outside provider execution.",
+    "eventedBoundaries": "Structured progress events and explicit terminal-state control provide clear launch, output, failure, completion, and cancellation boundaries."
+  },
+  "exactNextAction": "Record this semanticReview result and proceed to the required independent mergeRiskReview; do not merge or deploy."
+}
