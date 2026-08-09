@@ -6,9 +6,9 @@ Bounded Workflow V2 review-runner repair only. P3-001 and all production, deploy
 
 ## Implementation evidence
 
-Committed implementation head: `27505c85fd3506f5178c85477fe0e3a6c069c54f`.
+Committed implementation head: `3acb976036257d559076b716751014cc17cda3b9`.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (16 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (32 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (7 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -17,11 +17,22 @@ Committed implementation head: `27505c85fd3506f5178c85477fe0e3a6c069c54f`.
 - `npm run verify:fast` — passed.
 - `git diff --check` — passed.
 
+The final repair closes the exact prior merge-risk findings: Windows cancellation
+targets the live child tree immediately without retaining a PID for delayed
+reuse-prone escalation; POSIX reviews run in an isolated process group with
+graceful group signalling and live-child-guarded escalation; merge-risk context
+compares the exact immutable base and head commits; and generated review material
+is included by hash in the governed context manifest. Deterministic negative
+coverage includes exited children, duplicate signals, unrelated sibling
+isolation, fixed Windows tree termination, exact base/head Git arguments, Git
+failure, context budget rejection, sensitive-material rejection, and generated
+manifest binding.
+
 ## Scope and limitations
 
 Changed paths are limited to the GOV-057 packet/evidence, local launcher, deterministic test, routing documentation, and risk register. No fallback, package/dependency, schema, production, provider, or P3-001 change was made.
 
-Before this implementation was committed, clean-head-only lifecycle and routing fixtures correctly rejected the dirty review worktree. They were rerun successfully on the committed head above. Independent V2 review artifacts and final verification evidence remain pending.
+Before this implementation was committed, clean-head-only lifecycle and routing fixtures correctly rejected the dirty review worktree. They were rerun successfully on the committed head above. Fresh independent V2 review artifacts remain pending.
 
 ## Independent review history
 
@@ -31,6 +42,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - The fresh plan review on `408f99d8f2284da062f92a3bd28d9c5ef01c82c6` passed. Its semantic review required one further revision because specialised rejection paths did not consistently emit a single terminal `failed` progress event; the artifact is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-408f99d8f2284da062f92a3bd28d9c5ef01c82c6.json`.
 - The plan review on `4f02235afdecdf2cfeb2e6df40ed40a39e495629` required revision because this write-capable repair packet has `workspaceWrite: false`, making the designated Terra implementation route non-executable. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/planReview-4f02235afdecdf2cfeb2e6df40ed40a39e495629.json`. No packet authority was expanded.
 - On 2026-08-09, the user explicitly approved the smallest packet amendment: `workspaceWrite: true` for the existing Terra implementation stage and existing GOV-057 allowlist only. No production, provider, deployment, fallback, path, command, route, effort, or P3-001 authority changed.
+- Merge-risk review on `c403c1674d01450a072ed3bda556d95d21f5d361` required final-head evidence, platform-safe cancellation, and deterministic merge-risk-context coverage. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-c403c1674d01450a072ed3bda556d95d21f5d361.json`; the implementation head above addresses each item without widening scope.
 
 ## Rollback
 
