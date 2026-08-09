@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "b7e6daac52e571a33a4e43aa7b143642f9e2da9f",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "ae22fedb9076913b0530ce74a05df803f6279e30c69c79932647877f0eca29fe",
+  "reviewedAt": "2026-08-09T10:10:46.557Z",
+  "stage": "semanticReview",
+  "runId": "20260809100906647-3ed3b64f",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809100906647-3ed3b64f-qa-verification-luna.jsonl",
+  "outputHash": "ae574cdd32f427688a5255c13cf90dfef220c61f38924dc6355f5d9cd10b8990",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "The bounded review-runner logic is cohesive and preserves task, routing, validation, and persistence boundaries.",
+    "hexagonalArchitecture": "Provider execution, filesystem persistence, and review assessment binding remain explicit adapter boundaries without widening authority.",
+    "eventedBoundaries": "Child lifecycle, progress, failure, and cancellation events are structured, redacted, and terminal-state controlled."
+  },
+  "exactNextAction": "Persist this semanticReview result for head b7e6daac52e571a33a4e43aa7b143642f9e2da9f and proceed to the required mergeRiskReview."
+}
