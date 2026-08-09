@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "bfbb594db44b99cb5f8fab7fc28f34ee50afa4d1",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "93fe067b7e8900a7425c2a2d6725d4c825ac3efcc6a856c38814965648ba0a35",
+  "reviewedAt": "2026-08-09T09:01:00.568Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260809085832153-519805d6",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809085832153-519805d6-qa-verification-sol.jsonl",
+  "outputHash": "fe5ebc6909a71d9ed545444a436331b55c9c63e7ebacb731a65d02338ece54e2",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Windows cancellation is fire-and-forget: terminateChildTree returns success immediately, ignores taskkill errors and nonzero exit status, and provides no guarded retry or terminal failure path. If taskkill cannot terminate the tree, the Codex child can remain live indefinitely, so no cancelled terminal event is emitted and the orphaned-process failure remains possible.",
+    "Verification evidence is bound to implementation commit 3acb976036257d559076b716751014cc17cda3b9 rather than reviewed head bfbb594db44b99cb5f8fab7fc28f34ee50afa4d1. The governed material does not establish that all packet-required checks were rerun on, or that changes after 3acb976 were limited to independently validated evidence-only commits.",
+    "The changed-path inventory includes tests/review/validate-review-binding.mjs, but the supplied exact canonical diff contains no patch for that path. Consequently the governed merge scope is internally inconsistent and forbidden-boundary, regression, and rollback assessment of the complete committed diff cannot be finalized."
+  ],
+  "nonBlockingRisks": [
+    "parseReviewAssessment accepts duplicate JSON member names through JSON.parse last-value semantics, weakening the claim that stdout contains an unambiguous assessment object with exactly the required fields.",
+    "The launcher remains a broad module combining authorization, context generation, child-process control, lifecycle events, result binding, and persistence, increasing regression coupling for future changes."
+  ],
+  "missingNegativeTests": [
+    "Exercise real or platform-faithful Windows taskkill success, spawn error, nonzero exit, access-denied, missing-command, and already-exited races; assert bounded termination, exactly one terminal outcome, and no review artifact.",
+    "Prove cancellation cannot remain indefinitely in cancellation-requested state when tree termination fails, and define a fail-closed timeout or confirmed termination result.",
+    "Provide deterministic evidence that every commit after 3acb976036257d559076b716751014cc17cda3b9 is evidence-only, or rerun all packet-required checks on bfbb594db44b99cb5f8fab7fc28f34ee50afa4d1.",
+    "Regenerate and assert completeness of the base-to-head diff so every path in the changed-path inventory, including tests/review/validate-review-binding.mjs, has corresponding review material.",
+    "Test duplicate-key assessment objects if unambiguous JSON member uniqueness is part of the JSON-only contract."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The repair is contained within existing governance modules, but launch.mjs remains overly broad and the unconfirmed Windows termination adapter undermines the depth of its cancellation abstraction.",
+    "hexagonalArchitecture": "No production, provider-fallback, dependency, schema, P3-001, or external operational authority is widened; however, the Windows process adapter does not report whether its termination command actually succeeded.",
+    "eventedBoundaries": "Redacted progress and singular terminal controllers are present, but Windows cancellation can emit escalation without confirmed tree termination and then wait indefinitely without a cancelled or failed terminal event."
+  },
+  "exactNextAction": "Return GOV-057 to revision-required; make Windows tree termination observable and bounded with fail-closed handling for taskkill failure, add platform-faithful negative coverage, regenerate a complete canonical diff containing every listed path, rerun every packet-required check on the final committed review head, refresh exact-head verification evidence, and then request fresh SHA-bound plan, semantic, and merge-risk reviews."
+}

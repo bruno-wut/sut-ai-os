@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:55:36.852Z",
+  "updatedDate": "2026-08-09T09:02:37.450Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -288,6 +288,13 @@
       "at": "2026-08-09T08:55:36.852Z",
       "actor": "codex-engineering-executor",
       "reason": "Exact repair and all packet-required deterministic checks passed on committed implementation head 3acb976; submit the evidence-bearing head for fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:02:37.450Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent merge-risk review on bfbb594 requires observable bounded Windows tree termination, non-self-referential exact-head evidence, and explicit changed-path-to-patch completeness."
     }
   ]
 }
