@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
-import { computeReviewScopeHash, validatePacket } from "../task/task-cli.mjs";
+import { computeReviewScopeHash, validatePacket, validateRequiredReviewArtifacts } from "../task/task-cli.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..", "..");
@@ -116,14 +116,14 @@ function parseArguments(values) {
   return parsed;
 }
 
-function readText(relativePath) {
-  const absolutePath = path.resolve(repositoryRoot, relativePath);
-  const relative = path.relative(repositoryRoot, absolutePath);
+function readText(relativePath, root = repositoryRoot) {
+  const absolutePath = path.resolve(root, relativePath);
+  const relative = path.relative(root, absolutePath);
   if (relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error(`Context path escapes repository: ${relativePath}`);
   }
   const realPath = fs.realpathSync(absolutePath);
-  const realRelative = path.relative(fs.realpathSync(repositoryRoot), realPath);
+  const realRelative = path.relative(fs.realpathSync(root), realPath);
   if (realRelative.startsWith("..") || path.isAbsolute(realRelative)) {
     throw new Error(`Context symlink escapes repository: ${relativePath}`);
   }
@@ -190,18 +190,18 @@ function discoverAgents() {
   return agents;
 }
 
-function findTaskPacket(taskId) {
+function findTaskPacket(taskId, root = repositoryRoot) {
   const matches = [];
   for (const state of taskStates) {
     const jsonPath = path.join("tasks", state, taskId, "task.json");
     const markdownPath = path.join("tasks", state, taskId, "TASK.md");
-    if (fs.existsSync(path.join(repositoryRoot, jsonPath))) {
-      const record = readText(jsonPath);
+    if (fs.existsSync(path.join(root, jsonPath))) {
+      const record = readText(jsonPath, root);
       let data;
       try { data = JSON.parse(record.text); } catch { throw new Error(`Cannot parse canonical JSON task packet: ${record.relativePath}`); }
       matches.push({ ...record, state, format: "json", data });
-    } else if (fs.existsSync(path.join(repositoryRoot, markdownPath))) {
-      matches.push({ ...readText(markdownPath), state, format: "markdown" });
+    } else if (fs.existsSync(path.join(root, markdownPath))) {
+      matches.push({ ...readText(markdownPath, root), state, format: "markdown" });
     }
   }
   if (matches.length === 0) throw new Error(`Missing eligible task packet for ${taskId}`);
@@ -420,7 +420,15 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
   if (profile === "merge-risk-review" && taskId && headSha) {
     for (const prerequisiteProfile of ["plan-review", "semantic-qa"]) {
       const prerequisitePath = path.relative(repositoryRoot, reviewArtifactPath(taskId, prerequisiteProfile, headSha)).replaceAll(path.sep, "/");
-      if (fs.existsSync(path.resolve(repositoryRoot, prerequisitePath))) baseFiles.push(prerequisitePath);
+      if (fs.existsSync(path.resolve(repositoryRoot, prerequisitePath))) {
+        baseFiles.push(prerequisitePath);
+        try {
+          const prerequisite = JSON.parse(fs.readFileSync(path.resolve(repositoryRoot, prerequisitePath), "utf8"));
+          if (typeof prerequisite.tracePath === "string" && fs.existsSync(path.resolve(repositoryRoot, prerequisite.tracePath))) baseFiles.push(prerequisite.tracePath);
+        } catch {
+          // The shared evidence-sequence gate reports malformed prerequisite evidence.
+        }
+      }
     }
   }
 
@@ -856,8 +864,8 @@ function validateExactHeadVerification(record, taskId, headSha) {
     && record.checks.length > 0;
 }
 
-function requireExactHeadVerification(taskId, headSha) {
-  const target = exactHeadVerificationPath(taskId, headSha);
+function requireExactHeadVerification(taskId, headSha, root = repositoryRoot) {
+  const target = exactHeadVerificationPath(taskId, headSha, root);
   let record;
   try { record = JSON.parse(fs.readFileSync(target, "utf8")); }
   catch { throw new Error(`Exact-head verification evidence is missing for ${taskId} at ${headSha}`); }
@@ -865,20 +873,30 @@ function requireExactHeadVerification(taskId, headSha) {
   return target;
 }
 
-function validateMergeRiskPrerequisite(review, { taskId, baseSha, headSha, stage }) {
-  const validation = validateReviewResult(review, { taskId, baseSha, headSha });
-  return validation.valid && review.stage === stage && review.decision === "pass";
+function requireContextManifestFile(contextManifest, relativePath, root) {
+  const normalized = relativePath.replaceAll(path.sep, "/");
+  const target = path.resolve(root, normalized);
+  const entry = contextManifest.find((item) => item?.path === normalized);
+  if (!entry || entry.sha256 !== sha256(fs.readFileSync(target))) {
+    throw new Error(`Review context does not bind required evidence: ${normalized}`);
+  }
 }
 
-function requireMergeRiskPrerequisites(taskId, baseSha, headSha) {
-  for (const [profile, stage] of [["plan-review", "planReview"], ["semantic-qa", "semanticReview"]]) {
-    const target = reviewArtifactPath(taskId, profile, headSha);
-    let review;
-    try { review = JSON.parse(fs.readFileSync(target, "utf8")); }
-    catch { throw new Error(`Merge-risk review requires same-head ${stage} evidence`); }
-    if (!validateMergeRiskPrerequisite(review, { taskId, baseSha, headSha, stage })) {
-      throw new Error(`Merge-risk review requires a passing same-head ${stage} artifact`);
-    }
+function requireReviewEvidenceSequence({ taskRecord, profile, baseSha, headSha, contextManifest, root = repositoryRoot }) {
+  const packet = taskRecord.data ?? taskRecord;
+  const taskId = packet.taskId;
+  const exactVerification = requireExactHeadVerification(taskId, headSha, root);
+  requireContextManifestFile(contextManifest, path.relative(root, exactVerification), root);
+  if (profile !== "merge-risk-review") return;
+
+  const prerequisiteStages = ["planReview", "semanticReview"];
+  const errors = validateRequiredReviewArtifacts(packet, root, headSha, baseSha, prerequisiteStages);
+  if (errors.length > 0) throw new Error(`Merge-risk review prerequisite evidence is invalid: ${errors.join("; ")}`);
+  for (const stage of prerequisiteStages) {
+    const artifactPath = path.join(root, "evidence", "reviews", taskId, `${stage}-${headSha}.json`);
+    const review = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+    requireContextManifestFile(contextManifest, path.relative(root, artifactPath), root);
+    requireContextManifestFile(contextManifest, review.tracePath, root);
   }
 }
 
@@ -914,7 +932,10 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   if (reviewResult.contextManifestHash !== manifestHash) throw new Error("Codex app review context manifest does not match its governed files");
   const taskEntry = contextManifest.find((entry) => entry.path === `tasks/review/${taskId}/task.json`);
   if (!taskEntry || !/^[0-9a-f]{64}$/i.test(reviewedTaskScopeHash ?? "")) throw new Error("Codex app review does not bind the exact reviewed task scope");
-  const trace = { source: "codex-app", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, stage: reviewResult.stage, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash, outputHash: reviewResult.outputHash, contextManifest, reviewedTaskScopeHash };
+  const taskRecord = findTaskPacket(taskId, root);
+  if (reviewedTaskScopeHash !== computeReviewScopeHash(taskRecord.data)) throw new Error("Codex app reviewed task scope does not match the current packet");
+  requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewResult.baseSha, headSha, contextManifest, root });
+  const trace = { source: "codex-app", status: "success", runId: reviewResult.runId, taskId: reviewResult.taskId, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, stage: reviewResult.stage, reviewerAgent: reviewResult.reviewerAgent, model: reviewResult.model, reasoningEffort: reviewResult.reasoningEffort, contextManifestHash: reviewResult.contextManifestHash, outputHash: reviewResult.outputHash, contextManifest, reviewedTaskScopeHash };
   const target = path.join(root, tracePath);
   const traceSerialized = `${JSON.stringify(trace, null, 2)}\n`;
   const resultTarget = reviewArtifactPath(taskId, profile, headSha, root);
@@ -1029,13 +1050,14 @@ function main() {
   }
   const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
   const dryRun = Boolean(argumentsObject["dry-run"]);
-  if (reviewProfile && !dryRun) requireExactHeadVerification(taskId, reviewedHeadSha);
-  if (profile === "merge-risk-review" && !dryRun) requireMergeRiskPrerequisites(taskId, reviewedBaseSha, reviewedHeadSha);
 
   const trace = createTrace(taskId, agentId, selectedRoute);
   trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
 
   const context = buildContextProfile(agent, taskRecord, selectedRoute, selectedModel, effort, profile);
+  if (reviewProfile && !dryRun) {
+    requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewedBaseSha, headSha: reviewedHeadSha, contextManifest: context.contextManifest });
+  }
   const sandbox = workspaceWrite ? "workspace-write" : "read-only";
 
   if (argumentsObject["dry-run"]) {
@@ -1216,4 +1238,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateExactHeadVerification, validateMergeRiskPrerequisite };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateExactHeadVerification };

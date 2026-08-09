@@ -108,11 +108,11 @@ function verificationWorktreeIsClean(statusText, packet, headSha, evidencePath) 
     return line.startsWith("?? ") && nonEmptyString(evidencePath) && packet.evidence?.includes(normalize(evidencePath)) && file === normalize(evidencePath);
   });
 }
-function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root)) {
+function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root), requiredStages = null) {
   const errors = [];
   if (!/^[0-9a-f]{40}$/i.test(headSha ?? "")) return ["cannot determine committed review head SHA"];
   if (!baseSha) return ["cannot determine canonical review base SHA"];
-  const stages = ["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])];
+  const stages = requiredStages ?? ["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])];
   for (const stage of stages) {
     const expected = packet.routingPolicy?.[stage];
     const file = path.join(root, "evidence", "reviews", packet.taskId, `${stage}-${headSha}.json`);
@@ -132,6 +132,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         if (trace[key] !== result[key]) errors.push(`${stage} app trace ${key} does not bind review result`);
       }
       if (trace.source !== "codex-app") errors.push(`${stage} trace is not a Codex app envelope`);
+      if (trace.status !== "success") errors.push(`${stage} app trace does not record successful completion`);
       if (!Array.isArray(trace.contextManifest) || trace.contextManifest.length === 0) errors.push(`${stage} app trace has no governed context manifest`);
       else {
         const seen = new Set();
@@ -306,7 +307,7 @@ function selfTest() {
       const runId = `self-test-${stage}`;
       const review = { schemaVersion: "1.0.0", taskId: id, baseSha: "a".repeat(40), headSha: reviewHead, reviewerAgent: record.packet.routingPolicy[stage].agent, model: modelForRoute(route), reasoningEffort: record.packet.routingPolicy[stage].effort, contextManifestHash, reviewedAt: now(), stage, runId, tracePath: `evidence/reviews/${id}/runs/${runId}.json`, outputHash: "", decision: "pass", blockingFindings: [], nonBlockingRisks: [], missingNegativeTests: [], architectureAssessment: { deepModules: "fixture", hexagonalArchitecture: "fixture", eventedBoundaries: "fixture" }, exactNextAction: "continue" };
       review.outputHash = computeReviewOutputHash(review);
-      const trace = { source: "codex-app", runId, taskId: id, baseSha: review.baseSha, headSha: reviewHead, stage, reviewerAgent: review.reviewerAgent, model: review.model, reasoningEffort: review.reasoningEffort, contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskScopeHash };
+      const trace = { source: "codex-app", status: "success", runId, taskId: id, baseSha: review.baseSha, headSha: reviewHead, stage, reviewerAgent: review.reviewerAgent, model: review.model, reasoningEffort: review.reasoningEffort, contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskScopeHash };
       const traceFile = path.join(root, review.tracePath); fs.mkdirSync(path.dirname(traceFile), { recursive: true }); fs.writeFileSync(traceFile, `${JSON.stringify(trace)}\n`, "utf8");
       const reviewFile = path.join(root, "evidence", "reviews", id, `${stage}-${reviewHead}.json`); fs.mkdirSync(path.dirname(reviewFile), { recursive: true }); fs.writeFileSync(reviewFile, `${JSON.stringify(review)}\n`, "utf8");
     }

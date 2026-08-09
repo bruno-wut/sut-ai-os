@@ -1,6 +1,6 @@
 import nodeAssert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial, validateExactHeadVerification, validateMergeRiskPrerequisite } from "../../scripts/codex/launch.mjs";
+import { buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -197,23 +197,6 @@ const exactVerification = { schemaVersion: "1.0.0", taskId: "SUT-AIOS-GOV-057", 
 assert.equal(validateExactHeadVerification(exactVerification, exactVerification.taskId, headSha), true, "exact-head verification binds task, head, status, reviewer, and checks");
 assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: baseSha }, exactVerification.taskId, headSha), false, "stale verification head is rejected");
 assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: undefined }, exactVerification.taskId, headSha), false, "SHA-less verification is rejected");
-
-const prerequisite = buildLauncherBoundReviewResult(assessment, {
-  taskId: exactVerification.taskId,
-  stage: "planReview",
-  reviewerAgent: "engineering-planner",
-  model: "gpt-5.6-sol",
-  reasoningEffort: "high",
-  baseSha,
-  headSha,
-  contextManifestHash: "d".repeat(64),
-  reviewedAt: "2026-08-09T09:30:00.000Z",
-  runId: "trace-prerequisite",
-  tracePath: `evidence/reviews/${exactVerification.taskId}/runs/trace-prerequisite.json`,
-});
-assert.equal(validateMergeRiskPrerequisite(prerequisite, { taskId: exactVerification.taskId, baseSha, headSha, stage: "planReview" }), true, "merge-risk prerequisite accepts a passing same-head bound review");
-assert.equal(validateMergeRiskPrerequisite({ ...prerequisite, headSha: baseSha }, { taskId: exactVerification.taskId, baseSha, headSha, stage: "planReview" }), false, "merge-risk prerequisite rejects a stale review head");
-assert.equal(validateMergeRiskPrerequisite({ ...prerequisite, decision: "revision-required" }, { taskId: exactVerification.taskId, baseSha, headSha, stage: "planReview" }), false, "merge-risk prerequisite rejects a non-passing review");
 
 const terminalEvents = [];
 const traceEvents = [];

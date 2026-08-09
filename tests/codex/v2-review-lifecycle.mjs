@@ -92,6 +92,12 @@ try {
   }
 
   assert.deepEqual(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha), [], "all required review artifacts bind the exact review head and base");
+  const planReview = JSON.parse(fs.readFileSync(path.join(root, paths[0]), "utf8"));
+  const planTraceFile = path.join(root, planReview.tracePath);
+  const originalPlanTrace = fs.readFileSync(planTraceFile, "utf8");
+  fs.writeFileSync(planTraceFile, originalPlanTrace.replace('"status":"success"', '"status":"failed"'));
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /does not record successful completion/, "failed prerequisite launcher trace cannot satisfy a merge gate");
+  fs.writeFileSync(planTraceFile, originalPlanTrace);
   assert.throws(() => transition(id, "verified", "Missing evidence must fail.", "qa-verification", root, { evidence: "evidence/tasks/SUT-TEST-V2-REVIEW/missing.md", reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /does not exist/, "verified transition rejects a missing evidence reference");
   assert.equal(findPacket(id, root).state, "review", "missing evidence rejection leaves the task in review");
   const externalEvidence = path.join(externalRoot, "outside.md");
@@ -145,6 +151,15 @@ try {
   const appBase = comparisonBaseSha();
   const appProfiles = [["plan-review", "planReview"], ["semantic-qa", "semanticReview"], ["merge-risk-review", "mergeRiskReview"]];
   const appStatus = [];
+  const exactVerificationRelative = `evidence/verification/${appTaskId}/verification-${appHead}.json`;
+  const exactVerificationFile = path.join(appRoot, exactVerificationRelative);
+  const bindAppContextFile = (prepared, relativePath) => {
+    if (!prepared.contextManifest.some((entry) => entry.path === relativePath)) {
+      prepared.contextManifest.push({ path: relativePath, sha256: sha256(fs.readFileSync(path.join(appRoot, relativePath))) });
+    }
+    prepared.reviewResult.contextManifestHash = sha256(prepared.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+    prepared.reviewResult.outputHash = computeReviewOutputHash(prepared.reviewResult);
+  };
   for (const [profile, stage] of appProfiles) {
     const runId = `fixture-app-${stage}`;
     const prepared = prepareCodexAppReviewResult(assessment(`${stage} app review passed`), { taskId: appTaskId, profile, runId, reviewedAt: "2026-08-08T12:00:00.000Z" });
@@ -154,6 +169,40 @@ try {
       const destination = path.join(appRoot, entry.path);
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       fs.copyFileSync(path.join(repositoryRoot, entry.path), destination);
+    }
+    if (stage === "planReview") {
+      assert.throws(() => persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /Exact-head verification evidence is missing/, "Codex app persistence rejects a review without exact-head verification");
+      fs.mkdirSync(path.dirname(exactVerificationFile), { recursive: true });
+      fs.writeFileSync(exactVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: appTaskId, headSha: appHead, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-08T12:00:00.000Z", checks: ["fixture checks passed"] }, null, 2)}\n`);
+    }
+    bindAppContextFile(prepared, exactVerificationRelative);
+    if (stage === "mergeRiskReview") {
+      for (const prerequisiteStage of ["planReview", "semanticReview"]) {
+        const prerequisiteRelative = `evidence/reviews/${appTaskId}/${prerequisiteStage}-${appHead}.json`;
+        const prerequisite = JSON.parse(fs.readFileSync(path.join(appRoot, prerequisiteRelative), "utf8"));
+        bindAppContextFile(prepared, prerequisiteRelative);
+        bindAppContextFile(prepared, prerequisite.tracePath);
+      }
+
+      const semanticRelative = `evidence/reviews/${appTaskId}/semanticReview-${appHead}.json`;
+      const semanticFile = path.join(appRoot, semanticRelative);
+      const originalSemantic = fs.readFileSync(semanticFile, "utf8");
+      const semantic = JSON.parse(originalSemantic);
+      const semanticTraceFile = path.join(appRoot, semantic.tracePath);
+      const originalSemanticTrace = fs.readFileSync(semanticTraceFile, "utf8");
+      fs.rmSync(semanticFile);
+      assert.throws(() => persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /missing required semanticReview artifact/, "Codex app merge gate rejects a missing same-head prerequisite");
+      fs.writeFileSync(semanticFile, originalSemantic);
+      fs.rmSync(semanticTraceFile);
+      assert.throws(() => persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /trace is missing or invalid/, "Codex app merge gate rejects a missing prerequisite trace");
+      fs.writeFileSync(semanticTraceFile, originalSemanticTrace);
+      for (const [field, value, pattern] of [["reviewerAgent", "engineering-planner", /reviewerAgent/], ["model", "gpt-5.6-sol", /model/], ["reasoningEffort", "medium", /reasoningEffort/]]) {
+        const forged = { ...semantic, [field]: value };
+        forged.outputHash = computeReviewOutputHash(forged);
+        fs.writeFileSync(semanticFile, `${JSON.stringify(forged, null, 2)}\n`);
+        assert.throws(() => persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), pattern, `Codex app merge gate rejects a prerequisite with wrong ${field}`);
+      }
+      fs.writeFileSync(semanticFile, originalSemantic);
     }
     const artifact = persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot });
     appStatus.push(`?? ${artifact}`, `?? ${prepared.reviewResult.tracePath}`);
@@ -170,6 +219,11 @@ try {
       assert.throws(() => persistCodexAppReviewResult(traversal, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /run ID is invalid/, "invalid app run IDs are rejected before persistence");
       const traceFile = path.join(appRoot, prepared.reviewResult.tracePath);
       const originalTrace = fs.readFileSync(traceFile, "utf8");
+      const failedTrace = JSON.parse(originalTrace);
+      failedTrace.status = "failed";
+      fs.writeFileSync(traceFile, `${JSON.stringify(failedTrace, null, 2)}\n`);
+      assert.match(validateRequiredReviewArtifacts(readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json")), appRoot, appHead, appBase, ["planReview"]).join("; "), /does not record successful completion/, "failed Codex app prerequisite trace cannot satisfy a merge gate");
+      fs.writeFileSync(traceFile, originalTrace);
       const incompleteTrace = JSON.parse(originalTrace);
       delete incompleteTrace.reviewedTaskScopeHash;
       incompleteTrace.contextManifest = incompleteTrace.contextManifest.filter((entry) => entry.path !== `tasks/review/${appTaskId}/task.json`);
