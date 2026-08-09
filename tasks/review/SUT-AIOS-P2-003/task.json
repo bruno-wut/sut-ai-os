@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-003",
   "title": "Generate observe-only executive briefing",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2",
   "workstream": "executive-reporting",
   "workflowId": "implementation-p2-003",
@@ -96,14 +96,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/active/SUT-AIOS-P2-003/task.json",
+      "tasks/review/SUT-AIOS-P2-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-09T05:31:00.679Z",
+  "updatedDate": "2026-08-09T05:40:43.120Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -147,6 +147,13 @@
       "at": "2026-08-09T05:31:00.679Z",
       "actor": "chief-orchestrator",
       "reason": "Resume the approved V1 observe-only executive-briefing implementation after packet amendment validation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T05:40:43.120Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Implementation and required deterministic checks passed on committed head 7888604; independent QA is now required."
     }
   ]
 }
