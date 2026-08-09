@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:06:41.164Z",
+  "updatedDate": "2026-08-09T10:07:58.143Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -513,6 +513,13 @@
       "at": "2026-08-09T10:06:41.164Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume only the shared CLI final revision, context, and evidence revalidation required by semantic QA."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:07:58.143Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Both review adapters now apply the same final HEAD/base, complete-context, and evidence-sequence gate immediately before persistence; 82 focused checks and every packet command pass."
     }
   ]
 }
