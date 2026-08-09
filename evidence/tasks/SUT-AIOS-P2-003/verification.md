@@ -1,7 +1,7 @@
 # SUT-AIOS-P2-003 Implementation Evidence
 
 - **Task:** `SUT-AIOS-P2-003` — Generate observe-only executive briefing
-- **Branch:** `codex/SUT-AIOS-P2-003-executive-briefing`
+- **Branch:** `task/SUT-AIOS-P2-003-executive-briefing`
 - **Recorded:** 2026-08-09
 - **Implementer outcome:** Independent QA passed; task is verified pending human PR merge and canonical-main reconciliation.
 
@@ -54,7 +54,7 @@ passed implementation head `7888604` against canonical base
 confirmed authorized-path-only changes, the exact package-script-only change,
 unchanged dependencies and lockfile, untouched protected paths, no forbidden
 behavior, and successful secret inspection. The durable machine-readable record
-is `evidence/verification/SUT-AIOS-P2-003/qa-review.json`.
+is `evidence/verification/SUT-AIOS-P2-003/verification-20260809054336000.json`.
 
 The packet-only lifecycle move from `active` to `review` was then committed as
 `96d1fc4`; it does not change implementation behavior or scope.
