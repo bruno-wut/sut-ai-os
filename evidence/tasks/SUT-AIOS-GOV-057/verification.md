@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (60 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (65 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (7 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -45,6 +45,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - On 2026-08-09, the user explicitly approved the smallest packet amendment: `workspaceWrite: true` for the existing Terra implementation stage and existing GOV-057 allowlist only. No production, provider, deployment, fallback, path, command, route, effort, or P3-001 authority changed.
 - Merge-risk review on `c403c1674d01450a072ed3bda556d95d21f5d361` required final-head evidence, platform-safe cancellation, and deterministic merge-risk-context coverage. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-c403c1674d01450a072ed3bda556d95d21f5d361.json`; the final repair addresses each item without widening scope.
 - Merge-risk review on `bfbb594db44b99cb5f8fab7fc28f34ee50afa4d1` required observable bounded `taskkill` outcomes, non-self-referential review-head evidence, and explicit changed-path-to-patch completeness. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-bfbb594db44b99cb5f8fab7fc28f34ee50afa4d1.json`; the final repair addresses each item and the duplicate-key risk without widening scope.
+- Semantic review on `81b1791aecb55419206eac763d887b13772b34e7` required Windows terminal ordering to await both the `taskkill` outcome and root-child close. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-81b1791aecb55419206eac763d887b13772b34e7.json`; deterministic coverage now proves a late tree-termination failure cannot emit `cancelled` or persist a review.
 
 ## Rollback
 
