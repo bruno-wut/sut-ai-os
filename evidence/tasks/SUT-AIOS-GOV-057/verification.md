@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (77 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (80 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (7 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -45,6 +45,10 @@ POSIX cancellation now escalates and confirms the isolated process group even
 if its root child exits first. Launcher-bound context files are rehashed against
 the governed repository, and the shared evidence-sequence gate runs again at
 the persistence boundary so verification or prerequisite drift fails closed.
+
+Codex-app persistence now applies the same final boundary to current HEAD,
+canonical base, every ordinary context file, and repository-contained paths
+before writing either its run envelope or review result.
 
 ## Scope and limitations
 
