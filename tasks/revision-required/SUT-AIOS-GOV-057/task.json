@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -150,7 +150,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:06:53.213Z",
+  "updatedDate": "2026-08-09T08:08:52.349Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -222,6 +222,13 @@
       "at": "2026-08-09T08:06:53.213Z",
       "actor": "codex-engineering-executor",
       "reason": "Terminal review progress repair passes all required deterministic checks on dcae3da; request fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:08:52.349Z",
+      "actor": "engineering-planner",
+      "reason": "Independent plan review found the implementation-stage workspaceWrite authority is false; a narrowly approved packet amendment is required before further work."
     }
   ]
 }

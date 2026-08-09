@@ -29,6 +29,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic review on the same head required revision because CLI and Codex-app review traces retained full task-packet contents. The finding is preserved at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-fde14753edd530bee23e2fd3d98887f5b7fcd090.json`.
 - The follow-up removes that payload while retaining the context manifest and canonical review-scope hash. Fresh independent reviews will bind the resulting committed head.
 - The fresh plan review on `408f99d8f2284da062f92a3bd28d9c5ef01c82c6` passed. Its semantic review required one further revision because specialised rejection paths did not consistently emit a single terminal `failed` progress event; the artifact is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-408f99d8f2284da062f92a3bd28d9c5ef01c82c6.json`.
+- The plan review on `4f02235afdecdf2cfeb2e6df40ed40a39e495629` required revision because this write-capable repair packet has `workspaceWrite: false`, making the designated Terra implementation route non-executable. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/planReview-4f02235afdecdf2cfeb2e6df40ed40a39e495629.json`. No packet authority was expanded.
 
 ## Rollback
 
