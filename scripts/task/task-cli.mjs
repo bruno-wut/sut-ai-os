@@ -105,6 +105,7 @@ function verificationWorktreeIsClean(statusText, packet, headSha, evidencePath) 
     if (reviewPaths.has(line)) return true;
     const file = line.slice(3).replaceAll("\\", "/");
     if (line.startsWith("?? ") && file.startsWith(`evidence/reviews/${packet.taskId}/runs/`) && file.endsWith(".json")) return true;
+    if (line.startsWith("?? ") && file.startsWith(`evidence/reviews/${packet.taskId}/traces/`) && file.endsWith(".jsonl")) return true;
     return line.startsWith("?? ") && nonEmptyString(evidencePath) && packet.evidence?.includes(normalize(evidencePath)) && file === normalize(evidencePath);
   });
 }
@@ -156,7 +157,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
         if (actualManifestHash !== result.contextManifestHash) errors.push(`${stage} app context manifest hash does not match governed files`);
       }
     } else {
-      const expectedTracePath = `artifacts/traces/codex-routing/${packet.taskId}/${result.runId}-${result.reviewerAgent}-${expected.route}.jsonl`;
+      const expectedTracePath = `evidence/reviews/${packet.taskId}/traces/${result.runId}-${result.reviewerAgent}-${expected.route}.jsonl`;
       if (result.tracePath !== expectedTracePath) { errors.push(`${stage} launcher trace path does not match its bound task, run, reviewer, and route`); continue; }
       let events;
       try { events = fs.readFileSync(path.join(root, result.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }

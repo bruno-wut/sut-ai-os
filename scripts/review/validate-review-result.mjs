@@ -51,6 +51,10 @@ export function validateReviewResult(data, expected = {}) {
   if (typeof data.tracePath === "string" && data.tracePath.includes("/runs/") && data.tracePath !== `evidence/reviews/${data.taskId}/runs/${data.runId}.json`) {
     errors.push("Codex app tracePath must match runId");
   }
+  if (typeof data.tracePath === "string" && data.tracePath.includes("/traces/")) {
+    const prefix = `evidence/reviews/${data.taskId}/traces/${data.runId}-${data.reviewerAgent}-`;
+    if (!data.tracePath.startsWith(prefix) || !data.tracePath.endsWith(".jsonl")) errors.push("Launcher tracePath must match taskId, runId, and reviewerAgent");
+  }
 
   return { valid: errors.length === 0, errors };
 }

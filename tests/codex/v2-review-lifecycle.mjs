@@ -73,7 +73,7 @@ try {
     const review = buildLauncherBoundReviewResult(assessment(nextAction), {
       taskId: id, baseSha, headSha, reviewerAgent: agent, model, reasoningEffort: "high",
       contextManifestHash, reviewedAt: "2026-08-08T12:00:00.000Z", stage,
-      runId: `fixture-${route}-${agent}`, tracePath: `artifacts/traces/codex-routing/${id}/fixture-${route}-${agent}-${agent}-${route}.jsonl`
+      runId: `fixture-${route}-${agent}`, tracePath: `evidence/reviews/${id}/traces/fixture-${route}-${agent}-${agent}-${route}.jsonl`
     });
     assert.equal(validateReviewResult(review).valid, true, `${profile} result is SHA-bound and valid`);
     if (profile === "plan-review") {
@@ -135,6 +135,8 @@ try {
   assert.equal(verificationWorktreeIsClean("?? evidence/tasks/OTHER/verification.md", record.packet, headSha, "evidence/tasks/OTHER/verification.md"), false, "other-task evidence cannot bypass review cleanliness");
   assert.equal(reviewWorktreeIsClean(` M tasks/review/${id}/task.json`, id, headSha), false, "Codex app review rejects a dirty task packet");
   assert.equal(reviewWorktreeIsClean(`?? evidence/verification/${id}/verification-${headSha}.json`, id, headSha), true, "review permits only the exact same-task head-bound verification artifact");
+  assert.equal(reviewWorktreeIsClean(`?? evidence/reviews/${id}/traces/fixture.jsonl`, id, headSha), true, "review permits a same-task durable launcher trace");
+  assert.equal(verificationWorktreeIsClean(`?? evidence/reviews/${id}/traces/fixture.jsonl`, record.packet, headSha), true, "verification permits a same-task durable launcher trace");
   const nonCanonicalEvidence = `${path.posix.dirname(paths.at(-1))}/../${id}/${path.posix.basename(paths.at(-1))}`;
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: nonCanonicalEvidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
   const final = findPacket(id, root);

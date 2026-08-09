@@ -3,14 +3,14 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Restore reliable, auditable independent review for bounded hotel AI OS tasks without changing their implementation or introducing model fallback.",
-  "technicalObjective": "Repair only the Workflow V2 review runner so each review stage receives an explicit assessment-only prompt, its stdout is required to be one review-result assessment JSON object, and structured progress plus cancellation are surfaced and fail closed.",
+  "technicalObjective": "Repair only the Workflow V2 review runner so each review stage receives an explicit assessment-only prompt, its stdout is required to be one review-result assessment JSON object, structured progress plus cancellation are surfaced and fail closed, and bound launcher traces persist under the task's durable review evidence directory.",
   "architectureReferences": [
     "docs/project/TASK_WORKFLOW.md",
     "docs/model-routing/MODEL_ROUTING_POLICY.md",
@@ -28,19 +28,23 @@
     "The repair is local, read-only review orchestration only; it does not deploy, contact production systems, alter provider credentials, or change task routingPolicy authority.",
     "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result.",
     "The user approved workspace-write authority solely for the designated Terra implementation stage within this packet's existing exact path allowlist; it does not grant production, provider, deployment, fallback, or cross-task authority.",
-    "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 458752 bytes so the complete exact GOV-057 diff, durable same-task review history, exact-head verification, and routed prerequisite traces fit below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged."
+    "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 458752 bytes so the complete exact GOV-057 diff, durable same-task review history, exact-head verification, and routed prerequisite traces fit below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged.",
+    "Clean-clone inspection proved launcher review traces under artifacts/traces were gitignored and therefore non-durable. The user-authorized repair is Sol-escalated only to admit task-bound evidence/reviews/<task>/traces/*.jsonl in the existing review-result schema and validator; no other schema, authority, or product surface is changed."
   ],
   "acceptanceCriteria": [
     "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
     "The launcher rejects empty, non-JSON, multi-value, or schema-invalid review stdout before any review artifact is persisted.",
     "The runner emits newline-delimited structured progress events for launch, child output, completion, failure, and cancellation without recording prompt content, environment values, or model output in traces.",
     "Review traces retain only the governed task path, context hashes, and a canonical review-scope hash; they never retain full task-packet contents.",
+    "Launcher review traces are task-bound, committed under evidence/reviews/<task>/traces/, and independently validated from a clean clone rather than referenced from gitignored local artifacts.",
     "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
     "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced."
   ],
   "allowedPaths": [
     "scripts/codex/launch.mjs",
     "scripts/task/task-cli.mjs",
+    "scripts/review/validate-review-result.mjs",
+    "schemas/review-result-v1.schema.json",
     "tests/codex/validate-review-runner.mjs",
     "tests/codex/v2-review-lifecycle.mjs",
     "tests/review/validate-review-binding.mjs",
@@ -65,7 +69,6 @@
     "packages/**",
     "supabase/**",
     "policies/**",
-    "schemas/**",
     "**/*.sql",
     ".env*",
     "credentials/**",
@@ -111,7 +114,7 @@
   "routingPolicy": {
     "implementation": {
       "agent": "codex-engineering-executor",
-      "route": "terra",
+      "route": "sol",
       "effort": "high"
     },
     "planReview": {
@@ -154,7 +157,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:21:22.461Z",
+  "updatedDate": "2026-08-09T10:24:47.720Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -562,6 +565,20 @@
       "at": "2026-08-09T10:21:22.461Z",
       "actor": "codex-engineering-executor",
       "reason": "Review preflight failures now emit one structured failed terminal event and contradictory pass assessments fail before binding; 86 focused checks and every packet command pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:24:47.572Z",
+      "actor": "chief-orchestrator",
+      "reason": "Clean-clone inspection found launcher review traces were written only to gitignored artifacts/traces, so their bound review evidence was not durable; revise the packet for the smallest task-bound trace-schema correction."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:24:47.720Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply only the Sol-escalated durable launcher-trace schema and validation correction under the user-authorized Workflow V2 repair; preserve all routing-stage authority, no-fallback, product, dependency, production, and P3-001 exclusions."
     }
   ]
 }

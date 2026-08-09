@@ -2,7 +2,7 @@
 
 ## Scope
 
-Bounded Workflow V2 review-runner repair only. P3-001 and all production, deployment, provider, package, schema, and fallback behavior are excluded.
+Bounded Workflow V2 review-runner repair only. P3-001 and all production, deployment, provider, package, unrelated schema, and fallback behavior are excluded. The sole schema change admits task-bound durable launcher traces under the existing review evidence namespace.
 
 ## Implementation evidence
 
@@ -14,7 +14,7 @@ which would create an impossible self-reference.
 
 - `node tests/codex/validate-review-runner.mjs` — passed (86 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
-- `node tests/review/validate-review-binding.mjs` — passed (7 checks).
+- `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
 - `node scripts/task/validate --all` — passed.
 - `node scripts/github/validate-governance.mjs` — passed: branch match, forbidden-path scan, secret scan, schema, policy, and agent checks.
@@ -57,9 +57,15 @@ Review preflight failures also pass through structured progress and exactly one
 failed terminal trace event, and a `pass` assessment carrying blocking findings
 is rejected before launcher binding or persistence.
 
+Launcher review traces now persist under
+`evidence/reviews/<task-id>/traces/*.jsonl`, which is packet-authorized and
+committable. Validation binds that path to the task, run, reviewer, route, and
+successful terminal event, so a clean CI clone no longer depends on ignored
+local `artifacts/traces/**` state.
+
 ## Scope and limitations
 
-Changed paths are limited to the GOV-057 packet/evidence, local launcher, deterministic test, routing documentation, and risk register. No fallback, package/dependency, schema, production, provider, or P3-001 change was made.
+Changed paths are limited to the GOV-057 packet/evidence, local launcher, the exact review-result trace-path schema/validator, deterministic tests, routing documentation, and risk register. No fallback, package/dependency, unrelated schema, production, provider, or P3-001 change was made.
 
 Before this implementation was committed, clean-head-only lifecycle and routing fixtures correctly rejected the dirty review worktree. They were rerun successfully on the committed head above. Fresh independent V2 review artifacts remain pending.
 

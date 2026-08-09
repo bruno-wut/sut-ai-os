@@ -7,7 +7,7 @@
 - **Severity:** High
 - **Affected scope:** Local `scripts/codex/launch.mjs` review profiles only.
 - **Evidence:** Two governed Sol plan-review attempts for P3-001 timed out after emitting only a start trace, leaving an orphaned launcher/child process and no SHA-bound result. The task remains in `review`; no review artifact, fallback, P3-001 change, production action, or PR was created.
-- **Mitigation:** Added explicit per-stage assessment instructions, unambiguous JSON-only assessment validation, redacted JSONL progress, one-to-one changed-path patch context bound to exact base/head and its manifest hash, and observable bounded process-tree cancellation without delayed Windows PID reuse. Deterministic tests cover the original timeout/cancellation and merge-risk context failure modes, including taskkill error, nonzero, timeout, and missing-close outcomes.
+- **Mitigation:** Added explicit per-stage assessment instructions, unambiguous JSON-only assessment validation, redacted JSONL progress, one-to-one changed-path patch context bound to exact base/head and its manifest hash, observable bounded process-tree cancellation without delayed Windows PID reuse, and task-bound launcher traces committed under `evidence/reviews/<task-id>/traces/` so clean CI clones can validate the complete review chain. Deterministic tests cover the original timeout/cancellation, trace-durability, and merge-risk context failure modes, including taskkill error, nonzero, timeout, and missing-close outcomes.
 - **Residual risk / next action:** Independently review the exact final GOV-057 head and exercise the repaired runner before resuming P3-001 review stages.
 
 ### 2026-08-01 - GOV-056 atomic MVP superseded by staged Foundation rollout

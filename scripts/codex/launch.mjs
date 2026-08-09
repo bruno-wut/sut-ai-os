@@ -569,11 +569,13 @@ function assertNoDuplicateJsonKeys(jsonText) {
   if (index !== jsonText.length) throw new Error("review stdout must be exactly one JSON object");
 }
 
-function createTrace(taskId, agentId, route) {
+function createTrace(taskId, agentId, route, profile) {
   const startedAt = new Date().toISOString();
   const compact = startedAt.replace(/[-:.TZ]/g, "");
   const runId = `${compact}-${randomUUID().slice(0, 8)}`;
-  const traceDirectory = path.join(repositoryRoot, "artifacts", "traces", "codex-routing", taskId);
+  const traceDirectory = reviewProfiles.has(profile)
+    ? path.join(repositoryRoot, "evidence", "reviews", taskId, "traces")
+    : path.join(repositoryRoot, "artifacts", "traces", "codex-routing", taskId);
   fs.mkdirSync(traceDirectory, { recursive: true });
   const tracePath = path.join(traceDirectory, `${runId}-${agentId}-${route}.jsonl`);
   const append = (event) => fs.appendFileSync(tracePath, `${JSON.stringify(event)}\n`, { encoding: "utf8", mode: 0o600 });
@@ -885,7 +887,10 @@ function reviewWorktreeIsClean(statusText, taskId, headSha) {
   return statusText.trim().split(/\r?\n/).filter(Boolean).every((line) => {
     if (allowed.has(line)) return true;
     const file = line.slice(3).replaceAll("\\", "/");
-    return line.startsWith("?? ") && file.startsWith(`evidence/reviews/${taskId}/runs/`) && file.endsWith(".json");
+    return line.startsWith("?? ") && (
+      (file.startsWith(`evidence/reviews/${taskId}/runs/`) && file.endsWith(".json"))
+      || (file.startsWith(`evidence/reviews/${taskId}/traces/`) && file.endsWith(".jsonl"))
+    );
   });
 }
 
@@ -1120,7 +1125,7 @@ function main() {
   }
   const dryRun = Boolean(argumentsObject["dry-run"]);
 
-  const trace = createTrace(taskId, agentId, selectedRoute);
+  const trace = createTrace(taskId, agentId, selectedRoute, profile);
   trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
   const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
   const terminal = reviewProfile ? createReviewTerminalController(trace, progress) : null;
