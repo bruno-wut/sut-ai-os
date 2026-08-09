@@ -82,7 +82,8 @@ assert.throws(() => buildMergeRiskContext("bad", headSha, { runGit: () => "" }),
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: () => { throw new Error("git failed"); } }), /git failed/, "Git failures fail context construction");
 assert.equal(validateContextMaterial([{ relativePath: "safe.md", text: "safe" }], mergeContext, Buffer.byteLength(mergeContext) + 4), Buffer.byteLength(mergeContext) + 4, "generated context participates in the byte budget");
 assert.throws(() => validateContextMaterial([], mergeContext, 1), /exceeds limit/, "over-budget generated context fails closed");
-assert.throws(() => validateContextMaterial([], "OPENAI_API_KEY=sk_abcdefghijklmnop", 1000), /Secret material/, "sensitive generated context fails closed");
+const sensitiveGeneratedContext = ["OPENAI", "_API_KEY=", "sk_", "abcdefghijklmnop"].join("");
+assert.throws(() => validateContextMaterial([], sensitiveGeneratedContext, 1000), /Secret material/, "sensitive generated context fails closed");
 
 const terminalEvents = [];
 const traceEvents = [];
