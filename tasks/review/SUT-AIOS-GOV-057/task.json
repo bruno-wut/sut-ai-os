@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -157,7 +157,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:24:47.720Z",
+  "updatedDate": "2026-08-09T10:29:07.187Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -579,6 +579,13 @@
       "at": "2026-08-09T10:24:47.720Z",
       "actor": "codex-engineering-executor",
       "reason": "Apply only the Sol-escalated durable launcher-trace schema and validation correction under the user-authorized Workflow V2 repair; preserve all routing-stage authority, no-fallback, product, dependency, production, and P3-001 exclusions."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:29:07.187Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Durable task-bound launcher traces, local-only dry runs, explicit review schema binding, and all packet-required deterministic checks pass on the clean committed implementation head; submit the exact evidence-bearing head for final independent V2 review."
     }
   ]
 }
