@@ -1,6 +1,6 @@
 import nodeAssert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { buildMergeRiskContext, buildReviewAssessmentPrompt, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial } from "../../scripts/codex/launch.mjs";
+import { buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -134,6 +134,26 @@ await unclosedCancellation.termination;
 childSettleCallback();
 assert.deepEqual(unclosedProgress.map((event) => event.status), ["cancellation-requested", "cancellation-escalated", "cancellation-failed"], "missing child close cannot remain indefinitely cancellation-requested");
 assert.deepEqual(unclosedFailures, [{ status: "failed", reason: "child-still-running" }], "missing child close reaches fail-closed terminal handling");
+
+let resolveLateTaskkill;
+const lateFailureProgress = [];
+const lateFailureResults = [];
+const lateFailureChild = { pid: 6868, exitCode: null, signalCode: null };
+const lateFailureCancellation = createReviewCancellationController(lateFailureChild, (event) => lateFailureProgress.push(event), {
+  platform: "win32",
+  terminateChildTree: () => new Promise((resolve) => { resolveLateTaskkill = resolve; }),
+  onTerminationFailure: (result) => lateFailureResults.push(result)
+});
+assert.equal(lateFailureCancellation.request("SIGINT"), true, "Windows cancellation starts before root-child close");
+lateFailureChild.exitCode = 1;
+const lateTerminalEvents = [];
+const lateTerminal = createReviewTerminalController({ append: () => {} }, (event) => lateTerminalEvents.push(event), () => {});
+const lateCompletion = completeCancelledReview(lateFailureCancellation, lateTerminal);
+resolveLateTaskkill({ status: "failed", reason: "nonzero-exit", exitCode: 5 });
+assert.equal(await lateCompletion, "failed", "late taskkill failure overrides an earlier root-child close");
+assert.deepEqual(lateFailureProgress.map((event) => event.status), ["cancellation-requested", "cancellation-escalated", "cancellation-failed"], "late taskkill failure remains explicit after root-child close");
+assert.deepEqual(lateFailureResults, [{ status: "failed", reason: "nonzero-exit", exitCode: 5 }], "late taskkill failure reaches fail-closed handling");
+assert.deepEqual(lateTerminalEvents, [{ status: "failed" }], "late taskkill failure cannot emit a cancelled terminal state");
 
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);

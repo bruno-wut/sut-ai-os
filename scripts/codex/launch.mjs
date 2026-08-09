@@ -632,7 +632,7 @@ function createReviewCancellationController(child, emit, options = {}) {
   let termination = null;
   let failureReported = false;
   const reportFailure = (result, signal) => {
-    if (failureReported || !childIsRunning(child)) return result;
+    if (failureReported) return result;
     failureReported = true;
     emit({ status: "cancellation-failed", signal });
     onTerminationFailure(result);
@@ -678,6 +678,17 @@ function createReviewCancellationController(child, emit, options = {}) {
       settleTimer = null;
     },
   };
+}
+
+async function completeCancelledReview(cancellation, terminal) {
+  const result = await cancellation.termination;
+  cancellation.complete();
+  if (result?.status === "failed") {
+    terminal.complete("failed", 1);
+    return "failed";
+  }
+  terminal.complete("cancelled", 130);
+  return "cancelled";
 }
 
 function createReviewTerminalController(trace, emit, setExitCode = (code) => { process.exitCode = code; }) {
@@ -1034,8 +1045,7 @@ function main() {
     if (!reviewProfile) process.exit(1);
   });
 
-  child.on("close", (exitCode) => {
-    cancellation?.complete();
+  child.on("close", async (exitCode) => {
     if (reviewProfile) {
       process.off("SIGINT", onSigint);
       process.off("SIGTERM", onSigterm);
@@ -1045,9 +1055,10 @@ function main() {
     if (stderrText && reviewProfile) progress({ status: "child-stderr-redacted", bytes: Buffer.byteLength(stderrText) });
 
     if (reviewProfile && cancellation?.requested) {
-      terminal.complete("cancelled", 130);
+      await completeCancelledReview(cancellation, terminal);
       return;
     }
+    cancellation?.complete();
 
     // Validate review profile output strictly
     if (passed && reviewProfile) {
@@ -1136,4 +1147,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, createReviewCancellationController, createReviewTerminalController, discoverAgents, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, discoverAgents, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial };
