@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "c5331e4cb40e3973ee22d22e3d70aae0986ca17f",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "f95361641b74f7eb4a370b5a7d9735e148fb8e99106a2b84a77ccba36b144690",
+  "reviewedAt": "2026-08-09T08:19:20.506Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260809081831428-34a1e203",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809081831428-34a1e203-qa-verification-sol.jsonl",
+  "outputHash": "13b6a3d2575605f60f9e6663f6d14223d4b22b379164348d7bad7513239e89ab",
+  "decision": "blocked",
+  "blockingFindings": [
+    "The governed context omits the canonical base SHA and exact base-to-c5331e4cb40e3973ee22d22e3d70aae0986ca17f committed diff, so merge scope, forbidden-path compliance, and rollback completeness cannot be independently assessed.",
+    "No task verification evidence or deterministic-check output is included. Task history assertions that checks passed cannot establish evidence integrity or satisfy the agent's requirement to reproduce or inspect required checks."
+  ],
+  "nonBlockingRisks": [
+    "The supplied launcher content centralizes routing, process control, trace generation, validation, and persistence in one module, increasing regression coupling; this cannot be classified against the change itself without the exact diff.",
+    "The rollback statement says to revert a single repair PR, but the missing diff prevents confirmation that all changed governance artifacts and task-packet amendments are covered by that rollback."
+  ],
+  "missingNegativeTests": [
+    "Governed evidence is missing for rejection of empty, non-JSON, multi-value, extra-field, and schema-invalid review output before persistence.",
+    "Governed evidence is missing for SIGINT and SIGTERM races, escalation targeting only the local child tree, exactly one cancelled terminal event, and zero review-result persistence.",
+    "Governed evidence is missing for progress and trace redaction of prompt contents, environment values, task-packet bodies, and model output.",
+    "Governed evidence is missing for no-fallback behavior, unchanged P3-001 paths, forbidden-path enforcement, and persistence failure terminal-state handling."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The provided launcher exposes cohesive helper functions but remains a broad module combining authorization, context assembly, child lifecycle, tracing, validation, and persistence; the omitted diff prevents determining whether this repair materially worsened or improved that boundary.",
+    "hexagonalArchitecture": "The supplied content does not visibly grant production or provider authority and keeps review-result validation in an imported boundary, but exact diff evidence is required to confirm that no adapter, dependency, routing, or external-system boundary changed.",
+    "eventedBoundaries": "Structured review-progress and terminal events are visible in the supplied launcher content, including cancellation and failure paths, but their exact change scope and deterministic coverage cannot be verified without the committed diff and test evidence."
+  },
+  "exactNextAction": "Regenerate the mergeRiskReview context for head c5331e4cb40e3973ee22d22e3d70aae0986ca17f with the fetched origin/main base SHA, the exact committed base-to-head diff and changed-path list, plus task-scoped deterministic-check and verification evidence; then rerun this same Sol/high merge-risk review without granting reviewer write or provider authority."
+}

@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -145,13 +145,15 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/model-routing/MODEL_ROUTING_POLICY.md",
       "schemas/review-result-v1.schema.json",
-      "scripts/codex/launch.mjs"
+      "scripts/codex/launch.mjs",
+      "evidence/tasks/SUT-AIOS-GOV-057/verification.md",
+      "evidence/verification/SUT-AIOS-GOV-057/verification-20260809080000000.json"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T08:16:25.531Z",
+  "updatedDate": "2026-08-09T08:20:29.203Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -244,6 +246,20 @@
       "at": "2026-08-09T08:16:25.531Z",
       "actor": "codex-engineering-executor",
       "reason": "User-approved workspace-write amendment and all deterministic checks passed on 82ba2b4; request fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:20:28.774Z",
+      "actor": "qa-verification",
+      "reason": "Independent merge-risk review lacked the canonical base-to-head diff, changed paths, and task verification evidence in its governed context."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:20:29.203Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the bounded merge-risk context repair required by the independent review."
     }
   ]
 }

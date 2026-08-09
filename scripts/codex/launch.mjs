@@ -356,6 +356,18 @@ function hasSensitiveMaterial(text) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
+function buildMergeRiskContext(baseSha, headSha) {
+  const range = `${baseSha}...${headSha}`;
+  const run = (args) => {
+    const result = spawnSync("git", args, { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
+    if (result.error || result.status !== 0) throw new Error("Cannot build canonical merge-risk review context");
+    return result.stdout ?? "";
+  };
+  const changedPaths = run(["diff", "--name-only", range]);
+  const diff = run(["diff", "--no-ext-diff", "--no-renames", "--unified=40", range]);
+  return ["Generated merge-risk review material (read-only):", `Canonical base SHA: ${baseSha}`, `Reviewed head SHA: ${headSha}`, "Changed paths:", changedPaths.trim() || "(none)", "Exact canonical base-to-head diff:", diff.trim() || "(no textual diff)"].join("\n");
+}
+
 function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, effort, profile) {
   const baseFiles = [
     "AGENTS.md",
@@ -375,7 +387,8 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
 
   const records = baseFiles.map((p) => readText(p));
   const unique = [...new Map(records.map((r) => [r.relativePath, r])).values()];
-  const totalBytes = unique.reduce((sum, r) => sum + Buffer.byteLength(r.text), 0);
+  const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(comparisonBaseSha(), gitSha("HEAD")) : "";
+  const totalBytes = unique.reduce((sum, r) => sum + Buffer.byteLength(r.text), 0) + Buffer.byteLength(mergeRiskContext);
   const maxBytes = taskPacket.data?.contextBudget?.maxBytes ?? contextLimitBytes;
 
   if (totalBytes > maxBytes) {
@@ -388,6 +401,7 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
     }
   }
 
+  if (mergeRiskContext && hasSensitiveMaterial(mergeRiskContext)) throw new Error("Secret material detected in generated merge-risk context");
   const contextManifest = unique.map((r) => ({ path: r.relativePath, sha256: sha256(r.text) }));
   const manifest = contextManifest.map((r) => `${r.path}:${r.sha256}`).join("\n");
   const manifestHash = sha256(manifest);
@@ -405,7 +419,8 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
 
   const body = unique.map((r) => `\n--- BEGIN ${r.relativePath} ---\n${r.text}\n--- END ${r.relativePath} ---`).join("\n");
   const reviewPrompt = buildReviewAssessmentPrompt(profile);
-  return { prompt: `${header}${reviewPrompt ? `\n\n${reviewPrompt}` : ""}\n${body}\n`, contextFiles: unique.map((r) => r.relativePath), contextManifest, totalBytes, manifestHash };
+  const generated = mergeRiskContext ? `\n--- BEGIN generated/merge-risk-context ---\n${mergeRiskContext}\n--- END generated/merge-risk-context ---\n` : "";
+  return { prompt: `${header}${reviewPrompt ? `\n\n${reviewPrompt}` : ""}${generated}\n${body}\n`, contextFiles: unique.map((r) => r.relativePath), contextManifest, totalBytes, manifestHash };
 }
 
 function buildReviewAssessmentPrompt(profile) {
