@@ -141,8 +141,8 @@ const gitCalls = [];
 const mergeContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => { gitCalls.push(args); return args.includes("--name-only") ? "docs/a.md\0tests/b.mjs\0" : `diff --git a/${args.at(-1)} b/${args.at(-1)}\n`; } });
 assert.deepEqual(gitCalls, [
   ["diff", "--name-only", "-z", baseSha, headSha, "--"],
-  ["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--", "docs/a.md"],
-  ["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--", "tests/b.mjs"]
+  ["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", "docs/a.md"],
+  ["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", "tests/b.mjs"]
 ], "merge-risk context compares exact immutable revisions and maps every changed path to its patch");
 assert.match(mergeContext, /docs\/a\.md/, "merge-risk context includes the exact changed path set");
 assert.match(mergeContext, /tests\/b\.mjs/, "merge-risk context includes every changed path patch");

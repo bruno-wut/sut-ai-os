@@ -371,7 +371,7 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     if (/[\r\n\0]/.test(changedPath)) throw new Error("Cannot represent ambiguous changed path in merge-risk context");
   }
   const patches = changedPaths.map((changedPath) => {
-    const patch = run(["diff", "--no-ext-diff", "--no-renames", "--unified=40", baseSha, headSha, "--", changedPath]).trim();
+    const patch = run(["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", changedPath]).trim();
     if (!patch) throw new Error(`Canonical merge-risk diff is missing changed path: ${changedPath}`);
     return `Changed path: ${JSON.stringify(changedPath)}\nPatch:\n${patch}`;
   });

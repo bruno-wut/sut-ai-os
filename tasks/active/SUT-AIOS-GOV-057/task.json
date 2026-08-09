@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -153,7 +153,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:09:48.274Z",
+  "updatedDate": "2026-08-09T09:09:48.886Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -316,6 +316,13 @@
       "at": "2026-08-09T09:09:48.274Z",
       "actor": "codex-engineering-executor",
       "reason": "Final merge-risk context exceeded the packet byte budget after explicit per-path mapping; reduce unchanged hunk context without omitting any changed line or path."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:09:48.886Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the bounded merge-risk context-size correction under the existing packet budget."
     }
   ]
 }
