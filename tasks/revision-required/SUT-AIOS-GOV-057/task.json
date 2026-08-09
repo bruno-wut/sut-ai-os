@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:11:56.776Z",
+  "updatedDate": "2026-08-09T10:20:35.455Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -541,6 +541,13 @@
       "at": "2026-08-09T10:11:56.776Z",
       "actor": "codex-engineering-executor",
       "reason": "Complete final context fits the bounded 458752-byte cap and every deterministic check passes; submit the unified persistence-boundary head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:20:35.455Z",
+      "actor": "qa-verification",
+      "reason": "Semantic review on 4f2571c requires structured terminal evidence for review preflight failures and explicit rejection of pass with blocking findings."
     }
   ]
 }
