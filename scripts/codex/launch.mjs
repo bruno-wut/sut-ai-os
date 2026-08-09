@@ -507,6 +507,21 @@ function createReviewCancellationController(child, emit, options = {}) {
   };
 }
 
+function createReviewTerminalController(trace, emit, setExitCode = (code) => { process.exitCode = code; }) {
+  let terminal = null;
+  return {
+    complete(status, exitCode) {
+      if (terminal) return false;
+      terminal = status;
+      trace.append({ event: "finish", status: status === "completed" ? "success" : status, exitCode });
+      emit({ status });
+      if (exitCode) setExitCode(exitCode);
+      return true;
+    },
+    get status() { return terminal; },
+  };
+}
+
 function sanitizeEnvironment() {
   const allowed = new Set([
     "PATH", "Path", "PATHEXT", "SYSTEMROOT", "SystemRoot", "WINDIR", "COMSPEC",
@@ -808,6 +823,7 @@ function main() {
   let stderrText = "";
   const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
   const cancellation = reviewProfile ? createReviewCancellationController(child, progress) : null;
+  const terminal = reviewProfile ? createReviewTerminalController(trace, progress) : null;
   const onSigint = () => cancellation?.request("SIGINT");
   const onSigterm = () => cancellation?.request("SIGTERM");
   if (reviewProfile) {
@@ -824,10 +840,14 @@ function main() {
 
   child.on("error", (err) => {
     cancellation?.complete();
-    if (reviewProfile) progress({ status: "spawn-error" });
-    trace.append({ event: "finish", status: "spawn-error" });
+    if (reviewProfile) {
+      progress({ status: "spawn-error" });
+      terminal.complete("failed", 1);
+    } else {
+      trace.append({ event: "finish", status: "spawn-error" });
+    }
     process.stderr.write(`Process spawn failed: ${err.message}\n`);
-    process.exit(1);
+    if (!reviewProfile) process.exit(1);
   });
 
   child.on("close", (exitCode) => {
@@ -841,9 +861,7 @@ function main() {
     if (stderrText && reviewProfile) progress({ status: "child-stderr-redacted", bytes: Buffer.byteLength(stderrText) });
 
     if (reviewProfile && cancellation?.requested) {
-      progress({ status: "cancelled" });
-      trace.append({ event: "finish", status: "cancelled", exitCode });
-      process.exitCode = 130;
+      terminal.complete("cancelled", 130);
       return;
     }
 
@@ -852,16 +870,17 @@ function main() {
       if (gitSha("HEAD") !== reviewedHeadSha || comparisonBaseSha() !== reviewedBaseSha) {
         progress({ status: "review-binding-changed" });
         process.stderr.write("Review execution failed: committed head or canonical base changed during review\n");
-        process.exit(1);
+        terminal.complete("failed", 1);
+        return;
       }
       let parsed;
       try {
         parsed = parseReviewAssessment(stdoutText);
       } catch (e) {
         progress({ status: "review-output-invalid" });
-        trace.append({ event: "finish", status: "review-json-parse-failed" });
         process.stderr.write(`Review execution failed: ${e.message}\n`);
-        process.exit(1);
+        terminal.complete("failed", 1);
+        return;
       }
 
       const launcherReview = buildLauncherBoundReviewResult(parsed, {
@@ -883,9 +902,9 @@ function main() {
       });
       if (!reviewCheck.valid) {
         progress({ status: "review-schema-validation-failed" });
-        trace.append({ event: "finish", status: "review-schema-validation-failed" });
         process.stderr.write(`Review schema validation failed:\n- ${reviewCheck.errors.join("\n- ")}\n`);
-        process.exit(1);
+        terminal.complete("failed", 1);
+        return;
       }
 
       trace.append({
@@ -903,15 +922,25 @@ function main() {
         contextManifest: context.contextManifest,
         reviewedTaskScopeHash: computeReviewScopeHash(taskRecord.data),
       });
-      const reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
+      let reviewPath;
+      try {
+        reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
+      } catch (error) {
+        progress({ status: "review-persistence-failed" });
+        process.stderr.write(`Review persistence failed: ${error.message}\n`);
+        terminal.complete("failed", 1);
+        return;
+      }
       progress({ status: "review-persisted" });
       process.stdout.write(`${JSON.stringify({ status: "review-persisted", taskId, stage: launcherReview.stage, decision: launcherReview.decision, reviewPath })}\n`);
     }
 
     if (!reviewProfile && stdoutText) process.stdout.write(stdoutText);
-    trace.append({ event: "finish", status: passed ? "success" : "failed", exitCode });
-    if (reviewProfile) progress({ status: passed ? "completed" : "failed" });
-    if (!passed) process.exit(exitCode ?? 1);
+    if (reviewProfile) terminal.complete(passed ? "completed" : "failed", passed ? 0 : (exitCode ?? 1));
+    else {
+      trace.append({ event: "finish", status: passed ? "success" : "failed", exitCode });
+      if (!passed) process.exit(exitCode ?? 1);
+    }
   });
 }
 
@@ -923,4 +952,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildReviewAssessmentPrompt, comparisonBaseSha, createReviewCancellationController, discoverAgents, gitSha, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildReviewAssessmentPrompt, comparisonBaseSha, createReviewCancellationController, createReviewTerminalController, discoverAgents, gitSha, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };

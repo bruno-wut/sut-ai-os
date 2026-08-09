@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "408f99d8f2284da062f92a3bd28d9c5ef01c82c6",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "9acefffe3e441b35a894ff953fe12dcb2c51b1a52cc7a8aee717ffaa41f89d74",
+  "reviewedAt": "2026-08-09T08:04:31.896Z",
+  "stage": "semanticReview",
+  "runId": "20260809080347911-56c24cc6",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809080347911-56c24cc6-qa-verification-luna.jsonl",
+  "outputHash": "35834656323cc0019ffd292c7e13103c871d2469aea663bbacad16bc864b6e79",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Review-output rejection and review-binding-change paths emit specialized progress events but do not emit a terminal failed progress event consistently, weakening required structured lifecycle coverage."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add assertions that empty, malformed, multi-value, schema-invalid, and binding-changed review paths each emit exactly one terminal failed event and persist no review artifact."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Parsing, binding, persistence, and cancellation are separated into focused functions; no new deep-module violation is evident.",
+    "hexagonalArchitecture": "Codex child execution and review persistence remain adapter boundaries around governed packet and routing validation.",
+    "eventedBoundaries": "Signal and progress handling are event-based, but failure termination is inconsistent across rejection branches."
+  },
+  "exactNextAction": "Update every non-cancellation review failure exit to record and emit one terminal failed event, rerun all required checks, and request fresh semantic review."
+}

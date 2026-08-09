@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { buildReviewAssessmentPrompt, createReviewCancellationController, parseReviewAssessment } from "../../scripts/codex/launch.mjs";
+import { buildReviewAssessmentPrompt, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment } from "../../scripts/codex/launch.mjs";
 
 const assessment = {
   decision: "pass",
@@ -43,4 +43,13 @@ scheduled();
 assert.deepEqual(signals, ["SIGINT", "tree-terminate"], "escalation terminates only the child tree");
 assert.deepEqual(progress.map((event) => event.status), ["cancellation-requested", "cancellation-escalated"], "cancellation exposes structured progress without model output");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 16 }) + "\n");
+const terminalEvents = [];
+const traceEvents = [];
+const terminal = createReviewTerminalController({ append: (event) => traceEvents.push(event) }, (event) => terminalEvents.push(event), () => {});
+assert.equal(terminal.complete("failed", 1), true, "a review failure records one terminal event");
+assert.equal(terminal.complete("failed", 1), false, "duplicate terminal failures are suppressed");
+assert.equal(terminal.status, "failed", "terminal state is retained");
+assert.deepEqual(terminalEvents, [{ status: "failed" }], "terminal progress is structured and singular");
+assert.deepEqual(traceEvents, [{ event: "finish", status: "failed", exitCode: 1 }], "terminal trace state is singular and redacted");
+
+process.stdout.write(JSON.stringify({ status: "passed", checks: 21 }) + "\n");
