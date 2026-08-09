@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:44:04.101Z",
+  "updatedDate": "2026-08-09T09:46:53.907Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -436,6 +436,13 @@
       "at": "2026-08-09T09:44:04.101Z",
       "actor": "codex-engineering-executor",
       "reason": "Shared CLI and Codex-app evidence gate, fully routed trace-bound prerequisites, forged-artifact negatives, and all packet checks pass; submit the final bounded repair for independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:46:53.907Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete merge context with exact verification and both routed prerequisite traces measures 346512 bytes, above this task's 327680-byte cap; increase only the bounded task cap below the repository ceiling."
     }
   ]
 }

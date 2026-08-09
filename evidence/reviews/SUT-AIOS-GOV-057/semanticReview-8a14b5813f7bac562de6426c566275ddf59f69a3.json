@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "8a14b5813f7bac562de6426c566275ddf59f69a3",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "77e4497b9608810efe9608facfd1baa9abc3a757e56ec11ee67f93121c49ad9e",
+  "reviewedAt": "2026-08-09T09:46:00.171Z",
+  "stage": "semanticReview",
+  "runId": "20260809094513141-ec755d76",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809094513141-ec755d76-qa-verification-luna.jsonl",
+  "outputHash": "45f78213e42ec25956128df24e2400f76ac87baa664cf3a1677f468ab109ec7e",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, cancellation, terminal-state, context, and persistence responsibilities are clearly separated.",
+    "hexagonalArchitecture": "Provider execution remains behind the launcher boundary without changing routing or production authority.",
+    "eventedBoundaries": "Structured redacted progress events and fail-closed cancellation provide explicit lifecycle boundaries."
+  },
+  "exactNextAction": "Proceed to the required independent mergeRiskReview for the same committed head 8a14b5813f7bac562de6426c566275ddf59f69a3."
+}
