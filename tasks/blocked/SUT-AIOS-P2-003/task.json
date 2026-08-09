@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P2-003",
   "title": "Generate observe-only executive briefing",
-  "status": "backlog",
+  "status": "blocked",
   "phase": "phase-2",
   "workstream": "executive-reporting",
   "workflowId": "implementation-p2-003",
@@ -94,14 +94,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P2-003/task.json",
+      "tasks/blocked/SUT-AIOS-P2-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-29T13:00:00.000Z",
+  "updatedDate": "2026-08-09T05:14:05.093Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -110,6 +110,27 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-09T05:11:19.839Z",
+      "actor": "chief-orchestrator",
+      "reason": "Dependencies are done on canonical origin/main; begin bounded observe-only executive-briefing task."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-09T05:11:23.598Z",
+      "actor": "chief-orchestrator",
+      "reason": "Start the approved Tier-0 observe-only executive-briefing implementation on the canonical task branch."
+    },
+    {
+      "from": "active",
+      "to": "blocked",
+      "at": "2026-08-09T05:14:05.093Z",
+      "actor": "chief-orchestrator",
+      "reason": "Required command npm run test:briefing is undefined in canonical package.json; package.json is outside the approved allowlist, so required verification cannot run without a packet amendment."
     }
   ]
 }
