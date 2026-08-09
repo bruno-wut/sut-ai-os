@@ -569,11 +569,11 @@ function assertNoDuplicateJsonKeys(jsonText) {
   if (index !== jsonText.length) throw new Error("review stdout must be exactly one JSON object");
 }
 
-function createTrace(taskId, agentId, route, profile) {
+function createTrace(taskId, agentId, route, profile, dryRun = false) {
   const startedAt = new Date().toISOString();
   const compact = startedAt.replace(/[-:.TZ]/g, "");
   const runId = `${compact}-${randomUUID().slice(0, 8)}`;
-  const traceDirectory = stageByProfile[profile] && stageByProfile[profile] !== "implementation"
+  const traceDirectory = !dryRun && stageByProfile[profile] && stageByProfile[profile] !== "implementation"
     ? path.join(repositoryRoot, "evidence", "reviews", taskId, "traces")
     : path.join(repositoryRoot, "artifacts", "traces", "codex-routing", taskId);
   fs.mkdirSync(traceDirectory, { recursive: true });
@@ -1125,7 +1125,7 @@ function main() {
   }
   const dryRun = Boolean(argumentsObject["dry-run"]);
 
-  const trace = createTrace(taskId, agentId, selectedRoute, profile);
+  const trace = createTrace(taskId, agentId, selectedRoute, profile, dryRun);
   trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
   const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
   const terminal = reviewProfile ? createReviewTerminalController(trace, progress) : null;
