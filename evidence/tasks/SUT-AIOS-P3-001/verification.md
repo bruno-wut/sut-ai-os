@@ -19,7 +19,21 @@ The implementation does not call a provider, persist data, enqueue work, start a
 
 ## Implementer check record
 
-Check results are recorded after execution in this worktree. Passing results do not satisfy the packet's independent V2 review or SHA-bound review-evidence requirements.
+The exact implementation checks passed on clean committed head `008617f`:
+
+| Command | Result |
+| --- | --- |
+| `npm run test:signal-ingestion` | Passed: 421 deterministic contract and hostile-input cases. |
+| `node scripts/task/validate --all` | Passed: all task packets valid. |
+| `node scripts/github/validate-governance.mjs` | Passed: branch match, allowed paths, schema, policy, agent, and secret checks. |
+| `npm run verify:fast` | Passed: task validation, routing validation, worktree self-test, and task self-test. |
+| `git diff --check` | Passed. |
+
+The pre-commit `verify:fast` run failed only at the repository routing
+dry-run's clean-worktree safeguard; the clean-head run above supersedes that
+expected implementation-phase limitation. Passing implementation checks do
+not satisfy the packet's independent V2 review or SHA-bound review-evidence
+requirements.
 
 ## Rollback
 
