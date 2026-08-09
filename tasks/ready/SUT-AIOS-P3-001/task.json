@@ -1,0 +1,169 @@
+{
+  "$schema": "../../../schemas/task-packet-v2.schema.json",
+  "schemaVersion": "2.0.0",
+  "taskId": "SUT-AIOS-P3-001",
+  "title": "Implement signed signal normalization endpoint",
+  "status": "ready",
+  "phase": "phase-3",
+  "workstream": "signal-ingestion",
+  "workflowId": "implementation-p3-001-v2",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Advance Phase 3 — Durable event and workflow layer through one bounded signal-ingestion outcome.",
+  "technicalObjective": "Implement signed signal normalization endpoint",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-001",
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P1-005",
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P3-001/migration-v1-to-v2.md",
+    "evidence/tasks/SUT-AIOS-P3-001/verification.md"
+  ],
+  "assumptions": [
+    "No production write, deployment, or live credential access is authorized.",
+    "Interfaces with the finalized platform use approved compatibility contracts only.",
+    "This V2 packet is a bounded contract and fixture implementation; it does not deploy a Worker, contact a provider, persist a work item, invoke AI, or affect booking operations.",
+    "The legacy V1 backlog packet is migrated in place to V2; its pre-migration JSON is preserved by the origin/main blob SHA recorded in migration evidence."
+  ],
+  "acceptanceCriteria": [
+    "Authenticated, rate-limited signal normalization accepts only approved aggregate/essential-event categories and does not expose Staff or AI control paths publicly.",
+    "Unknown sources, unauthenticated calls, raw clickstream, and over-budget input fail closed without a permanent work item or AI invocation.",
+    "Machine-readable contracts and deterministic failure behavior are documented.",
+    "The only package change authorized is the exact `test:signal-ingestion` script entry point; no dependency, package-lock, other script, or production behavior change is authorized.",
+    "Required tests pass and independent V2 review confirms forbidden paths were untouched."
+  ],
+  "allowedPaths": [
+    "services/signal-ingestion/**",
+    "tests/signal-ingestion/**",
+    "docs/signal-ingestion/**",
+    "package.json",
+    "evidence/tasks/SUT-AIOS-P3-001/**",
+    "evidence/verification/SUT-AIOS-P3-001/**",
+    "tasks/**/SUT-AIOS-P3-001/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "package-lock.json",
+    ".github/**",
+    "apps/**",
+    "supabase/**",
+    "packages/**",
+    "scripts/**",
+    "**/*.sql",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "npm run test:signal-ingestion",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "signal-ingestion contract validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent V2 plan, semantic, and merge-risk review",
+    "SHA-bound review evidence"
+  ],
+  "requiredTests": [
+    "npm run test:signal-ingestion",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification",
+    "chief-orchestrator"
+  ],
+  "routingPolicy": {
+    "workClass": "high-risk-security-contract",
+    "riskDomains": [
+      "authentication",
+      "rate-limiting",
+      "data-minimization",
+      "idempotency",
+      "booking-isolation"
+    ],
+    "implementation": {
+      "agent": "codex-engineering-executor",
+      "route": "sol",
+      "effort": "high"
+    },
+    "planReview": {
+      "agent": "engineering-planner",
+      "route": "sol",
+      "effort": "high"
+    },
+    "semanticReview": {
+      "agent": "qa-verification",
+      "route": "sol",
+      "effort": "high"
+    },
+    "mergeRiskReview": {
+      "agent": "qa-verification",
+      "required": true,
+      "route": "sol",
+      "effort": "high"
+    }
+  },
+  "routingComplexity": "routine",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any required change crosses declared subsystem or protected paths.",
+    "Any production access, credential, payment, booking, RLS, migration, authorization, concurrency, or workflow-correctness ambiguity arises.",
+    "Any design requires a live authentication provider, persistent storage, queue, Worker deployment, or production rate-limit authority."
+  ],
+  "rollbackExpectations": "Revert the signal-ingestion branch and generated artifacts; preserve audit and verification evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/ready/SUT-AIOS-P3-001/task.json",
+      "docs/project/IMPLEMENTATION_BACKLOG.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-26T13:10:00.000Z",
+  "updatedDate": "2026-08-09T06:15:22.899Z",
+  "completionEvidence": [],
+  "supersessionNote": "Migrated in place from the legacy V1 backlog packet to Task Packet V2 after GOV-056 activation. The pre-migration V1 packet is preserved by its origin/main blob SHA in evidence/tasks/SUT-AIOS-P3-001/migration-v1-to-v2.md; no V1 packet may enter ready or active.",
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-26T13:10:00.000Z",
+      "actor": "engineering-planner",
+      "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-09T06:15:22.899Z",
+      "actor": "engineering-planner",
+      "reason": "Legacy V1 backlog packet explicitly migrated in place to Task Packet V2; scope, stage routing, evidence, and command boundaries are validated before readiness."
+    }
+  ]
+}
