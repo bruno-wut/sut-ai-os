@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:20:35.982Z",
+  "updatedDate": "2026-08-09T10:21:22.461Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -555,6 +555,13 @@
       "at": "2026-08-09T10:20:35.982Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume only the structured preflight terminal and pass-decision invariant corrections required by semantic QA."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:21:22.461Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Review preflight failures now emit one structured failed terminal event and contradictory pass assessments fail before binding; 86 focused checks and every packet command pass."
     }
   ]
 }

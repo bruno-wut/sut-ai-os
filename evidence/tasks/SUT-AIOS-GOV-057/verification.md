@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (82 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (86 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (7 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -52,6 +52,10 @@ before writing either its run envelope or review result.
 
 The CLI uses that same final revision, complete-context, and evidence gate in
 the block immediately preceding its trace and review-result persistence.
+
+Review preflight failures also pass through structured progress and exactly one
+failed terminal trace event, and a `pass` assessment carrying blocking findings
+is rejected before launcher binding or persistence.
 
 ## Scope and limitations
 
