@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "83c33fdfcdb432f49c62f50f5a81466bca208e0f",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "b00dc2c018a49211feb39b27aef108886f7d5918923b6461789b2b84b60e2070",
+  "reviewedAt": "2026-08-09T10:06:04.087Z",
+  "stage": "semanticReview",
+  "runId": "20260809100415881-b69bd97b",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809100415881-b69bd97b-qa-verification-luna.jsonl",
+  "outputHash": "971339ab0daa1c2cf0ddcb8de555b924519a158d1589bb4bc3bf07b846750d23",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The CLI review path does not revalidate the governed context manifest and canonical revisions immediately before persistence. It checks them earlier, then only rechecks review evidence before calling persistReviewResult, allowing stale context or revision state to be persisted during a race."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add a CLI persistence-boundary test that mutates a governed context file or HEAD/base after initial validation and proves review persistence fails closed."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher remains a bounded orchestration module with assessment parsing, cancellation, context binding, and persistence responsibilities separated into testable functions.",
+    "hexagonalArchitecture": "Provider selection and the Codex child process remain behind the launcher boundary; no new production or provider authority is introduced.",
+    "eventedBoundaries": "Progress and cancellation use explicit evented terminal-state handling, but the CLI persistence boundary needs the same final revalidation discipline as the Codex-app path."
+  },
+  "exactNextAction": "Add shared final HEAD/base and context-manifest revalidation immediately before CLI review-result persistence, then rerun the focused negative tests and all packet-required checks."
+}

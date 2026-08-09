@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "revision-required",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:03:11.127Z",
+  "updatedDate": "2026-08-09T10:06:40.625Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -499,6 +499,13 @@
       "at": "2026-08-09T10:03:11.127Z",
       "actor": "codex-engineering-executor",
       "reason": "Codex-app persistence now rechecks HEAD, canonical base, contained context paths, and every governed file at the final write boundary; 80 focused checks and all packet commands pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:06:40.625Z",
+      "actor": "qa-verification",
+      "reason": "Semantic review on 83c33fd requires the CLI final persistence block to recheck HEAD/base and every governed context file alongside evidence."
     }
   ]
 }
