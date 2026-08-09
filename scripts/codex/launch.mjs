@@ -1028,8 +1028,9 @@ function main() {
     throw new Error("Review launches require a clean committed working tree");
   }
   const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
-  if (reviewProfile) requireExactHeadVerification(taskId, reviewedHeadSha);
-  if (profile === "merge-risk-review") requireMergeRiskPrerequisites(taskId, reviewedBaseSha, reviewedHeadSha);
+  const dryRun = Boolean(argumentsObject["dry-run"]);
+  if (reviewProfile && !dryRun) requireExactHeadVerification(taskId, reviewedHeadSha);
+  if (profile === "merge-risk-review" && !dryRun) requireMergeRiskPrerequisites(taskId, reviewedBaseSha, reviewedHeadSha);
 
   const trace = createTrace(taskId, agentId, selectedRoute);
   trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
