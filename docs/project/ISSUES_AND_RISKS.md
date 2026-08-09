@@ -3,11 +3,11 @@
 ### 2026-08-09 - Workflow V2 shell review runner lacked actionable review-output and cancellation state
 
 - **Task ID:** `SUT-AIOS-GOV-057`
-- **Status:** Mitigated on `3acb976036257d559076b716751014cc17cda3b9`; fresh independent review pending
+- **Status:** Mitigated; fresh exact-head independent review pending
 - **Severity:** High
 - **Affected scope:** Local `scripts/codex/launch.mjs` review profiles only.
 - **Evidence:** Two governed Sol plan-review attempts for P3-001 timed out after emitting only a start trace, leaving an orphaned launcher/child process and no SHA-bound result. The task remains in `review`; no review artifact, fallback, P3-001 change, production action, or PR was created.
-- **Mitigation:** Added explicit per-stage assessment instructions, JSON-only review assessment validation, redacted JSONL progress, generated merge-risk context bound to exact base/head and its manifest hash, and platform-safe process-tree cancellation without delayed Windows PID reuse. Deterministic tests cover the original timeout/cancellation and merge-risk context failure modes.
+- **Mitigation:** Added explicit per-stage assessment instructions, unambiguous JSON-only assessment validation, redacted JSONL progress, one-to-one changed-path patch context bound to exact base/head and its manifest hash, and observable bounded process-tree cancellation without delayed Windows PID reuse. Deterministic tests cover the original timeout/cancellation and merge-risk context failure modes, including taskkill error, nonzero, timeout, and missing-close outcomes.
 - **Residual risk / next action:** Independently review the exact final GOV-057 head and exercise the repaired runner before resuming P3-001 review stages.
 
 ### 2026-08-01 - GOV-056 atomic MVP superseded by staged Foundation rollout
