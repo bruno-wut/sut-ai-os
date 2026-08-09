@@ -1,5 +1,15 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-09 - Workflow V2 shell review runner lacked actionable review-output and cancellation state
+
+- **Task ID:** `SUT-AIOS-GOV-057`
+- **Status:** Mitigation in progress
+- **Severity:** High
+- **Affected scope:** Local `scripts/codex/launch.mjs` review profiles only.
+- **Evidence:** Two governed Sol plan-review attempts for P3-001 timed out after emitting only a start trace, leaving an orphaned launcher/child process and no SHA-bound result. The task remains in `review`; no review artifact, fallback, P3-001 change, production action, or PR was created.
+- **Mitigation:** Add explicit per-stage assessment instructions, require JSON-only review assessment output before the existing result-schema validation, emit redacted JSONL progress, and make SIGINT/SIGTERM cancellation terminate only the local child tree without persisting a result.
+- **Residual risk / next action:** Independently review the exact GOV-057 head and exercise the repaired runner before resuming P3-001 review stages.
+
 ### 2026-08-01 - GOV-056 atomic MVP superseded by staged Foundation rollout
 
 - **Task ID:** `SUT-AIOS-GOV-056`

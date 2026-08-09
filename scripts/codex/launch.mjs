@@ -36,6 +36,19 @@ const agentCategories = Object.freeze([
 ]);
 const contextLimitBytes = 512 * 1024;
 const stageByProfile = Object.freeze({ implementation: "implementation", "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" });
+const reviewAssessmentFields = Object.freeze([
+  "decision",
+  "blockingFindings",
+  "nonBlockingRisks",
+  "missingNegativeTests",
+  "architectureAssessment",
+  "exactNextAction",
+]);
+const reviewAssessmentFocus = Object.freeze({
+  "plan-review": "Assess whether the planned implementation is bounded, testable, and consistent with the packet before merge-risk concerns are considered.",
+  "semantic-qa": "Assess the implemented behavior, negative cases, data minimisation, and forbidden-path compliance against the packet and governed context.",
+  "merge-risk-review": "Assess the exact committed diff for merge risks, rollback adequacy, evidence integrity, and any remaining governance boundary violation.",
+});
 
 function usage() {
   return `Usage:
@@ -391,7 +404,44 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
   ].join("\n");
 
   const body = unique.map((r) => `\n--- BEGIN ${r.relativePath} ---\n${r.text}\n--- END ${r.relativePath} ---`).join("\n");
-  return { prompt: `${header}\n${body}\n`, contextFiles: unique.map((r) => r.relativePath), contextManifest, totalBytes, manifestHash };
+  const reviewPrompt = buildReviewAssessmentPrompt(profile);
+  return { prompt: `${header}${reviewPrompt ? `\n\n${reviewPrompt}` : ""}\n${body}\n`, contextFiles: unique.map((r) => r.relativePath), contextManifest, totalBytes, manifestHash };
+}
+
+function buildReviewAssessmentPrompt(profile) {
+  const stage = stageByProfile[profile];
+  if (!stage || stage === "implementation") return "";
+  return [
+    "Independent Workflow V2 review instructions:",
+    `- Requested stage: ${stage}.`,
+    `- ${reviewAssessmentFocus[profile]}`,
+    "- Review only the governed context. Do not edit files, invoke tools, contact providers, or claim deployment or production authority.",
+    "- Return exactly one JSON object, with no Markdown, prose, code fence, or second JSON value.",
+    "- The object must contain exactly these assessment fields: decision, blockingFindings, nonBlockingRisks, missingNegativeTests, architectureAssessment, exactNextAction.",
+    "- decision must be pass, revision-required, or blocked. A pass decision requires an empty blockingFindings array.",
+    "- architectureAssessment must contain exactly deepModules, hexagonalArchitecture, and eventedBoundaries as non-empty strings.",
+    "- The launcher binds immutable task, SHA, agent, model, effort, context, run, trace, timestamp, and output-hash fields, then requires schemas/review-result-v1.schema.json before persistence.",
+  ].join("\n");
+}
+
+function parseReviewAssessment(stdoutText) {
+  const trimmed = stdoutText.trim();
+  if (!trimmed) throw new Error("review stdout is empty");
+  let assessment;
+  try {
+    assessment = JSON.parse(trimmed);
+  } catch (error) {
+    throw new Error(`review stdout must be exactly one JSON object (${error.message})`);
+  }
+  if (!assessment || typeof assessment !== "object" || Array.isArray(assessment)) {
+    throw new Error("review stdout must be a JSON object");
+  }
+  const keys = Object.keys(assessment).sort();
+  const expected = [...reviewAssessmentFields].sort();
+  if (keys.length !== expected.length || keys.some((key, index) => key !== expected[index])) {
+    throw new Error("review stdout must contain exactly the required assessment fields");
+  }
+  return assessment;
 }
 
 function createTrace(taskId, agentId, route) {
@@ -403,6 +453,58 @@ function createTrace(taskId, agentId, route) {
   const tracePath = path.join(traceDirectory, `${runId}-${agentId}-${route}.jsonl`);
   const append = (event) => fs.appendFileSync(tracePath, `${JSON.stringify(event)}\n`, { encoding: "utf8", mode: 0o600 });
   return { startedAt, runId, tracePath, append };
+}
+
+function emitProgress(trace, details) {
+  const event = {
+    event: "review-progress",
+    runId: trace.runId,
+    taskId: details.taskId,
+    profile: details.profile,
+    status: details.status,
+    ...(details.stream ? { stream: details.stream } : {}),
+    ...(Number.isInteger(details.bytes) ? { bytes: details.bytes } : {}),
+    ...(details.signal ? { signal: details.signal } : {}),
+  };
+  trace.append(event);
+  process.stderr.write(`${JSON.stringify(event)}\n`);
+}
+
+function terminateChildTree(child) {
+  if (!child?.pid) return;
+  if (process.platform === "win32") {
+    const terminator = spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore", windowsHide: true });
+    terminator.on("error", () => {});
+    terminator.unref();
+    return;
+  }
+  try { child.kill("SIGTERM"); } catch { /* the child may have already exited */ }
+}
+
+function createReviewCancellationController(child, emit, options = {}) {
+  const graceMs = options.graceMs ?? 5000;
+  const schedule = options.setTimeoutFn ?? setTimeout;
+  const cancelSchedule = options.clearTimeoutFn ?? clearTimeout;
+  const terminate = options.terminateChildTree ?? terminateChildTree;
+  let requested = false;
+  let timer = null;
+  const request = (signal) => {
+    if (requested) return false;
+    requested = true;
+    emit({ status: "cancellation-requested", signal });
+    try { child.kill(signal === "SIGTERM" ? "SIGTERM" : "SIGINT"); } catch { /* escalation handles a still-running child */ }
+    timer = schedule(() => {
+      emit({ status: "cancellation-escalated", signal });
+      terminate(child);
+    }, graceMs);
+    if (typeof timer?.unref === "function") timer.unref();
+    return true;
+  };
+  return {
+    request,
+    get requested() { return requested; },
+    complete() { if (timer) cancelSchedule(timer); timer = null; },
+  };
 }
 
 function sanitizeEnvironment() {
@@ -663,7 +765,7 @@ function main() {
   const reviewedBaseSha = reviewProfile ? comparisonBaseSha() : null;
 
   const trace = createTrace(taskId, agentId, selectedRoute);
-  trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel });
+  trace.append({ event: "start", taskId, agentId, route: selectedRoute, model: selectedModel, profile });
 
   const context = buildContextProfile(agent, taskRecord, selectedRoute, selectedModel, effort, profile);
   const sandbox = workspaceWrite ? "workspace-write" : "read-only";
@@ -704,35 +806,61 @@ function main() {
 
   let stdoutText = "";
   let stderrText = "";
+  const progress = (details) => emitProgress(trace, { taskId, profile, ...details });
+  const cancellation = reviewProfile ? createReviewCancellationController(child, progress) : null;
+  const onSigint = () => cancellation?.request("SIGINT");
+  const onSigterm = () => cancellation?.request("SIGTERM");
+  if (reviewProfile) {
+    process.once("SIGINT", onSigint);
+    process.once("SIGTERM", onSigterm);
+    progress({ status: "child-started" });
+  }
 
-  child.stdout.on("data", (chunk) => { stdoutText += chunk.toString(); });
-  child.stderr.on("data", (chunk) => { stderrText += chunk.toString(); });
+  child.stdout.on("data", (chunk) => { stdoutText += chunk.toString(); if (reviewProfile) progress({ status: "child-output", stream: "stdout", bytes: chunk.length }); });
+  child.stderr.on("data", (chunk) => { stderrText += chunk.toString(); if (reviewProfile) progress({ status: "child-output", stream: "stderr", bytes: chunk.length }); });
 
   child.stdin.write(context.prompt);
   child.stdin.end();
 
   child.on("error", (err) => {
-    trace.append({ event: "finish", status: "spawn-error", error: err.message });
+    cancellation?.complete();
+    if (reviewProfile) progress({ status: "spawn-error" });
+    trace.append({ event: "finish", status: "spawn-error" });
     process.stderr.write(`Process spawn failed: ${err.message}\n`);
     process.exit(1);
   });
 
   child.on("close", (exitCode) => {
+    cancellation?.complete();
+    if (reviewProfile) {
+      process.off("SIGINT", onSigint);
+      process.off("SIGTERM", onSigterm);
+    }
     const passed = exitCode === 0;
-    if (stderrText) process.stderr.write(stderrText);
+    if (stderrText && !reviewProfile) process.stderr.write(stderrText);
+    if (stderrText && reviewProfile) progress({ status: "child-stderr-redacted", bytes: Buffer.byteLength(stderrText) });
+
+    if (reviewProfile && cancellation?.requested) {
+      progress({ status: "cancelled" });
+      trace.append({ event: "finish", status: "cancelled", exitCode });
+      process.exitCode = 130;
+      return;
+    }
 
     // Validate review profile output strictly
     if (passed && reviewProfile) {
       if (gitSha("HEAD") !== reviewedHeadSha || comparisonBaseSha() !== reviewedBaseSha) {
+        progress({ status: "review-binding-changed" });
         process.stderr.write("Review execution failed: committed head or canonical base changed during review\n");
         process.exit(1);
       }
       let parsed;
       try {
-        parsed = JSON.parse(stdoutText.trim());
+        parsed = parseReviewAssessment(stdoutText);
       } catch (e) {
-        trace.append({ event: "finish", status: "review-json-parse-failed", error: e.message });
-        process.stderr.write(`Review execution failed: output is not valid JSON (${e.message})\n`);
+        progress({ status: "review-output-invalid" });
+        trace.append({ event: "finish", status: "review-json-parse-failed" });
+        process.stderr.write(`Review execution failed: ${e.message}\n`);
         process.exit(1);
       }
 
@@ -754,7 +882,8 @@ function main() {
         model: selectedModel, reasoningEffort: effort, contextManifestHash: context.manifestHash,
       });
       if (!reviewCheck.valid) {
-        trace.append({ event: "finish", status: "review-schema-validation-failed", errors: reviewCheck.errors });
+        progress({ status: "review-schema-validation-failed" });
+        trace.append({ event: "finish", status: "review-schema-validation-failed" });
         process.stderr.write(`Review schema validation failed:\n- ${reviewCheck.errors.join("\n- ")}\n`);
         process.exit(1);
       }
@@ -775,11 +904,13 @@ function main() {
         reviewedTaskPacketText: taskRecord.text,
       });
       const reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
+      progress({ status: "review-persisted" });
       process.stdout.write(`${JSON.stringify({ status: "review-persisted", taskId, stage: launcherReview.stage, decision: launcherReview.decision, reviewPath })}\n`);
     }
 
     if (!reviewProfile && stdoutText) process.stdout.write(stdoutText);
     trace.append({ event: "finish", status: passed ? "success" : "failed", exitCode });
+    if (reviewProfile) progress({ status: passed ? "completed" : "failed" });
     if (!passed) process.exit(exitCode ?? 1);
   });
 }
@@ -792,4 +923,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, comparisonBaseSha, discoverAgents, gitSha, packetAccess, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };
+export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildReviewAssessmentPrompt, comparisonBaseSha, createReviewCancellationController, discoverAgents, gitSha, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates };

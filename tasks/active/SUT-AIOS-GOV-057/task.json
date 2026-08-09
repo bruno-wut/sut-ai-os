@@ -1,0 +1,175 @@
+{
+  "$schema": "../../../schemas/task-packet-v2.schema.json",
+  "schemaVersion": "2.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "title": "Bounded Workflow V2 review-runner repair",
+  "status": "active",
+  "phase": "phase-2-governance",
+  "workstream": "workflow-v2-review-runner",
+  "workflowId": "workflow-v2-review-runner-repair",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Restore reliable, auditable independent review for bounded hotel AI OS tasks without changing their implementation or introducing model fallback.",
+  "technicalObjective": "Repair only the Workflow V2 review runner so each review stage receives an explicit assessment-only prompt, its stdout is required to be one review-result assessment JSON object, and structured progress plus cancellation are surfaced and fail closed.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "docs/architecture/source/Agent Architecture.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-056-FND"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-057/verification.md"
+  ],
+  "assumptions": [
+    "The hardcoded CI validator list remains authoritative.",
+    "P3-001 and every other task packet, implementation artifact, lifecycle state, and review evidence remain out of scope.",
+    "The repair is local, read-only review orchestration only; it does not deploy, contact production systems, alter provider credentials, or change task routingPolicy authority.",
+    "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result."
+  ],
+  "acceptanceCriteria": [
+    "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
+    "The launcher rejects empty, non-JSON, multi-value, or schema-invalid review stdout before any review artifact is persisted.",
+    "The runner emits newline-delimited structured progress events for launch, child output, completion, failure, and cancellation without recording prompt content, environment values, or model output in traces.",
+    "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
+    "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced."
+  ],
+  "allowedPaths": [
+    "scripts/codex/launch.mjs",
+    "tests/codex/validate-review-runner.mjs",
+    "tests/codex/v2-review-lifecycle.mjs",
+    "tests/review/validate-review-binding.mjs",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-057/**",
+    "evidence/reviews/SUT-AIOS-GOV-057/**",
+    "tasks/**/SUT-AIOS-GOV-057/**"
+  ],
+  "forbiddenPaths": [
+    "package.json",
+    "package-lock.json",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "tasks/**/SUT-AIOS-P3-001/**",
+    "evidence/tasks/SUT-AIOS-P3-001/**",
+    "evidence/reviews/SUT-AIOS-P3-001/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    "policies/**",
+    "schemas/**",
+    "**/*.sql",
+    ".env*",
+    "credentials/**",
+    "secrets/**"
+  ],
+  "allowedCommands": [
+    "node tests/codex/validate-review-runner.mjs",
+    "node tests/codex/v2-review-lifecycle.mjs",
+    "node tests/review/validate-review-binding.mjs",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "stage-specific prompt and JSON-only review-output enforcement",
+    "review-result schema rejection before persistence",
+    "structured progress redaction and terminal-state coverage",
+    "graceful cancellation without review persistence",
+    "no-fallback and P3-001 scope regression inspection",
+    "independent V2 plan, semantic, and merge-risk review"
+  ],
+  "requiredTests": [
+    "node tests/codex/validate-review-runner.mjs",
+    "node tests/codex/v2-review-lifecycle.mjs",
+    "node tests/review/validate-review-binding.mjs",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "routingPolicy": {
+    "implementation": {
+      "agent": "codex-engineering-executor",
+      "route": "terra",
+      "effort": "high"
+    },
+    "planReview": {
+      "agent": "engineering-planner",
+      "route": "sol",
+      "effort": "high"
+    },
+    "semanticReview": {
+      "agent": "qa-verification",
+      "route": "luna",
+      "effort": "high"
+    },
+    "mergeRiskReview": {
+      "agent": "qa-verification",
+      "required": true,
+      "route": "sol",
+      "effort": "high"
+    }
+  },
+  "routingComplexity": "routine",
+  "workspaceWrite": false,
+  "solEscalationTriggers": [
+    "Any proposal to add fallback, change routingPolicy semantics, change schemas, persist partial review output, contact a provider outside the existing Codex CLI process, or alter another task enters Sol escalation and requires a revised packet.",
+    "Any cancellation design that could terminate unrelated processes or weaken evidence integrity requires Sol security review."
+  ],
+  "rollbackExpectations": "Revert the single repair PR; cancellation leaves no review artifact, and existing P3-001 review evidence remains untouched.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/model-routing/MODEL_ROUTING_POLICY.md",
+      "schemas/review-result-v1.schema.json",
+      "scripts/codex/launch.mjs"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-09T07:51:04.269Z",
+  "updatedDate": "2026-08-09T07:51:56.117Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-09T07:51:04.269Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-09T07:51:55.745Z",
+      "actor": "chief-orchestrator",
+      "reason": "User-approved bounded V2 repair packet validated with explicit no-fallback and P3-001 exclusions."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-09T07:51:56.117Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Begin the approved local review-runner repair only."
+    }
+  ]
+}

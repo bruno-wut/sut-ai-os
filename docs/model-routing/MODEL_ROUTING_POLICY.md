@@ -109,6 +109,8 @@ Every launch:
 - records only model/route, agent/task IDs, context filenames, sandbox, timestamps, and exit state in ignored local traces;
 - never logs prompts, task contents, environment values, credentials, or model output.
 
+For a V2 review profile, the launcher gives the reviewer an explicit stage-specific assessment prompt and accepts only one JSON assessment object. It binds the immutable identity fields itself and validates the resulting review result against `schemas/review-result-v1.schema.json` before persistence. The launcher emits redacted JSONL progress for child start, output byte counts, completion, failure, and cancellation; it never emits model output in those events. SIGINT and SIGTERM request graceful cancellation of only the local Codex child, then escalate to that child tree after a short grace period. A cancelled review persists no review result and never selects a fallback route or provider.
+
 ## Package commands
 
 This independent repository now uses its documented npm package-manager family for routing commands:
