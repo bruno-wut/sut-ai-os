@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-P3-001",
   "title": "Implement signed signal normalization endpoint",
-  "status": "ready",
+  "status": "active",
   "phase": "phase-3",
   "workstream": "signal-ingestion",
   "workflowId": "implementation-p3-001-v2",
@@ -140,14 +140,14 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/ready/SUT-AIOS-P3-001/task.json",
+      "tasks/active/SUT-AIOS-P3-001/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-09T06:15:22.899Z",
+  "updatedDate": "2026-08-09T06:15:54.028Z",
   "completionEvidence": [],
   "supersessionNote": "Migrated in place from the legacy V1 backlog packet to Task Packet V2 after GOV-056 activation. The pre-migration V1 packet is preserved by its origin/main blob SHA in evidence/tasks/SUT-AIOS-P3-001/migration-v1-to-v2.md; no V1 packet may enter ready or active.",
   "stateTransitions": [
@@ -164,6 +164,13 @@
       "at": "2026-08-09T06:15:22.899Z",
       "actor": "engineering-planner",
       "reason": "Legacy V1 backlog packet explicitly migrated in place to Task Packet V2; scope, stage routing, evidence, and command boundaries are validated before readiness."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-09T06:15:54.028Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Start the approved V2-migrated P3-001 signal-ingestion implementation with no production or provider behavior."
     }
   ]
 }
