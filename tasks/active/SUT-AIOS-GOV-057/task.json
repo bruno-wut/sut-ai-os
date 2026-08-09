@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:56:45.014Z",
+  "updatedDate": "2026-08-09T09:56:46.090Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -464,6 +464,13 @@
       "at": "2026-08-09T09:56:45.014Z",
       "actor": "qa-verification",
       "reason": "Merge-risk review on d66988d requires complete POSIX process-group confirmation, governed-file rehashing for launcher traces, and final evidence-sequence revalidation before persistence."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:56:46.090Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the POSIX group, launcher-manifest, and final evidence-revalidation corrections required by the exact d66988d merge-risk review."
     }
   ]
 }

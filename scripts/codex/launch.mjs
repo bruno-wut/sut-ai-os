@@ -596,10 +596,32 @@ function childIsRunning(child) {
   return Boolean(child?.pid) && child.exitCode == null && child.signalCode == null;
 }
 
+function processGroupIsRunning(pid, killFn = process.kill) {
+  try { killFn(-pid, 0); return true; }
+  catch (error) { return error?.code !== "ESRCH"; }
+}
+
+function waitForProcessGroupExit(pid, options = {}) {
+  const timeoutMs = options.timeoutMs ?? 5000;
+  const pollMs = options.pollMs ?? 25;
+  const schedule = options.setTimeoutFn ?? setTimeout;
+  const isRunning = options.processGroupIsRunning ?? processGroupIsRunning;
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const poll = () => {
+      if (!isRunning(pid)) { resolve({ status: "terminated" }); return; }
+      if (Date.now() - started >= timeoutMs) { resolve({ status: "failed", reason: "process-group-still-running" }); return; }
+      const timer = schedule(poll, pollMs);
+      if (typeof timer?.unref === "function") timer.unref();
+    };
+    poll();
+  });
+}
+
 function terminateChildTree(child, options = {}) {
-  if (!childIsRunning(child)) return Promise.resolve({ status: "already-exited" });
   const platform = options.platform ?? process.platform;
   if (platform === "win32") {
+    if (!childIsRunning(child)) return Promise.resolve({ status: "already-exited" });
     const spawnFn = options.spawnFn ?? spawn;
     const timeoutMs = options.timeoutMs ?? 5000;
     const schedule = options.setTimeoutFn ?? setTimeout;
@@ -630,12 +652,15 @@ function terminateChildTree(child, options = {}) {
     });
   }
   const signal = options.signal ?? "SIGKILL";
+  const isGroupRunning = options.processGroupIsRunning ?? processGroupIsRunning;
+  if (!isGroupRunning(child.pid, options.killProcessGroup ?? process.kill)) return Promise.resolve({ status: "already-exited" });
   try {
     (options.killProcessGroup ?? process.kill)(-child.pid, signal);
-  } catch {
-    try { child.kill(signal); } catch (error) { return Promise.resolve({ status: "failed", reason: "signal-error", message: error.message }); }
+  } catch (error) {
+    return Promise.resolve({ status: "failed", reason: "signal-error", message: error.message });
   }
-  return Promise.resolve({ status: "signalled" });
+  if (signal !== "SIGKILL") return Promise.resolve({ status: "signalled" });
+  return waitForProcessGroupExit(child.pid, { ...options, processGroupIsRunning: isGroupRunning });
 }
 
 function createReviewCancellationController(child, emit, options = {}) {
@@ -652,6 +677,7 @@ function createReviewCancellationController(child, emit, options = {}) {
   let termination = null;
   let failureReported = false;
   let childClosed = false;
+  let escalated = false;
   const reportFailure = (result, signal) => {
     if (failureReported) return result;
     failureReported = true;
@@ -667,6 +693,13 @@ function createReviewCancellationController(child, emit, options = {}) {
     }
     return result;
   });
+  const escalate = (signal) => {
+    if (escalated) return termination;
+    escalated = true;
+    emit({ status: "cancellation-escalated", signal });
+    termination = observeTermination(terminate(child, { platform, signal: "SIGKILL" }), signal, platform === "win32");
+    return termination;
+  };
   const request = (signal) => {
     if (requested || !childIsRunning(child)) return false;
     requested = true;
@@ -675,15 +708,12 @@ function createReviewCancellationController(child, emit, options = {}) {
       // Node cannot deliver console SIGINT/SIGTERM to a Windows child tree.
       // Resolve and terminate the tree while the original PID is still live;
       // never retain that PID for delayed reuse-prone escalation.
-      emit({ status: "cancellation-escalated", signal });
-      termination = observeTermination(terminate(child, { platform }), signal, true);
+      termination = escalate(signal);
       return true;
     }
     termination = observeTermination(terminate(child, { platform, signal: signal === "SIGTERM" ? "SIGTERM" : "SIGINT" }), signal, false);
     timer = schedule(() => {
-      if (!childIsRunning(child)) return;
-      emit({ status: "cancellation-escalated", signal });
-      termination = observeTermination(terminate(child, { platform, signal: "SIGKILL" }), signal, true);
+      escalate(signal);
     }, graceMs);
     if (typeof timer?.unref === "function") timer.unref();
     return true;
@@ -698,6 +728,9 @@ function createReviewCancellationController(child, emit, options = {}) {
       if (settleTimer) cancelSchedule(settleTimer);
       settleTimer = null;
     },
+    ensureTerminated(signal = "SIGTERM") {
+      return platform === "win32" ? termination : escalate(signal);
+    },
     complete() {
       if (timer) cancelSchedule(timer);
       if (settleTimer) cancelSchedule(settleTimer);
@@ -709,7 +742,7 @@ function createReviewCancellationController(child, emit, options = {}) {
 
 async function completeCancelledReview(cancellation, terminal) {
   cancellation.confirmChildClosed();
-  const result = await cancellation.termination;
+  const result = await cancellation.ensureTerminated();
   cancellation.complete();
   if (result?.status === "failed" || !cancellation.childClosed) {
     terminal.complete("failed", 1);
@@ -1189,6 +1222,15 @@ function main() {
       if (!reviewCheck.valid) {
         progress({ status: "review-schema-validation-failed" });
         process.stderr.write(`Review schema validation failed:\n- ${reviewCheck.errors.join("\n- ")}\n`);
+        terminal.complete("failed", 1);
+        return;
+      }
+
+      try {
+        requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewedBaseSha, headSha: reviewedHeadSha, contextManifest: context.contextManifest });
+      } catch (error) {
+        progress({ status: "review-evidence-changed" });
+        process.stderr.write(`Review evidence changed during execution: ${error.message}\n`);
         terminal.complete("failed", 1);
         return;
       }

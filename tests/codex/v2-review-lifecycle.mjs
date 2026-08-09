@@ -49,7 +49,14 @@ try {
   record = findPacket(id, root);
   const reviewedTaskPacketText = fs.readFileSync(record.file, "utf8");
   const reviewedTaskScopeHash = computeReviewScopeHash(record.packet);
-  const contextManifest = [{ path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) }];
+  const governedContextPath = "evidence/governed-context.txt";
+  const governedContextFile = path.join(root, governedContextPath);
+  fs.mkdirSync(path.dirname(governedContextFile), { recursive: true });
+  fs.writeFileSync(governedContextFile, "governed fixture context\n");
+  const contextManifest = [
+    { path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) },
+    { path: governedContextPath, sha256: sha256(fs.readFileSync(governedContextFile)) },
+  ];
   const contextManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
 
   const profiles = [
@@ -97,6 +104,20 @@ try {
   const originalPlanTrace = fs.readFileSync(planTraceFile, "utf8");
   fs.writeFileSync(planTraceFile, originalPlanTrace.replace('"status":"success"', '"status":"failed"'));
   assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /does not record successful completion/, "failed prerequisite launcher trace cannot satisfy a merge gate");
+  fs.writeFileSync(planTraceFile, originalPlanTrace);
+  const originalPlanReview = fs.readFileSync(path.join(root, paths[0]), "utf8");
+  const forgedPlanReview = JSON.parse(originalPlanReview);
+  const forgedPlanTraceEvents = originalPlanTrace.trim().split(/\r?\n/).map((line) => JSON.parse(line));
+  const forgedBound = forgedPlanTraceEvents.find((event) => event.event === "review-bound");
+  forgedBound.contextManifest = forgedBound.contextManifest.map((entry) => entry.path === governedContextPath ? { ...entry, sha256: "f".repeat(64) } : entry);
+  forgedPlanReview.contextManifestHash = sha256(forgedBound.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+  forgedPlanReview.outputHash = computeReviewOutputHash(forgedPlanReview);
+  forgedBound.contextManifestHash = forgedPlanReview.contextManifestHash;
+  forgedBound.outputHash = forgedPlanReview.outputHash;
+  fs.writeFileSync(path.join(root, paths[0]), `${JSON.stringify(forgedPlanReview, null, 2)}\n`);
+  fs.writeFileSync(planTraceFile, `${forgedPlanTraceEvents.map((event) => JSON.stringify(event)).join("\n")}\n`);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /governed context file does not match/, "internally consistent forged launcher context hashes fail closed against governed files");
+  fs.writeFileSync(path.join(root, paths[0]), originalPlanReview);
   fs.writeFileSync(planTraceFile, originalPlanTrace);
   assert.throws(() => transition(id, "verified", "Missing evidence must fail.", "qa-verification", root, { evidence: "evidence/tasks/SUT-TEST-V2-REVIEW/missing.md", reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" }), /does not exist/, "verified transition rejects a missing evidence reference");
   assert.equal(findPacket(id, root).state, "review", "missing evidence rejection leaves the task in review");

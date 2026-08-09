@@ -171,8 +171,20 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || !/^[0-9a-f]{64}$/i.test(bound.reviewedTaskScopeHash ?? "")) {
         errors.push(`${stage} launcher trace must bind exactly one reviewed task scope hash`);
       } else {
+        const seen = new Set();
         const taskEntry = bound.contextManifest.find((entry) => entry.path === `tasks/review/${packet.taskId}/task.json`);
         if (!taskEntry?.sha256 || bound.reviewedTaskScopeHash !== computeReviewScopeHash(packet)) errors.push(`${stage} launcher reviewed task scope does not match the current packet`);
+        for (const entry of bound.contextManifest) {
+          if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} launcher trace context entry is invalid`); continue; }
+          seen.add(entry.path);
+          if (entry.path === "generated/merge-risk-context") {
+            if (stage !== "mergeRiskReview" || !/^[0-9a-f]{64}$/i.test(entry.sha256)) errors.push(`${stage} generated merge-risk context binding is invalid`);
+            continue;
+          }
+          if (entry.path === `tasks/review/${packet.taskId}/task.json`) continue;
+          const contextFile = path.resolve(root, entry.path);
+          if (!fs.existsSync(contextFile) || sha256(fs.readFileSync(contextFile)) !== entry.sha256) errors.push(`${stage} governed context file does not match: ${entry.path}`);
+        }
         const manifestHash = sha256(bound.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
         if (manifestHash !== result.contextManifestHash) errors.push(`${stage} launcher context manifest hash does not match its bound files`);
       }

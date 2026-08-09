@@ -1,6 +1,10 @@
 import nodeAssert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { EventEmitter } from "node:events";
-import { buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, terminateChildTree, validateContextMaterial, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -66,14 +70,15 @@ const posixCancellation = createReviewCancellationController(posixChild, () => {
   graceMs: 1,
   setTimeoutFn: (callback) => { scheduled = callback; return { unref() {} }; },
   clearTimeoutFn: () => { cleared = true; },
-  terminateChildTree: (_target, options) => { posixSignals.push(`tree-${options.signal}`); return Promise.resolve({ status: "signalled" }); }
+  terminateChildTree: (_target, options) => { posixSignals.push(`tree-${options.signal}`); return Promise.resolve({ status: options.signal === "SIGKILL" ? "terminated" : "signalled" }); }
 });
 assert.equal(posixCancellation.request("SIGTERM"), true, "POSIX cancellation starts gracefully");
 assert.deepEqual(posixSignals, ["tree-SIGTERM"], "POSIX cancellation first signals the isolated process group gracefully");
 posixChild.exitCode = 0;
 scheduled();
-assert.deepEqual(posixSignals, ["tree-SIGTERM"], "delayed escalation cannot target an exited or reused PID");
-posixCancellation.complete();
+assert.deepEqual(posixSignals, ["tree-SIGTERM", "tree-SIGKILL"], "POSIX escalation still targets the isolated process group after the root exits");
+const posixTerminal = createReviewTerminalController({ append: () => {} }, () => {}, () => {});
+assert.equal(await completeCancelledReview(posixCancellation, posixTerminal), "cancelled", "POSIX cancellation requires confirmed process-group termination");
 assert.equal(cleared, true, "completion clears pending escalation");
 
 const taskkillCalls = [];
@@ -197,6 +202,17 @@ const exactVerification = { schemaVersion: "1.0.0", taskId: "SUT-AIOS-GOV-057", 
 assert.equal(validateExactHeadVerification(exactVerification, exactVerification.taskId, headSha), true, "exact-head verification binds task, head, status, reviewer, and checks");
 assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: baseSha }, exactVerification.taskId, headSha), false, "stale verification head is rejected");
 assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: undefined }, exactVerification.taskId, headSha), false, "SHA-less verification is rejected");
+
+const evidenceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-evidence-"));
+const evidenceRelative = `evidence/verification/${exactVerification.taskId}/verification-${headSha}.json`;
+const evidenceFile = path.join(evidenceRoot, evidenceRelative);
+fs.mkdirSync(path.dirname(evidenceFile), { recursive: true });
+fs.writeFileSync(evidenceFile, `${JSON.stringify(exactVerification)}\n`);
+const evidenceManifest = [{ path: evidenceRelative, sha256: createHash("sha256").update(fs.readFileSync(evidenceFile)).digest("hex") }];
+assert.doesNotThrow(() => requireReviewEvidenceSequence({ taskRecord: { data: { taskId: exactVerification.taskId } }, profile: "plan-review", baseSha, headSha, contextManifest: evidenceManifest, root: evidenceRoot }), "unchanged exact-head evidence satisfies the shared preflight gate");
+fs.writeFileSync(evidenceFile, `${JSON.stringify({ ...exactVerification, checks: ["changed during review"] })}\n`);
+assert.throws(() => requireReviewEvidenceSequence({ taskRecord: { data: { taskId: exactVerification.taskId } }, profile: "plan-review", baseSha, headSha, contextManifest: evidenceManifest, root: evidenceRoot }), /does not bind required evidence/, "evidence drift is rejected by final shared-gate revalidation");
+fs.rmSync(evidenceRoot, { recursive: true, force: true });
 
 const terminalEvents = [];
 const traceEvents = [];
