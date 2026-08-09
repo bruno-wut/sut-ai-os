@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -28,7 +28,7 @@
     "The repair is local, read-only review orchestration only; it does not deploy, contact production systems, alter provider credentials, or change task routingPolicy authority.",
     "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result.",
     "The user approved workspace-write authority solely for the designated Terra implementation stage within this packet's existing exact path allowlist; it does not grant production, provider, deployment, fallback, or cross-task authority.",
-    "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 327680 bytes so the complete exact GOV-057 diff plus durable same-task review history fits below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged."
+    "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 393216 bytes so the complete exact GOV-057 diff, durable same-task review history, exact-head verification, and routed prerequisite traces fit below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged."
   ],
   "acceptanceCriteria": [
     "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
@@ -140,7 +140,7 @@
   "rollbackExpectations": "Revert the single repair PR; cancellation leaves no review artifact, and existing P3-001 review evidence remains untouched.",
   "outputSchema": "schemas/agent-result.schema.json",
   "contextBudget": {
-    "maxBytes": 327680,
+    "maxBytes": 393216,
     "includedPaths": [
       "AGENTS.md",
       "docs/project/TASK_WORKFLOW.md",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:46:53.907Z",
+  "updatedDate": "2026-08-09T09:46:54.436Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -443,6 +443,13 @@
       "at": "2026-08-09T09:46:53.907Z",
       "actor": "codex-engineering-executor",
       "reason": "Complete merge context with exact verification and both routed prerequisite traces measures 346512 bytes, above this task's 327680-byte cap; increase only the bounded task cap below the repository ceiling."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:46:54.436Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply only the bounded context cap correction required to carry verified prerequisite traces; preserve all authority and product scope."
     }
   ]
 }
