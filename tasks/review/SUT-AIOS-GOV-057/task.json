@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -154,7 +154,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T09:38:32.785Z",
+  "updatedDate": "2026-08-09T09:44:04.101Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -429,6 +429,13 @@
       "at": "2026-08-09T09:38:32.785Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume only the shared evidence-sequence gate and routed trace-binding corrections required by the exact 3d2b577 merge-risk review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:44:04.101Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Shared CLI and Codex-app evidence gate, fully routed trace-bound prerequisites, forged-artifact negatives, and all packet checks pass; submit the final bounded repair for independent review."
     }
   ]
 }
