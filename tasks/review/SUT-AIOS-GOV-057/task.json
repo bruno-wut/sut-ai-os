@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:28:36.971Z",
+  "updatedDate": "2026-08-12T20:34:45.127Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -734,6 +734,13 @@
       "at": "2026-08-12T20:28:36.971Z",
       "actor": "codex-engineering-executor",
       "reason": "Revise only Codex-app final HEAD and complete-context reconstruction with zero-publication negatives; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:34:45.127Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Final Codex-app publication re-reads HEAD and reconstructs the complete root-bound context profile; historical evidence remains path-complete through bounded digests, all focused and packet checks pass."
     }
   ]
 }
