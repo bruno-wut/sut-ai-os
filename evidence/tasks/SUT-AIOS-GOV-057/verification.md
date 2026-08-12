@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (98 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (101 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (81 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -69,6 +69,13 @@ permits only same-task review and verification evidence in that commit, and
 permits only the task lifecycle record afterward. This removes the impossible
 requirement for a Git commit to contain a file named after its own SHA while
 still rejecting every unreviewed implementation change.
+
+Merge-risk context keeps every canonical changed path. Implementation and
+governance patches remain inline; historical machine-generated files under
+`evidence/reviews/**` and `evidence/verification/**` are represented by exact
+patch SHA-256 plus byte length so durable review history cannot recursively
+exhaust the 512 KiB ceiling. The current exact verification and same-head
+prerequisite reviews and traces remain separate full governed context files.
 
 Launcher validation now requires exactly one terminal `success` event with
 `exitCode: 0`, after the sole `review-bound` event and at the end of the trace.

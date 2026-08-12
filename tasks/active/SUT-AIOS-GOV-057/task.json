@@ -41,6 +41,7 @@
     "V2 verification records both the immutable reviewed source head and its evidence-only commit, proves ancestry, and rejects any non-evidence change after review without requiring a reconciliation PR.",
     "Launcher trace validation requires exactly one successful finish with exitCode 0 after the sole review-bound event, and bounded output overflow terminates the review fail closed without persistence.",
     "Shell and Codex-app review outputs use validated staging and atomic final-path publication; rerunning the same immutable run recovers an exact partial Codex-app publication without overwriting conflicting evidence.",
+    "Merge-risk context includes every changed path and every implementation patch inline; historical machine-generated review and verification patches use deterministic SHA-256 and byte-length bindings while current prerequisite evidence remains fully included.",
     "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
     "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced."
   ],

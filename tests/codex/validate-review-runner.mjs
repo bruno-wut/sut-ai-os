@@ -191,6 +191,11 @@ assert.deepEqual(gitCalls, [
 assert.match(mergeContext, /forbidden\/old\.mjs/, "no-rename inventory preserves a renamed source under a forbidden boundary");
 assert.match(mergeContext, /allowed\/new\.mjs/, "no-rename inventory preserves the renamed destination patch");
 assert.match(mergeContext, /diff --git/, "merge-risk context includes the exact diff");
+const historicalEvidencePayload = "historical-review-body".repeat(1000);
+const boundedEvidenceContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => args.includes("--name-only") ? "evidence/reviews/SUT-TEST/semanticReview-old.json\0" : historicalEvidencePayload });
+assert.match(boundedEvidenceContext, new RegExp(createHash("sha256").update(historicalEvidencePayload).digest("hex")), "historical review evidence remains bound by its exact patch digest");
+assert.doesNotMatch(boundedEvidenceContext, /historical-review-body/, "historical review evidence payload does not recursively consume merge context");
+assert.match(boundedEvidenceContext, /Patch bytes:/, "historical evidence digest records deterministic byte length");
 assert.throws(() => buildMergeRiskContext("bad", headSha, { runGit: () => "" }), /invalid commit SHAs/, "invalid review bindings fail closed");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: () => { throw new Error("git failed"); } }), /git failed/, "Git failures fail context construction");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: (args) => args.includes("--name-only") ? "missing.md\0" : "" }), /missing changed path/, "changed-path inventory without a corresponding patch fails closed");
