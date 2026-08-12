@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:55:14.238Z",
+  "updatedDate": "2026-08-12T21:01:42.463Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -804,6 +804,20 @@
       "at": "2026-08-12T20:55:14.238Z",
       "actor": "chief-orchestrator",
       "reason": "Freeze the fully validated Workflow V2 review-runner repair for independent plan, semantic, and merge-risk review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:01:42.291Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on 90b6767 found incomplete committed-evidence and append-only lifecycle guarantees; preserve the findings and revise only those fail-closed boundaries."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:01:42.463Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Repair only the exact-head verification admission, immutable evidence-chain, transition-bound completion evidence, and trace-containment findings from merge-risk review."
     }
   ]
 }
