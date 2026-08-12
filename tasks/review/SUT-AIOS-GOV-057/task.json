@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:10:23.199Z",
+  "updatedDate": "2026-08-12T21:11:47.214Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -839,6 +839,13 @@
       "at": "2026-08-12T21:10:23.199Z",
       "actor": "codex-engineering-executor",
       "reason": "Add a focused positive regression for the exact current head/base binding contract without changing implementation behavior or scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:11:47.214Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the explicit successful-binding regression for final independent review."
     }
   ]
 }
