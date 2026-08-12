@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "74f221d70e10dc2e5388534d01451a4971fcaba0",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "0718c53a158a057b9467b7d439663308a796db4f714d199cc96a3847e7730c3a",
+  "reviewedAt": "2026-08-12T21:36:59.105Z",
+  "stage": "semanticReview",
+  "runId": "20260812213434429-1a0465aa",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812213434429-1a0465aa-qa-verification-luna.jsonl",
+  "outputHash": "796ffac45fb6c300348ec494b69a2618e072f4af41584cca1b5a7bb4d5a22a82",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "The launcher separates routing, context binding, review parsing, lifecycle, cancellation, and publication behind explicit bounded functions.",
+    "hexagonalArchitecture": "The repair remains an orchestration adapter around Codex and Git, with repository evidence as the durable boundary and no model authority over persistence.",
+    "eventedBoundaries": "Child streams, cancellation, terminal states, trace binding, and atomic publication are explicit event and state boundaries with redacted bounded progress."
+  },
+  "exactNextAction": "Persist this semantic review result and proceed to the independent merge-risk review."
+}
