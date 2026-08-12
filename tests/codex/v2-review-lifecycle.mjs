@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewWorktreeIsClean } from "../../scripts/codex/launch.mjs";
+import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewWorktreeIsClean, validateCodexAppFinalBinding } from "../../scripts/codex/launch.mjs";
 import { computeReviewScopeHash, createPacket, findPacket, readPacketAt, transition, validateEvidenceCommitChain, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
 import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
@@ -272,6 +272,17 @@ try {
     if (stage === "planReview") {
       const resultPath = path.join(appRoot, "evidence", "reviews", appTaskId, `${stage}-${appHead}.json`);
       const runPath = path.join(appRoot, prepared.reviewResult.tracePath);
+      const currentAppTaskRecord = { data: readPacketAt(path.join(appRoot, "tasks", "review", appTaskId, "task.json")) };
+      assert.throws(() => validateCodexAppFinalBinding(prepared, { taskId: appTaskId, profile, headSha: appHead, taskRecord: currentAppTaskRecord, currentHeadSha: "0".repeat(40), currentBaseSha: appBase, expectedContextManifest: prepared.contextManifest }), /headSha/, "Codex-app final binding rejects a HEAD change after preparation");
+      assert.equal(fs.existsSync(resultPath), false, "stale-HEAD rejection publishes no review result");
+      assert.equal(fs.existsSync(runPath), false, "stale-HEAD rejection publishes no run envelope");
+      const omittedContext = structuredClone(prepared);
+      omittedContext.contextManifest = omittedContext.contextManifest.slice(0, -1);
+      omittedContext.reviewResult.contextManifestHash = sha256(omittedContext.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+      omittedContext.reviewResult.outputHash = computeReviewOutputHash(omittedContext.reviewResult);
+      assert.throws(() => persistCodexAppReviewResult(omittedContext, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /complete current review profile/, "Codex-app final persistence rejects an omitted governed context entry");
+      assert.equal(fs.existsSync(resultPath), false, "omitted-context rejection publishes no review result");
+      assert.equal(fs.existsSync(runPath), false, "omitted-context rejection publishes no run envelope");
       for (const [field, value, pattern] of [["reviewerAgent", "qa-verification", /reviewerAgent/], ["model", "gpt-5.6-luna", /model/], ["reasoningEffort", "medium", /reasoningEffort/], ["baseSha", "f".repeat(40), /baseSha/]]) {
         const forgedIdentity = structuredClone(prepared);
         forgedIdentity.reviewResult[field] = value;
@@ -340,7 +351,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 75 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 81 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

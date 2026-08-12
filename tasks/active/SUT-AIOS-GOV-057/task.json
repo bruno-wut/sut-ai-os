@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -164,7 +164,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:24:46.478Z",
+  "updatedDate": "2026-08-12T20:28:36.971Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -719,6 +719,20 @@
       "at": "2026-08-12T20:24:46.478Z",
       "actor": "codex-engineering-executor",
       "reason": "Codex-app final persistence re-derives reviewer, model, effort, canonical base/head, context, and task scope from the current packet; forged launcher-owned fields publish no evidence and all packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:28:36.806Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on f80dac2 found Codex-app final publication did not re-read HEAD at staging time or reconstruct the complete expected context profile; preserve the finding and close both final-time-of-check gaps."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:28:36.971Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only Codex-app final HEAD and complete-context reconstruction with zero-publication negatives; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
     }
   ]
 }

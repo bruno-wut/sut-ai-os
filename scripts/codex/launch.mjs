@@ -1051,6 +1051,34 @@ function prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha
   };
 }
 
+function validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, taskRecord, currentHeadSha, currentBaseSha, expectedContextManifest }) {
+  const { reviewResult, contextManifest, reviewedTaskScopeHash } = prepared;
+  const expectedStage = stageByProfile[profile];
+  const currentStage = taskRecord.data?.routingPolicy?.[expectedStage];
+  const currentModel = modelIds[currentStage?.route];
+  const expectedManifestHash = sha256(expectedContextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+  const authorityValidation = validateReviewResult(reviewResult, {
+    taskId,
+    baseSha: currentBaseSha,
+    headSha: currentHeadSha,
+    reviewerAgent: currentStage?.agent,
+    model: currentModel,
+    reasoningEffort: currentStage?.effort,
+    contextManifestHash: expectedManifestHash,
+  });
+  const manifestMatches = JSON.stringify(contextManifest) === JSON.stringify(expectedContextManifest);
+  const errors = [
+    ...authorityValidation.errors,
+    ...(headSha !== currentHeadSha ? ["caller headSha does not match current HEAD"] : []),
+    ...(!currentStage?.agent ? ["reviewerAgent is missing from current routing policy"] : []),
+    ...(!currentModel ? ["model route is invalid in current routing policy"] : []),
+    ...(reviewResult.stage !== expectedStage ? ["stage does not match profile"] : []),
+    ...(!manifestMatches ? ["context manifest does not match the complete current review profile"] : []),
+    ...(reviewedTaskScopeHash !== computeReviewScopeHash(taskRecord.data) ? ["reviewed task scope does not match the current packet"] : []),
+  ];
+  if (errors.length > 0) throw new Error(`Codex app review authority changed before persistence: ${errors.join("; ")}`);
+}
+
 function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root = repositoryRoot }) {
   const { reviewResult, contextManifest, reviewedTaskScopeHash } = prepared;
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(reviewResult?.runId ?? "")) throw new Error("Codex app run ID is invalid");
@@ -1080,20 +1108,11 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   const currentStage = currentTaskRecord.data?.routingPolicy?.[expectedStage];
   const currentModel = modelIds[currentStage?.route];
   const currentBaseSha = comparisonBaseSha();
-  const authorityValidation = validateReviewResult(reviewResult, {
-    taskId,
-    baseSha: currentBaseSha,
-    headSha,
-    reviewerAgent: currentStage?.agent,
-    model: currentModel,
-    reasoningEffort: currentStage?.effort,
-    contextManifestHash: manifestHash,
-  });
-  if (!currentStage?.agent || !currentModel || !authorityValidation.valid || reviewResult.stage !== expectedStage) {
-    throw new Error(`Codex app review authority changed before persistence: ${[...authorityValidation.errors, ...(!currentStage?.agent ? ["reviewerAgent is missing from current routing policy"] : []), ...(!currentModel ? ["model route is invalid in current routing policy"] : []), ...(reviewResult.stage !== expectedStage ? ["stage does not match profile"] : [])].join("; ")}`);
-  }
-  assertReviewRevisionUnchanged(reviewResult, headSha, currentBaseSha);
-  if (reviewedTaskScopeHash !== computeReviewScopeHash(currentTaskRecord.data)) throw new Error("Codex app reviewed task scope changed before persistence");
+  const currentHeadSha = gitSha("HEAD");
+  const currentAgent = discoverAgents().get(currentStage?.agent);
+  assertActiveAgent(currentAgent);
+  const expectedContext = buildContextProfile(currentAgent, currentTaskRecord, currentStage.route, currentModel, currentStage.effort, profile);
+  validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, taskRecord: currentTaskRecord, currentHeadSha, currentBaseSha, expectedContextManifest: expectedContext.contextManifest });
   requireReviewEvidenceSequence({ taskRecord: currentTaskRecord, profile, baseSha: currentBaseSha, headSha, contextManifest, root });
   const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
   const resultPublication = prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root });
@@ -1459,4 +1478,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };

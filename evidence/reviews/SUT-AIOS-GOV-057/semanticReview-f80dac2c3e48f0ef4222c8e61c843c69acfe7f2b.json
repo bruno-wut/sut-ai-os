@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "f80dac2c3e48f0ef4222c8e61c843c69acfe7f2b",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "6dfa272c264ae8a6fb8998f8190b5727fe72f19a2ffef909a4d36a00bb2864a8",
+  "reviewedAt": "2026-08-12T20:27:48.777Z",
+  "stage": "semanticReview",
+  "runId": "20260812202554664-8a3439b0",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812202554664-8a3439b0-qa-verification-luna.jsonl",
+  "outputHash": "2cb7ed29c4a0cdb68389a8a1bc330f53cd5292c7f1e12ecb2a97184088f4959e",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "persistCodexAppReviewResult does not re-read the current HEAD at the final publication boundary; it validates against the caller-supplied headSha, so a HEAD change after initial preparation can publish stale-head evidence.",
+    "Codex-app persistence validates the supplied context manifest but does not reconstruct the expected manifest from the current packet and review profile, allowing omitted or altered governed context to pass if hashes are recomputed."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Change HEAD between Codex-app preparation and final publication and assert that neither result nor run envelope is written.",
+    "Supply an omitted or forged context manifest and assert publication fails without writing evidence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher uses bounded helpers for routing, cancellation, validation, and persistence, but the final Codex-app binding boundary needs stronger ownership of current revisions and context.",
+    "hexagonalArchitecture": "Provider and review orchestration concerns remain separated; no production or provider authority is introduced.",
+    "eventedBoundaries": "Progress and terminal events are structured and fail closed, but stale-head publication can still cross the persistence boundary."
+  },
+  "exactNextAction": "Repair Codex-app persistence to re-derive current HEAD and the complete expected context manifest immediately before atomic publication, then add both negative tests and rerun the required checks."
+}
