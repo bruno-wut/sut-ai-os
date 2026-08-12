@@ -417,10 +417,13 @@ function selfTest() {
     fs.writeFileSync(path.join(root, "evidence", "self-test.md"), "verified fixture\n");
     fs.writeFileSync(path.join(root, "evidence", "complete.md"), "completed fixture\n");
     const evidenceHead = "c".repeat(40); const lifecycleHead = "d".repeat(40);
-    const evidenceChainOptions = { currentHead: lifecycleHead, isAncestor: () => true, changedPaths: (older, newer) => older === reviewHead && newer === evidenceHead ? reviewEvidencePaths(record.packet, root, reviewHead) : [], commitContains: () => true };
-    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), evidenceHeadSha: evidenceHead, evidenceChainOptions, reviewStatusText: "" }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md", evidenceChainOptions });
+    const evidencePacket = structuredClone(record.packet);
+    const evidenceChainOptions = { currentHead: evidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === reviewHead && newer === evidenceHead ? reviewEvidencePaths(record.packet, root, reviewHead) : [], commitContains: () => true };
+    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), evidenceHeadSha: evidenceHead, evidenceChainOptions, reviewStatusText: "" });
+    Object.assign(evidenceChainOptions, { currentHead: lifecycleHead, evidencePacket, currentPacket: findPacket(id, root).packet });
+    transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md", evidenceChainOptions });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }
-    const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done", root, evidenceChainOptions });
+    const final = findPacket(id, root); evidenceChainOptions.currentPacket = final.packet; const check = validatePacket(final.packet, { strict: true, directoryState: "done", root, evidenceChainOptions });
     if (!terminalRejected || !check.valid || final.packet.completionEvidence.length !== 2) fail("self-test assertions failed");
     process.stdout.write(`${JSON.stringify({ status: "passed", checks: 4, taskId: id })}\n`);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
