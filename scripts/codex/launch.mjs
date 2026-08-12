@@ -397,7 +397,10 @@ function validateContextMaterial(records, generatedText, maxBytes) {
   return totalBytes;
 }
 
-function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, effort, profile) {
+function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, effort, profile, options = {}) {
+  const root = options.root ?? repositoryRoot;
+  const boundHeadSha = options.headSha ?? gitSha("HEAD");
+  const boundBaseSha = options.baseSha ?? (profile === "merge-risk-review" ? comparisonBaseSha() : null);
   const baseFiles = [
     "AGENTS.md",
     "agents/AGENTS.md",
@@ -408,24 +411,24 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
 
   if (taskPacket.data?.contextBudget?.includedPaths) {
     for (const p of taskPacket.data.contextBudget.includedPaths) {
-      if (fs.existsSync(path.resolve(repositoryRoot, p))) {
+      if (fs.existsSync(path.resolve(root, p))) {
         baseFiles.push(p);
       }
     }
   }
 
   const taskId = taskPacket.data?.taskId;
-  const headSha = gitSha("HEAD");
+  const headSha = boundHeadSha;
   const exactVerificationPath = taskId && headSha ? `evidence/verification/${taskId}/verification-${headSha}.json` : null;
-  if (exactVerificationPath && fs.existsSync(path.resolve(repositoryRoot, exactVerificationPath))) baseFiles.push(exactVerificationPath);
+  if (exactVerificationPath && fs.existsSync(path.resolve(root, exactVerificationPath))) baseFiles.push(exactVerificationPath);
   if (profile === "merge-risk-review" && taskId && headSha) {
     for (const prerequisiteProfile of ["plan-review", "semantic-qa"]) {
-      const prerequisitePath = path.relative(repositoryRoot, reviewArtifactPath(taskId, prerequisiteProfile, headSha)).replaceAll(path.sep, "/");
-      if (fs.existsSync(path.resolve(repositoryRoot, prerequisitePath))) {
+      const prerequisitePath = path.relative(root, reviewArtifactPath(taskId, prerequisiteProfile, headSha, root)).replaceAll(path.sep, "/");
+      if (fs.existsSync(path.resolve(root, prerequisitePath))) {
         baseFiles.push(prerequisitePath);
         try {
-          const prerequisite = JSON.parse(fs.readFileSync(path.resolve(repositoryRoot, prerequisitePath), "utf8"));
-          if (typeof prerequisite.tracePath === "string" && fs.existsSync(path.resolve(repositoryRoot, prerequisite.tracePath))) baseFiles.push(prerequisite.tracePath);
+          const prerequisite = JSON.parse(fs.readFileSync(path.resolve(root, prerequisitePath), "utf8"));
+          if (typeof prerequisite.tracePath === "string" && fs.existsSync(path.resolve(root, prerequisite.tracePath))) baseFiles.push(prerequisite.tracePath);
         } catch {
           // The shared evidence-sequence gate reports malformed prerequisite evidence.
         }
@@ -433,9 +436,9 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
     }
   }
 
-  const records = baseFiles.map((p) => readText(p));
+  const records = baseFiles.map((p) => readText(p, root));
   const unique = [...new Map(records.map((r) => [r.relativePath, r])).values()];
-  const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(comparisonBaseSha(), gitSha("HEAD")) : "";
+  const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(boundBaseSha, boundHeadSha) : "";
   const maxBytes = taskPacket.data?.contextBudget?.maxBytes ?? contextLimitBytes;
   let totalBytes;
   try {
@@ -459,7 +462,7 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
     `Selected model: ${selectedModel}`,
     `Reasoning effort: ${effort}`,
     `Manifest hash: ${manifestHash}`,
-    `Head SHA: ${gitSha("HEAD")}`,
+    `Head SHA: ${boundHeadSha}`,
     "Execute strictly within approved task packet boundaries.",
   ].join("\n");
 
@@ -1111,7 +1114,7 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   const currentHeadSha = gitSha("HEAD");
   const currentAgent = discoverAgents().get(currentStage?.agent);
   assertActiveAgent(currentAgent);
-  const expectedContext = buildContextProfile(currentAgent, currentTaskRecord, currentStage.route, currentModel, currentStage.effort, profile);
+  const expectedContext = buildContextProfile(currentAgent, currentTaskRecord, currentStage.route, currentModel, currentStage.effort, profile, { root, headSha: currentHeadSha, baseSha: currentBaseSha });
   validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, taskRecord: currentTaskRecord, currentHeadSha, currentBaseSha, expectedContextManifest: expectedContext.contextManifest });
   requireReviewEvidenceSequence({ taskRecord: currentTaskRecord, profile, baseSha: currentBaseSha, headSha, contextManifest, root });
   const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
