@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:38:55.313Z",
+  "updatedDate": "2026-08-12T20:40:03.798Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -755,6 +755,13 @@
       "at": "2026-08-12T20:38:55.313Z",
       "actor": "codex-engineering-executor",
       "reason": "Revise only the shared review-result schema and Codex-app pass-with-blockers negative; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:40:03.798Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Pass-with-blockers is now declarative in the shared schema and Codex-app zero-publication tests pass with all packet checks."
     }
   ]
 }
