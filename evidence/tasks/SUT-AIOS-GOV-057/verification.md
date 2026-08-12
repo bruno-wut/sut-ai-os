@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (95 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (98 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (63 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -101,6 +101,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Merge-risk review on `6aa21bed251f32ef570b3096085c8d9c3331f28d` identified the exact-head evidence self-reference, ambiguous terminal acceptance, unbounded child output, and crash window. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-6aa21bed251f32ef570b3096085c8d9c3331f28d.json`; the source-head/evidence-head model and deterministic negatives above address it without a separate reconciliation PR.
 - Plan review on `8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd` identified that `routingPolicy.implementation` had drifted to Sol/high despite the recorded user approval being Terra/high workspace-write. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/planReview-8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd.json`; the packet restores Terra/high while retaining Sol/high for independent plan and merge-risk assurance.
 - Semantic QA on `682946b2644f4cb937f2a6b11be67a784bc705f3` identified separate direct Codex-app run-envelope and review-result writes. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-682946b2644f4cb937f2a6b11be67a784bc705f3.json`; both adapters now stage validated files, atomically publish each final path, and deterministically recover an exact partial publication by rerunning the same immutable run.
+- Semantic QA on `06bc75e1d60f9158ce17a9b5c7faf7fa69e8f008` identified canonical-base resolution outside the successful-close exception boundary. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-06bc75e1d60f9158ce17a9b5c7faf7fa69e8f008.json`; current head/base resolution now passes through one fail-closed helper that records exactly one failed terminal event before any persistence.
 
 ## Rollback
 

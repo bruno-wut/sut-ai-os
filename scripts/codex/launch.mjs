@@ -963,6 +963,16 @@ function assertReviewRevisionUnchanged(reviewResult, currentHeadSha, currentBase
   if (reviewResult.headSha !== currentHeadSha || reviewResult.baseSha !== currentBaseSha) throw new Error("Codex app review revision changed before persistence");
 }
 
+function revalidateCurrentReviewBinding(reviewResult, { getHead = () => gitSha("HEAD"), getBase = comparisonBaseSha, onFailure = () => {} } = {}) {
+  try {
+    assertReviewRevisionUnchanged(reviewResult, getHead(), getBase());
+    return true;
+  } catch (error) {
+    onFailure(error);
+    return false;
+  }
+}
+
 function requireReviewEvidenceSequence({ taskRecord, profile, baseSha, headSha, contextManifest, root = repositoryRoot }) {
   const packet = taskRecord.data ?? taskRecord;
   const taskId = packet.taskId;
@@ -1321,12 +1331,13 @@ function main() {
 
     // Validate review profile output strictly
     if (passed && reviewProfile) {
-      if (gitSha("HEAD") !== reviewedHeadSha || comparisonBaseSha() !== reviewedBaseSha) {
-        progress({ status: "review-binding-changed" });
-        process.stderr.write("Review execution failed: committed head or canonical base changed during review\n");
-        terminal.complete("failed", 1);
-        return;
-      }
+      if (!revalidateCurrentReviewBinding({ headSha: reviewedHeadSha, baseSha: reviewedBaseSha }, {
+        onFailure: (error) => {
+          progress({ status: "review-binding-changed" });
+          process.stderr.write(`Review execution failed: committed head or canonical base changed during review: ${error.message}\n`);
+          terminal.complete("failed", 1);
+        },
+      })) return;
       let parsed;
       try {
         parsed = parseReviewAssessment(reviewStdout.text);
@@ -1426,4 +1437,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };

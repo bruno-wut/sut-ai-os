@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, prepareReviewResultPersistence, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -206,6 +206,12 @@ assert.equal(validateExactHeadVerification({ ...exactVerification, headSha: unde
 assert.doesNotThrow(() => assertReviewRevisionUnchanged({ headSha, baseSha }, headSha, baseSha), "unchanged app review revision satisfies the persistence boundary");
 assert.throws(() => assertReviewRevisionUnchanged({ headSha, baseSha }, baseSha, baseSha), /revision changed/, "app persistence rejects a changed review head");
 assert.throws(() => assertReviewRevisionUnchanged({ headSha, baseSha }, headSha, headSha), /revision changed/, "app persistence rejects a changed canonical base");
+const revisionFailureProgress = [];
+const revisionFailureTrace = [];
+const revisionFailureTerminal = createReviewTerminalController({ append: (event) => revisionFailureTrace.push(event) }, (event) => revisionFailureProgress.push(event), () => {});
+assert.equal(revalidateCurrentReviewBinding({ headSha, baseSha }, { getHead: () => headSha, getBase: () => { throw new Error("canonical base unavailable"); }, onFailure: () => revisionFailureTerminal.complete("failed", 1) }), false, "canonical-base resolution failure is caught at the successful-close boundary");
+assert.deepEqual(revisionFailureTrace, [{ event: "finish", status: "failed", exitCode: 1 }], "canonical-base failure records exactly one failed terminal event");
+assert.deepEqual(revisionFailureProgress, [{ status: "failed" }], "canonical-base failure emits structured failed progress");
 
 const evidenceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-evidence-"));
 const evidenceRelative = `evidence/verification/${exactVerification.taskId}/verification-${headSha}.json`;

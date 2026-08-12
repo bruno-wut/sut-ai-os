@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "06bc75e1d60f9158ce17a9b5c7faf7fa69e8f008",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "e126dfb891b9f83ca8fa513775f43858fe0f97b03f395ee0ab90861ce0f16f2b",
+  "reviewedAt": "2026-08-12T20:11:53.799Z",
+  "stage": "semanticReview",
+  "runId": "20260812200930621-5bda70e3",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812200930621-5bda70e3-qa-verification-luna.jsonl",
+  "outputHash": "c1e10dc4cf9b2e43916172a65c2003fa27f479386a88cdd7768e61546ae11271",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "In scripts/codex/launch.mjs, the successful-review close handler calls comparisonBaseSha() outside a try/catch. If canonical base resolution fails or changes during review, the async callback can reject before emitting review-binding-changed and a terminal failed event, violating fail-closed terminal coverage."
+  ],
+  "nonBlockingRisks": [
+    "A persistence-finalization failure after terminal success can leave a successful trace without a published shell review result; Codex-app recovery is covered, but shell recovery is not explicitly proven."
+  ],
+  "missingNegativeTests": [
+    "Simulate comparisonBaseSha throwing during successful-child close and verify exactly one failed terminal event, no review-result persistence, and nonzero exit."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, cancellation, binding, and publication are separated into focused helpers, though launch.mjs remains a broad orchestration module.",
+    "hexagonalArchitecture": "Codex execution remains isolated behind the child-process adapter, with review binding and persistence kept within the governed local boundary.",
+    "eventedBoundaries": "Structured redacted progress events are present, but the canonical-base exception path can bypass the terminal event boundary."
+  },
+  "exactNextAction": "Guard close-handler revision revalidation with fail-closed error handling, add the canonical-base failure regression test, rerun required checks, and submit a fresh review head."
+}
