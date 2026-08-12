@@ -1076,7 +1076,25 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   if (fs.existsSync(resultTarget) && fs.readFileSync(resultTarget, "utf8") !== resultSerialized) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
   if (path.resolve(root) === path.resolve(repositoryRoot)) assertReviewRevisionUnchanged(reviewResult, gitSha("HEAD"), comparisonBaseSha());
   validateCurrentContextManifest(contextManifest, { root, profile });
-  requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewResult.baseSha, headSha, contextManifest, root });
+  const currentTaskRecord = findTaskPacket(taskId, root);
+  const currentStage = currentTaskRecord.data?.routingPolicy?.[expectedStage];
+  const currentModel = modelIds[currentStage?.route];
+  const currentBaseSha = comparisonBaseSha();
+  const authorityValidation = validateReviewResult(reviewResult, {
+    taskId,
+    baseSha: currentBaseSha,
+    headSha,
+    reviewerAgent: currentStage?.agent,
+    model: currentModel,
+    reasoningEffort: currentStage?.effort,
+    contextManifestHash: manifestHash,
+  });
+  if (!currentStage?.agent || !currentModel || !authorityValidation.valid || reviewResult.stage !== expectedStage) {
+    throw new Error(`Codex app review authority changed before persistence: ${[...authorityValidation.errors, ...(!currentStage?.agent ? ["reviewerAgent is missing from current routing policy"] : []), ...(!currentModel ? ["model route is invalid in current routing policy"] : []), ...(reviewResult.stage !== expectedStage ? ["stage does not match profile"] : [])].join("; ")}`);
+  }
+  assertReviewRevisionUnchanged(reviewResult, headSha, currentBaseSha);
+  if (reviewedTaskScopeHash !== computeReviewScopeHash(currentTaskRecord.data)) throw new Error("Codex app reviewed task scope changed before persistence");
+  requireReviewEvidenceSequence({ taskRecord: currentTaskRecord, profile, baseSha: currentBaseSha, headSha, contextManifest, root });
   const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
   const resultPublication = prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root });
   let tracePublication;

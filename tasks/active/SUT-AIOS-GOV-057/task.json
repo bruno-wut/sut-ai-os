@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -164,7 +164,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:18:51.662Z",
+  "updatedDate": "2026-08-12T20:23:21.194Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -698,6 +698,20 @@
       "at": "2026-08-12T20:18:51.662Z",
       "actor": "codex-engineering-executor",
       "reason": "POSIX child close now cancels pending escalation and no process-group signal is sent after the original child exits; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:23:21.030Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on c89ef28 found Codex-app final persistence did not re-derive reviewer, model, effort, and canonical base from the current packet; preserve the finding and close that launcher-owned identity boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:23:21.194Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only Codex-app final authority binding and forged-identity negatives; preserve all routing policy values, lifecycle, product, fallback, dependency, and P3-001 boundaries."
     }
   ]
 }

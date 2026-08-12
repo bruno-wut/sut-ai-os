@@ -270,6 +270,16 @@ try {
       fs.writeFileSync(semanticFile, originalSemantic);
     }
     if (stage === "planReview") {
+      const resultPath = path.join(appRoot, "evidence", "reviews", appTaskId, `${stage}-${appHead}.json`);
+      const runPath = path.join(appRoot, prepared.reviewResult.tracePath);
+      for (const [field, value, pattern] of [["reviewerAgent", "qa-verification", /reviewerAgent/], ["model", "gpt-5.6-luna", /model/], ["reasoningEffort", "medium", /reasoningEffort/], ["baseSha", "f".repeat(40), /baseSha/]]) {
+        const forgedIdentity = structuredClone(prepared);
+        forgedIdentity.reviewResult[field] = value;
+        forgedIdentity.reviewResult.outputHash = computeReviewOutputHash(forgedIdentity.reviewResult);
+        assert.throws(() => persistCodexAppReviewResult(forgedIdentity, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), pattern, `Codex-app final persistence rejects forged ${field} after preparation`);
+        assert.equal(fs.existsSync(resultPath), false, `forged ${field} publishes no review result`);
+        assert.equal(fs.existsSync(runPath), false, `forged ${field} publishes no run envelope`);
+      }
       const partialResult = path.join(appRoot, "evidence", "reviews", appTaskId, `${stage}-${appHead}.json`);
       fs.mkdirSync(path.dirname(partialResult), { recursive: true });
       fs.writeFileSync(partialResult, `${JSON.stringify(prepared.reviewResult, null, 2)}\n`);
@@ -330,7 +340,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 63 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 75 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

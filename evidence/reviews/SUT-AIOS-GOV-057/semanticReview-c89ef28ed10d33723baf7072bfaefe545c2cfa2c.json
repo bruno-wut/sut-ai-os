@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "c89ef28ed10d33723baf7072bfaefe545c2cfa2c",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "688bb12c9acdfaecd07c684d1387c973d8c097503c6147877346b5022536cf84",
+  "reviewedAt": "2026-08-12T20:22:46.272Z",
+  "stage": "semanticReview",
+  "runId": "20260812201956850-7acdb119",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812201956850-7acdb119-qa-verification-luna.jsonl",
+  "outputHash": "af2b5d3b672cae6f7c8454c04495f50482986cd770cb25d94dd7a7925fecc76d",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "persistCodexAppReviewResult does not re-bind reviewerAgent, model, reasoningEffort, or stage route to the current packet at the final persistence boundary. It trusts the supplied prepared object after schema and output-hash validation, so a forged prepared result with recomputed hashes could persist unauthorized review identity or routing metadata. Re-derive and validate all launcher-owned fields immediately before atomic publication."
+  ],
+  "nonBlockingRisks": [
+    "The launcher remains a large procedural module combining routing, process control, cancellation, trace handling, and persistence; the helper boundaries reduce risk but do not fully isolate these concerns."
+  ],
+  "missingNegativeTests": [
+    "Codex-app persistence with forged reviewerAgent, model, reasoningEffort, baseSha, or context manifest after preparation must be rejected before either file is published.",
+    "Codex-app persistence with a recomputed outputHash but unauthorized launcher-owned identity fields must be rejected."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The implementation has useful focused helpers for routing, cancellation, validation, and publication, but the launcher still combines several high-risk responsibilities and does not fully enforce its immutable binding boundary.",
+    "hexagonalArchitecture": "Process execution and filesystem persistence are abstracted only through helper functions; the Codex-app adapter still accepts mutable prepared state without re-deriving packet-authorized identity at the port boundary.",
+    "eventedBoundaries": "Structured progress and terminal controllers provide clear event sequencing, including cancellation and failure paths, though persistence authorization remains insufficiently coupled to the final event boundary."
+  },
+  "exactNextAction": "Re-bind and validate every launcher-owned review field against the current V2 packet and canonical revisions inside persistCodexAppReviewResult immediately before staging/publication, then add the two forged-identity negative tests and rerun all packet-required checks."
+}
