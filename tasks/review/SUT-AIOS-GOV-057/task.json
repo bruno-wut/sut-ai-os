@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:01:42.463Z",
+  "updatedDate": "2026-08-12T21:08:05.209Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -818,6 +818,13 @@
       "at": "2026-08-12T21:01:42.463Z",
       "actor": "codex-engineering-executor",
       "reason": "Repair only the exact-head verification admission, immutable evidence-chain, transition-bound completion evidence, and trace-containment findings from merge-risk review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:08:05.209Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the exact evidence-chain repair for fresh SHA-bound plan, semantic, and merge-risk review."
     }
   ]
 }
