@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewWorktreeIsClean, validateCodexAppFinalBinding } from "../../scripts/codex/launch.mjs";
-import { computeReviewScopeHash, createPacket, findPacket, readPacketAt, transition, validateEvidenceCommitChain, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
+import { computeReviewScopeHash, createPacket, findPacket, readPacketAt, transition, validateEvidenceCommitChain, validateLifecyclePacketDelta, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
 import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
@@ -160,6 +160,25 @@ try {
   assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, changedPaths: () => ["scripts/codex/launch.mjs"] }).join("; "), /non-evidence path/, "post-review implementation changes fail closed");
   assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, isAncestor: () => false }).join("; "), /not an ordered ancestor chain/, "disconnected evidence commits fail closed");
   assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, commitContains: () => false }).join("; "), /does not contain required review evidence/, "evidence commit must contain every bound review artifact and trace");
+  const evidencePacketFixture = structuredClone(record.packet);
+  const verifiedPacketFixture = structuredClone(record.packet);
+  verifiedPacketFixture.status = "verified";
+  verifiedPacketFixture.updatedDate = "2026-08-09T12:00:00.000Z";
+  verifiedPacketFixture.stateTransitions.push({ from: "review", to: "verified", at: verifiedPacketFixture.updatedDate, actor: "qa-verification", reason: "verified" });
+  verifiedPacketFixture.completionEvidence.push(paths.at(-1));
+  verifiedPacketFixture.reviewVerification = { baseSha, headSha, evidenceHeadSha };
+  assert.deepEqual(validateLifecyclePacketDelta(evidencePacketFixture, verifiedPacketFixture), [], "exact review-to-verified lifecycle delta is accepted");
+  const rewrittenTransitions = structuredClone(verifiedPacketFixture);
+  rewrittenTransitions.stateTransitions[0].reason = "rewritten history";
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, rewrittenTransitions).join("; "), /prior stateTransitions/, "prior transition history cannot be rewritten");
+  const removedEvidence = structuredClone(verifiedPacketFixture);
+  removedEvidence.completionEvidence = [];
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, removedEvidence).join("; "), /durable evidence references/, "verification cannot omit its appended evidence reference");
+  const reorderedEvidence = structuredClone(verifiedPacketFixture);
+  evidencePacketFixture.completionEvidence = ["evidence/prior-a.json", "evidence/prior-b.json"];
+  reorderedEvidence.completionEvidence = ["evidence/prior-b.json", "evidence/prior-a.json", paths.at(-1)];
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, reorderedEvidence).join("; "), /prior completionEvidence/, "prior evidence references cannot be reordered");
+  evidencePacketFixture.completionEvidence = [];
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: nonCanonicalEvidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, evidenceHeadSha, evidenceChainOptions, reviewStatusText: "" });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
@@ -358,7 +377,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 84 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 88 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

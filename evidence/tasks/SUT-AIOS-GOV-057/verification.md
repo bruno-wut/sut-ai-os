@@ -13,7 +13,7 @@ head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
 - `node tests/codex/validate-review-runner.mjs` — passed (101 checks).
-- `node tests/codex/v2-review-lifecycle.mjs` — passed (84 checks).
+- `node tests/codex/v2-review-lifecycle.mjs` — passed (88 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
 - `node scripts/task/validate --all` — passed.
@@ -113,6 +113,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic QA on `c89ef28ed10d33723baf7072bfaefe545c2cfa2c` identified that Codex-app persistence trusted prepared reviewer/model/effort metadata. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-c89ef28ed10d33723baf7072bfaefe545c2cfa2c.json`; final publication now re-derives launcher-owned identity, route, effort, base, head, context, and task scope from the current packet and canonical revisions, with forged-field negatives proving no file is published.
 - Semantic QA on `f80dac2c3e48f0ef4222c8e61c843c69acfe7f2b` identified a final-time-of-check gap for current HEAD and complete context reconstruction. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-f80dac2c3e48f0ef4222c8e61c843c69acfe7f2b.json`; publication now re-reads HEAD and rebuilds the full current profile immediately before staging, with stale-HEAD and omitted-context negatives proving no evidence is written.
 - Semantic QA on `92a761d1337328790c54ad9be946f217d448c373` identified that pass-with-blockers was procedural rather than declarative in the shared schema. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-92a761d1337328790c54ad9be946f217d448c373.json`; the schema now requires zero blocking findings for `pass`, and Codex-app zero-publication negatives enforce the same invariant.
+- Merge-risk review on `acbfe16fe7aa10668156de86f94a78daa4d30182` identified that post-evidence lifecycle commits were path-restricted but not content-restricted. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-acbfe16fe7aa10668156de86f94a78daa4d30182.json`; lifecycle validation now preserves prior transitions and evidence references exactly and admits only deterministic append-only review-to-verified and optional verified-to-done deltas.
 
 ## Rollback
 

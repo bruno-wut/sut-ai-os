@@ -99,6 +99,30 @@ function reviewEvidencePaths(packet, root, headSha) {
   }
   return [...new Set([...paths, ...(packet.completionEvidence ?? []).map(normalize)])];
 }
+function validateLifecyclePacketDelta(evidencePacket, currentPacket) {
+  const errors = [];
+  if (!evidencePacket || !currentPacket || evidencePacket.taskId !== currentPacket.taskId) return ["lifecycle packet identity does not match evidence head"];
+  if (evidencePacket.status !== "review" || !["verified", "done"].includes(currentPacket.status)) errors.push("lifecycle packet must advance from review to verified or done");
+  if (computeReviewScopeHash(evidencePacket) !== computeReviewScopeHash(currentPacket)) errors.push("lifecycle commit changes reviewed static task scope");
+  const priorTransitions = evidencePacket.stateTransitions ?? [];
+  const currentTransitions = currentPacket.stateTransitions ?? [];
+  if (JSON.stringify(currentTransitions.slice(0, priorTransitions.length)) !== JSON.stringify(priorTransitions)) errors.push("lifecycle commit rewrites, reorders, or removes prior stateTransitions");
+  const appendedTransitions = currentTransitions.slice(priorTransitions.length);
+  const expectedStates = currentPacket.status === "done" ? [["review", "verified"], ["verified", "done"]] : [["review", "verified"]];
+  if (appendedTransitions.length !== expectedStates.length) errors.push("lifecycle commit has an unexpected number of appended transitions");
+  expectedStates.forEach(([from, to], index) => {
+    const entry = appendedTransitions[index];
+    if (!entry || entry.from !== from || entry.to !== to || !nonEmptyString(entry.at) || !nonEmptyString(entry.actor) || !nonEmptyString(entry.reason)) errors.push(`lifecycle transition ${from} -> ${to} is not the exact append-only shape`);
+  });
+  if (appendedTransitions.length > 0 && currentPacket.updatedDate !== appendedTransitions.at(-1)?.at) errors.push("lifecycle updatedDate does not bind the final appended transition");
+  const priorEvidence = evidencePacket.completionEvidence ?? [];
+  const currentEvidence = currentPacket.completionEvidence ?? [];
+  if (JSON.stringify(currentEvidence.slice(0, priorEvidence.length)) !== JSON.stringify(priorEvidence)) errors.push("lifecycle commit rewrites, reorders, or removes prior completionEvidence");
+  const addedEvidence = currentEvidence.slice(priorEvidence.length);
+  if (addedEvidence.length < expectedStates.length || addedEvidence.some((item) => !nonEmptyString(item))) errors.push("lifecycle commit does not append required durable evidence references");
+  if (!currentPacket.reviewVerification || currentPacket.reviewVerification.headSha === currentPacket.reviewVerification.evidenceHeadSha) errors.push("lifecycle commit does not preserve distinct reviewed-source and evidence heads");
+  return errors;
+}
 function validateEvidenceCommitChain(packet, root = repositoryRoot, options = {}) {
   const sourceHead = options.sourceHead ?? packet.reviewVerification?.headSha;
   const evidenceHead = options.evidenceHead ?? packet.reviewVerification?.evidenceHeadSha;
@@ -118,6 +142,19 @@ function validateEvidenceCommitChain(packet, root = repositoryRoot, options = {}
   const errors = [];
   for (const file of sourceToEvidence) if (!evidencePrefixes.some((prefix) => file.startsWith(prefix))) errors.push(`post-review evidence commit changes non-evidence path: ${file}`);
   for (const file of evidenceToCurrent) if (!taskPaths.has(file)) errors.push(`post-evidence lifecycle commit changes unauthorized path: ${file}`);
+  if (evidenceHead !== currentHead) {
+    const readPacketFromCommit = options.readPacketFromCommit ?? ((commit) => {
+      for (const state of ["review", "verified", "done"]) {
+        const file = `tasks/${state}/${packet.taskId}/task.json`;
+        const output = gitOutput(root, ["show", `${commit}:${file}`]);
+        if (output !== null) return JSON.parse(output);
+      }
+      return null;
+    });
+    const evidencePacket = options.evidencePacket ?? readPacketFromCommit(evidenceHead);
+    const currentPacket = options.currentPacket ?? packet;
+    errors.push(...validateLifecyclePacketDelta(evidencePacket, currentPacket));
+  }
   const commitContains = options.commitContains ?? ((commit, file) => spawnSync("git", ["cat-file", "-e", `${commit}:${file}`], { cwd: root, windowsHide: true }).status === 0);
   for (const file of reviewEvidencePaths(packet, root, sourceHead)) if (!commitContains(evidenceHead, file)) errors.push(`evidence commit does not contain required review evidence: ${file}`);
   return errors;
@@ -404,7 +441,7 @@ function main() {
   fail(`Unknown task command: ${command}`);
 }
 
-export { computeReviewScopeHash, findPacket, validateEvidenceCommitChain, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
+export { computeReviewScopeHash, findPacket, validateEvidenceCommitChain, validateLifecyclePacketDelta, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && (path.resolve(process.argv[1]) === currentFile || ["new", "validate", "move", "start", "block", "review", "complete", "list", "status"].includes(path.basename(process.argv[1])))) {

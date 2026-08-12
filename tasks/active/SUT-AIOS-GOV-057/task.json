@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:40:03.798Z",
+  "updatedDate": "2026-08-12T20:45:20.207Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -762,6 +762,20 @@
       "at": "2026-08-12T20:40:03.798Z",
       "actor": "codex-engineering-executor",
       "reason": "Pass-with-blockers is now declarative in the shared schema and Codex-app zero-publication tests pass with all packet checks."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:45:20.050Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on acbfe16 found post-evidence lifecycle commits were path-restricted but not content-restricted, allowing audit-history or evidence-reference rewrites inside the task packet; preserve the finding and enforce exact append-only lifecycle deltas."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:45:20.207Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only evidence-chain task-packet content validation and tamper negatives; preserve all routing, review, product, fallback, dependency, and P3-001 boundaries."
     }
   ]
 }
