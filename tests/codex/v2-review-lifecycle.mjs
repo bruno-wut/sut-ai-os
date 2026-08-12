@@ -277,7 +277,8 @@ try {
       assert.equal(fs.existsSync(resultPath), false, "stale-HEAD rejection publishes no review result");
       assert.equal(fs.existsSync(runPath), false, "stale-HEAD rejection publishes no run envelope");
       const omittedContext = structuredClone(prepared);
-      omittedContext.contextManifest = omittedContext.contextManifest.slice(0, -1);
+      const omittedIndex = omittedContext.contextManifest.findIndex((entry) => ![exactVerificationRelative, `tasks/review/${appTaskId}/task.json`, "generated/merge-risk-context"].includes(entry.path));
+      omittedContext.contextManifest.splice(omittedIndex, 1);
       omittedContext.reviewResult.contextManifestHash = sha256(omittedContext.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
       omittedContext.reviewResult.outputHash = computeReviewOutputHash(omittedContext.reviewResult);
       assert.throws(() => persistCodexAppReviewResult(omittedContext, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /complete current review profile/, "Codex-app final persistence rejects an omitted governed context entry");
