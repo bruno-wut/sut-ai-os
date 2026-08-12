@@ -151,7 +151,7 @@ try {
   const lifecycleHeadSha = "d".repeat(40);
   const expectedEvidencePaths = [...paths, ...paths.map((reviewPath) => JSON.parse(fs.readFileSync(path.join(root, reviewPath), "utf8")).tracePath)];
   const evidenceChainOptions = {
-    currentHead: lifecycleHeadSha,
+    currentHead: evidenceHeadSha,
     isAncestor: () => true,
     changedPaths: (older, newer) => older === headSha && newer === evidenceHeadSha ? expectedEvidencePaths : [],
     commitContains: () => true,
@@ -181,6 +181,7 @@ try {
   evidencePacketFixture.completionEvidence = [];
   transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: nonCanonicalEvidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, evidenceHeadSha, evidenceChainOptions, reviewStatusText: "" });
   const final = findPacket(id, root);
+  Object.assign(evidenceChainOptions, { currentHead: lifecycleHeadSha, evidencePacket: evidencePacketFixture, currentPacket: final.packet });
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records normalized durable review evidence");
   const beforeDoneAds = JSON.stringify(final.packet);
@@ -362,9 +363,10 @@ try {
   assert.equal(validatePacket(malformedPacket, { strict: true, directoryState: "review", root: appRoot }).valid, false, "malformed V2 routing cannot enter verification");
   const appEvidenceHead = "e".repeat(40);
   const appLifecycleHead = "f".repeat(40);
-  const appEvidenceChainOptions = { currentHead: appLifecycleHead, isAncestor: () => true, changedPaths: (older, newer) => older === appHead && newer === appEvidenceHead ? appStatus.map((line) => line.slice(3)) : [], commitContains: () => true };
+  const appEvidenceChainOptions = { currentHead: appEvidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === appHead && newer === appEvidenceHead ? appStatus.map((line) => line.slice(3)) : [], commitContains: () => true };
   transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, evidenceHeadSha: appEvidenceHead, evidenceChainOptions: appEvidenceChainOptions, reviewStatusText: appStatus.join("\n") });
   const appFinal = findPacket(appTaskId, appRoot);
+  Object.assign(appEvidenceChainOptions, { currentHead: appLifecycleHead, evidencePacket: appPacket, currentPacket: appFinal.packet });
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot, evidenceChainOptions: appEvidenceChainOptions });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
   const v1TaskId = "SUT-AIOS-GOV-009";
