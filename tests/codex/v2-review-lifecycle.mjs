@@ -37,7 +37,7 @@ try {
     businessObjective: "test", technicalObjective: "test", acceptanceCriteria: ["test"],
     allowedPaths: ["tests/**", "evidence/reviews/**"], forbiddenPaths: ["protected/**"],
     allowedCommands: ["node --version"], requiredChecks: ["fixture"], requiredTests: ["fixture"],
-    rollbackExpectations: "remove fixture"
+    rollbackExpectations: "remove fixture", evidence: ["evidence/complete.md"]
   });
   writePacket(record.file, record.packet);
   transition(id, "ready", "Fixture is ready.", "test", root);
@@ -66,6 +66,7 @@ try {
   ];
   fs.mkdirSync(path.join(root, "evidence"), { recursive: true });
   fs.writeFileSync(path.join(root, "evidence", "missing.json"), "{}\n");
+  fs.writeFileSync(path.join(root, "evidence", "complete.md"), "completion fixture\n");
   const paths = [];
   for (const [profile, agent, model, route, nextAction] of profiles) {
     const stage = { "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" }[profile];
@@ -154,14 +155,17 @@ try {
   const nonCanonicalEvidence = `${path.posix.dirname(paths.at(-1))}/../${id}/${path.posix.basename(paths.at(-1))}`;
   const evidenceHeadSha = "c".repeat(40);
   const lifecycleHeadSha = "d".repeat(40);
-  const expectedEvidencePaths = [...paths, ...paths.map((reviewPath) => JSON.parse(fs.readFileSync(path.join(root, reviewPath), "utf8")).tracePath)];
+  const exactVerificationPath = `evidence/verification/${id}/verification-${headSha}.json`;
+  const expectedEvidencePaths = [exactVerificationPath, ...paths, ...paths.map((reviewPath) => JSON.parse(fs.readFileSync(path.join(root, reviewPath), "utf8")).tracePath)];
   const evidenceChainOptions = {
     currentHead: evidenceHeadSha,
     isAncestor: () => true,
     changedPaths: (older, newer) => older === headSha && newer === evidenceHeadSha ? expectedEvidencePaths : [],
-    commitContains: () => true,
+    commitContains: (commit) => commit !== headSha,
   };
   assert.deepEqual(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha }), [], "source head, evidence commit, and lifecycle commit form a valid clean-clone chain");
+  assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, changedPaths: () => expectedEvidencePaths.filter((item) => item !== exactVerificationPath) }).join("; "), /does not add required exact-head evidence/, "evidence commit must add the exact-head verification record");
+  assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, changedPaths: () => [...expectedEvidencePaths, `evidence/reviews/${id}/historical.json`] }).join("; "), /unauthorized historical/, "evidence commit cannot rewrite, replace, or delete historical evidence");
   assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, changedPaths: () => ["scripts/codex/launch.mjs"] }).join("; "), /non-evidence path/, "post-review implementation changes fail closed");
   assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, isAncestor: () => false }).join("; "), /not an ordered ancestor chain/, "disconnected evidence commits fail closed");
   assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, commitContains: () => false }).join("; "), /does not contain required review evidence/, "evidence commit must contain every bound review artifact and trace");
@@ -178,7 +182,14 @@ try {
   assert.match(validateLifecyclePacketDelta(evidencePacketFixture, rewrittenTransitions).join("; "), /prior stateTransitions/, "prior transition history cannot be rewritten");
   const removedEvidence = structuredClone(verifiedPacketFixture);
   removedEvidence.completionEvidence = [];
-  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, removedEvidence).join("; "), /durable evidence references/, "verification cannot omit its appended evidence reference");
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, removedEvidence).join("; "), /exactly one durable evidence reference/, "verification cannot omit its appended evidence reference");
+  const extraEvidence = structuredClone(verifiedPacketFixture);
+  extraEvidence.completionEvidence.push("evidence/unrelated.json");
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, extraEvidence).join("; "), /exactly one durable evidence reference/, "verification cannot append extra completion evidence");
+  const unrelatedEvidence = structuredClone(verifiedPacketFixture);
+  unrelatedEvidence.completionEvidence = [paths[0]];
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, unrelatedEvidence).join("; "), /exact final review artifact/, "verification evidence must be the transition-related final review artifact");
+  assert.match(validateLifecyclePacketDelta(evidencePacketFixture, verifiedPacketFixture, { currentHead: lifecycleHeadSha, commitContains: () => false }).join("; "), /does not exist at current head/, "nonexistent lifecycle evidence fails closed");
   const reorderedEvidence = structuredClone(verifiedPacketFixture);
   evidencePacketFixture.completionEvidence = ["evidence/prior-a.json", "evidence/prior-b.json"];
   reorderedEvidence.completionEvidence = ["evidence/prior-b.json", "evidence/prior-a.json", paths.at(-1)];
@@ -198,7 +209,7 @@ try {
   tamperedReview.outputHash = "0".repeat(64);
   fs.writeFileSync(firstReviewFile, `${JSON.stringify(tamperedReview, null, 2)}\n`);
   const beforeTamperedDone = JSON.stringify(findPacket(id, root).packet);
-  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: paths.at(-1), evidenceChainOptions }), /Cannot complete invalid task packet/, "done transition revalidates bound review artifacts");
+  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: "evidence/complete.md", evidenceChainOptions }), /Cannot complete invalid task packet/, "done transition revalidates bound review artifacts");
   assert.equal(JSON.stringify(findPacket(id, root).packet), beforeTamperedDone, "tampered review rejection leaves the verified packet unchanged");
   fs.writeFileSync(firstReviewFile, originalFirstReview);
   const verifiedPacketFile = findPacket(id, root).file;
@@ -208,7 +219,7 @@ try {
     if (schemaVersion === null) delete tamperedPacket.schemaVersion; else tamperedPacket.schemaVersion = schemaVersion;
     fs.writeFileSync(verifiedPacketFile, `${JSON.stringify(tamperedPacket, null, 2)}\n`);
     const tamperedPacketBytes = fs.readFileSync(verifiedPacketFile, "utf8");
-    assert.throws(() => transition(id, "done", "Invalid discriminator must fail.", "qa-verification", root, { evidence: paths.at(-1), evidenceChainOptions }), /Cannot complete invalid task packet/, `done rejects schemaVersion ${schemaVersion ?? "missing"}`);
+    assert.throws(() => transition(id, "done", "Invalid discriminator must fail.", "qa-verification", root, { evidence: "evidence/complete.md", evidenceChainOptions }), /Cannot complete invalid task packet/, `done rejects schemaVersion ${schemaVersion ?? "missing"}`);
     assert.equal(fs.readFileSync(verifiedPacketFile, "utf8"), tamperedPacketBytes, "invalid discriminator rejection preserves the verified packet bytes");
   }
   fs.writeFileSync(verifiedPacketFile, originalVerifiedPacket);
@@ -244,6 +255,7 @@ try {
       assert.throws(() => persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /Exact-head verification evidence is missing/, "Codex app persistence rejects a review without exact-head verification");
       fs.mkdirSync(path.dirname(exactVerificationFile), { recursive: true });
       fs.writeFileSync(exactVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: appTaskId, headSha: appHead, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-08T12:00:00.000Z", checks: ["fixture checks passed"] }, null, 2)}\n`);
+      appStatus.push(`?? ${exactVerificationRelative}`);
     }
     bindAppContextFile(prepared, exactVerificationRelative);
     if (stage === "planReview") {
@@ -368,7 +380,7 @@ try {
   assert.equal(validatePacket(malformedPacket, { strict: true, directoryState: "review", root: appRoot }).valid, false, "malformed V2 routing cannot enter verification");
   const appEvidenceHead = "e".repeat(40);
   const appLifecycleHead = "f".repeat(40);
-  const appEvidenceChainOptions = { currentHead: appEvidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === appHead && newer === appEvidenceHead ? appStatus.map((line) => line.slice(3)) : [], commitContains: () => true };
+  const appEvidenceChainOptions = { currentHead: appEvidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === appHead && newer === appEvidenceHead ? appStatus.map((line) => line.slice(3)) : [], commitContains: (commit) => commit !== appHead };
   transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, evidenceHeadSha: appEvidenceHead, evidenceChainOptions: appEvidenceChainOptions, reviewStatusText: appStatus.join("\n") });
   const appFinal = findPacket(appTaskId, appRoot);
   Object.assign(appEvidenceChainOptions, { currentHead: appLifecycleHead, evidencePacket: appPacket, currentPacket: appFinal.packet });
@@ -384,7 +396,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 89 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 94 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

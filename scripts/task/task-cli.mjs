@@ -87,8 +87,12 @@ function gitOutput(root, args) {
   if (result.status !== 0) return null;
   return result.stdout;
 }
+function finalReviewEvidencePath(packet, headSha) {
+  const stage = packet.routingPolicy?.mergeRiskReview?.required ? "mergeRiskReview" : "semanticReview";
+  return `evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`;
+}
 function reviewEvidencePaths(packet, root, headSha) {
-  const paths = [];
+  const paths = [`evidence/verification/${packet.taskId}/verification-${headSha}.json`];
   for (const stage of ["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])]) {
     const artifact = `evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`;
     paths.push(artifact);
@@ -97,9 +101,9 @@ function reviewEvidencePaths(packet, root, headSha) {
       if (nonEmptyString(result.tracePath)) paths.push(normalize(result.tracePath));
     } catch { /* artifact validation reports the primary error */ }
   }
-  return [...new Set([...paths, ...(packet.completionEvidence ?? []).map(normalize)])];
+  return [...new Set(paths)];
 }
-function validateLifecyclePacketDelta(evidencePacket, currentPacket) {
+function validateLifecyclePacketDelta(evidencePacket, currentPacket, options = {}) {
   const errors = [];
   if (!evidencePacket || !currentPacket || evidencePacket.taskId !== currentPacket.taskId) return ["lifecycle packet identity does not match evidence head"];
   if (evidencePacket.status !== "review" || !["verified", "done"].includes(currentPacket.status)) errors.push("lifecycle packet must advance from review to verified or done");
@@ -119,7 +123,14 @@ function validateLifecyclePacketDelta(evidencePacket, currentPacket) {
   const currentEvidence = currentPacket.completionEvidence ?? [];
   if (JSON.stringify(currentEvidence.slice(0, priorEvidence.length)) !== JSON.stringify(priorEvidence)) errors.push("lifecycle commit rewrites, reorders, or removes prior completionEvidence");
   const addedEvidence = currentEvidence.slice(priorEvidence.length);
-  if (addedEvidence.length < expectedStates.length || addedEvidence.some((item) => !nonEmptyString(item))) errors.push("lifecycle commit does not append required durable evidence references");
+  const sourceHead = options.sourceHead ?? currentPacket.reviewVerification?.headSha;
+  const expectedVerificationEvidence = /^[0-9a-f]{40}$/i.test(sourceHead ?? "") ? finalReviewEvidencePath(evidencePacket, sourceHead) : null;
+  if (addedEvidence.length !== expectedStates.length || addedEvidence.some((item) => !nonEmptyString(item))) errors.push("lifecycle commit does not append exactly one durable evidence reference per transition");
+  if (addedEvidence[0] !== expectedVerificationEvidence) errors.push("review -> verified completionEvidence is not the exact final review artifact");
+  if (currentPacket.status === "done" && !(evidencePacket.evidence ?? []).map(normalize).includes(normalize(addedEvidence[1] ?? ""))) errors.push("verified -> done completionEvidence is not a packet-declared completion destination");
+  if (typeof options.commitContains === "function" && /^[0-9a-f]{40}$/i.test(options.currentHead ?? "")) {
+    for (const item of addedEvidence) if (nonEmptyString(item) && !options.commitContains(options.currentHead, normalize(item))) errors.push(`lifecycle completionEvidence does not exist at current head: ${normalize(item)}`);
+  }
   if (!currentPacket.reviewVerification || currentPacket.reviewVerification.headSha === currentPacket.reviewVerification.evidenceHeadSha) errors.push("lifecycle commit does not preserve distinct reviewed-source and evidence heads");
   return errors;
 }
@@ -140,7 +151,14 @@ function validateEvidenceCommitChain(packet, root = repositoryRoot, options = {}
   const evidencePrefixes = [`evidence/reviews/${packet.taskId}/`, `evidence/verification/${packet.taskId}/`];
   const taskPaths = new Set(["review", "verified", "done"].map((state) => `tasks/${state}/${packet.taskId}/task.json`));
   const errors = [];
-  for (const file of sourceToEvidence) if (!evidencePrefixes.some((prefix) => file.startsWith(prefix))) errors.push(`post-review evidence commit changes non-evidence path: ${file}`);
+  const requiredEvidence = reviewEvidencePaths(packet, root, sourceHead);
+  const requiredEvidenceSet = new Set(requiredEvidence);
+  const commitContains = options.commitContains ?? ((commit, file) => spawnSync("git", ["cat-file", "-e", `${commit}:${file}`], { cwd: root, windowsHide: true }).status === 0);
+  for (const file of sourceToEvidence) {
+    if (!evidencePrefixes.some((prefix) => file.startsWith(prefix))) errors.push(`post-review evidence commit changes non-evidence path: ${file}`);
+    else if (!requiredEvidenceSet.has(file)) errors.push(`post-review evidence commit changes unauthorized historical or unrelated evidence: ${file}`);
+  }
+  for (const file of requiredEvidence) if (!sourceToEvidence.includes(file)) errors.push(`post-review evidence commit does not add required exact-head evidence: ${file}`);
   for (const file of evidenceToCurrent) if (!taskPaths.has(file)) errors.push(`post-evidence lifecycle commit changes unauthorized path: ${file}`);
   if (evidenceHead !== currentHead) {
     const readPacketFromCommit = options.readPacketFromCommit ?? ((commit) => {
@@ -153,10 +171,12 @@ function validateEvidenceCommitChain(packet, root = repositoryRoot, options = {}
     });
     const evidencePacket = options.evidencePacket ?? readPacketFromCommit(evidenceHead);
     const currentPacket = options.currentPacket ?? packet;
-    errors.push(...validateLifecyclePacketDelta(evidencePacket, currentPacket));
+    errors.push(...validateLifecyclePacketDelta(evidencePacket, currentPacket, { sourceHead, currentHead, commitContains }));
   }
-  const commitContains = options.commitContains ?? ((commit, file) => spawnSync("git", ["cat-file", "-e", `${commit}:${file}`], { cwd: root, windowsHide: true }).status === 0);
-  for (const file of reviewEvidencePaths(packet, root, sourceHead)) if (!commitContains(evidenceHead, file)) errors.push(`evidence commit does not contain required review evidence: ${file}`);
+  for (const file of requiredEvidence) {
+    if (commitContains(sourceHead, file)) errors.push(`review source already contains evidence reserved for its post-review evidence commit: ${file}`);
+    if (!commitContains(evidenceHead, file)) errors.push(`evidence commit does not contain required review evidence: ${file}`);
+  }
   return errors;
 }
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
@@ -351,6 +371,8 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
     const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha, options.reviewBaseSha);
     if (reviewErrors.length > 0) fail(`Cannot verify V2 task without passing exact-head review artifacts:\n- ${reviewErrors.join("\n- ")}`);
     const reviewHead = options.reviewHeadSha ?? reviewHeadSha(root);
+    const expectedVerificationEvidence = finalReviewEvidencePath(packet, reviewHead);
+    if (normalizedEvidence !== expectedVerificationEvidence) fail(`V2 verification evidence must be the exact final review artifact: ${expectedVerificationEvidence}`);
     const evidenceHead = options.evidenceHeadSha ?? reviewHeadSha(root);
     const canonicalBase = reviewBaseSha(root);
     if (canonicalBase && options.reviewBaseSha && options.reviewBaseSha !== canonicalBase) fail("Cannot verify V2 task against a non-canonical review base SHA.");
@@ -363,6 +385,7 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
   if (to === "done") {
+    if (packet.schemaVersion === "2.0.0" && !(packet.evidence ?? []).map(normalize).includes(normalizedEvidence)) fail("V2 completion evidence must be a packet-declared evidence destination.");
     const verifiedCheck = validatePacket(packet, { strict: true, directoryState: state, root, evidenceChainOptions: options.evidenceChainOptions });
     if (!verifiedCheck.valid) fail(`Cannot complete invalid task packet:\n- ${verifiedCheck.errors.join("\n- ")}`);
   }
@@ -397,7 +420,7 @@ function selfTest() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-task-selftest-"));
   try {
     const id = "SUT-TEST-001"; createPacket({ task: id, title: "Self-test packet" }, root);
-    let record = findPacket(id, root); record.packet.phase = "test"; record.packet.workstream = "test"; record.packet.workflowId = "test"; record.packet.businessObjective = "test"; record.packet.technicalObjective = "test"; record.packet.acceptanceCriteria = ["test"]; record.packet.allowedPaths = ["test/**"]; record.packet.forbiddenPaths = ["protected/**"]; record.packet.allowedCommands = ["node --version"]; record.packet.requiredChecks = ["fixture"]; record.packet.requiredTests = ["self-test"]; record.packet.rollbackExpectations = "remove test files"; record.packet.reviewer = "qa-verification"; writePacket(record.file, record.packet);
+    let record = findPacket(id, root); record.packet.phase = "test"; record.packet.workstream = "test"; record.packet.workflowId = "test"; record.packet.businessObjective = "test"; record.packet.technicalObjective = "test"; record.packet.acceptanceCriteria = ["test"]; record.packet.allowedPaths = ["test/**"]; record.packet.forbiddenPaths = ["protected/**"]; record.packet.allowedCommands = ["node --version"]; record.packet.requiredChecks = ["fixture"]; record.packet.requiredTests = ["self-test"]; record.packet.rollbackExpectations = "remove test files"; record.packet.reviewer = "qa-verification"; record.packet.evidence = ["evidence/complete.md"]; writePacket(record.file, record.packet);
     transition(id, "ready", "Ready for fixture.", "test", root); transition(id, "active", "Start fixture.", "test", root); transition(id, "review", "Send fixture to review.", "test", root);
     const reviewHead = "b".repeat(40); record = findPacket(id, root);
     const reviewedTaskPacketText = fs.readFileSync(record.file, "utf8");
@@ -414,12 +437,12 @@ function selfTest() {
       const reviewFile = path.join(root, "evidence", "reviews", id, `${stage}-${reviewHead}.json`); fs.mkdirSync(path.dirname(reviewFile), { recursive: true }); fs.writeFileSync(reviewFile, `${JSON.stringify(review)}\n`, "utf8");
     }
     fs.mkdirSync(path.join(root, "evidence"), { recursive: true });
-    fs.writeFileSync(path.join(root, "evidence", "self-test.md"), "verified fixture\n");
     fs.writeFileSync(path.join(root, "evidence", "complete.md"), "completed fixture\n");
+    const exactVerification = path.join(root, "evidence", "verification", id, `verification-${reviewHead}.json`); fs.mkdirSync(path.dirname(exactVerification), { recursive: true }); fs.writeFileSync(exactVerification, "{}\n");
     const evidenceHead = "c".repeat(40); const lifecycleHead = "d".repeat(40);
     const evidencePacket = structuredClone(record.packet);
-    const evidenceChainOptions = { currentHead: evidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === reviewHead && newer === evidenceHead ? reviewEvidencePaths(record.packet, root, reviewHead) : [], commitContains: () => true };
-    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), evidenceHeadSha: evidenceHead, evidenceChainOptions, reviewStatusText: "" });
+    const evidenceChainOptions = { currentHead: evidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === reviewHead && newer === evidenceHead ? reviewEvidencePaths(record.packet, root, reviewHead) : [], commitContains: (commit) => commit !== reviewHead };
+    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: `evidence/reviews/${id}/mergeRiskReview-${reviewHead}.json`, reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), evidenceHeadSha: evidenceHead, evidenceChainOptions, reviewStatusText: "" });
     Object.assign(evidenceChainOptions, { currentHead: lifecycleHead, evidencePacket, currentPacket: findPacket(id, root).packet });
     transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md", evidenceChainOptions });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }

@@ -32,6 +32,9 @@ assert.equal(validateReviewResult(review).valid, true, "valid structured review 
 const wrongLauncherTrace = { ...review, tracePath: "evidence/reviews/SUT-AIOS-GOV-056-FND/traces/other-run-qa-verification-luna.jsonl" };
 wrongLauncherTrace.outputHash = computeReviewOutputHash(wrongLauncherTrace);
 assert.equal(validateReviewResult(wrongLauncherTrace).valid, false, "launcher trace must match its bound run and reviewer");
+const traversalLauncherTrace = { ...review, tracePath: `evidence/reviews/${review.taskId}/traces/${review.runId}-${review.reviewerAgent}-luna/../../escaped.jsonl` };
+traversalLauncherTrace.outputHash = computeReviewOutputHash(traversalLauncherTrace);
+assert.equal(validateReviewResult(traversalLauncherTrace).valid, false, "launcher trace traversal is rejected before filesystem access");
 const appReview = { ...review, runId: "019fe062-387c-7361-9de9-48682bf11b99", tracePath: "evidence/reviews/SUT-AIOS-GOV-056-FND/runs/019fe062-387c-7361-9de9-48682bf11b99.json" };
 appReview.outputHash = computeReviewOutputHash(appReview);
 assert.equal(validateReviewResult(appReview).valid, true, "Codex app review trace is accepted");
@@ -58,4 +61,4 @@ const passingWithBlocker = { ...review, blockingFindings: ["must fail"] };
 passingWithBlocker.outputHash = computeReviewOutputHash(passingWithBlocker);
 assert.equal(validateReviewResult(passingWithBlocker).valid, false, "pass with blocking findings is rejected");
 
-process.stdout.write(JSON.stringify({ status: "passed", checks: 8 }) + "\n");
+process.stdout.write(JSON.stringify({ status: "passed", checks: 9 }) + "\n");

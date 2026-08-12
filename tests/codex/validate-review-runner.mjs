@@ -4,7 +4,8 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -268,6 +269,9 @@ const preparedDestination = path.join(persistenceRoot, "evidence", "reviews", pr
 assert.equal(fs.existsSync(preparedDestination), false, "a crash before successful terminal provenance exposes no immutable review artifact");
 pendingPersistence.abort();
 assert.equal(fs.existsSync(preparedDestination), false, "aborting prepared persistence leaves no review artifact");
+const traversalReview = { ...preparedReview, tracePath: `evidence/reviews/${preparedReview.taskId}/traces/${preparedReview.runId}-${preparedReview.reviewerAgent}-luna/../../escaped.jsonl` };
+traversalReview.outputHash = computeReviewOutputHash(traversalReview);
+assert.throws(() => persistReviewResult(traversalReview, { taskId: traversalReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot }), /traversal components/, "direct persistence rejects a traversal-shaped trace before reading it");
 const finalPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot });
 assert.equal(finalPersistence.finalize(), `evidence/reviews/${preparedReview.taskId}/semanticReview-${headSha}.json`, "prepared persistence finalizes atomically after terminal provenance");
 assert.equal(fs.existsSync(preparedDestination), true, "finalized review persistence is durable");

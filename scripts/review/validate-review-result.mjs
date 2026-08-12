@@ -48,6 +48,12 @@ export function validateReviewResult(data, expected = {}) {
     if (expected[field] !== undefined && data[field] !== expected[field]) errors.push(`${field} does not match the expected bound value`);
   }
   if (typeof data.outputHash === "string" && data.outputHash !== computeReviewOutputHash(data)) errors.push("outputHash does not match the canonical review result");
+  if (typeof data.tracePath === "string") {
+    const segments = data.tracePath.split("/");
+    if (path.isAbsolute(data.tracePath) || data.tracePath.includes("\\") || data.tracePath.includes(":") || segments.some((segment) => segment === "" || segment === "." || segment === "..")) {
+      errors.push("tracePath must be a contained repository-relative path without traversal components");
+    }
+  }
   if (typeof data.tracePath === "string" && data.tracePath.includes("/runs/") && data.tracePath !== `evidence/reviews/${data.taskId}/runs/${data.runId}.json`) {
     errors.push("Codex app tracePath must match runId");
   }
