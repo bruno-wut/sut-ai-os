@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:08:05.209Z",
+  "updatedDate": "2026-08-12T21:10:23.199Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -825,6 +825,20 @@
       "at": "2026-08-12T21:08:05.209Z",
       "actor": "chief-orchestrator",
       "reason": "Freeze the exact evidence-chain repair for fresh SHA-bound plan, semantic, and merge-risk review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:10:23.006Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 0626545 alleged a revision-binding argument mismatch; preserve the decision even though both live reviews traversed that binding and persisted successfully."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:10:23.199Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Add a focused positive regression for the exact current head/base binding contract without changing implementation behavior or scope."
     }
   ]
 }
