@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -163,7 +163,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:01:16.270Z",
+  "updatedDate": "2026-08-12T20:02:12.957Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -627,6 +627,13 @@
       "at": "2026-08-12T20:01:16.270Z",
       "actor": "codex-engineering-executor",
       "reason": "Restore only Terra/high implementation authority and clarify that Sol remains independent plan and merge-risk assurance; no implementation, schema, product, fallback, dependency, or P3-001 change."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:02:12.957Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Restore the explicitly approved Terra/high implementation authority while retaining Sol/high plan and merge-risk assurance; all packet checks pass on the clean correction head."
     }
   ]
 }
