@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "682946b2644f4cb937f2a6b11be67a784bc705f3",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "8c5ed1318f7ba07d8ee3d29d4591e24e57b8cef63cf5e03bb04296327862df13",
+  "reviewedAt": "2026-08-12T20:05:49.856Z",
+  "stage": "semanticReview",
+  "runId": "20260812200316377-10aac45c",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812200316377-10aac45c-qa-verification-luna.jsonl",
+  "outputHash": "aec9703ab33e26b6ce68401bcc20c98d23d8a37149e03261a98aebb65afa64b3",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "persistCodexAppReviewResult writes the successful run envelope and review result through separate non-atomic writes, while persistReviewResult writes directly to the final path. Interruption can leave successful provenance without a valid review artifact or leave a partial result. Use staged validated output with atomic publication and cleanup on failure."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Simulate interruption or write failure between Codex-app run-envelope publication and review-result publication, including partial-result recovery."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher separates routing, parsing, cancellation, validation, lifecycle binding, and persistence into bounded helpers, though persistence paths should share one atomic publication primitive.",
+    "hexagonalArchitecture": "Process execution, filesystem evidence, and review assessment binding are explicit adapters around governed validation logic; Codex-app persistence currently bypasses the safer staged publication path.",
+    "eventedBoundaries": "Structured progress and terminal events clearly separate launch, child output, cancellation, failure, and successful review binding."
+  },
+  "exactNextAction": "Revise only Codex-app and shared review-result persistence to use validated staging and atomic final publication, then rerun the packet-required deterministic checks and resubmit semanticReview on the same governed scope."
+}

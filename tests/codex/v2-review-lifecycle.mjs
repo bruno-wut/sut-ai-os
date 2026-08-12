@@ -269,7 +269,14 @@ try {
       }
       fs.writeFileSync(semanticFile, originalSemantic);
     }
+    if (stage === "planReview") {
+      const partialResult = path.join(appRoot, "evidence", "reviews", appTaskId, `${stage}-${appHead}.json`);
+      fs.mkdirSync(path.dirname(partialResult), { recursive: true });
+      fs.writeFileSync(partialResult, `${JSON.stringify(prepared.reviewResult, null, 2)}\n`);
+      assert.equal(fs.existsSync(path.join(appRoot, prepared.reviewResult.tracePath)), false, "interruption after atomic result publication leaves an exact recoverable partial publication");
+    }
     const artifact = persistCodexAppReviewResult(prepared, { taskId: appTaskId, profile, headSha: appHead, root: appRoot });
+    if (stage === "planReview") assert.equal(fs.existsSync(path.join(appRoot, prepared.reviewResult.tracePath)), true, "rerunning the same Codex-app run recovers exact partial publication");
     appStatus.push(`?? ${artifact}`, `?? ${prepared.reviewResult.tracePath}`);
     const persistedTrace = JSON.parse(fs.readFileSync(path.join(appRoot, prepared.reviewResult.tracePath), "utf8"));
     assert.equal("reviewedTaskPacketText" in persistedTrace, false, "Codex app trace excludes full task-packet contents");
@@ -323,7 +330,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 61 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 63 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

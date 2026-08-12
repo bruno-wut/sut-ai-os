@@ -982,22 +982,33 @@ function requireReviewEvidenceSequence({ taskRecord, profile, baseSha, headSha, 
 }
 
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
-  const expectedStage = stageByProfile[profile];
-  if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
-  const expected = { taskId, headSha };
-  const validation = validateReviewResult(reviewResult, expected);
-  if (!validation.valid) throw new Error(`Refusing to persist invalid review result: ${validation.errors.join("; ")}`);
-  const destination = reviewArtifactPath(taskId, profile, headSha, root);
-  fs.mkdirSync(path.dirname(destination), { recursive: true });
-  const serialized = `${JSON.stringify(reviewResult, null, 2)}\n`;
-  if (fs.existsSync(destination) && fs.readFileSync(destination, "utf8") !== serialized) {
-    throw new Error(`Review artifact already exists for ${taskId} ${stageByProfile[profile]} at ${headSha}`);
+  return prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root }).finalize();
+}
+
+function prepareAtomicPublication(serialized, destination, pending, conflictMessage) {
+  if (fs.existsSync(destination)) {
+    if (fs.readFileSync(destination, "utf8") !== serialized) throw new Error(conflictMessage);
+    return { abort() {}, finalize() { return destination; } };
   }
-  if (!fs.existsSync(destination)) fs.writeFileSync(destination, serialized, { encoding: "utf8", mode: 0o600 });
-  const persisted = JSON.parse(fs.readFileSync(destination, "utf8"));
-  const persistedValidation = validateReviewResult(persisted, expected);
-  if (!persistedValidation.valid) throw new Error(`Persisted review result failed validation: ${persistedValidation.errors.join("; ")}`);
-  return path.relative(root, destination).replaceAll(path.sep, "/");
+  fs.mkdirSync(path.dirname(pending), { recursive: true });
+  if (fs.existsSync(pending)) {
+    if (fs.readFileSync(pending, "utf8") !== serialized) throw new Error(`Staged publication conflicts with run identity: ${pending}`);
+  } else {
+    fs.writeFileSync(pending, serialized, { encoding: "utf8", mode: 0o600, flag: "wx" });
+  }
+  return {
+    abort() { fs.rmSync(pending, { force: true }); },
+    finalize() {
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      if (fs.existsSync(destination)) {
+        if (fs.readFileSync(destination, "utf8") !== serialized) throw new Error(conflictMessage);
+        fs.rmSync(pending, { force: true });
+      } else {
+        fs.renameSync(pending, destination);
+      }
+      return destination;
+    },
+  };
 }
 
 function prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
@@ -1007,24 +1018,20 @@ function prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha
   const validation = validateReviewResult(reviewResult, expected);
   if (!validation.valid) throw new Error(`Refusing to prepare invalid review result: ${validation.errors.join("; ")}`);
   const destination = reviewArtifactPath(taskId, profile, headSha, root);
-  if (fs.existsSync(destination)) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
   const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
-  fs.mkdirSync(pendingDirectory, { recursive: true });
-  const pending = path.join(pendingDirectory, `${reviewResult.runId}.json.tmp`);
   const serialized = `${JSON.stringify(reviewResult, null, 2)}\n`;
-  fs.writeFileSync(pending, serialized, { encoding: "utf8", mode: 0o600, flag: "wx" });
-  const prepared = JSON.parse(fs.readFileSync(pending, "utf8"));
+  const publication = prepareAtomicPublication(serialized, destination, path.join(pendingDirectory, `${reviewResult.runId}-result.json.tmp`), `Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
+  const stagedPath = fs.existsSync(destination) ? destination : path.join(pendingDirectory, `${reviewResult.runId}-result.json.tmp`);
+  const prepared = JSON.parse(fs.readFileSync(stagedPath, "utf8"));
   const preparedValidation = validateReviewResult(prepared, expected);
   if (!preparedValidation.valid) {
-    fs.rmSync(pending, { force: true });
+    publication.abort();
     throw new Error(`Prepared review result failed validation: ${preparedValidation.errors.join("; ")}`);
   }
   return {
-    abort() { fs.rmSync(pending, { force: true }); },
+    abort() { publication.abort(); },
     finalize() {
-      fs.mkdirSync(path.dirname(destination), { recursive: true });
-      if (fs.existsSync(destination)) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
-      fs.renameSync(pending, destination);
+      publication.finalize();
       return path.relative(root, destination).replaceAll(path.sep, "/");
     },
   };
@@ -1056,9 +1063,24 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   if (path.resolve(root) === path.resolve(repositoryRoot)) assertReviewRevisionUnchanged(reviewResult, gitSha("HEAD"), comparisonBaseSha());
   validateCurrentContextManifest(contextManifest, { root, profile });
   requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewResult.baseSha, headSha, contextManifest, root });
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  if (!fs.existsSync(target)) fs.writeFileSync(target, traceSerialized, { encoding: "utf8", mode: 0o600 });
-  return persistReviewResult(reviewResult, { taskId, profile, headSha, root });
+  const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
+  const resultPublication = prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root });
+  let tracePublication;
+  try {
+    tracePublication = prepareAtomicPublication(traceSerialized, target, path.join(pendingDirectory, `${reviewResult.runId}-run.json.tmp`), `Codex app run envelope already exists for ${reviewResult.runId}`);
+  } catch (error) {
+    resultPublication.abort();
+    throw error;
+  }
+  try {
+    const reviewPath = resultPublication.finalize();
+    tracePublication.finalize();
+    return reviewPath;
+  } catch (error) {
+    resultPublication.abort();
+    tracePublication.abort();
+    throw new Error(`Codex app atomic publication failed; exact partial publication is recoverable by rerunning the same run: ${error.message}`);
+  }
 }
 
 function main() {

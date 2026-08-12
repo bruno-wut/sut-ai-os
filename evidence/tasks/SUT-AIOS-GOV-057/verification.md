@@ -13,7 +13,7 @@ head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
 - `node tests/codex/validate-review-runner.mjs` — passed (95 checks).
-- `node tests/codex/v2-review-lifecycle.mjs` — passed (61 checks).
+- `node tests/codex/v2-review-lifecycle.mjs` — passed (63 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
 - `node scripts/task/validate --all` — passed.
@@ -100,6 +100,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - After both adapters converged on the complete final persistence gate, preflight on `b7e6daac52e571a33a4e43aa7b143642f9e2da9f` measured 405024 bytes. The final task-local cap is 458752 bytes, still below the repository ceiling, with the same unchanged authority and product scope.
 - Merge-risk review on `6aa21bed251f32ef570b3096085c8d9c3331f28d` identified the exact-head evidence self-reference, ambiguous terminal acceptance, unbounded child output, and crash window. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-6aa21bed251f32ef570b3096085c8d9c3331f28d.json`; the source-head/evidence-head model and deterministic negatives above address it without a separate reconciliation PR.
 - Plan review on `8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd` identified that `routingPolicy.implementation` had drifted to Sol/high despite the recorded user approval being Terra/high workspace-write. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/planReview-8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd.json`; the packet restores Terra/high while retaining Sol/high for independent plan and merge-risk assurance.
+- Semantic QA on `682946b2644f4cb937f2a6b11be67a784bc705f3` identified separate direct Codex-app run-envelope and review-result writes. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-682946b2644f4cb937f2a6b11be67a784bc705f3.json`; both adapters now stage validated files, atomically publish each final path, and deterministically recover an exact partial publication by rerunning the same immutable run.
 
 ## Rollback
 

@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -40,6 +40,7 @@
     "Launcher review traces are task-bound, committed under evidence/reviews/<task>/traces/, and independently validated from a clean clone rather than referenced from gitignored local artifacts.",
     "V2 verification records both the immutable reviewed source head and its evidence-only commit, proves ancestry, and rejects any non-evidence change after review without requiring a reconciliation PR.",
     "Launcher trace validation requires exactly one successful finish with exitCode 0 after the sole review-bound event, and bounded output overflow terminates the review fail closed without persistence.",
+    "Shell and Codex-app review outputs use validated staging and atomic final-path publication; rerunning the same immutable run recovers an exact partial Codex-app publication without overwriting conflicting evidence.",
     "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
     "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced."
   ],
@@ -163,7 +164,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:02:12.957Z",
+  "updatedDate": "2026-08-12T20:06:32.593Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -634,6 +635,20 @@
       "at": "2026-08-12T20:02:12.957Z",
       "actor": "codex-engineering-executor",
       "reason": "Restore the explicitly approved Terra/high implementation authority while retaining Sol/high plan and merge-risk assurance; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:06:32.429Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 682946b found Codex-app run-envelope and review-result publication remained separate direct writes without deterministic partial-publication recovery; preserve the finding and unify staged atomic file publication."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:06:32.593Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only shared and Codex-app review persistence to stage validated files, publish each atomically, and recover exact partial publication; preserve routing, scope, product behavior, fallback, dependencies, and P3-001."
     }
   ]
 }
