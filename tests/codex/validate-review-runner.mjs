@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
 
 let checks = 0;
@@ -39,6 +39,29 @@ assert.equal(buildReviewAssessmentPrompt("implementation"), "", "implementation 
 assert.deepEqual(parseReviewAssessment(`${JSON.stringify(assessment)}\n`), assessment, "one valid assessment object is accepted");
 assert.throws(() => parseReviewAssessment(JSON.stringify({ ...assessment, blockingFindings: ["contradiction"] })), /cannot combine decision pass/, "pass with blocking findings is rejected before launcher binding or persistence");
 const validAssessmentJson = JSON.stringify(assessment);
+
+const makePipeChild = (writeError = null) => {
+  const child = { stdin: new EventEmitter(), stdout: new EventEmitter(), stderr: new EventEmitter() };
+  child.stdin.write = () => { if (writeError) throw writeError; return true; };
+  child.stdin.end = () => {};
+  return child;
+};
+const emittedPipeChild = makePipeChild();
+const emittedPipeTrace = [];
+const emittedPipeFailures = [];
+const emittedPipeTerminal = createReviewTerminalController({ append: (event) => emittedPipeTrace.push(event) }, () => {}, () => {});
+const emittedPipeAttachment = attachChildProcessStreams(emittedPipeChild, { prompt: "review", onStdout: () => {}, onStderr: () => {}, onFailure: (stream, error) => { emittedPipeFailures.push({ stream, message: error.message }); emittedPipeTerminal.complete("failed", 1); } });
+emittedPipeChild.stdout.emit("error", new Error("stdout broke"));
+emittedPipeChild.stderr.emit("error", new Error("stderr also broke"));
+assert.deepEqual(emittedPipeFailures, [{ stream: "stdout", message: "stdout broke" }], "multiple emitted pipe failures converge on one process failure");
+assert.deepEqual(emittedPipeTrace, [{ event: "finish", status: "failed", exitCode: 1 }], "emitted pipe failure records exactly one failed terminal");
+assert.equal(emittedPipeAttachment.failure.stream, "stdout", "the first emitted stream failure remains authoritative");
+const synchronousPipeChild = makePipeChild(new Error("stdin write broke"));
+const synchronousPipeTrace = [];
+const synchronousPipeTerminal = createReviewTerminalController({ append: (event) => synchronousPipeTrace.push(event) }, () => {}, () => {});
+const synchronousPipeAttachment = attachChildProcessStreams(synchronousPipeChild, { prompt: "review", onStdout: () => {}, onStderr: () => {}, onFailure: () => synchronousPipeTerminal.complete("failed", 1) });
+assert.equal(synchronousPipeAttachment.failure.stream, "stdin", "synchronous stdin failure is captured before it can escape the launcher");
+assert.deepEqual(synchronousPipeTrace, [{ event: "finish", status: "failed", exitCode: 1 }], "synchronous stdin failure records exactly one failed terminal");
 assert.throws(() => parseReviewAssessment(validAssessmentJson.replace('"decision":"pass"', '"decision":"pass","decision":"blocked"')), /duplicate JSON member/, "duplicate top-level assessment fields are rejected");
 assert.throws(() => parseReviewAssessment(validAssessmentJson.replace('"deepModules":"bounded review surface"', '"deepModules":"bounded review surface","deepModules":"ambiguous"')), /duplicate JSON member/, "duplicate nested architecture fields are rejected");
 for (const output of ["", "review complete", "[]", "{}", `${JSON.stringify(assessment)}\n${JSON.stringify(assessment)}`, JSON.stringify({ ...assessment, unexpected: true })]) {

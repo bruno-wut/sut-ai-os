@@ -800,6 +800,28 @@ function appendBoundedReviewOutput(state, chunk, limit = reviewOutputLimitBytes)
   return true;
 }
 
+function attachChildProcessStreams(child, { prompt, onStdout, onStderr, onFailure }) {
+  let failure = null;
+  const failOnce = (stream, error) => {
+    if (failure) return false;
+    failure = { stream, error };
+    onFailure(stream, error);
+    return true;
+  };
+  child.stdout.on("data", onStdout);
+  child.stderr.on("data", onStderr);
+  child.stdin.on("error", (error) => failOnce("stdin", error));
+  child.stdout.on("error", (error) => failOnce("stdout", error));
+  child.stderr.on("error", (error) => failOnce("stderr", error));
+  try {
+    child.stdin.write(prompt);
+    child.stdin.end();
+  } catch (error) {
+    failOnce("stdin", error);
+  }
+  return { get failure() { return failure; } };
+}
+
 function completeReviewPreflightFailure(error, { progress, terminal, writeError = (message) => process.stderr.write(message) }) {
   progress({ status: "preflight-failed" });
   writeError(`Review preflight failed: ${error.message}\n`);
@@ -1369,34 +1391,49 @@ function main() {
       cancellation.request("SIGTERM");
     }
   };
-  child.stdout.on("data", (chunk) => {
-    if (reviewProfile) collectReviewOutput("stdout", reviewStdout, chunk);
-    else stdoutText += chunk.toString();
-  });
-  child.stderr.on("data", (chunk) => {
-    if (reviewProfile) collectReviewOutput("stderr", reviewStderr, chunk);
-    else stderrText += chunk.toString();
-  });
-
-  child.stdin.write(context.prompt);
-  child.stdin.end();
+  let processFailure = null;
+  const failChildProcess = (kind, error, stream = null) => {
+    if (processFailure) return false;
+    processFailure = { kind, stream, error };
+    if (reviewProfile) {
+      progress({ status: kind === "stream" ? "child-stream-error" : "spawn-error", ...(stream ? { stream } : {}) });
+      terminal.complete("failed", 1);
+      try { cancellation?.request("SIGTERM"); } catch { /* terminal state already failed closed */ }
+    } else {
+      trace.append({ event: "finish", status: kind === "stream" ? "stream-error" : "spawn-error" });
+      process.exitCode = 1;
+    }
+    process.stderr.write(`${kind === "stream" ? `Child ${stream} stream failed` : "Process spawn failed"}: ${error.message}\n`);
+    return true;
+  };
 
   child.on("error", (err) => {
-    cancellation?.complete();
-    if (reviewProfile) {
-      progress({ status: "spawn-error" });
-      terminal.complete("failed", 1);
-    } else {
-      trace.append({ event: "finish", status: "spawn-error" });
-    }
-    process.stderr.write(`Process spawn failed: ${err.message}\n`);
-    if (!reviewProfile) process.exit(1);
+    failChildProcess("spawn", err);
+  });
+
+  const childStreams = attachChildProcessStreams(child, {
+    prompt: context.prompt,
+    onStdout: (chunk) => {
+      if (reviewProfile) collectReviewOutput("stdout", reviewStdout, chunk);
+      else stdoutText += chunk.toString();
+    },
+    onStderr: (chunk) => {
+      if (reviewProfile) collectReviewOutput("stderr", reviewStderr, chunk);
+      else stderrText += chunk.toString();
+    },
+    onFailure: (stream, error) => failChildProcess("stream", error, stream),
   });
 
   child.on("close", async (exitCode) => {
     if (reviewProfile) {
       process.off("SIGINT", onSigint);
       process.off("SIGTERM", onSigterm);
+    }
+    if (processFailure || childStreams.failure) {
+      cancellation?.confirmChildClosed();
+      cancellation?.complete();
+      if (reviewProfile) terminal.complete("failed", 1);
+      return;
     }
     const passed = exitCode === 0;
     if (stderrText && !reviewProfile) process.stderr.write(stderrText);
@@ -1532,4 +1569,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
