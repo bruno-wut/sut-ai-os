@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "c8a3bb87f9df393293fa062c0748ce75daa0c6e4",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "b67cd068e8b223916319fa014f93db6016d9645a1b5ee0602c9cb277225aff89",
+  "reviewedAt": "2026-08-12T21:30:42.494Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260812212846902-5eee6cb7",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812212846902-5eee6cb7-qa-verification-sol.jsonl",
+  "outputHash": "321afe32533e94c852eb54f4101e1628535252305a493431d17a32e2b5d85325",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The durable review trace emits one review-progress record for every raw stdout/stderr chunk. The 1 MiB per-stream capture limit therefore does not bound trace size or event count: many tiny writes can generate roughly millions of committed JSONL records before cancellation, exhausting repository/context budgets and undermining evidence availability. Progress must be aggregated or constrained by an explicit trace byte/event ceiling that fails closed without publishing a review result."
+  ],
+  "nonBlockingRisks": [
+    "The task-local context cap is already close to the repository ceiling; further durable history leaves limited operational headroom even after historical evidence is represented by digests.",
+    "Rollback by reverting the bounded PR is adequate because the change introduces no deployment, provider fallback, production mutation, or external-state migration."
+  ],
+  "missingNegativeTests": [
+    "Add an integration-style negative that feeds many one-byte stdout and stderr chunks through the review execution path and proves trace bytes/events remain within a deterministic ceiling, cancellation completes, and no review artifact is published."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, binding, lifecycle validation, cancellation, and publication are separated into focused helpers, but the progress emitter does not encapsulate its own resource bound and can amplify bounded child output into disproportionately large durable evidence.",
+    "hexagonalArchitecture": "The Codex process remains a bounded adapter around repository-governed validation and evidence contracts, with no production or provider authority added; the required revision is confined to the adapter's observability boundary.",
+    "eventedBoundaries": "Terminal ordering and redaction are substantially fail-closed, but per-chunk progress emission is not size- or count-bounded, so the event boundary can exhaust durable evidence capacity before the output limiter stops the child."
+  },
+  "exactNextAction": "Bound or coalesce child-output progress events with a deterministic total trace byte/event ceiling, terminate fail closed on that ceiling, add the tiny-chunk amplification negative, rerun all packet checks, and obtain fresh exact-head plan, semantic, and merge-risk reviews."
+}

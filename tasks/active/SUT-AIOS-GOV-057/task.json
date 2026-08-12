@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:24:40.646Z",
+  "updatedDate": "2026-08-12T21:31:15.145Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -888,6 +888,20 @@
       "at": "2026-08-12T21:24:40.646Z",
       "actor": "chief-orchestrator",
       "reason": "Freeze the fail-closed child-stream repair for exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:31:14.975Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on c8a3bb8 found per-chunk progress could amplify bounded output into unbounded durable trace events."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:31:15.145Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Coalesce child-output progress into deterministic bounded milestones and add tiny-chunk amplification negatives only."
     }
   ]
 }
