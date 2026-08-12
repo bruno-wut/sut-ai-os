@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -164,7 +164,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:06:32.593Z",
+  "updatedDate": "2026-08-12T20:08:29.832Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -649,6 +649,13 @@
       "at": "2026-08-12T20:06:32.593Z",
       "actor": "codex-engineering-executor",
       "reason": "Revise only shared and Codex-app review persistence to stage validated files, publish each atomically, and recover exact partial publication; preserve routing, scope, product behavior, fallback, dependencies, and P3-001."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:08:29.832Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Shared shell and Codex-app persistence now use validated staging, atomic final-path publication, and exact partial-publication recovery; all packet checks pass on the clean correction head."
     }
   ]
 }
