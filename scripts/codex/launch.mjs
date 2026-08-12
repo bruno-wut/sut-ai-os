@@ -1007,6 +1007,22 @@ function requireReviewEvidenceSequence({ taskRecord, profile, baseSha, headSha, 
 }
 
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
+  const expectedStage = stageByProfile[profile];
+  if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
+  const initialValidation = validateReviewResult(reviewResult, { taskId, headSha });
+  if (!initialValidation.valid) throw new Error(`Refusing to persist invalid review result: ${initialValidation.errors.join("; ")}`);
+  if (reviewResult.tracePath.includes("/runs/")) throw new Error("Direct review-result persistence requires the Codex-app atomic envelope adapter");
+  let events;
+  try { events = fs.readFileSync(path.join(root, reviewResult.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
+  catch { throw new Error("Direct review-result persistence requires a valid bound launcher trace"); }
+  const bound = events.filter((event) => event?.event === "review-bound");
+  const finishes = events.filter((event) => event?.event === "finish");
+  if (bound.length !== 1 || finishes.length !== 1 || finishes[0]?.status !== "success" || finishes[0]?.exitCode !== 0 || events.indexOf(finishes[0]) <= events.indexOf(bound[0]) || events.at(-1) !== finishes[0]) {
+    throw new Error("Direct review-result persistence requires one ordered successful bound terminal trace");
+  }
+  for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) {
+    if (bound[0][key] !== reviewResult[key]) throw new Error(`Direct review-result persistence trace does not bind ${key}`);
+  }
   return prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root }).finalize();
 }
 
@@ -1134,6 +1150,11 @@ function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root 
   assertActiveAgent(currentAgent);
   const expectedContext = buildContextProfile(currentAgent, currentTaskRecord, currentStage.route, currentModel, currentStage.effort, profile, { root, headSha: currentHeadSha, baseSha: currentBaseSha });
   validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, taskRecord: currentTaskRecord, currentHeadSha, currentBaseSha, expectedContextManifest: expectedContext.contextManifest });
+  validateCurrentContextManifest(expectedContext.contextManifest, { root, profile });
+  if (path.resolve(root) === path.resolve(repositoryRoot)) {
+    const finalStatus = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
+    if (!reviewWorktreeIsClean(finalStatus, taskId, currentHeadSha)) throw new Error("Codex app final publication requires a clean review worktree");
+  }
   requireReviewEvidenceSequence({ taskRecord: currentTaskRecord, profile, baseSha: currentBaseSha, headSha, contextManifest, root });
   const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
   const resultPublication = prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root });
@@ -1435,9 +1456,17 @@ function main() {
       }
 
       try {
-        assertReviewRevisionUnchanged(launcherReview, gitSha("HEAD"), comparisonBaseSha());
-        validateCurrentContextManifest(context.contextManifest, { profile });
-        requireReviewEvidenceSequence({ taskRecord, profile, baseSha: reviewedBaseSha, headSha: reviewedHeadSha, contextManifest: context.contextManifest });
+        const finalTaskRecord = findTaskPacket(taskId);
+        const finalStage = finalTaskRecord.data.routingPolicy[stageByProfile[profile]];
+        const finalAgent = discoverAgents().get(finalStage.agent);
+        const finalHead = gitSha("HEAD");
+        const finalBase = comparisonBaseSha();
+        const finalContext = buildContextProfile(finalAgent, finalTaskRecord, finalStage.route, modelIds[finalStage.route], finalStage.effort, profile, { headSha: finalHead, baseSha: finalBase });
+        validateCodexAppFinalBinding({ reviewResult: launcherReview, contextManifest: context.contextManifest, reviewedTaskScopeHash: computeReviewScopeHash(taskRecord.data) }, { taskId, profile, headSha: reviewedHeadSha, taskRecord: finalTaskRecord, currentHeadSha: finalHead, currentBaseSha: finalBase, expectedContextManifest: finalContext.contextManifest });
+        validateCurrentContextManifest(finalContext.contextManifest, { profile });
+        const finalStatus = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true }).stdout;
+        if (!reviewWorktreeIsClean(finalStatus, taskId, finalHead)) throw new Error("CLI final publication requires a clean review worktree");
+        requireReviewEvidenceSequence({ taskRecord: finalTaskRecord, profile, baseSha: finalBase, headSha: finalHead, contextManifest: finalContext.contextManifest });
       } catch (error) {
         progress({ status: "review-binding-changed" });
         process.stderr.write(`Review persistence binding changed during execution: ${error.message}\n`);

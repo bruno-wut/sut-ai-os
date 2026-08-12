@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "5f565c710a11e038c0da4bb2c31b5e1171e19a27",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "49ec088437e2113dcd398bd7fb5850ad18e3880378bc69efcc32271a9b482d6f",
+  "reviewedAt": "2026-08-12T20:51:58.393Z",
+  "stage": "semanticReview",
+  "runId": "20260812204906496-81924021",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812204906496-81924021-qa-verification-luna.jsonl",
+  "outputHash": "da3bb66a1487b17ca26659cfb88f7df8ce545f20135a7078a7f194440fbd7ac3",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The CLI review path does not reconstruct and compare the complete current context profile or recheck worktree cleanliness immediately before persistence. A same-HEAD uncommitted implementation change, or a newly available governed context file omitted during initial profile construction, can therefore produce a successful review artifact without the model having reviewed the final governed state.",
+    "Codex-app persistence validates the supplied context before rebuilding the current profile, but does not perform a final rehash after that reconstruction immediately before atomic publication. A context-file mutation in this remaining TOCTOU window can invalidate the bound review context."
+  ],
+  "nonBlockingRisks": [
+    "The exported persistReviewResult helper validates the result schema but does not itself enforce trace-terminal provenance or the shared evidence-sequence gate, leaving a lower-level persistence bypass outside the main launcher path."
+  ],
+  "missingNegativeTests": [
+    "CLI final persistence with an unchanged HEAD but a dirty unrelated implementation path.",
+    "CLI final persistence when a required context file appears or changes after initial profile construction.",
+    "Codex-app context mutation after final profile reconstruction and before atomic publication.",
+    "Direct persistReviewResult invocation without a valid bound terminal trace."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, cancellation, binding, and atomic publication are reasonably cohesive, but final-context verification is not yet a single invariant shared by both adapters.",
+    "hexagonalArchitecture": "CLI and Codex-app adapters are separated and route authority remains packet-owned; the lower-level persistence helper still exposes a provenance bypass.",
+    "eventedBoundaries": "Progress and cancellation events are explicitly modeled with fail-closed terminal handling, but persistence success is not protected by a final context-integrity event or recheck."
+  },
+  "exactNextAction": "Revise the shared final persistence boundary to recheck clean worktree state, current HEAD/base, reconstruct the complete expected context, and rehash all governed files immediately before publication; add the listed zero-publication negatives and rerun the packet-required checks."
+}

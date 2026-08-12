@@ -88,6 +88,11 @@ try {
       JSON.stringify({ event: "finish", status: "success", exitCode: 0 })
     ].join("\n") + "\n";
     fs.writeFileSync(traceFile, traceSerialized);
+    if (profile === "plan-review") {
+      fs.unlinkSync(traceFile);
+      assert.throws(() => persistReviewResult(review, { taskId: id, profile, headSha, root }), /valid bound launcher trace/, "direct persistence without terminal trace fails closed");
+      fs.writeFileSync(traceFile, traceSerialized);
+    }
     const reviewPath = persistReviewResult(review, { taskId: id, profile, headSha, root });
     if (profile === "plan-review") {
       fs.unlinkSync(traceFile);
@@ -379,7 +384,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 88 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 89 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });
