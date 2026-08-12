@@ -1078,13 +1078,20 @@ function validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, task
     contextManifestHash: expectedManifestHash,
   });
   const manifestMatches = JSON.stringify(contextManifest) === JSON.stringify(expectedContextManifest);
+  const suppliedByPath = new Map(contextManifest.map((entry) => [entry.path, entry.sha256]));
+  const expectedByPath = new Map(expectedContextManifest.map((entry) => [entry.path, entry.sha256]));
+  const manifestDifference = {
+    missing: [...expectedByPath.keys()].filter((item) => !suppliedByPath.has(item)),
+    unexpected: [...suppliedByPath.keys()].filter((item) => !expectedByPath.has(item)),
+    changed: [...expectedByPath].filter(([item, hash]) => suppliedByPath.has(item) && suppliedByPath.get(item) !== hash).map(([item]) => item),
+  };
   const errors = [
     ...authorityValidation.errors,
     ...(headSha !== currentHeadSha ? ["caller headSha does not match current HEAD"] : []),
     ...(!currentStage?.agent ? ["reviewerAgent is missing from current routing policy"] : []),
     ...(!currentModel ? ["model route is invalid in current routing policy"] : []),
     ...(reviewResult.stage !== expectedStage ? ["stage does not match profile"] : []),
-    ...(!manifestMatches ? ["context manifest does not match the complete current review profile"] : []),
+    ...(!manifestMatches ? [`context manifest does not match the complete current review profile: ${JSON.stringify(manifestDifference)}`] : []),
     ...(reviewedTaskScopeHash !== computeReviewScopeHash(taskRecord.data) ? ["reviewed task scope does not match the current packet"] : []),
   ];
   if (errors.length > 0) throw new Error(`Codex app review authority changed before persistence: ${errors.join("; ")}`);
