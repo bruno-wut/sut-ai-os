@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -163,7 +163,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:35:31.219Z",
+  "updatedDate": "2026-08-12T19:59:40.691Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -606,6 +606,13 @@
       "at": "2026-08-09T10:35:31.219Z",
       "actor": "codex-engineering-executor",
       "reason": "Resume the user-authorized Sol repair for source-head versus evidence-head lifecycle binding, singular ordered terminal validation, bounded review output, and recoverable persistence ordering; keep P3-001 and product behavior unchanged."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T19:59:40.691Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Source-head/evidence-head lifecycle separation, singular ordered terminal validation, bounded review output, atomic result publication, and every packet-required deterministic check pass on the clean committed implementation head; submit the exact source head for final independent V2 review."
     }
   ]
 }
