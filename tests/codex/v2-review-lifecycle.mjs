@@ -381,7 +381,7 @@ try {
   const appEvidenceHead = "e".repeat(40);
   const appLifecycleHead = "f".repeat(40);
   const appEvidenceChainOptions = { currentHead: appEvidenceHead, isAncestor: () => true, changedPaths: (older, newer) => older === appHead && newer === appEvidenceHead ? appStatus.map((line) => line.slice(3)) : [], commitContains: (commit) => commit !== appHead };
-  transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, evidenceHeadSha: appEvidenceHead, evidenceChainOptions: appEvidenceChainOptions, reviewStatusText: appStatus.join("\n") });
+  transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, evidenceHeadSha: appEvidenceHead, evidenceChainOptions: appEvidenceChainOptions, reviewStatusText: "" });
   const appFinal = findPacket(appTaskId, appRoot);
   Object.assign(appEvidenceChainOptions, { currentHead: appLifecycleHead, evidencePacket: appPacket, currentPacket: appFinal.packet });
   const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot, evidenceChainOptions: appEvidenceChainOptions });
