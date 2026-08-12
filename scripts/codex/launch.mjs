@@ -1067,7 +1067,7 @@ function validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, task
   const expectedStage = stageByProfile[profile];
   const currentStage = taskRecord.data?.routingPolicy?.[expectedStage];
   const currentModel = modelIds[currentStage?.route];
-  const expectedManifestHash = sha256(expectedContextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
+  const suppliedManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
   const authorityValidation = validateReviewResult(reviewResult, {
     taskId,
     baseSha: currentBaseSha,
@@ -1075,9 +1075,8 @@ function validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, task
     reviewerAgent: currentStage?.agent,
     model: currentModel,
     reasoningEffort: currentStage?.effort,
-    contextManifestHash: expectedManifestHash,
+    contextManifestHash: suppliedManifestHash,
   });
-  const manifestMatches = JSON.stringify(contextManifest) === JSON.stringify(expectedContextManifest);
   const suppliedByPath = new Map(contextManifest.map((entry) => [entry.path, entry.sha256]));
   const expectedByPath = new Map(expectedContextManifest.map((entry) => [entry.path, entry.sha256]));
   const manifestDifference = {
@@ -1085,6 +1084,10 @@ function validateCodexAppFinalBinding(prepared, { taskId, profile, headSha, task
     unexpected: [...suppliedByPath.keys()].filter((item) => !expectedByPath.has(item)),
     changed: [...expectedByPath].filter(([item, hash]) => suppliedByPath.has(item) && suppliedByPath.get(item) !== hash).map(([item]) => item),
   };
+  const manifestMatches = contextManifest.length === expectedContextManifest.length
+    && manifestDifference.missing.length === 0
+    && manifestDifference.unexpected.length === 0
+    && manifestDifference.changed.length === 0;
   const errors = [
     ...authorityValidation.errors,
     ...(headSha !== currentHeadSha ? ["caller headSha does not match current HEAD"] : []),
