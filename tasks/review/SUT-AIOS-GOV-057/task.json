@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:31:15.145Z",
+  "updatedDate": "2026-08-12T21:33:07.750Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -902,6 +902,13 @@
       "at": "2026-08-12T21:31:15.145Z",
       "actor": "codex-engineering-executor",
       "reason": "Coalesce child-output progress into deterministic bounded milestones and add tiny-chunk amplification negatives only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:33:07.750Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze bounded progress tracing for exact-head independent review."
     }
   ]
 }
