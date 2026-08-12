@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "6aa21bed251f32ef570b3096085c8d9c3331f28d",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "d066bc7ca39e537d02a5178236664133b34e78bea94a3538ac52f81cb4ebcbec",
+  "reviewedAt": "2026-08-09T10:33:28.694Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260809103153935-fdd541be",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260809103153935-fdd541be-qa-verification-sol.jsonl",
+  "outputHash": "539fdb41a890977bef0c7feda1a76371385b40c7c9b0a873a3ee973bdc5d1dcd",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The durable launcher-evidence design is not lifecycle-completable on one immutable reviewed head. The exact-head plan and semantic artifacts and traces supplied for 6aa21bed251f32ef570b3096085c8d9c3331f28d are uncommitted and absent from the canonical base-to-head changed-path inventory, so they cannot be validated from a clean clone of that head. Committing them changes HEAD and invalidates their SHA-bound names, results, verification record, and merge-risk scope, requiring another review cycle. The acceptance criterion that current launcher traces are both committed and exact-head bound therefore remains unsatisfied and creates an evidence self-reference loop.",
+    "validateRequiredReviewArtifacts accepts a launcher trace when it contains any finish event with status success. It does not require exactly one terminal finish event, require success to follow the sole review-bound event, reject an additional failed or cancelled finish, or bind the terminal exit code. An internally consistent forged or corrupted trace containing both failure and success can therefore satisfy the merge-risk prerequisite gate, leaving the claimed terminal-state and evidence-integrity boundary fail-open."
+  ],
+  "nonBlockingRisks": [
+    "Review stdout and stderr are accumulated without byte ceilings; the supplied exact-head traces already record approximately 136 KiB of stderr per review, so excessive child output can exhaust launcher memory.",
+    "The legacy SHA-less verification record remains in governed context beside the authoritative exact-head record and reports obsolete check counts, creating avoidable ambiguity for evidence consumers.",
+    "Durable same-task review history has pushed the task context cap to 458752 bytes, leaving limited headroom below the repository-wide ceiling and making another review iteration likely to require a further governed context decision.",
+    "Failed or abandoned preflight attempts leave untracked task-scoped durable trace files, and cleanliness validation permits arbitrary same-task trace files, allowing evidence clutter to accumulate without explicit provenance or cleanup rules."
+  ],
+  "missingNegativeTests": [
+    "Commit the complete current plan, semantic, merge-risk, and trace chain, reconstruct a clean clone at the resulting commit, and prove lifecycle validation succeeds without changing the reviewed source-head binding or initiating another self-referential review cycle.",
+    "Supply a launcher trace containing success plus failed or cancelled finish events, success before review-bound, multiple success events, and nonzero success exitCode; require every variant to fail prerequisite validation.",
+    "Terminate the launcher after review-result persistence but before the successful finish event and prove the same reviewed head can recover without retaining an immutable result that can never acquire valid terminal provenance.",
+    "Enforce and test bounded stdout and stderr accumulation with fail-closed child-tree termination and no review-result persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The repair introduces focused parsing, context, cancellation, evidence-sequencing, and persistence helpers, but the reviewed-head and durable-evidence identities remain coupled inside the broad launcher, producing an unsatisfiable commit-and-review lifecycle boundary.",
+    "hexagonalArchitecture": "Provider execution, repository validation, and persistence remain local adapters without production or fallback authority, but the persistence port lacks a distinct evidence-commit identity separate from the immutable source head being reviewed.",
+    "eventedBoundaries": "Runtime progress and cancellation events are explicit and redacted, but durable validation does not enforce a singular ordered terminal history, and committing the events changes the revision they purport to validate."
+  },
+  "exactNextAction": "Return GOV-057 to revision-required and amend the evidence model so an immutable reviewed source head can be distinguished from a later evidence-bearing commit or external append-only record; then require exactly one ordered successful terminal event with exitCode 0, add clean-clone lifecycle, ambiguous-terminal, crash-recovery, and output-bound tests, rerun every packet command on the new implementation head, and obtain fresh plan, semantic, and merge-risk reviews before merging or deploying."
+}

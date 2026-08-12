@@ -3,14 +3,14 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
   "playbookId": null,
   "playbookMode": "shadow",
   "businessObjective": "Restore reliable, auditable independent review for bounded hotel AI OS tasks without changing their implementation or introducing model fallback.",
-  "technicalObjective": "Repair only the Workflow V2 review runner so each review stage receives an explicit assessment-only prompt, its stdout is required to be one review-result assessment JSON object, structured progress plus cancellation are surfaced and fail closed, and bound launcher traces persist under the task's durable review evidence directory.",
+  "technicalObjective": "Repair only the Workflow V2 review runner so each review stage receives an explicit assessment-only prompt, its stdout is required to be one review-result assessment JSON object, structured progress plus cancellation are surfaced and fail closed, bound launcher traces persist under the task's durable review evidence directory, and lifecycle verification distinguishes the reviewed source head from its later evidence-only commit.",
   "architectureReferences": [
     "docs/project/TASK_WORKFLOW.md",
     "docs/model-routing/MODEL_ROUTING_POLICY.md",
@@ -29,7 +29,8 @@
     "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result.",
     "The user approved workspace-write authority solely for the designated Terra implementation stage within this packet's existing exact path allowlist; it does not grant production, provider, deployment, fallback, or cross-task authority.",
     "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 458752 bytes so the complete exact GOV-057 diff, durable same-task review history, exact-head verification, and routed prerequisite traces fit below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged.",
-    "Clean-clone inspection proved launcher review traces under artifacts/traces were gitignored and therefore non-durable. The user-authorized repair is Sol-escalated only to admit task-bound evidence/reviews/<task>/traces/*.jsonl in the existing review-result schema and validator; no other schema, authority, or product surface is changed."
+    "Clean-clone inspection proved launcher review traces under artifacts/traces were gitignored and therefore non-durable. The user-authorized repair is Sol-escalated only to admit task-bound evidence/reviews/<task>/traces/*.jsonl in the existing review-result schema and validator; no other schema, authority, or product surface is changed.",
+    "Merge-risk review proved exact-head evidence cannot be committed into the same Git object it names. V2 verification therefore binds an immutable reviewed source head to a later evidence-only commit and rejects every post-review implementation path; this remains one task branch and one PR."
   ],
   "acceptanceCriteria": [
     "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
@@ -37,6 +38,8 @@
     "The runner emits newline-delimited structured progress events for launch, child output, completion, failure, and cancellation without recording prompt content, environment values, or model output in traces.",
     "Review traces retain only the governed task path, context hashes, and a canonical review-scope hash; they never retain full task-packet contents.",
     "Launcher review traces are task-bound, committed under evidence/reviews/<task>/traces/, and independently validated from a clean clone rather than referenced from gitignored local artifacts.",
+    "V2 verification records both the immutable reviewed source head and its evidence-only commit, proves ancestry, and rejects any non-evidence change after review without requiring a reconciliation PR.",
+    "Launcher trace validation requires exactly one successful finish with exitCode 0 after the sole review-bound event, and bounded output overflow terminates the review fail closed without persistence.",
     "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
     "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced."
   ],
@@ -45,6 +48,7 @@
     "scripts/task/task-cli.mjs",
     "scripts/review/validate-review-result.mjs",
     "schemas/review-result-v1.schema.json",
+    "schemas/task-packet-v2.schema.json",
     "tests/codex/validate-review-runner.mjs",
     "tests/codex/v2-review-lifecycle.mjs",
     "tests/review/validate-review-binding.mjs",
@@ -88,6 +92,8 @@
     "stage-specific prompt and JSON-only review-output enforcement",
     "review-result schema rejection before persistence",
     "structured progress redaction and terminal-state coverage",
+    "source-head to evidence-head clean-clone lifecycle validation",
+    "singular ordered successful terminal trace and bounded-output rejection",
     "graceful cancellation without review persistence",
     "no-fallback and P3-001 scope regression inspection",
     "independent V2 plan, semantic, and merge-risk review"
@@ -157,7 +163,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-09T10:29:07.187Z",
+  "updatedDate": "2026-08-09T10:35:31.219Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -586,6 +592,20 @@
       "at": "2026-08-09T10:29:07.187Z",
       "actor": "codex-engineering-executor",
       "reason": "Durable task-bound launcher traces, local-only dry runs, explicit review schema binding, and all packet-required deterministic checks pass on the clean committed implementation head; submit the exact evidence-bearing head for final independent V2 review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:35:31.069Z",
+      "actor": "qa-verification",
+      "reason": "Independent merge-risk review on 6aa21bed found the exact-head evidence self-reference, ambiguous launcher terminal acceptance, output accumulation, and crash-recovery boundary; preserve the full result and revise only those Workflow V2 lifecycle invariants."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:35:31.219Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the user-authorized Sol repair for source-head versus evidence-head lifecycle binding, singular ordered terminal validation, bounded review output, and recoverable persistence ordering; keep P3-001 and product behavior unchanged."
     }
   ]
 }

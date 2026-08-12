@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { assertReviewRevisionUnchanged, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, prepareReviewResultPersistence, requireReviewEvidenceSequence, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -237,5 +237,29 @@ completeReviewPreflightFailure(new Error("context unavailable"), { progress: (ev
 assert.deepEqual(preflightProgress.map((event) => event.status), ["preflight-failed", "failed"], "preflight failure emits structured progress and one terminal state");
 assert.deepEqual(preflightTrace, [{ event: "finish", status: "failed", exitCode: 1 }], "preflight failure records exactly one JSONL terminal event");
 assert.match(preflightErrors[0], /context unavailable/, "preflight failure retains a concise diagnostic without governed context contents");
+
+const boundedOutput = { bytes: 0, text: "", capture: true };
+assert.equal(appendBoundedReviewOutput(boundedOutput, Buffer.from("1234"), 5), true, "bounded review output accepts content below its byte ceiling");
+assert.equal(appendBoundedReviewOutput(boundedOutput, Buffer.from("56"), 5), false, "bounded review output rejects content above its byte ceiling");
+assert.equal(boundedOutput.text, "1234", "overflow content is not retained in memory");
+const redactedOutput = { bytes: 0, text: "", capture: false };
+assert.equal(appendBoundedReviewOutput(redactedOutput, Buffer.from("secret stderr"), 1024), true, "redacted review output is byte-counted");
+assert.equal(redactedOutput.text, "", "redacted review stderr is never accumulated");
+
+const persistenceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-persistence-"));
+const preparedReview = buildLauncherBoundReviewResult(assessment, {
+  taskId: "SUT-AIOS-GOV-057", baseSha, headSha, reviewerAgent: "qa-verification", model: "gpt-5.6-luna", reasoningEffort: "high",
+  contextManifestHash: "3".repeat(64), reviewedAt: "2026-08-09T12:00:00.000Z", stage: "semanticReview",
+  runId: "crash-recovery-run", tracePath: "evidence/reviews/SUT-AIOS-GOV-057/traces/crash-recovery-run-qa-verification-luna.jsonl",
+});
+const pendingPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot });
+const preparedDestination = path.join(persistenceRoot, "evidence", "reviews", preparedReview.taskId, `semanticReview-${headSha}.json`);
+assert.equal(fs.existsSync(preparedDestination), false, "a crash before successful terminal provenance exposes no immutable review artifact");
+pendingPersistence.abort();
+assert.equal(fs.existsSync(preparedDestination), false, "aborting prepared persistence leaves no review artifact");
+const finalPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot });
+assert.equal(finalPersistence.finalize(), `evidence/reviews/${preparedReview.taskId}/semanticReview-${headSha}.json`, "prepared persistence finalizes atomically after terminal provenance");
+assert.equal(fs.existsSync(preparedDestination), true, "finalized review persistence is durable");
+fs.rmSync(persistenceRoot, { recursive: true, force: true });
 
 process.stdout.write(JSON.stringify({ status: "passed", checks }) + "\n");

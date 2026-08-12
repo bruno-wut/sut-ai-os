@@ -38,7 +38,7 @@ Commands:
   move --task <id> --to <status> --reason <text> [--actor <id>]
   start --task <id> --reason <text> [--actor <id>]
   block --task <id> --reason <text> [--actor <id>]
-  review --task <id> [--verified] [--evidence <path>] --reason <text> [--actor <id>]
+  review --task <id> [--verified] [--evidence <path>] [--review-head <sha>] [--review-base <sha>] --reason <text> [--actor <id>]
   complete --task <id> --evidence <path> --reason <text> [--actor <id>]
   list [--status <status>]
   status --task <id>
@@ -46,7 +46,7 @@ Commands:
 Task packets are canonical JSON at tasks/<status>/<task-id>/task.json. Terminal packets are immutable.`; }
 
 function parseArgs(items) {
-  const options = {}; const valueKeys = new Set(["task", "title", "owner", "agent", "route", "to", "reason", "actor", "evidence", "status"]);
+  const options = {}; const valueKeys = new Set(["task", "title", "owner", "agent", "route", "to", "reason", "actor", "evidence", "status", "review-head", "review-base"]);
   const flags = new Set(["all", "strict", "verified", "self-test", "help"]);
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
@@ -81,6 +81,46 @@ function reviewBaseSha(root) {
   const result = spawnSync("git", ["rev-parse", "origin/main"], { cwd: root, encoding: "utf8", windowsHide: true });
   const value = result.status === 0 ? result.stdout.trim() : "";
   return /^[0-9a-f]{40}$/i.test(value) ? value : null;
+}
+function gitOutput(root, args) {
+  const result = spawnSync("git", args, { cwd: root, encoding: "utf8", windowsHide: true });
+  if (result.status !== 0) return null;
+  return result.stdout;
+}
+function reviewEvidencePaths(packet, root, headSha) {
+  const paths = [];
+  for (const stage of ["planReview", "semanticReview", ...(packet.routingPolicy?.mergeRiskReview?.required ? ["mergeRiskReview"] : [])]) {
+    const artifact = `evidence/reviews/${packet.taskId}/${stage}-${headSha}.json`;
+    paths.push(artifact);
+    try {
+      const result = JSON.parse(fs.readFileSync(path.join(root, artifact), "utf8"));
+      if (nonEmptyString(result.tracePath)) paths.push(normalize(result.tracePath));
+    } catch { /* artifact validation reports the primary error */ }
+  }
+  return [...new Set([...paths, ...(packet.completionEvidence ?? []).map(normalize)])];
+}
+function validateEvidenceCommitChain(packet, root = repositoryRoot, options = {}) {
+  const sourceHead = options.sourceHead ?? packet.reviewVerification?.headSha;
+  const evidenceHead = options.evidenceHead ?? packet.reviewVerification?.evidenceHeadSha;
+  const currentHead = options.currentHead ?? reviewHeadSha(root);
+  if (!/^[0-9a-f]{40}$/i.test(sourceHead ?? "") || !/^[0-9a-f]{40}$/i.test(evidenceHead ?? "") || !/^[0-9a-f]{40}$/i.test(currentHead ?? "")) return ["review evidence commit chain has an invalid source, evidence, or current head SHA"];
+  const isAncestor = options.isAncestor ?? ((older, newer) => spawnSync("git", ["merge-base", "--is-ancestor", older, newer], { cwd: root, windowsHide: true }).status === 0);
+  if (!isAncestor(sourceHead, evidenceHead) || !isAncestor(evidenceHead, currentHead)) return ["review source, evidence, and current heads are not an ordered ancestor chain"];
+  const changedPaths = options.changedPaths ?? ((older, newer) => {
+    const output = gitOutput(root, ["diff", "--name-only", "--no-renames", "-z", older, newer]);
+    return output === null ? null : output.split("\0").filter(Boolean).map(normalize);
+  });
+  const sourceToEvidence = changedPaths(sourceHead, evidenceHead);
+  const evidenceToCurrent = changedPaths(evidenceHead, currentHead);
+  if (!Array.isArray(sourceToEvidence) || !Array.isArray(evidenceToCurrent)) return ["cannot inspect post-review commit paths"];
+  const evidencePrefixes = [`evidence/reviews/${packet.taskId}/`, `evidence/verification/${packet.taskId}/`];
+  const taskPaths = new Set(["review", "verified", "done"].map((state) => `tasks/${state}/${packet.taskId}/task.json`));
+  const errors = [];
+  for (const file of sourceToEvidence) if (!evidencePrefixes.some((prefix) => file.startsWith(prefix))) errors.push(`post-review evidence commit changes non-evidence path: ${file}`);
+  for (const file of evidenceToCurrent) if (!taskPaths.has(file)) errors.push(`post-evidence lifecycle commit changes unauthorized path: ${file}`);
+  const commitContains = options.commitContains ?? ((commit, file) => spawnSync("git", ["cat-file", "-e", `${commit}:${file}`], { cwd: root, windowsHide: true }).status === 0);
+  for (const file of reviewEvidencePaths(packet, root, sourceHead)) if (!commitContains(evidenceHead, file)) errors.push(`evidence commit does not contain required review evidence: ${file}`);
+  return errors;
 }
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
 function sha256(value) { return createHash("sha256").update(value).digest("hex"); }
@@ -168,7 +208,12 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) {
         if (bound[key] !== result[key]) errors.push(`${stage} launcher trace ${key} does not bind review result`);
       }
-      if (!events.some((event) => event?.event === "finish" && event?.status === "success")) errors.push(`${stage} launcher trace does not record successful completion`);
+      const finishEvents = events.filter((event) => event?.event === "finish");
+      const boundIndex = events.indexOf(bound);
+      const finishIndex = finishEvents.length === 1 ? events.indexOf(finishEvents[0]) : -1;
+      if (finishEvents.length !== 1 || finishEvents[0]?.status !== "success" || finishEvents[0]?.exitCode !== 0 || finishIndex <= boundIndex || finishIndex !== events.length - 1) {
+        errors.push(`${stage} launcher trace must end with exactly one successful finish after review-bound and exitCode 0`);
+      }
       if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || !/^[0-9a-f]{64}$/i.test(bound.reviewedTaskScopeHash ?? "")) {
         errors.push(`${stage} launcher trace must bind exactly one reviewed task scope hash`);
       } else {
@@ -193,7 +238,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
   }
   return errors;
 }
-function validatePacket(packet, { strict = false, directoryState, root = repositoryRoot } = {}) {
+function validatePacket(packet, { strict = false, directoryState, root = repositoryRoot, evidenceChainOptions } = {}) {
   const errors = []; const warnings = [];
 
   if (packet.schemaVersion === "2.0.0") {
@@ -236,7 +281,10 @@ function validatePacket(packet, { strict = false, directoryState, root = reposit
   if (strict && missingExecution.length) errors.push("strict validation requires execution readiness");
   if (packet.schemaVersion === "2.0.0" && ["verified", "done"].includes(packet.status)) {
     if (!packet.reviewVerification) errors.push("verified V2 packet requires reviewVerification base/head binding");
-    else errors.push(...validateRequiredReviewArtifacts(packet, root, packet.reviewVerification.headSha, packet.reviewVerification.baseSha));
+    else {
+      errors.push(...validateRequiredReviewArtifacts(packet, root, packet.reviewVerification.headSha, packet.reviewVerification.baseSha));
+      if (packet.reviewVerification.evidenceHeadSha) errors.push(...validateEvidenceCommitChain(packet, root, evidenceChainOptions));
+    }
   }
   return { valid: errors.length === 0, errors, warnings, executionReady: missingExecution.length === 0 };
 }
@@ -266,15 +314,19 @@ function transition(id, to, reason, actor = "codex-engineering-executor", root =
     const reviewErrors = validateRequiredReviewArtifacts(packet, root, options.reviewHeadSha, options.reviewBaseSha);
     if (reviewErrors.length > 0) fail(`Cannot verify V2 task without passing exact-head review artifacts:\n- ${reviewErrors.join("\n- ")}`);
     const reviewHead = options.reviewHeadSha ?? reviewHeadSha(root);
+    const evidenceHead = options.evidenceHeadSha ?? reviewHeadSha(root);
     const canonicalBase = reviewBaseSha(root);
     if (canonicalBase && options.reviewBaseSha && options.reviewBaseSha !== canonicalBase) fail("Cannot verify V2 task against a non-canonical review base SHA.");
     const statusText = options.reviewStatusText ?? spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout;
     if (!verificationWorktreeIsClean(statusText, packet, reviewHead, normalizedEvidence)) fail("Cannot verify V2 task with unreviewed implementation changes in the worktree.");
-    packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead };
+    const evidenceCandidate = { ...packet, completionEvidence: [...new Set([...(packet.completionEvidence ?? []), normalizedEvidence])] };
+    const chainErrors = validateEvidenceCommitChain(evidenceCandidate, root, { ...(options.evidenceChainOptions ?? {}), sourceHead: reviewHead, evidenceHead, currentHead: evidenceHead });
+    if (chainErrors.length > 0) fail(`Cannot verify V2 task without a committed evidence-only review chain:\n- ${chainErrors.join("\n- ")}`);
+    packet.reviewVerification = { baseSha: options.reviewBaseSha ?? reviewBaseSha(root), headSha: reviewHead, evidenceHeadSha: evidenceHead };
   }
   if (to === "done" && !options.evidence) fail("Completion requires --evidence <durable-reference>.");
   if (to === "done") {
-    const verifiedCheck = validatePacket(packet, { strict: true, directoryState: state, root });
+    const verifiedCheck = validatePacket(packet, { strict: true, directoryState: state, root, evidenceChainOptions: options.evidenceChainOptions });
     if (!verifiedCheck.valid) fail(`Cannot complete invalid task packet:\n- ${verifiedCheck.errors.join("\n- ")}`);
   }
   packet.status = to; packet.updatedDate = now();
@@ -327,9 +379,11 @@ function selfTest() {
     fs.mkdirSync(path.join(root, "evidence"), { recursive: true });
     fs.writeFileSync(path.join(root, "evidence", "self-test.md"), "verified fixture\n");
     fs.writeFileSync(path.join(root, "evidence", "complete.md"), "completed fixture\n");
-    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), reviewStatusText: "" }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md" });
+    const evidenceHead = "c".repeat(40); const lifecycleHead = "d".repeat(40);
+    const evidenceChainOptions = { currentHead: lifecycleHead, isAncestor: () => true, changedPaths: (older, newer) => older === reviewHead && newer === evidenceHead ? reviewEvidencePaths(record.packet, root, reviewHead) : [], commitContains: () => true };
+    transition(id, "verified", "Verification passed.", "qa-verification", root, { evidence: "evidence/self-test.md", reviewHeadSha: reviewHead, reviewBaseSha: "a".repeat(40), evidenceHeadSha: evidenceHead, evidenceChainOptions, reviewStatusText: "" }); transition(id, "done", "Completed fixture.", "qa-verification", root, { evidence: "evidence/complete.md", evidenceChainOptions });
     let terminalRejected = false; try { transition(id, "archived", "should fail", "test", root); } catch { terminalRejected = true; }
-    const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done", root });
+    const final = findPacket(id, root); const check = validatePacket(final.packet, { strict: true, directoryState: "done", root, evidenceChainOptions });
     if (!terminalRejected || !check.valid || final.packet.completionEvidence.length !== 2) fail("self-test assertions failed");
     process.stdout.write(`${JSON.stringify({ status: "passed", checks: 4, taskId: id })}\n`);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
@@ -343,14 +397,14 @@ function main() {
   if (command === "move") { const result = transition(options.task, options.to, options.reason, options.actor); process.stdout.write(`${JSON.stringify(result)}\n`); return; }
   if (command === "start") { const result = transition(options.task, "active", options.reason, options.actor); process.stdout.write(`${JSON.stringify(result)}\n`); return; }
   if (command === "block") { const result = transition(options.task, "blocked", options.reason, options.actor); process.stdout.write(`${JSON.stringify(result)}\n`); return; }
-  if (command === "review") { const to = options.verified ? "verified" : "review"; const result = transition(options.task, to, options.reason, options.actor ?? (options.verified ? "qa-verification" : "codex-engineering-executor"), repositoryRoot, { evidence: options.evidence }); process.stdout.write(`${JSON.stringify(result)}\n`); return; }
+  if (command === "review") { const to = options.verified ? "verified" : "review"; const result = transition(options.task, to, options.reason, options.actor ?? (options.verified ? "qa-verification" : "codex-engineering-executor"), repositoryRoot, { evidence: options.evidence, reviewHeadSha: options["review-head"], reviewBaseSha: options["review-base"] }); process.stdout.write(`${JSON.stringify(result)}\n`); return; }
   if (command === "complete") { const result = transition(options.task, "done", options.reason, options.actor ?? "qa-verification", repositoryRoot, { evidence: options.evidence }); process.stdout.write(`${JSON.stringify(result)}\n`); return; }
   if (command === "list") { if (options.status && !states.includes(options.status)) fail("Unknown --status."); const rows = listPackets(repositoryRoot, options.status); process.stdout.write(`${JSON.stringify(rows, null, 2)}\n`); return; }
   if (command === "status") { const record = findPacket(options.task); const validation = validatePacket(record.packet, { directoryState: record.state }); process.stdout.write(`${JSON.stringify({ path: normalize(path.relative(repositoryRoot, record.file)), packet: record.packet, validation }, null, 2)}\n`); return; }
   fail(`Unknown task command: ${command}`);
 }
 
-export { computeReviewScopeHash, findPacket, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
+export { computeReviewScopeHash, findPacket, validateEvidenceCommitChain, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && (path.resolve(process.argv[1]) === currentFile || ["new", "validate", "move", "start", "block", "review", "complete", "list", "status"].includes(path.basename(process.argv[1])))) {

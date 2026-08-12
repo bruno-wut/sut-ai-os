@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { assertProfileAuthorization, buildLauncherBoundReviewResult, comparisonBaseSha, gitSha, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, reviewWorktreeIsClean } from "../../scripts/codex/launch.mjs";
-import { computeReviewScopeHash, createPacket, findPacket, readPacketAt, transition, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
+import { computeReviewScopeHash, createPacket, findPacket, readPacketAt, transition, validateEvidenceCommitChain, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, writePacket } from "../../scripts/task/task-cli.mjs";
 import { computeReviewOutputHash, validateReviewResult } from "../../scripts/review/validate-review-result.mjs";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
@@ -103,7 +103,16 @@ try {
   const planTraceFile = path.join(root, planReview.tracePath);
   const originalPlanTrace = fs.readFileSync(planTraceFile, "utf8");
   fs.writeFileSync(planTraceFile, originalPlanTrace.replace('"status":"success"', '"status":"failed"'));
-  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /does not record successful completion/, "failed prerequisite launcher trace cannot satisfy a merge gate");
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /exactly one successful finish/, "failed prerequisite launcher trace cannot satisfy a merge gate");
+  fs.writeFileSync(planTraceFile, originalPlanTrace);
+  const originalPlanEvents = originalPlanTrace.trim().split(/\r?\n/).map((line) => JSON.parse(line));
+  const writePlanEvents = (events) => fs.writeFileSync(planTraceFile, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
+  writePlanEvents([...originalPlanEvents, { event: "finish", status: "failed", exitCode: 1 }]);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /exactly one successful finish/, "mixed success and failure terminals fail closed");
+  writePlanEvents([originalPlanEvents.at(-1), ...originalPlanEvents.slice(0, -1)]);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /after review-bound/, "success before review binding fails closed");
+  writePlanEvents(originalPlanEvents.map((event) => event.event === "finish" ? { ...event, exitCode: 1 } : event));
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /exitCode 0/, "nonzero successful terminal fails closed");
   fs.writeFileSync(planTraceFile, originalPlanTrace);
   const originalPlanReview = fs.readFileSync(path.join(root, paths[0]), "utf8");
   const forgedPlanReview = JSON.parse(originalPlanReview);
@@ -138,7 +147,20 @@ try {
   assert.equal(reviewWorktreeIsClean(`?? evidence/reviews/${id}/traces/fixture.jsonl`, id, headSha), true, "review permits a same-task durable launcher trace");
   assert.equal(verificationWorktreeIsClean(`?? evidence/reviews/${id}/traces/fixture.jsonl`, record.packet, headSha), true, "verification permits a same-task durable launcher trace");
   const nonCanonicalEvidence = `${path.posix.dirname(paths.at(-1))}/../${id}/${path.posix.basename(paths.at(-1))}`;
-  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: nonCanonicalEvidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, reviewStatusText: "" });
+  const evidenceHeadSha = "c".repeat(40);
+  const lifecycleHeadSha = "d".repeat(40);
+  const expectedEvidencePaths = [...paths, ...paths.map((reviewPath) => JSON.parse(fs.readFileSync(path.join(root, reviewPath), "utf8")).tracePath)];
+  const evidenceChainOptions = {
+    currentHead: lifecycleHeadSha,
+    isAncestor: () => true,
+    changedPaths: (older, newer) => older === headSha && newer === evidenceHeadSha ? expectedEvidencePaths : [],
+    commitContains: () => true,
+  };
+  assert.deepEqual(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha }), [], "source head, evidence commit, and lifecycle commit form a valid clean-clone chain");
+  assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, changedPaths: () => ["scripts/codex/launch.mjs"] }).join("; "), /non-evidence path/, "post-review implementation changes fail closed");
+  assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, isAncestor: () => false }).join("; "), /not an ordered ancestor chain/, "disconnected evidence commits fail closed");
+  assert.match(validateEvidenceCommitChain(record.packet, root, { ...evidenceChainOptions, sourceHead: headSha, evidenceHead: evidenceHeadSha, commitContains: () => false }).join("; "), /does not contain required review evidence/, "evidence commit must contain every bound review artifact and trace");
+  transition(id, "verified", "All stage-specific review artifacts passed.", "qa-verification", root, { evidence: nonCanonicalEvidence, reviewHeadSha: headSha, reviewBaseSha: baseSha, evidenceHeadSha, evidenceChainOptions, reviewStatusText: "" });
   const final = findPacket(id, root);
   assert.equal(final.state, "verified", "fixture reaches verified after persisted independent review");
   assert.equal(final.packet.completionEvidence.includes(paths.at(-1)), true, "verification records normalized durable review evidence");
@@ -151,7 +173,7 @@ try {
   tamperedReview.outputHash = "0".repeat(64);
   fs.writeFileSync(firstReviewFile, `${JSON.stringify(tamperedReview, null, 2)}\n`);
   const beforeTamperedDone = JSON.stringify(findPacket(id, root).packet);
-  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: paths.at(-1) }), /Cannot complete invalid task packet/, "done transition revalidates bound review artifacts");
+  assert.throws(() => transition(id, "done", "Tampered review must fail.", "qa-verification", root, { evidence: paths.at(-1), evidenceChainOptions }), /Cannot complete invalid task packet/, "done transition revalidates bound review artifacts");
   assert.equal(JSON.stringify(findPacket(id, root).packet), beforeTamperedDone, "tampered review rejection leaves the verified packet unchanged");
   fs.writeFileSync(firstReviewFile, originalFirstReview);
   const verifiedPacketFile = findPacket(id, root).file;
@@ -161,7 +183,7 @@ try {
     if (schemaVersion === null) delete tamperedPacket.schemaVersion; else tamperedPacket.schemaVersion = schemaVersion;
     fs.writeFileSync(verifiedPacketFile, `${JSON.stringify(tamperedPacket, null, 2)}\n`);
     const tamperedPacketBytes = fs.readFileSync(verifiedPacketFile, "utf8");
-    assert.throws(() => transition(id, "done", "Invalid discriminator must fail.", "qa-verification", root, { evidence: paths.at(-1) }), /Cannot complete invalid task packet/, `done rejects schemaVersion ${schemaVersion ?? "missing"}`);
+    assert.throws(() => transition(id, "done", "Invalid discriminator must fail.", "qa-verification", root, { evidence: paths.at(-1), evidenceChainOptions }), /Cannot complete invalid task packet/, `done rejects schemaVersion ${schemaVersion ?? "missing"}`);
     assert.equal(fs.readFileSync(verifiedPacketFile, "utf8"), tamperedPacketBytes, "invalid discriminator rejection preserves the verified packet bytes");
   }
   fs.writeFileSync(verifiedPacketFile, originalVerifiedPacket);
@@ -284,9 +306,12 @@ try {
   const malformedPacket = structuredClone(appPacket);
   delete malformedPacket.routingPolicy.semanticReview;
   assert.equal(validatePacket(malformedPacket, { strict: true, directoryState: "review", root: appRoot }).valid, false, "malformed V2 routing cannot enter verification");
-  transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, reviewStatusText: appStatus.join("\n") });
+  const appEvidenceHead = "e".repeat(40);
+  const appLifecycleHead = "f".repeat(40);
+  const appEvidenceChainOptions = { currentHead: appLifecycleHead, isAncestor: () => true, changedPaths: (older, newer) => older === appHead && newer === appEvidenceHead ? appStatus.map((line) => line.slice(3)) : [], commitContains: () => true };
+  transition(appTaskId, "verified", "Codex app review fixture passed.", "qa-verification", appRoot, { evidence: `evidence/reviews/${appTaskId}/mergeRiskReview-${appHead}.json`, reviewHeadSha: appHead, reviewBaseSha: appBase, evidenceHeadSha: appEvidenceHead, evidenceChainOptions: appEvidenceChainOptions, reviewStatusText: appStatus.join("\n") });
   const appFinal = findPacket(appTaskId, appRoot);
-  const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot });
+  const appValidation = validatePacket(appFinal.packet, { strict: true, directoryState: "verified", root: appRoot, evidenceChainOptions: appEvidenceChainOptions });
   assert.equal(appValidation.valid, true, `repository validation rechecks verified Codex app evidence: ${appValidation.errors.join("; ")}`);
   const v1TaskId = "SUT-AIOS-GOV-009";
   const v1Source = path.join(repositoryRoot, "tasks", "verified", v1TaskId, "task.json");
@@ -298,7 +323,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 54 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 61 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

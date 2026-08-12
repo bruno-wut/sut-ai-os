@@ -35,6 +35,7 @@ const agentCategories = Object.freeze([
   "optional",
 ]);
 const contextLimitBytes = 512 * 1024;
+const reviewOutputLimitBytes = 1024 * 1024;
 const stageByProfile = Object.freeze({ implementation: "implementation", "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" });
 const reviewAssessmentFields = Object.freeze([
   "decision",
@@ -760,16 +761,24 @@ async function completeCancelledReview(cancellation, terminal) {
 function createReviewTerminalController(trace, emit, setExitCode = (code) => { process.exitCode = code; }) {
   let terminal = null;
   return {
-    complete(status, exitCode) {
+    complete(status, exitCode, emitTerminalProgress = true) {
       if (terminal) return false;
       terminal = status;
+      if (emitTerminalProgress) emit({ status });
       trace.append({ event: "finish", status: status === "completed" ? "success" : status, exitCode });
-      emit({ status });
       if (exitCode) setExitCode(exitCode);
       return true;
     },
     get status() { return terminal; },
   };
+}
+
+function appendBoundedReviewOutput(state, chunk, limit = reviewOutputLimitBytes) {
+  const bytes = Buffer.byteLength(chunk);
+  state.bytes += bytes;
+  if (state.bytes > limit) return false;
+  if (state.capture !== false) state.text += chunk.toString();
+  return true;
 }
 
 function completeReviewPreflightFailure(error, { progress, terminal, writeError = (message) => process.stderr.write(message) }) {
@@ -991,6 +1000,36 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
   return path.relative(root, destination).replaceAll(path.sep, "/");
 }
 
+function prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
+  const expectedStage = stageByProfile[profile];
+  if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
+  const expected = { taskId, headSha };
+  const validation = validateReviewResult(reviewResult, expected);
+  if (!validation.valid) throw new Error(`Refusing to prepare invalid review result: ${validation.errors.join("; ")}`);
+  const destination = reviewArtifactPath(taskId, profile, headSha, root);
+  if (fs.existsSync(destination)) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
+  const pendingDirectory = path.join(root, "artifacts", "traces", "pending-review-results", taskId);
+  fs.mkdirSync(pendingDirectory, { recursive: true });
+  const pending = path.join(pendingDirectory, `${reviewResult.runId}.json.tmp`);
+  const serialized = `${JSON.stringify(reviewResult, null, 2)}\n`;
+  fs.writeFileSync(pending, serialized, { encoding: "utf8", mode: 0o600, flag: "wx" });
+  const prepared = JSON.parse(fs.readFileSync(pending, "utf8"));
+  const preparedValidation = validateReviewResult(prepared, expected);
+  if (!preparedValidation.valid) {
+    fs.rmSync(pending, { force: true });
+    throw new Error(`Prepared review result failed validation: ${preparedValidation.errors.join("; ")}`);
+  }
+  return {
+    abort() { fs.rmSync(pending, { force: true }); },
+    finalize() {
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      if (fs.existsSync(destination)) throw new Error(`Review artifact already exists for ${taskId} ${expectedStage} at ${headSha}`);
+      fs.renameSync(pending, destination);
+      return path.relative(root, destination).replaceAll(path.sep, "/");
+    },
+  };
+}
+
 function persistCodexAppReviewResult(prepared, { taskId, profile, headSha, root = repositoryRoot }) {
   const { reviewResult, contextManifest, reviewedTaskScopeHash } = prepared;
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$/.test(reviewResult?.runId ?? "")) throw new Error("Codex app run ID is invalid");
@@ -1181,6 +1220,9 @@ function main() {
 
   let stdoutText = "";
   let stderrText = "";
+  const reviewStdout = { bytes: 0, text: "", capture: true };
+  const reviewStderr = { bytes: 0, text: "", capture: false };
+  let outputOverflow = false;
   const cancellation = reviewProfile ? createReviewCancellationController(child, progress, {
     onTerminationFailure: (result) => {
       process.stderr.write(`Review cancellation failed closed: ${result.reason ?? "unknown"}\n`);
@@ -1200,8 +1242,22 @@ function main() {
     progress({ status: "child-started" });
   }
 
-  child.stdout.on("data", (chunk) => { stdoutText += chunk.toString(); if (reviewProfile) progress({ status: "child-output", stream: "stdout", bytes: chunk.length }); });
-  child.stderr.on("data", (chunk) => { stderrText += chunk.toString(); if (reviewProfile) progress({ status: "child-output", stream: "stderr", bytes: chunk.length }); });
+  const collectReviewOutput = (stream, state, chunk) => {
+    progress({ status: "child-output", stream, bytes: chunk.length });
+    if (!appendBoundedReviewOutput(state, chunk) && !outputOverflow) {
+      outputOverflow = true;
+      progress({ status: "output-limit-exceeded", stream, bytes: state.bytes });
+      cancellation.request("SIGTERM");
+    }
+  };
+  child.stdout.on("data", (chunk) => {
+    if (reviewProfile) collectReviewOutput("stdout", reviewStdout, chunk);
+    else stdoutText += chunk.toString();
+  });
+  child.stderr.on("data", (chunk) => {
+    if (reviewProfile) collectReviewOutput("stderr", reviewStderr, chunk);
+    else stderrText += chunk.toString();
+  });
 
   child.stdin.write(context.prompt);
   child.stdin.end();
@@ -1225,7 +1281,15 @@ function main() {
     }
     const passed = exitCode === 0;
     if (stderrText && !reviewProfile) process.stderr.write(stderrText);
-    if (stderrText && reviewProfile) progress({ status: "child-stderr-redacted", bytes: Buffer.byteLength(stderrText) });
+    if (reviewProfile && reviewStderr.bytes > 0) progress({ status: "child-stderr-redacted", bytes: reviewStderr.bytes });
+
+    if (reviewProfile && outputOverflow) {
+      cancellation.confirmChildClosed();
+      await cancellation.ensureTerminated();
+      cancellation.complete();
+      terminal.complete("failed", 1);
+      return;
+    }
 
     if (reviewProfile && cancellation?.requested) {
       await completeCancelledReview(cancellation, terminal);
@@ -1243,7 +1307,7 @@ function main() {
       }
       let parsed;
       try {
-        parsed = parseReviewAssessment(stdoutText);
+        parsed = parseReviewAssessment(reviewStdout.text);
       } catch (e) {
         progress({ status: "review-output-invalid" });
         process.stderr.write(`Review execution failed: ${e.message}\n`);
@@ -1301,16 +1365,25 @@ function main() {
         contextManifest: context.contextManifest,
         reviewedTaskScopeHash: computeReviewScopeHash(taskRecord.data),
       });
-      let reviewPath;
+      let preparedPersistence;
       try {
-        reviewPath = persistReviewResult(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
+        preparedPersistence = prepareReviewResultPersistence(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
       } catch (error) {
         progress({ status: "review-persistence-failed" });
-        process.stderr.write(`Review persistence failed: ${error.message}\n`);
+        process.stderr.write(`Review persistence preparation failed: ${error.message}\n`);
         terminal.complete("failed", 1);
         return;
       }
-      progress({ status: "review-persisted" });
+      terminal.complete("completed", 0);
+      let reviewPath;
+      try {
+        reviewPath = preparedPersistence.finalize();
+      } catch (error) {
+        preparedPersistence.abort();
+        process.stderr.write(`Review persistence failed: ${error.message}\n`);
+        process.exitCode = 1;
+        return;
+      }
       process.stdout.write(`${JSON.stringify({ status: "review-persisted", taskId, stage: launcherReview.stage, decision: launcherReview.decision, reviewPath })}\n`);
     }
 
@@ -1331,4 +1404,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };

@@ -12,8 +12,8 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (86 checks).
-- `node tests/codex/v2-review-lifecycle.mjs` — passed (54 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (95 checks).
+- `node tests/codex/v2-review-lifecycle.mjs` — passed (61 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
 - `node scripts/task/validate --all` — passed.
@@ -63,6 +63,20 @@ committable. Validation binds that path to the task, run, reviewer, route, and
 successful terminal event, so a clean CI clone no longer depends on ignored
 local `artifacts/traces/**` state.
 
+The lifecycle now distinguishes the immutable reviewed source head from its
+later evidence-only commit. Verification proves source-to-evidence ancestry,
+permits only same-task review and verification evidence in that commit, and
+permits only the task lifecycle record afterward. This removes the impossible
+requirement for a Git commit to contain a file named after its own SHA while
+still rejecting every unreviewed implementation change.
+
+Launcher validation now requires exactly one terminal `success` event with
+`exitCode: 0`, after the sole `review-bound` event and at the end of the trace.
+Review results are prepared in ignored local storage, the terminal trace is
+sealed, and the result is atomically published; a crash before publication
+leaves no immutable result. Captured stdout is bounded and review stderr is
+byte-counted but never accumulated.
+
 ## Scope and limitations
 
 Changed paths are limited to the GOV-057 packet/evidence, local launcher, the exact review-result trace-path schema/validator, deterministic tests, routing documentation, and risk register. No fallback, package/dependency, unrelated schema, production, provider, or P3-001 change was made.
@@ -84,6 +98,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - After that correction passed plan and semantic review on `baed0a9d72cb71417d8bddde00da8ce792c8fe8c`, the complete exact merge context measured 272331 bytes because durable same-task review history is itself part of the branch diff. The user-authorized packet amendment raises only this task's cap from 262144 to 327680 bytes, below the repository-wide 524288-byte ceiling; it changes no included path, route, effort, permission, command, or product scope.
 - After the shared gate added the required exact-head record and two prerequisite traces, merge preflight on `8a14b5813f7bac562de6426c566275ddf59f69a3` measured 346512 bytes. The task-local cap is therefore 393216 bytes, still below the repository ceiling, with no included-path, route, effort, permission, command, or product-scope change.
 - After both adapters converged on the complete final persistence gate, preflight on `b7e6daac52e571a33a4e43aa7b143642f9e2da9f` measured 405024 bytes. The final task-local cap is 458752 bytes, still below the repository ceiling, with the same unchanged authority and product scope.
+- Merge-risk review on `6aa21bed251f32ef570b3096085c8d9c3331f28d` identified the exact-head evidence self-reference, ambiguous terminal acceptance, unbounded child output, and crash window. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-6aa21bed251f32ef570b3096085c8d9c3331f28d.json`; the source-head/evidence-head model and deterministic negatives above address it without a separate reconciliation PR.
 
 ## Rollback
 
