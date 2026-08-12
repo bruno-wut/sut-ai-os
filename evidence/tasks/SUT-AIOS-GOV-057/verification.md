@@ -13,7 +13,7 @@ head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
 - `node tests/codex/validate-review-runner.mjs` — passed (101 checks).
-- `node tests/codex/v2-review-lifecycle.mjs` — passed (81 checks).
+- `node tests/codex/v2-review-lifecycle.mjs` — passed (84 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (8 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
 - `node scripts/task/validate --all` — passed.
@@ -112,6 +112,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic QA on `e80f1606c33a383ee4233f87193b6539f73b45d4` identified POSIX escalation after the original child had exited. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-e80f1606c33a383ee4233f87193b6539f73b45d4.json`; child close now cancels the escalation timer and no process-group signal is sent after the root child is no longer live.
 - Semantic QA on `c89ef28ed10d33723baf7072bfaefe545c2cfa2c` identified that Codex-app persistence trusted prepared reviewer/model/effort metadata. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-c89ef28ed10d33723baf7072bfaefe545c2cfa2c.json`; final publication now re-derives launcher-owned identity, route, effort, base, head, context, and task scope from the current packet and canonical revisions, with forged-field negatives proving no file is published.
 - Semantic QA on `f80dac2c3e48f0ef4222c8e61c843c69acfe7f2b` identified a final-time-of-check gap for current HEAD and complete context reconstruction. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-f80dac2c3e48f0ef4222c8e61c843c69acfe7f2b.json`; publication now re-reads HEAD and rebuilds the full current profile immediately before staging, with stale-HEAD and omitted-context negatives proving no evidence is written.
+- Semantic QA on `92a761d1337328790c54ad9be946f217d448c373` identified that pass-with-blockers was procedural rather than declarative in the shared schema. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-92a761d1337328790c54ad9be946f217d448c373.json`; the schema now requires zero blocking findings for `pass`, and Codex-app zero-publication negatives enforce the same invariant.
 
 ## Rollback
 

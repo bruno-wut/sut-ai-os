@@ -284,6 +284,12 @@ try {
       assert.throws(() => persistCodexAppReviewResult(omittedContext, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /complete current review profile/, "Codex-app final persistence rejects an omitted governed context entry");
       assert.equal(fs.existsSync(resultPath), false, "omitted-context rejection publishes no review result");
       assert.equal(fs.existsSync(runPath), false, "omitted-context rejection publishes no run envelope");
+      const contradictoryPass = structuredClone(prepared);
+      contradictoryPass.reviewResult.blockingFindings = ["must block publication"];
+      contradictoryPass.reviewResult.outputHash = computeReviewOutputHash(contradictoryPass.reviewResult);
+      assert.throws(() => persistCodexAppReviewResult(contradictoryPass, { taskId: appTaskId, profile, headSha: appHead, root: appRoot }), /blockingFindings/, "Codex-app persistence rejects pass with blocking findings");
+      assert.equal(fs.existsSync(resultPath), false, "contradictory pass publishes no review result");
+      assert.equal(fs.existsSync(runPath), false, "contradictory pass publishes no run envelope");
       for (const [field, value, pattern] of [["reviewerAgent", "qa-verification", /reviewerAgent/], ["model", "gpt-5.6-luna", /model/], ["reasoningEffort", "medium", /reasoningEffort/], ["baseSha", "f".repeat(40), /baseSha/]]) {
         const forgedIdentity = structuredClone(prepared);
         forgedIdentity.reviewResult[field] = value;
@@ -352,7 +358,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 81 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 84 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

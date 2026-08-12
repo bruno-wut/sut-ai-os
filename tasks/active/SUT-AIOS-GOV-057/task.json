@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:34:45.127Z",
+  "updatedDate": "2026-08-12T20:38:55.313Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -741,6 +741,20 @@
       "at": "2026-08-12T20:34:45.127Z",
       "actor": "codex-engineering-executor",
       "reason": "Final Codex-app publication re-reads HEAD and reconstructs the complete root-bound context profile; historical evidence remains path-complete through bounded digests, all focused and packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:38:55.145Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 92a761d found the pass-with-blockers invariant was enforced procedurally but absent from the shared review-result schema and lacked a Codex-app zero-publication regression; preserve the finding and make the invariant declarative."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:38:55.313Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only the shared review-result schema and Codex-app pass-with-blockers negative; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
     }
   ]
 }
