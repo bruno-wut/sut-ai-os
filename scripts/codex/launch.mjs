@@ -36,6 +36,7 @@ const agentCategories = Object.freeze([
 ]);
 const contextLimitBytes = 512 * 1024;
 const reviewOutputLimitBytes = 1024 * 1024;
+const reviewProgressIntervalBytes = 64 * 1024;
 const stageByProfile = Object.freeze({ implementation: "implementation", "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" });
 const reviewAssessmentFields = Object.freeze([
   "decision",
@@ -800,6 +801,21 @@ function appendBoundedReviewOutput(state, chunk, limit = reviewOutputLimitBytes)
   return true;
 }
 
+function collectBoundedReviewOutput(stream, state, chunk, progress, options = {}) {
+  const limit = options.limit ?? reviewOutputLimitBytes;
+  const interval = options.interval ?? reviewProgressIntervalBytes;
+  if (!Number.isInteger(interval) || interval < 1) throw new Error("Review progress interval must be a positive integer");
+  if (!appendBoundedReviewOutput(state, chunk, limit)) return false;
+  const emitted = state.progressEvents ?? 0;
+  const lastBytes = state.lastProgressBytes ?? 0;
+  if (emitted === 0 || state.bytes - lastBytes >= interval) {
+    progress({ status: "child-output", stream, bytes: state.bytes });
+    state.progressEvents = emitted + 1;
+    state.lastProgressBytes = state.bytes;
+  }
+  return true;
+}
+
 function attachChildProcessStreams(child, { prompt, onStdout, onStderr, onFailure }) {
   let failure = null;
   const failOnce = (stream, error) => {
@@ -1384,8 +1400,7 @@ function main() {
   }
 
   const collectReviewOutput = (stream, state, chunk) => {
-    progress({ status: "child-output", stream, bytes: chunk.length });
-    if (!appendBoundedReviewOutput(state, chunk) && !outputOverflow) {
+    if (!collectBoundedReviewOutput(stream, state, chunk, progress) && !outputOverflow) {
       outputOverflow = true;
       progress({ status: "output-limit-exceeded", stream, bytes: state.bytes });
       cancellation.request("SIGTERM");
@@ -1569,4 +1584,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification };

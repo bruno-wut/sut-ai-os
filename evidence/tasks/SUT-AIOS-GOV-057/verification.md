@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (112 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (118 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (94 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (9 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -119,6 +119,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic QA on `0626545b5d743015e52f74105b8c109f856b33db` alleged that the successful-close revision-binding call passed the wrong shape. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-0626545b5d743015e52f74105b8c109f856b33db.json`; the source and the two successfully persisted live reviews contradict that allegation because the call passes `{ headSha, baseSha }` as the helper requires. A focused positive regression now executes that exact binding object and proves a schema-valid, trace-bound semantic result persists afterward.
 - Plan and semantic review passed on `58f3b5951b549656d056bb7601f17ee386bbf379`, but merge-risk preflight safely stopped before model execution when accumulated lifecycle history made the context 477043 bytes against the existing 458752-byte task cap. The cap is unchanged. The current task packet remains present in full as governed context, while its duplicate base-to-head patch is now represented by exact byte count and SHA-256 just like historical machine evidence; deterministic coverage proves the digest remains bound and the duplicated body is absent.
 - Semantic QA on `4215e5f1eb07b30254500c22303a14f9d0bc5c37` identified unhandled child stdin/stdout/stderr error boundaries. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-4215e5f1eb07b30254500c22303a14f9d0bc5c37.json`; synchronous stdin failure and emitted errors from all three streams now converge on one idempotent failed-terminal path, trigger bounded cancellation, and cannot proceed to review parsing or result persistence. Deterministic tests cover first-error authority, duplicate stream errors, and exactly one failed finish event.
+- Merge-risk review on `c8a3bb87f9df393293fa062c0748ce75daa0c6e4` identified tiny-chunk amplification in durable child-output progress. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-c8a3bb87f9df393293fa062c0748ce75daa0c6e4.json`; output progress now records cumulative milestones at deterministic byte intervals instead of one event per raw chunk. Thousands of one-byte chunks produce four bounded progress events in the focused fixture, overflow reaches exactly one failed terminal, and no review artifact is published.
 
 ## Rollback
 

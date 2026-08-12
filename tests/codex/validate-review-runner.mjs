@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
 import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
 
 let checks = 0;
@@ -39,6 +39,24 @@ assert.equal(buildReviewAssessmentPrompt("implementation"), "", "implementation 
 assert.deepEqual(parseReviewAssessment(`${JSON.stringify(assessment)}\n`), assessment, "one valid assessment object is accepted");
 assert.throws(() => parseReviewAssessment(JSON.stringify({ ...assessment, blockingFindings: ["contradiction"] })), /cannot combine decision pass/, "pass with blocking findings is rejected before launcher binding or persistence");
 const validAssessmentJson = JSON.stringify(assessment);
+
+const tinyChunkState = { bytes: 0, text: "", capture: true };
+const tinyChunkProgress = [];
+let tinyChunkAccepted = true;
+for (let index = 0; index < 4097; index += 1) {
+  tinyChunkAccepted = collectBoundedReviewOutput("stdout", tinyChunkState, Buffer.from("x"), (event) => tinyChunkProgress.push(event), { limit: 4096, interval: 1024 });
+}
+assert.equal(tinyChunkAccepted, false, "tiny-chunk output fails closed at the explicit byte ceiling");
+assert.equal(tinyChunkProgress.length, 4, "thousands of tiny chunks coalesce into deterministic progress milestones");
+assert.deepEqual(tinyChunkProgress.map((event) => event.bytes), [1, 1025, 2049, 3073], "coalesced progress records cumulative bounded byte milestones");
+assert.equal(tinyChunkProgress.every((event) => event.status === "child-output" && event.stream === "stdout"), true, "coalesced output retains structured stream progress");
+const amplificationRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-amplification-"));
+const amplificationTrace = [];
+const amplificationTerminal = createReviewTerminalController({ append: (event) => amplificationTrace.push(event) }, () => {}, () => {});
+if (!tinyChunkAccepted) amplificationTerminal.complete("failed", 1);
+assert.deepEqual(amplificationTrace, [{ event: "finish", status: "failed", exitCode: 1 }], "tiny-chunk overflow reaches one failed terminal");
+assert.equal(fs.existsSync(path.join(amplificationRoot, "evidence", "reviews", "SUT-AIOS-GOV-057")), false, "tiny-chunk overflow publishes no review artifact");
+fs.rmSync(amplificationRoot, { recursive: true, force: true });
 
 const makePipeChild = (writeError = null) => {
   const child = { stdin: new EventEmitter(), stdout: new EventEmitter(), stderr: new EventEmitter() };
