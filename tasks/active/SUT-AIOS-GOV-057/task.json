@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:11:47.214Z",
+  "updatedDate": "2026-08-12T21:15:48.130Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -846,6 +846,20 @@
       "at": "2026-08-12T21:11:47.214Z",
       "actor": "chief-orchestrator",
       "reason": "Freeze the explicit successful-binding regression for final independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:15:47.951Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk preflight on 58f3b59 exceeded the existing task-local context cap because the full current task packet was duplicated in both governed context and its base-to-head patch."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:15:48.130Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bound only the duplicate task-packet patch by exact digest while retaining the full current packet in governed context; do not increase the cap or change scope."
     }
   ]
 }
