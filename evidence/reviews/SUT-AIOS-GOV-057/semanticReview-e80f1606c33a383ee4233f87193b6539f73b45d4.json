@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "e80f1606c33a383ee4233f87193b6539f73b45d4",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "b87a65beb0e5c3aff77baee27d8fdb015dc7151f601d48c927fd8f6b882fb19b",
+  "reviewedAt": "2026-08-12T20:16:33.530Z",
+  "stage": "semanticReview",
+  "runId": "20260812201450929-a6b08796",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812201450929-a6b08796-qa-verification-luna.jsonl",
+  "outputHash": "98a5ae6f43b47a354f449b08754393d3987d20e35d336de91454ba0759f106ad",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "POSIX cancellation can escalate after the original child has already exited: completeCancelledReview calls ensureTerminated after confirming child closure, while escalate does not check childIsRunning before signaling the process group. This violates the governed requirement that escalation occur only while the original child remains live."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add a deterministic test proving that a child closing after graceful cancellation prevents POSIX escalation and still emits the correct terminal state without killing the process group."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher separates output parsing, cancellation, lifecycle binding, and atomic publication into focused helpers, but the cancellation controller still exposes an unsafe post-close escalation path.",
+    "hexagonalArchitecture": "Provider and process execution remain behind the launcher boundary with no fallback or production authority introduced.",
+    "eventedBoundaries": "Structured progress and terminal events are consistently emitted, but cancellation event ordering must prevent escalation after child-close confirmation."
+  },
+  "exactNextAction": "Guard POSIX escalation and ensureTerminated so escalation is attempted only while the original child is live, then rerun the cancellation-focused and full packet-required validation suites."
+}

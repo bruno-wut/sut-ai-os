@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -164,7 +164,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:13:43.724Z",
+  "updatedDate": "2026-08-12T20:17:13.739Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -677,6 +677,20 @@
       "at": "2026-08-12T20:13:43.724Z",
       "actor": "codex-engineering-executor",
       "reason": "Successful-close head/base resolution now passes through one fail-closed helper that emits exactly one failed terminal before persistence; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:17:13.580Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on e80f160 found POSIX cancellation could escalate after the original child exited, contradicting the governed live-child-only escalation rule; preserve the finding and remove that unsafe signal path."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:17:13.739Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only POSIX cancellation so child close cancels escalation and no process-group signal is sent after root exit; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
     }
   ]
 }

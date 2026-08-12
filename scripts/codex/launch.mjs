@@ -658,6 +658,7 @@ function terminateChildTree(child, options = {}) {
     });
   }
   const signal = options.signal ?? "SIGKILL";
+  if (!childIsRunning(child)) return Promise.resolve({ status: "already-exited" });
   const isGroupRunning = options.processGroupIsRunning ?? processGroupIsRunning;
   if (!isGroupRunning(child.pid, options.killProcessGroup ?? process.kill)) return Promise.resolve({ status: "already-exited" });
   try {
@@ -701,6 +702,7 @@ function createReviewCancellationController(child, emit, options = {}) {
   });
   const escalate = (signal) => {
     if (escalated) return termination;
+    if (!childIsRunning(child)) return termination ?? Promise.resolve({ status: "already-exited" });
     escalated = true;
     emit({ status: "cancellation-escalated", signal });
     termination = observeTermination(terminate(child, { platform, signal: "SIGKILL" }), signal, platform === "win32");
@@ -731,11 +733,13 @@ function createReviewCancellationController(child, emit, options = {}) {
     get childClosed() { return childClosed; },
     confirmChildClosed() {
       childClosed = true;
+      if (timer) cancelSchedule(timer);
       if (settleTimer) cancelSchedule(settleTimer);
+      timer = null;
       settleTimer = null;
     },
     ensureTerminated(signal = "SIGTERM") {
-      return platform === "win32" ? termination : escalate(signal);
+      return platform === "win32" || childClosed || !childIsRunning(child) ? (termination ?? Promise.resolve({ status: "already-exited" })) : escalate(signal);
     },
     complete() {
       if (timer) cancelSchedule(timer);

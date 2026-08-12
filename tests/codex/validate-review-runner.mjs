@@ -77,9 +77,9 @@ assert.equal(posixCancellation.request("SIGTERM"), true, "POSIX cancellation sta
 assert.deepEqual(posixSignals, ["tree-SIGTERM"], "POSIX cancellation first signals the isolated process group gracefully");
 posixChild.exitCode = 0;
 scheduled();
-assert.deepEqual(posixSignals, ["tree-SIGTERM", "tree-SIGKILL"], "POSIX escalation still targets the isolated process group after the root exits");
+assert.deepEqual(posixSignals, ["tree-SIGTERM"], "POSIX escalation never signals the process group after the original child exits");
 const posixTerminal = createReviewTerminalController({ append: () => {} }, () => {}, () => {});
-assert.equal(await completeCancelledReview(posixCancellation, posixTerminal), "cancelled", "POSIX cancellation requires confirmed process-group termination");
+assert.equal(await completeCancelledReview(posixCancellation, posixTerminal), "cancelled", "POSIX root-child close after graceful cancellation completes without unsafe escalation");
 assert.equal(cleared, true, "completion clears pending escalation");
 
 const taskkillCalls = [];

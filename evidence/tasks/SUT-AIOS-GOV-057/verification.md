@@ -41,8 +41,8 @@ effort, output hash, context binding, trace binding, and successful completion;
 negative fixtures reject missing evidence, missing or failed traces, and forged
 reviewer, model, or effort fields before merge-risk persistence.
 
-POSIX cancellation now escalates and confirms the isolated process group even
-if its root child exits first. Launcher-bound context files are rehashed against
+POSIX cancellation escalates the isolated process group only while its original
+child remains live; child close cancels pending escalation. Launcher-bound context files are rehashed against
 the governed repository, and the shared evidence-sequence gate runs again at
 the persistence boundary so verification or prerequisite drift fails closed.
 
@@ -102,6 +102,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Plan review on `8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd` identified that `routingPolicy.implementation` had drifted to Sol/high despite the recorded user approval being Terra/high workspace-write. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/planReview-8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd.json`; the packet restores Terra/high while retaining Sol/high for independent plan and merge-risk assurance.
 - Semantic QA on `682946b2644f4cb937f2a6b11be67a784bc705f3` identified separate direct Codex-app run-envelope and review-result writes. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-682946b2644f4cb937f2a6b11be67a784bc705f3.json`; both adapters now stage validated files, atomically publish each final path, and deterministically recover an exact partial publication by rerunning the same immutable run.
 - Semantic QA on `06bc75e1d60f9158ce17a9b5c7faf7fa69e8f008` identified canonical-base resolution outside the successful-close exception boundary. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-06bc75e1d60f9158ce17a9b5c7faf7fa69e8f008.json`; current head/base resolution now passes through one fail-closed helper that records exactly one failed terminal event before any persistence.
+- Semantic QA on `e80f1606c33a383ee4233f87193b6539f73b45d4` identified POSIX escalation after the original child had exited. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-e80f1606c33a383ee4233f87193b6539f73b45d4.json`; child close now cancels the escalation timer and no process-group signal is sent after the root child is no longer live.
 
 ## Rollback
 
