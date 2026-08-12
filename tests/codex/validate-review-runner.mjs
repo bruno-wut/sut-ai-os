@@ -272,6 +272,12 @@ assert.equal(fs.existsSync(preparedDestination), false, "aborting prepared persi
 const traversalReview = { ...preparedReview, tracePath: `evidence/reviews/${preparedReview.taskId}/traces/${preparedReview.runId}-${preparedReview.reviewerAgent}-luna/../../escaped.jsonl` };
 traversalReview.outputHash = computeReviewOutputHash(traversalReview);
 assert.throws(() => persistReviewResult(traversalReview, { taskId: traversalReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot }), /traversal components/, "direct persistence rejects a traversal-shaped trace before reading it");
+assert.equal(revalidateCurrentReviewBinding({ headSha: preparedReview.headSha, baseSha: preparedReview.baseSha }, { getHead: () => preparedReview.headSha, getBase: () => preparedReview.baseSha }), true, "successful review binding accepts the exact current head and canonical base object");
+const successfulTraceFile = path.join(persistenceRoot, preparedReview.tracePath);
+fs.mkdirSync(path.dirname(successfulTraceFile), { recursive: true });
+const successfulBoundEvent = { event: "review-bound", ...Object.fromEntries(["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"].map((key) => [key, preparedReview[key]])) };
+fs.writeFileSync(successfulTraceFile, `${JSON.stringify(successfulBoundEvent)}\n${JSON.stringify({ event: "finish", status: "success", exitCode: 0 })}\n`);
+assert.equal(persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot }), `evidence/reviews/${preparedReview.taskId}/semanticReview-${headSha}.json`, "successful exact-revision review persists after binding validation");
 const finalPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot });
 assert.equal(finalPersistence.finalize(), `evidence/reviews/${preparedReview.taskId}/semanticReview-${headSha}.json`, "prepared persistence finalizes atomically after terminal provenance");
 assert.equal(fs.existsSync(preparedDestination), true, "finalized review persistence is durable");
