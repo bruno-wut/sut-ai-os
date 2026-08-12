@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -164,7 +164,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T20:12:18.479Z",
+  "updatedDate": "2026-08-12T20:13:43.724Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -670,6 +670,13 @@
       "at": "2026-08-12T20:12:18.479Z",
       "actor": "codex-engineering-executor",
       "reason": "Revise only successful-close revision revalidation so head/base resolution failure emits one failed terminal and persists no result; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:13:43.724Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Successful-close head/base resolution now passes through one fail-closed helper that emits exactly one failed terminal before persistence; all packet checks pass on the clean correction head."
     }
   ]
 }
