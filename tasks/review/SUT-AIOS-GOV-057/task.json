@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -165,7 +165,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:15:48.130Z",
+  "updatedDate": "2026-08-12T21:17:04.310Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -860,6 +860,13 @@
       "at": "2026-08-12T21:15:48.130Z",
       "actor": "codex-engineering-executor",
       "reason": "Bound only the duplicate task-packet patch by exact digest while retaining the full current packet in governed context; do not increase the cap or change scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:17:04.310Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the unchanged-cap duplicate-context repair for final exact-head review."
     }
   ]
 }
