@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (104 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (107 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (94 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (9 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -117,6 +117,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic QA on `5f565c710a11e038c0da4bb2c31b5e1171e19a27` identified that CLI and Codex-app final publication checks still diverged. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-5f565c710a11e038c0da4bb2c31b5e1171e19a27.json`; both adapters now rebuild complete context, re-read HEAD/base, rehash governed files, recheck worktree cleanliness, and rerun evidence sequencing at the final boundary. Direct result persistence also requires one ordered successful bound launcher trace.
 - Merge-risk review on `90b676798e24a87bcc4796d7ebd44dadbf1d11cf` identified that the evidence commit did not require the exact-head verification record, historical evidence changes were too broadly admitted, completion evidence was not exactly transition-bound, and traversal-shaped launcher trace paths lacked an early shared rejection. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-90b676798e24a87bcc4796d7ebd44dadbf1d11cf.json`; the evidence chain now admits exactly the newly required verification, review, and trace files, rejects historical/unrelated evidence changes, binds verification to the final review artifact and completion to a packet-declared destination, proves each reference exists at the committed head, and rejects traversal before filesystem access.
 - Semantic QA on `0626545b5d743015e52f74105b8c109f856b33db` alleged that the successful-close revision-binding call passed the wrong shape. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-0626545b5d743015e52f74105b8c109f856b33db.json`; the source and the two successfully persisted live reviews contradict that allegation because the call passes `{ headSha, baseSha }` as the helper requires. A focused positive regression now executes that exact binding object and proves a schema-valid, trace-bound semantic result persists afterward.
+- Plan and semantic review passed on `58f3b5951b549656d056bb7601f17ee386bbf379`, but merge-risk preflight safely stopped before model execution when accumulated lifecycle history made the context 477043 bytes against the existing 458752-byte task cap. The cap is unchanged. The current task packet remains present in full as governed context, while its duplicate base-to-head patch is now represented by exact byte count and SHA-256 just like historical machine evidence; deterministic coverage proves the digest remains bound and the duplicated body is absent.
 
 ## Rollback
 

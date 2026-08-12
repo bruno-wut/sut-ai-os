@@ -197,6 +197,11 @@ const boundedEvidenceContext = buildMergeRiskContext(baseSha, headSha, { runGit:
 assert.match(boundedEvidenceContext, new RegExp(createHash("sha256").update(historicalEvidencePayload).digest("hex")), "historical review evidence remains bound by its exact patch digest");
 assert.doesNotMatch(boundedEvidenceContext, /historical-review-body/, "historical review evidence payload does not recursively consume merge context");
 assert.match(boundedEvidenceContext, /Patch bytes:/, "historical evidence digest records deterministic byte length");
+const taskPacketPayload = "task-lifecycle-history".repeat(1000);
+const boundedTaskPacketContext = buildMergeRiskContext(baseSha, headSha, { runGit: (args) => args.includes("--name-only") ? "tasks/review/SUT-TEST/task.json\0" : taskPacketPayload });
+assert.match(boundedTaskPacketContext, new RegExp(createHash("sha256").update(taskPacketPayload).digest("hex")), "task packet patch remains bound by its exact digest");
+assert.match(boundedTaskPacketContext, /full current task packet is included separately/, "task packet digest explains the full governed source");
+assert.doesNotMatch(boundedTaskPacketContext, /task-lifecycle-history/, "duplicated task lifecycle patch does not consume merge context");
 assert.throws(() => buildMergeRiskContext("bad", headSha, { runGit: () => "" }), /invalid commit SHAs/, "invalid review bindings fail closed");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: () => { throw new Error("git failed"); } }), /git failed/, "Git failures fail context construction");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: (args) => args.includes("--name-only") ? "missing.md\0" : "" }), /missing changed path/, "changed-path inventory without a corresponding patch fails closed");

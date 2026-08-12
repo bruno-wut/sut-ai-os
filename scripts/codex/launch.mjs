@@ -374,10 +374,14 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
   const patches = changedPaths.map((changedPath) => {
     const patch = run(["diff", "--no-ext-diff", "--no-renames", "--unified=8", baseSha, headSha, "--", changedPath]).trim();
     if (!patch) throw new Error(`Canonical merge-risk diff is missing changed path: ${changedPath}`);
-    if (/^evidence\/(?:reviews|verification)\//.test(changedPath)) {
+    const historicalEvidence = /^evidence\/(?:reviews|verification)\//.test(changedPath);
+    const taskPacket = /^tasks\/[^/]+\/[^/]+\/task\.json$/.test(changedPath);
+    if (historicalEvidence || taskPacket) {
       return [
         `Changed path: ${JSON.stringify(changedPath)}`,
-        "Historical machine-generated evidence patch: bounded digest (current exact verification and prerequisite reviews are included separately in full).",
+        historicalEvidence
+          ? "Historical machine-generated evidence patch: bounded digest (current exact verification and prerequisite reviews are included separately in full)."
+          : "Task lifecycle packet patch: bounded digest (the full current task packet is included separately in governed context).",
         `Patch bytes: ${Buffer.byteLength(patch)}`,
         `Patch SHA-256: ${sha256(patch)}`,
       ].join("\n");
@@ -390,7 +394,7 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     `Reviewed head SHA: ${headSha}`,
     "Changed paths:",
     changedPaths.length ? changedPaths.map((changedPath) => JSON.stringify(changedPath)).join("\n") : "(none)",
-    "Canonical base-to-head path material (inline patches for implementation; bounded digests for historical machine-generated evidence):",
+    "Canonical base-to-head path material (inline patches for implementation; bounded digests for historical machine-generated evidence and the separately included current task packet):",
     patches.length ? patches.join("\n\n") : "(no textual diff)",
   ].join("\n");
 }
