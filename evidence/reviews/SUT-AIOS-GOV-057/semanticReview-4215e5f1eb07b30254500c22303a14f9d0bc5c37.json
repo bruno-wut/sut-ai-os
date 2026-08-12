@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "4215e5f1eb07b30254500c22303a14f9d0bc5c37",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "124410dfdca05e2ef44179c13d5ceb55ba74cec0dde0f9a07ef4ca3b0f94abea",
+  "reviewedAt": "2026-08-12T21:21:23.374Z",
+  "stage": "semanticReview",
+  "runId": "20260812211820956-6c1bb166",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812211820956-6c1bb166-qa-verification-luna.jsonl",
+  "outputHash": "8478263e1c22e219e343e7f6e12f7e5488637055580110850dc5e15bf0dfdcea",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "scripts/codex/launch.mjs does not handle child stdin/stdout/stderr stream errors. A premature child exit or pipe failure can escape terminal handling, leaving no structured failed finish event and violating fail-closed review persistence guarantees."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add deterministic child-stream failure tests proving exactly one failed terminal event and zero persisted review artifacts."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, binding, persistence, and cancellation are separated, but the child-stream failure boundary is incomplete.",
+    "hexagonalArchitecture": "The Codex CLI is isolated behind a process adapter with launcher-owned validation and no fallback or production authority.",
+    "eventedBoundaries": "Progress and terminal events are centralized, but unhandled stream errors can bypass the terminal controller."
+  },
+  "exactNextAction": "Update scripts/codex/launch.mjs to route synchronous and emitted child stdin/stdout/stderr errors through one idempotent failed-terminal path, then add deterministic zero-publication regression tests."
+}
