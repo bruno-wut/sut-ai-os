@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-060",
   "title": "Repair P3-002 Workflow V1 execution readiness",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3-governance",
   "workstream": "task-packet-assurance",
   "workflowId": "governance-p3-002-v1-readiness",
@@ -125,7 +125,7 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
       "scripts/verify/verify-cli.mjs",
-      "tasks/active/SUT-AIOS-GOV-060/task.json",
+      "tasks/verified/SUT-AIOS-GOV-060/task.json",
       "tasks/backlog/SUT-AIOS-P3-002/task.json",
       "package.json",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -134,8 +134,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T15:11:23.000Z",
-  "updatedDate": "2026-08-13T08:12:48.808Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T08:18:33.084Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-060/verification-20260813081804706.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -157,6 +159,20 @@
       "at": "2026-08-13T08:12:48.808Z",
       "actor": "chief-orchestrator",
       "reason": "Begin only the approved P3-002 readiness correction; do not implement event-delivery behavior or Workflow V2."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T08:18:32.927Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol qa-verification passed exact package, packet, shell-free mapping, near-miss, changed-path, security, governance, fast, and whitespace checks."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T08:18:33.084Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent QA evidence is complete and all bounded readiness correction acceptance criteria pass."
     }
   ]
 }
