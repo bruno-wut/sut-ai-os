@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "6a7f41039e24184bc9ec286f9719ff2a5dc26b54",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "c1f0d3e3acb4d5a83e13b376b504f27e01acca1beabd26008a3f4502bbd5c8b1",
+  "reviewedAt": "2026-08-13T02:46:47.159Z",
+  "stage": "semanticReview",
+  "runId": "20260813024544725-23351779",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813024544725-23351779-qa-verification-luna.jsonl",
+  "outputHash": "32802fe77a823589468411a6b0f844b6448c0bd35f0eaec08d2a4138ad4913e3",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Lifecycle, cancellation, validation, persistence, and context-binding responsibilities are clearly separated within the bounded launcher module.",
+    "hexagonalArchitecture": "Provider execution is isolated behind the Codex CLI boundary, while repository validation and evidence persistence remain launcher-controlled adapters.",
+    "eventedBoundaries": "Child-process progress, failure, cancellation, terminal status, and durable trace events are explicitly ordered and fail closed."
+  },
+  "exactNextAction": "Persist this semanticReview result and proceed to the independent mergeRiskReview stage."
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "e51a51fc1a6f29476b4dc53bfb59bfcbb52abb39",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "3fa185f032af55b1f022cdc2e104ab4e468c5ff9e64f8efd9fbbc4213bcab8d1",
+  "reviewedAt": "2026-08-13T03:46:05.461Z",
+  "stage": "semanticReview",
+  "runId": "20260813034353930-d3e53ea3",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813034353930-d3e53ea3-qa-verification-luna.jsonl",
+  "outputHash": "efa78ae63ff9651cf7d699d1bcbfad478c88664b94afe37b7a242cecffcaea3d",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The outputOverflow close path calls ensureTerminated but skips process-group confirmation, so POSIX descendants may remain alive after the root child closes while a failed terminal is emitted.",
+    "The processFailure/child-stream-error close path discards pending cancellation and does not await tree termination or descendant-group confirmation; Windows and POSIX child trees can therefore outlive the failed review."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add overflow tests proving descendant-group confirmation occurs before failed completion and persistence remains absent.",
+    "Add stdin/stdout/stderr failure tests proving pending tree cancellation is awaited and descendant processes cannot survive terminal failure."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Policy, context binding, trace validation, cancellation, and publication are separated into focused helpers, but failure cleanup is not consistently centralized.",
+    "hexagonalArchitecture": "Child-process, filesystem, Git, and packet-authority boundaries are explicit and remain within the approved launcher scope.",
+    "eventedBoundaries": "Progress and terminal events are structured and redacted, but overflow and stream-error paths do not guarantee complete cancellation event sequencing."
+  },
+  "exactNextAction": "Route output-overflow and child-stream-failure cleanup through the shared cancellation completion path, require bounded process-tree confirmation before terminal failure, add the listed negatives, and rerun all packet-required checks."
+}

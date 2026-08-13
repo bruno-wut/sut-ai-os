@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "4f2571cffdc4a7fa0395a507507e42b1774e6c9b",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "32688428d633113278dd31ccdcc3dbeb4114b30e21c7f9a2b7116a9bc0d455ba",
+  "reviewedAt": "2026-08-09T10:18:37.161Z",
+  "stage": "semanticReview",
+  "runId": "20260809101551508-f94cc3a9",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809101551508-f94cc3a9-qa-verification-luna.jsonl",
+  "outputHash": "6a1d60dfb56a2a3eedca473fbf8d1d3aa097d6bcd7cbc43d07d05a6d4845f3c3",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Review-run preflight failures after trace creation (context construction, canonical-base lookup, or evidence-sequence validation) bypass structured JSONL failure and terminal events, leaving only an incomplete start trace and plain stderr.",
+    "The launcher does not visibly enforce the prompt-level invariant that a pass decision must have an empty blockingFindings array; the supplied schema permits this inconsistent result to persist."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Preflight review failure must emit exactly one structured failed terminal event.",
+    "A pass assessment with non-empty blockingFindings must be rejected before persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Routing, context, parsing, cancellation, and persistence helpers are separated, but the launcher remains a broad bounded coordinator.",
+    "hexagonalArchitecture": "The local Codex process and repository evidence boundaries remain explicit; no provider or production authority is widened.",
+    "eventedBoundaries": "Post-launch progress and cancellation events are structured and redacted, but preflight failures bypass the event boundary."
+  },
+  "exactNextAction": "Repair the bounded review-runner failure path and enforce the pass/blockingFindings invariant, then rerun the packet-required checks and request fresh semantic review on the new committed head."
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "headSha": "6aa21bed251f32ef570b3096085c8d9c3331f28d",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "productionEligible": false,
+  "reviewedAt": "2026-08-09T10:29:43.716Z",
+  "checks": [
+    "node tests/codex/validate-review-runner.mjs: passed (86 checks)",
+    "node tests/codex/v2-review-lifecycle.mjs: passed (54 checks)",
+    "node tests/review/validate-review-binding.mjs: passed (8 checks)",
+    "node scripts/codex/validate-routing.mjs: passed",
+    "node scripts/task/validate --all: passed",
+    "node scripts/github/validate-governance.mjs: passed",
+    "npm run verify:fast: passed",
+    "git diff --check: passed"
+  ]
+}

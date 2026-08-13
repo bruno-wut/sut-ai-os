@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "acbfe16fe7aa10668156de86f94a78daa4d30182",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "74c03e225d4d81f4480c68c9586baa46c9f8cef90176004a4df92d8875ef0dc3",
+  "reviewedAt": "2026-08-12T20:44:52.122Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260812204319757-3369a169",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812204319757-3369a169-qa-verification-sol.jsonl",
+  "outputHash": "0130773db6b158b3c054fc9b681479ddf262f641a4d91d18001af742f21974f3",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The evidence-head lifecycle gate authorizes any change to the task packet path after review while computeReviewScopeHash deliberately excludes stateTransitions, completionEvidence, reviewVerification, status, and timestamps. Consequently, a post-evidence lifecycle commit can rewrite or remove append-only transition history and evidence references while validateEvidenceCommitChain and required-review validation still pass. This violates the repository's append-only audit boundary and makes lifecycle evidence integrity path-based rather than transition-based."
+  ],
+  "nonBlockingRisks": [
+    "Review progress emits one durable trace event per child-output chunk; although child output bytes are capped, the resulting JSONL trace size and event count are not independently bounded and could be disproportionately large for highly fragmented output."
+  ],
+  "missingNegativeTests": [
+    "Add lifecycle-chain negatives proving that a post-evidence commit cannot rewrite, reorder, or remove prior stateTransitions or completionEvidence and can introduce only the deterministic review-to-verified or verified-to-done transition fields expected by the task tool."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review execution, validation, cancellation, and persistence use focused helpers, but the lifecycle module exposes too broad a post-review mutation surface by validating task-record paths without validating the permitted transition delta.",
+    "hexagonalArchitecture": "Repository governance remains separated from the Codex provider adapter, with no production, deployment, credential, fallback, or P3-001 authority introduced; the blocking issue is internal audit-state integrity rather than adapter coupling.",
+    "eventedBoundaries": "Process progress and terminal ordering are explicit and fail closed, but the later Git lifecycle boundary does not preserve the event-history invariant because previously recorded stateTransitions may be rewritten within an otherwise authorized task path."
+  },
+  "exactNextAction": "Revise validateEvidenceCommitChain to compare the evidence-head task packet with the lifecycle-head packet and admit only the exact deterministic lifecycle delta, including append-only stateTransitions and completionEvidence, then add tamper negatives and rerun all packet-required checks and independent reviews on the new immutable head."
+}

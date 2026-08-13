@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "6bd1e9373a4b9f64fc9c632e038cac9166c53ffe",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "8cfba9c865ab209146919a41ddd14fbc6228b90d53c62debe8e053bbb6b21cb6",
+  "reviewedAt": "2026-08-13T02:54:36.839Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260813025215057-d397a6d2",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813025215057-d397a6d2-qa-verification-sol.jsonl",
+  "outputHash": "7d80f75f8005c9d4b28bf3dccb857d422ca98ab94d413f20b614efe192580530",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "POSIX escalated cancellation is not guaranteed to record a terminal result: waitForProcessGroupExit() unrefs its only bounded polling timer, and after the root child closes the pending Promise does not keep Node alive. The launcher can therefore exit before confirming process-group termination or appending the required failed/cancelled finish event. This violates the packet's terminal-state and cancellation evidence requirements, although it fails closed with respect to review-result persistence."
+  ],
+  "nonBlockingRisks": [
+    "The task-local context budget remains close to the repository ceiling, so additional durable review history may require further digesting or evidence compaction.",
+    "Review stdout is decoded independently per Buffer chunk; a split multibyte UTF-8 sequence could corrupt otherwise valid JSON and cause a safe but unnecessary review failure."
+  ],
+  "missingNegativeTests": [
+    "Add a real or deterministic POSIX escalation test proving that root-child close cannot let the launcher exit before process-group confirmation and exactly one terminal trace event, with no review artifact persisted.",
+    "Add a split-multibyte UTF-8 stdout test to ensure valid assessment JSON survives arbitrary stream chunk boundaries."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The shared validation, evidence-sequence, lifecycle, and atomic-publication helpers establish strong bounded invariants, but the cancellation module still has an event-loop lifetime gap at its terminal provenance boundary.",
+    "hexagonalArchitecture": "Review execution, routing authority, task lifecycle validation, and evidence publication remain separated from production and provider authority; no forbidden adapter or fallback boundary is introduced.",
+    "eventedBoundaries": "Progress, review-bound, and terminal events are explicitly ordered and validated, but POSIX SIGKILL confirmation relies on an unreferenced timer after child close, so the required terminal event is not guaranteed to be emitted."
+  },
+  "exactNextAction": "Within the existing GOV-057 launcher and focused-test allowlist, keep the bounded POSIX process-group confirmation polling referenced until it resolves or times out, add the terminal/no-persistence regression, rerun every packet-required check, commit a new immutable source head, and obtain fresh exact-head plan, semantic, and merge-risk reviews."
+}

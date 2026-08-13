@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "74f221d70e10dc2e5388534d01451a4971fcaba0",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "580769aca260977a308e50bfe8c1fcfe625f7f841236bead5d9fb368389ef96e",
+  "reviewedAt": "2026-08-12T21:39:25.480Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260812213717285-479c79b7",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812213717285-479c79b7-qa-verification-sol.jsonl",
+  "outputHash": "031022e89a76cfa52e757342836687777f5dd5c8e68816c4e0048c5fa2a54ca0",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The canonical workflow documentation contradicts the new enforced lifecycle. docs/project/TASK_WORKFLOW.md still instructs V2 verification with evidence/tasks/<task>/verification.md and does not describe the required source-head, evidence-head, and lifecycle-head sequence, while task-cli.mjs now rejects that evidence and requires the exact final review artifact from a committed evidence-only head. This governed command would fail for operators and CI. The documentation path is outside the packet allowlist, so correction requires a narrowly approved packet amendment before merge."
+  ],
+  "nonBlockingRisks": [
+    "The accumulated historical review evidence remains large and increases audit and context-budget pressure, although the bounded-digest treatment and unchanged task-local ceiling currently contain it.",
+    "POSIX cancellation deliberately avoids escalation after the original child closes; an unusual descendant that survives its group leader could require separate operational diagnosis, but no review result would be persisted."
+  ],
+  "missingNegativeTests": [
+    "Add deterministic documentation/CLI parity coverage proving the documented V2 verification sequence uses the exact final review artifact, commits the evidence-only head, and produces a schema-valid reviewVerification object with distinct headSha and evidenceHeadSha."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, bounded output, cancellation, evidence sequencing, and publication are encapsulated behind focused functions, though task-cli.mjs now carries a substantial lifecycle-validation surface whose public workflow contract must remain synchronized with permanent documentation.",
+    "hexagonalArchitecture": "The repair remains within repository orchestration and evidence adapters; it does not grant model, provider, deployment, production, payment, or P3-001 authority.",
+    "eventedBoundaries": "Child output, cancellation, review binding, terminal provenance, atomic publication, and source-to-evidence lifecycle transitions are explicit fail-closed boundaries with deterministic validation."
+  },
+  "exactNextAction": "Have the Chief Orchestrator obtain the smallest packet amendment adding docs/project/TASK_WORKFLOW.md, update its V2 lifecycle and command examples to the enforced exact-final-review-artifact and evidence-head sequence, add the parity regression, rerun every packet-required check, and submit a fresh immutable head for plan, semantic, and merge-risk review."
+}

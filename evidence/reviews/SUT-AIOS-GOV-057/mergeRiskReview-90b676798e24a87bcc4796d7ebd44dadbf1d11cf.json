@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "90b676798e24a87bcc4796d7ebd44dadbf1d11cf",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "68ca6f6f50acc146615ea9f385d319d2dbe3f31c14d1c2f0cef19f840846744c",
+  "reviewedAt": "2026-08-12T20:59:57.117Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260812205820597-fefa0dc6",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812205820597-fefa0dc6-qa-verification-sol.jsonl",
+  "outputHash": "0bdff0e750a8f3357eadbc845e6359dd6356fcdb1881ffda56c2b4601b6c9e94",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The evidence-head validator does not require the committed evidence head to contain evidence/verification/<task-id>/verification-<source-head>.json. reviewEvidencePaths() includes review artifacts, traces, and completionEvidence but omits the exact-head verification record, while worktree cleanliness explicitly permits that record to remain untracked. A review-to-verified transition can therefore pass using an untracked verification file even though the evidence commit does not contain it, contradicting the three-revision lifecycle contract and causing a clean clone to fail later.",
+    "validateEvidenceCommitChain() permits any source-to-evidence modification beneath the task's review and verification evidence directories, including rewrites or deletion/replacement of historical evidence. In addition, validateLifecyclePacketDelta() accepts arbitrary extra non-empty completionEvidence entries without proving that they exist or are the exact references introduced by the admitted transitions. These gaps do not substantiate the claimed append-only evidence integrity boundary."
+  ],
+  "nonBlockingRisks": [
+    "The launcher remains a large module combining process control, Git inspection, context construction, validation, and publication; future changes carry significant regression risk despite the current helper-level tests.",
+    "Direct launcher-trace validation relies on prefix/suffix checks outside the fully routed prerequisite gate; a dedicated repository-containment invariant would reduce misuse risk for exported persistence helpers."
+  ],
+  "missingNegativeTests": [
+    "A verified transition must fail when the exact-head verification file exists only as an allowed untracked file but is absent from evidenceHeadSha.",
+    "The evidence-chain validator must reject modification, replacement, or deletion of pre-existing same-task review and verification evidence between sourceHead and evidenceHead.",
+    "Lifecycle-delta validation must reject extra, nonexistent, reordered, or transition-unrelated completionEvidence additions.",
+    "Launcher trace paths containing traversal components must be rejected before any filesystem read or persistence."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The repair introduces useful explicit helpers for review parsing, cancellation, context binding, publication, and lifecycle validation, but the evidence-chain module still exposes a wider mutation surface than its claimed append-only contract.",
+    "hexagonalArchitecture": "Codex CLI, filesystem, Git, and process-control concerns remain local adapters with no production or provider authority expansion; however, repository containment and committed-evidence guarantees are incomplete at the persistence boundary.",
+    "eventedBoundaries": "Review progress, cancellation, terminal ordering, and result publication are explicitly modeled and largely fail closed, but the source-head to evidence-head transition does not yet guarantee that every required event artifact is committed immutably."
+  },
+  "exactNextAction": "Revise validateEvidenceCommitChain and lifecycle-delta validation to require the exact source-head verification record in evidenceHeadSha, restrict source-to-evidence changes to the exact newly required artifact and trace set without historical rewrites, validate exact transition-related completionEvidence additions, add the listed negative tests, rerun every packet command, and obtain fresh SHA-bound plan, semantic, and merge-risk reviews on the corrected committed head."
+}

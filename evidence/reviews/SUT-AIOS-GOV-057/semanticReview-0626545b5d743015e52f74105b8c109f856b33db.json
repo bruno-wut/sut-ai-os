@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "0626545b5d743015e52f74105b8c109f856b33db",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "642fafb5b4d52b5e306aa501e29eb78517d779a5d11f862f68b7a3bbea7a855c",
+  "reviewedAt": "2026-08-12T21:09:48.867Z",
+  "stage": "semanticReview",
+  "runId": "20260812210911644-f523ab56",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812210911644-f523ab56-qa-verification-luna.jsonl",
+  "outputHash": "59dc1c2e2aeed50917bb213b2dd1dcde5f906d5fffec2b3494e1bcdadea9a7a2",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Successful CLI review execution always fails its revision-binding check: revalidateCurrentReviewBinding is called with an object containing headSha/baseSha, but assertReviewRevisionUnchanged expects those fields on its first argument. Consequently valid successful reviews are rejected before review-bound persistence."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add an end-to-end regression proving a valid successful semantic review passes revision binding and persists its result."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher centralizes review binding, validation, cancellation, and persistence, but the broken binding-helper contract prevents the module from reliably fulfilling its boundary.",
+    "hexagonalArchitecture": "Provider execution, review assessment, and repository evidence persistence remain separated conceptually; the current adapter integration is functionally blocked by the argument mismatch.",
+    "eventedBoundaries": "Progress and terminal events are structured and fail-closed in design, but successful completion cannot reach the persistence boundary until revision validation is corrected."
+  },
+  "exactNextAction": "Correct the revalidateCurrentReviewBinding call or helper contract so the reviewed head/base object is validated against the current canonical revisions, then add and run a successful-review persistence regression before requesting fresh semantic review."
+}

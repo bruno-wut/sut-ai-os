@@ -1,0 +1,1142 @@
+{
+  "$schema": "../../../schemas/task-packet-v2.schema.json",
+  "schemaVersion": "2.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "title": "Bounded Workflow V2 review-runner repair",
+  "status": "active",
+  "phase": "phase-2-governance",
+  "workstream": "workflow-v2-review-runner",
+  "workflowId": "workflow-v2-review-runner-repair",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Restore reliable, auditable independent review for bounded hotel AI OS tasks without changing their implementation or introducing model fallback.",
+  "technicalObjective": "Repair only the Workflow V2 review runner so each review stage receives an explicit assessment-only prompt, its stdout is required to be one review-result assessment JSON object, structured progress plus cancellation are surfaced and fail closed, bound launcher traces persist under the task's durable review evidence directory, and lifecycle verification distinguishes the reviewed source head from its later evidence-only commit.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "docs/architecture/source/Agent Architecture.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-056-FND"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-057/verification.md"
+  ],
+  "assumptions": [
+    "The hardcoded CI validator list remains authoritative.",
+    "P3-001 and every other task packet, implementation artifact, lifecycle state, and review evidence remain out of scope.",
+    "The repair is local, read-only review orchestration only; it does not deploy, contact production systems, alter provider credentials, or change task routingPolicy authority.",
+    "Cancellation is a local process-control signal that records a structured cancelled terminal state and never persists a review result.",
+    "The user approved workspace-write authority solely for the designated Terra implementation stage within this packet's existing exact path allowlist; it does not grant production, provider, deployment, fallback, or cross-task authority.",
+    "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 458752 bytes so the complete exact GOV-057 diff, durable same-task review history, exact-head verification, and routed prerequisite traces fit below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged.",
+    "Clean-clone inspection proved launcher review traces under artifacts/traces were gitignored and therefore non-durable. The user-authorized Terra/high implementation is independently reviewed by the packet's Sol plan and merge-risk stages while admitting only task-bound evidence/reviews/<task>/traces/*.jsonl in the existing review-result schema and validator; no other schema, authority, or product surface is changed.",
+    "Merge-risk review proved exact-head evidence cannot be committed into the same Git object it names. V2 verification therefore binds an immutable reviewed source head to a later evidence-only commit and rejects every post-review implementation path; this remains one task branch and one PR.",
+    "The user approved only the documentation-parity correction to docs/project/TASK_WORKFLOW.md and the existing lifecycle test; no route, context cap, command, dependency, production behavior, fallback, or P3-001 authority changes."
+  ],
+  "acceptanceCriteria": [
+    "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
+    "The launcher rejects empty, non-JSON, multi-value, or schema-invalid review stdout before any review artifact is persisted.",
+    "The runner emits newline-delimited structured progress events for launch, child output, completion, failure, and cancellation without recording prompt content, environment values, or model output in traces.",
+    "Review traces retain only the governed task path, context hashes, and a canonical review-scope hash; they never retain full task-packet contents.",
+    "Launcher review traces are task-bound, committed under evidence/reviews/<task>/traces/, and independently validated from a clean clone rather than referenced from gitignored local artifacts.",
+    "V2 verification records both the immutable reviewed source head and its evidence-only commit, proves ancestry, and rejects any non-evidence change after review without requiring a reconciliation PR.",
+    "Launcher trace validation requires exactly one successful finish with exitCode 0 after the sole review-bound event, and bounded output overflow terminates the review fail closed without persistence.",
+    "Shell and Codex-app review outputs use validated staging and atomic final-path publication; rerunning the same immutable run recovers an exact partial Codex-app publication without overwriting conflicting evidence.",
+    "Merge-risk context includes every changed path and every implementation patch inline; historical machine-generated review and verification patches use deterministic SHA-256 and byte-length bindings while current prerequisite evidence remains fully included.",
+    "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
+    "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced.",
+    "Canonical Workflow V2 documentation matches the enforced source-head, evidence-head, and lifecycle-head verification sequence."
+  ],
+  "allowedPaths": [
+    "scripts/codex/launch.mjs",
+    "scripts/task/task-cli.mjs",
+    "scripts/review/validate-review-result.mjs",
+    "schemas/review-result-v1.schema.json",
+    "schemas/task-packet-v2.schema.json",
+    "tests/codex/validate-review-runner.mjs",
+    "tests/codex/v2-review-lifecycle.mjs",
+    "tests/review/validate-review-binding.mjs",
+    "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-GOV-057/**",
+    "evidence/verification/SUT-AIOS-GOV-057/**",
+    "evidence/reviews/SUT-AIOS-GOV-057/**",
+    "tasks/**/SUT-AIOS-GOV-057/**"
+  ],
+  "forbiddenPaths": [
+    "package.json",
+    "package-lock.json",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "tasks/**/SUT-AIOS-P3-001/**",
+    "evidence/tasks/SUT-AIOS-P3-001/**",
+    "evidence/reviews/SUT-AIOS-P3-001/**",
+    ".github/**",
+    "apps/**",
+    "services/**",
+    "packages/**",
+    "supabase/**",
+    "policies/**",
+    "**/*.sql",
+    ".env*",
+    "credentials/**",
+    "secrets/**"
+  ],
+  "allowedCommands": [
+    "node tests/codex/validate-review-runner.mjs",
+    "node tests/codex/v2-review-lifecycle.mjs",
+    "node tests/review/validate-review-binding.mjs",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "stage-specific prompt and JSON-only review-output enforcement",
+    "review-result schema rejection before persistence",
+    "structured progress redaction and terminal-state coverage",
+    "source-head to evidence-head clean-clone lifecycle validation",
+    "singular ordered successful terminal trace and bounded-output rejection",
+    "graceful cancellation without review persistence",
+    "no-fallback and P3-001 scope regression inspection",
+    "independent V2 plan, semantic, and merge-risk review",
+    "Workflow documentation and task-CLI parity"
+  ],
+  "requiredTests": [
+    "node tests/codex/validate-review-runner.mjs",
+    "node tests/codex/v2-review-lifecycle.mjs",
+    "node tests/review/validate-review-binding.mjs",
+    "node scripts/codex/validate-routing.mjs",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "engineering-planner",
+    "qa-verification"
+  ],
+  "routingPolicy": {
+    "implementation": {
+      "agent": "codex-engineering-executor",
+      "route": "terra",
+      "effort": "high"
+    },
+    "planReview": {
+      "agent": "engineering-planner",
+      "route": "sol",
+      "effort": "high"
+    },
+    "semanticReview": {
+      "agent": "qa-verification",
+      "route": "luna",
+      "effort": "high"
+    },
+    "mergeRiskReview": {
+      "agent": "qa-verification",
+      "required": true,
+      "route": "sol",
+      "effort": "high"
+    }
+  },
+  "routingComplexity": "routine",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any proposal to add fallback, change routingPolicy semantics, change schemas, persist partial review output, contact a provider outside the existing Codex CLI process, or alter another task enters Sol escalation and requires a revised packet.",
+    "Any cancellation design that could terminate unrelated processes or weaken evidence integrity requires Sol security review."
+  ],
+  "rollbackExpectations": "Revert the single repair PR; cancellation leaves no review artifact, and existing P3-001 review evidence remains untouched.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 458752,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/model-routing/MODEL_ROUTING_POLICY.md",
+      "schemas/review-result-v1.schema.json",
+      "scripts/codex/launch.mjs",
+      "evidence/tasks/SUT-AIOS-GOV-057/verification.md",
+      "evidence/verification/SUT-AIOS-GOV-057/verification-20260809080000000.json"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-09T07:51:04.269Z",
+  "updatedDate": "2026-08-13T03:51:50.683Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-09T07:51:04.269Z",
+      "actor": "chief-orchestrator",
+      "reason": "Task created by task:new."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-09T07:51:55.745Z",
+      "actor": "chief-orchestrator",
+      "reason": "User-approved bounded V2 repair packet validated with explicit no-fallback and P3-001 exclusions."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-09T07:51:56.117Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Begin the approved local review-runner repair only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T07:56:14.033Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded review-runner repair and exact deterministic checks passed; request independent V2 stage reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T07:59:19.268Z",
+      "actor": "qa-verification",
+      "reason": "Independent semantic review found full task-packet contents in review traces; remove the payload while retaining deterministic scope binding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T07:59:19.641Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the bounded trace-minimisation repair required by the independent semantic review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:02:28.490Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Trace-minimisation revision passes all required deterministic checks on 620a02d; request fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:05:10.168Z",
+      "actor": "qa-verification",
+      "reason": "Independent semantic review found review rejection paths without a consistent terminal failed progress event."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:05:10.594Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the bounded terminal-progress repair required by the independent semantic review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:06:53.213Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Terminal review progress repair passes all required deterministic checks on dcae3da; request fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:08:52.349Z",
+      "actor": "engineering-planner",
+      "reason": "Independent plan review found the implementation-stage workspaceWrite authority is false; a narrowly approved packet amendment is required before further work."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:15:59.106Z",
+      "actor": "chief-orchestrator",
+      "reason": "User approved workspace-write authority solely for the existing Terra implementation stage and exact GOV-057 allowlist."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:16:25.531Z",
+      "actor": "codex-engineering-executor",
+      "reason": "User-approved workspace-write amendment and all deterministic checks passed on 82ba2b4; request fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:20:28.774Z",
+      "actor": "qa-verification",
+      "reason": "Independent merge-risk review lacked the canonical base-to-head diff, changed paths, and task verification evidence in its governed context."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:20:29.203Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the bounded merge-risk context repair required by the independent review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:36:26.725Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Merge-risk context repair passed clean-head deterministic checks; request final independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T08:42:35.839Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent merge-risk review on c403c167 requires final-head verification refresh, Windows cancellation safety, and deterministic merge-risk-context coverage before merge."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T08:52:45.252Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the user-authorized bounded repair for the exact independent merge-risk findings; no scope, route, dependency, fallback, production, or P3-001 authority changes."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T08:55:36.852Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact repair and all packet-required deterministic checks passed on committed implementation head 3acb976; submit the evidence-bearing head for fresh independent V2 reviews."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:02:37.450Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Independent merge-risk review on bfbb594 requires observable bounded Windows tree termination, non-self-referential exact-head evidence, and explicit changed-path-to-patch completeness."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:02:38.056Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the exact bfbb594 merge-risk corrections under the existing approved GOV-057 packet."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:07:29.052Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Observable cancellation, unambiguous JSON, complete per-path merge context, and all deterministic checks pass; submit one final immutable review head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:09:48.274Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Final merge-risk context exceeded the packet byte budget after explicit per-path mapping; reduce unchanged hunk context without omitting any changed line or path."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:09:48.886Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the bounded merge-risk context-size correction under the existing packet budget."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:10:23.233Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete one-to-one changed-path patches now fit the existing context budget and every packet check passes; submit final head for independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:13:11.894Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Semantic review on 81b1791 found cancellation could report cancelled before a late Windows taskkill failure; terminal ordering must await both confirmations."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:13:12.504Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the exact cancellation terminal-order correction under the existing GOV-057 packet."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:14:37.547Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Cancellation terminal ordering now awaits both tree-command outcome and root-child close; 65 focused checks and every packet command pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:16:43.041Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Semantic review on 51e0519 requires explicit controller-level proof that both taskkill success and root-child close precede a cancelled terminal outcome."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:16:43.649Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the explicit child-close confirmation correction under the existing packet."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:17:50.387Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Controller now records explicit child-close confirmation and requires it with taskkill success before cancelled; 71 focused checks and all packet commands pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:20:25.917Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Durable same-task review history increased the exact merge-risk context to 272331 bytes, above this packet's 262144-byte cap; a bounded cap increase is required without changing included paths or authority."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:20:26.548Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply the user-authorized bounded context cap increase only; preserve all routing, paths, commands, permissions, and product scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:20:50.903Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete exact context now fits the bounded 327680-byte task cap; routes, permissions, scope, and all deterministic checks remain unchanged."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:26:36.047Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Merge-risk review on 5374cae requires consistent no-rename path inventory, governed exact-head verification evidence, and enforced same-head prerequisite reviews."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:26:36.630Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the exact rename, exact-head evidence, and prerequisite-review corrections under the existing packet."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:32:46.107Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Exact-head verification, same-head review sequencing, rename-safe merge context, and all packet-required deterministic checks pass; submit the bounded final repair head for independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:38:27.111Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on 3d2b577 requires one shared CLI/Codex-app evidence gate and fully routed trace-bound prerequisite validation before merge."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:38:32.785Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the shared evidence-sequence gate and routed trace-binding corrections required by the exact 3d2b577 merge-risk review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:44:04.101Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Shared CLI and Codex-app evidence gate, fully routed trace-bound prerequisites, forged-artifact negatives, and all packet checks pass; submit the final bounded repair for independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:46:53.907Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete merge context with exact verification and both routed prerequisite traces measures 346512 bytes, above this task's 327680-byte cap; increase only the bounded task cap below the repository ceiling."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:46:54.436Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply only the bounded context cap correction required to carry verified prerequisite traces; preserve all authority and product scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:48:06.896Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Trace-inclusive context fits the bounded 393216-byte cap and every packet-required deterministic check passes; submit the final immutable repair head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T09:56:45.014Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on d66988d requires complete POSIX process-group confirmation, governed-file rehashing for launcher traces, and final evidence-sequence revalidation before persistence."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T09:56:46.090Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the POSIX group, launcher-manifest, and final evidence-revalidation corrections required by the exact d66988d merge-risk review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T09:57:37.380Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete process-group cancellation, governed launcher-manifest rehashing, final evidence drift rejection, 77 focused checks, and every packet command pass; submit the final immutable head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:00:47.123Z",
+      "actor": "qa-verification",
+      "reason": "Semantic review on b4803cb requires Codex-app persistence to recheck canonical revisions and every governed context file immediately before writing."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:00:47.674Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the Codex-app final revision and context revalidation required by semantic QA."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:03:11.127Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Codex-app persistence now rechecks HEAD, canonical base, contained context paths, and every governed file at the final write boundary; 80 focused checks and all packet commands pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:06:40.625Z",
+      "actor": "qa-verification",
+      "reason": "Semantic review on 83c33fd requires the CLI final persistence block to recheck HEAD/base and every governed context file alongside evidence."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:06:41.164Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the shared CLI final revision, context, and evidence revalidation required by semantic QA."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:07:58.143Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Both review adapters now apply the same final HEAD/base, complete-context, and evidence-sequence gate immediately before persistence; 82 focused checks and every packet command pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:11:09.956Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete final merge context measures 405024 bytes after durable review history, above the task's 393216-byte cap; increase only this bounded cap below the repository ceiling."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:11:10.480Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply only the final bounded context cap correction; preserve routes, paths, commands, permissions, and product scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:11:56.776Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Complete final context fits the bounded 458752-byte cap and every deterministic check passes; submit the unified persistence-boundary head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:20:35.455Z",
+      "actor": "qa-verification",
+      "reason": "Semantic review on 4f2571c requires structured terminal evidence for review preflight failures and explicit rejection of pass with blocking findings."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:20:35.982Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume only the structured preflight terminal and pass-decision invariant corrections required by semantic QA."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:21:22.461Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Review preflight failures now emit one structured failed terminal event and contradictory pass assessments fail before binding; 86 focused checks and every packet command pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:24:47.572Z",
+      "actor": "chief-orchestrator",
+      "reason": "Clean-clone inspection found launcher review traces were written only to gitignored artifacts/traces, so their bound review evidence was not durable; revise the packet for the smallest task-bound trace-schema correction."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:24:47.720Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply only the Sol-escalated durable launcher-trace schema and validation correction under the user-authorized Workflow V2 repair; preserve all routing-stage authority, no-fallback, product, dependency, production, and P3-001 exclusions."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-09T10:29:07.187Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Durable task-bound launcher traces, local-only dry runs, explicit review schema binding, and all packet-required deterministic checks pass on the clean committed implementation head; submit the exact evidence-bearing head for final independent V2 review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-09T10:35:31.069Z",
+      "actor": "qa-verification",
+      "reason": "Independent merge-risk review on 6aa21bed found the exact-head evidence self-reference, ambiguous launcher terminal acceptance, output accumulation, and crash-recovery boundary; preserve the full result and revise only those Workflow V2 lifecycle invariants."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-09T10:35:31.219Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Resume the user-authorized Sol repair for source-head versus evidence-head lifecycle binding, singular ordered terminal validation, bounded review output, and recoverable persistence ordering; keep P3-001 and product behavior unchanged."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T19:59:40.691Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Source-head/evidence-head lifecycle separation, singular ordered terminal validation, bounded review output, atomic result publication, and every packet-required deterministic check pass on the clean committed implementation head; submit the exact source head for final independent V2 review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:01:16.115Z",
+      "actor": "engineering-planner",
+      "reason": "Plan review on 8b1926f found routingPolicy.implementation had drifted from the explicitly approved Terra/high workspace-write authority to Sol/high; preserve the finding and restore the approved implementation route."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:01:16.270Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Restore only Terra/high implementation authority and clarify that Sol remains independent plan and merge-risk assurance; no implementation, schema, product, fallback, dependency, or P3-001 change."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:02:12.957Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Restore the explicitly approved Terra/high implementation authority while retaining Sol/high plan and merge-risk assurance; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:06:32.429Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 682946b found Codex-app run-envelope and review-result publication remained separate direct writes without deterministic partial-publication recovery; preserve the finding and unify staged atomic file publication."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:06:32.593Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only shared and Codex-app review persistence to stage validated files, publish each atomically, and recover exact partial publication; preserve routing, scope, product behavior, fallback, dependencies, and P3-001."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:08:29.832Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Shared shell and Codex-app persistence now use validated staging, atomic final-path publication, and exact partial-publication recovery; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:12:18.315Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 06bc75e found canonical-base resolution in the successful-child close handler could throw outside fail-closed terminal handling; preserve the finding and guard that exact boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:12:18.479Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only successful-close revision revalidation so head/base resolution failure emits one failed terminal and persists no result; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:13:43.724Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Successful-close head/base resolution now passes through one fail-closed helper that emits exactly one failed terminal before persistence; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:17:13.580Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on e80f160 found POSIX cancellation could escalate after the original child exited, contradicting the governed live-child-only escalation rule; preserve the finding and remove that unsafe signal path."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:17:13.739Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only POSIX cancellation so child close cancels escalation and no process-group signal is sent after root exit; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:18:51.662Z",
+      "actor": "codex-engineering-executor",
+      "reason": "POSIX child close now cancels pending escalation and no process-group signal is sent after the original child exits; all packet checks pass on the clean correction head."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:23:21.030Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on c89ef28 found Codex-app final persistence did not re-derive reviewer, model, effort, and canonical base from the current packet; preserve the finding and close that launcher-owned identity boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:23:21.194Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only Codex-app final authority binding and forged-identity negatives; preserve all routing policy values, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:24:46.478Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Codex-app final persistence re-derives reviewer, model, effort, canonical base/head, context, and task scope from the current packet; forged launcher-owned fields publish no evidence and all packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:28:36.806Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on f80dac2 found Codex-app final publication did not re-read HEAD at staging time or reconstruct the complete expected context profile; preserve the finding and close both final-time-of-check gaps."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:28:36.971Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only Codex-app final HEAD and complete-context reconstruction with zero-publication negatives; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:34:45.127Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Final Codex-app publication re-reads HEAD and reconstructs the complete root-bound context profile; historical evidence remains path-complete through bounded digests, all focused and packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:38:55.145Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 92a761d found the pass-with-blockers invariant was enforced procedurally but absent from the shared review-result schema and lacked a Codex-app zero-publication regression; preserve the finding and make the invariant declarative."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:38:55.313Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only the shared review-result schema and Codex-app pass-with-blockers negative; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:40:03.798Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Pass-with-blockers is now declarative in the shared schema and Codex-app zero-publication tests pass with all packet checks."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:45:20.050Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on acbfe16 found post-evidence lifecycle commits were path-restricted but not content-restricted, allowing audit-history or evidence-reference rewrites inside the task packet; preserve the finding and enforce exact append-only lifecycle deltas."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:45:20.207Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only evidence-chain task-packet content validation and tamper negatives; preserve all routing, review, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:48:05.046Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Post-evidence task records now admit only exact append-only lifecycle deltas; tamper, reorder, removal, and self-test clean-chain negatives pass with all packet checks."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T20:52:31.145Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 5f565c7 found CLI final publication did not rebuild complete context or recheck cleanliness, while Codex-app lacked a final post-rebuild rehash; preserve the findings and converge both adapters at the publication boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T20:52:31.307Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Revise only the shared final publication gate and zero-publication negatives, including direct persistence trace provenance; preserve all routing, lifecycle, product, fallback, dependency, and P3-001 boundaries."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T20:55:14.238Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the fully validated Workflow V2 review-runner repair for independent plan, semantic, and merge-risk review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:01:42.291Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on 90b6767 found incomplete committed-evidence and append-only lifecycle guarantees; preserve the findings and revise only those fail-closed boundaries."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:01:42.463Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Repair only the exact-head verification admission, immutable evidence-chain, transition-bound completion evidence, and trace-containment findings from merge-risk review."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:08:05.209Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the exact evidence-chain repair for fresh SHA-bound plan, semantic, and merge-risk review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:10:23.006Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 0626545 alleged a revision-binding argument mismatch; preserve the decision even though both live reviews traversed that binding and persisted successfully."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:10:23.199Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Add a focused positive regression for the exact current head/base binding contract without changing implementation behavior or scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:11:47.214Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the explicit successful-binding regression for final independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:15:47.951Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk preflight on 58f3b59 exceeded the existing task-local context cap because the full current task packet was duplicated in both governed context and its base-to-head patch."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:15:48.130Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bound only the duplicate task-packet patch by exact digest while retaining the full current packet in governed context; do not increase the cap or change scope."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:17:04.310Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the unchanged-cap duplicate-context repair for final exact-head review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:22:21.043Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 4215e5f found child pipe errors and synchronous stdin failures could bypass the centralized failed-terminal path."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:22:21.220Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Route stdin, stdout, and stderr failures through one idempotent process-failure boundary with zero-publication regressions only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:24:40.646Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the fail-closed child-stream repair for exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:31:14.975Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on c8a3bb8 found per-chunk progress could amplify bounded output into unbounded durable trace events."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-12T21:31:15.145Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Coalesce child-output progress into deterministic bounded milestones and add tiny-chunk amplification negatives only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-12T21:33:07.750Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze bounded progress tracing for exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-12T21:39:50.578Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on 74f221d found TASK_WORKFLOW.md contradicts the enforced three-head V2 verification sequence; that permanent documentation path is outside the approved packet allowlist."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T02:42:28.484Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply the user-approved documentation-only parity correction and existing lifecycle regression; preserve every other packet boundary."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T02:44:16.217Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the user-approved Workflow V2 documentation-parity correction for fresh exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T02:47:26.951Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk preflight on 6a7f410 exceeded the unchanged task cap because the newly authorized full workflow document was duplicated as an inline patch; no merge-risk model execution occurred."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T02:47:27.102Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bound only patches for governed Markdown and task records already included in full context; preserve every implementation patch inline and keep the existing cap."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T02:49:12.305Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the documented Workflow V2 sequence and duplicate-context bound for final exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T02:55:00.794Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on 6bd1e93 found POSIX process-group confirmation used an unreferenced polling timer after root-child close, so terminal provenance was not guaranteed."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T02:55:00.947Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Keep only bounded POSIX process-group confirmation polling referenced through terminal resolution and add exact terminal/no-publication coverage."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T02:58:20.413Z",
+      "actor": "chief-orchestrator",
+      "reason": "Bounded POSIX process-group confirmation repair and every packet-required deterministic check passed; freeze the exact final source head for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:06:33.622Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on b228209 found launcher-trace admission accepted a prefix-truncated semantic trace without the required start boundary; preserve the finding and enforce complete launch provenance."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:06:33.768Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Require one exact first start event and add prefix-truncation, mismatch, duplication, and ordering negatives only; preserve every other GOV-057 boundary."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:10:12.232Z",
+      "actor": "chief-orchestrator",
+      "reason": "Complete launcher-provenance admission and every packet-required deterministic check passed; freeze the exact final source head for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:13:28.669Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on c5b748e found direct persistence trusted caller-supplied trace path and review identity instead of canonical same-task packet authority; preserve the finding and close that boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:13:28.816Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bind direct persistence to canonical same-task trace path and current packet stage authority with zero-publication negatives only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:18:15.089Z",
+      "actor": "chief-orchestrator",
+      "reason": "Direct persistence now re-derives current packet authority and canonical revisions, canonical trace-path negatives pass, and every packet check is green; freeze for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:20:31.728Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on cbd73ca found root-child close could bypass POSIX descendant-group confirmation; preserve the finding and add bounded observation without post-exit signalling."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:20:31.877Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Require bounded referenced POSIX process-group exit confirmation before cancelled, failing closed if descendants remain; do not signal after root exit."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:22:17.715Z",
+      "actor": "chief-orchestrator",
+      "reason": "POSIX cancellation now confirms root and descendant-group exit without post-root signalling, all focused negatives and every packet check pass; freeze for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:25:20.439Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on b677f10 found direct trace admission lacked strict event-field, context/scope, and review-state packet validation; preserve the finding and unify the boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:25:20.586Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Add shared strict launcher-trace event, context, scope, and V2 review-state admission with zero-publication negatives only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:30:00.419Z",
+      "actor": "chief-orchestrator",
+      "reason": "Strict shared launcher-trace and V2 review-state admission pass all focused negatives and every packet check; freeze for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:34:27.201Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 06b1e3d found direct persistence lacked a repeated final packet, revision, context, and evidence-sequence gate immediately before staging; preserve the finding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:34:27.347Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply the shared final authority and evidence-sequence gate to direct persistence with stale-state zero-publication races only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:39:07.054Z",
+      "actor": "chief-orchestrator",
+      "reason": "Direct persistence now repeats packet, revision, strict trace, context, and evidence-sequence checks at final staging; all races and every packet check pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:41:37.746Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 3fc60e9 found result-finalization failure could leave an otherwise successful terminal trace without a review artifact; preserve the finding and invalidate that trace explicitly."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:41:37.891Z",
+      "actor": "codex-engineering-executor",
+      "reason": "On result-publication failure, abort pending output, append a failed terminal invalidation, and prove the trace cannot satisfy admission."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:43:09.913Z",
+      "actor": "chief-orchestrator",
+      "reason": "Failed result publication now aborts pending output and invalidates sealed success with a failed terminal; all packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:46:32.113Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on e51a51f found overflow and stream-error close paths emitted failure without complete tree/group confirmation; preserve the finding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:46:32.264Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Route overflow and child-stream failure cleanup through one bounded failed-cancellation completion path with no persistence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:48:03.830Z",
+      "actor": "chief-orchestrator",
+      "reason": "Overflow and stream failures now await bounded tree/group cleanup before failed terminal emission; all packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:51:50.530Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on a70b4c1 found POSIX termination failure could emit failed before bounded group observation; preserve the finding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:51:50.683Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Remove premature failure terminal and always finish bounded group observation before the single failed terminal."
+    }
+  ]
+}

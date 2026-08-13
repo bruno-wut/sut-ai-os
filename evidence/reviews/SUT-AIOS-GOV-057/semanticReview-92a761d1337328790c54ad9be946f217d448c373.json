@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "92a761d1337328790c54ad9be946f217d448c373",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "ed6c9578a4f501fba62220dd9aeb95547b51c93cc29fe33256346a2c4d23cc6e",
+  "reviewedAt": "2026-08-12T20:38:35.548Z",
+  "stage": "semanticReview",
+  "runId": "20260812203613188-da10a108",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812203613188-da10a108-qa-verification-luna.jsonl",
+  "outputHash": "0520f4b432e4a0a724682173aeba370f537eab1cf7c764958bf44a6ff85c418a",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The Codex-app review path bypasses parseReviewAssessment, while the supplied review-result schema has no conditional rule requiring pass decisions to have an empty blockingFindings array. A contradictory pass assessment can therefore be staged and persisted through persistCodexAppReviewResult, violating the packet's review-decision invariant."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add a Codex-app persistence regression proving decision=pass with non-empty blockingFindings is rejected before either publication target is written."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher contains bounded helpers, but policy, process control, review parsing, context binding, and persistence remain concentrated in one large module.",
+    "hexagonalArchitecture": "Repository and process adapters are directly coupled to review orchestration; the boundary is workable for this repair but not strongly hexagonal.",
+    "eventedBoundaries": "Structured progress events provide a clear event boundary, though terminal and persistence sequencing remain tightly coupled."
+  },
+  "exactNextAction": "Enforce the pass-with-blocking-findings invariant in the shared validation or persistence boundary used by both CLI and Codex-app reviews, then add and pass the Codex-app zero-publication negative test."
+}

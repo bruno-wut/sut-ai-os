@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "d66988dbd42ab4a0b2cdbda5553ac241e13834d8",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "463874122ce03f09fdad40a80c7dfc44a35c32c3f4f367c1f5ef4d94aec762f8",
+  "reviewedAt": "2026-08-09T09:50:36.252Z",
+  "stage": "semanticReview",
+  "runId": "20260809094921497-4f5049b8",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809094921497-4f5049b8-qa-verification-luna.jsonl",
+  "outputHash": "c89a99ce77f6c8fd2fcd37e7c0620f11f296855188622b7bb829618c1733edca",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, binding, persistence, context construction, and cancellation are separated into cohesive helpers with bounded responsibilities.",
+    "hexagonalArchitecture": "Codex child execution is adapter-bound while routing, packet authorization, schema validation, and persistence remain explicit governed boundaries without fallback.",
+    "eventedBoundaries": "Redacted structured progress and terminal events cover launch, output, completion, failure, and cancellation; cancellation requires both termination outcome and root-child closure before reporting cancelled."
+  },
+  "exactNextAction": "Persist this semanticReview result, then proceed to the required merge-risk review on the same committed head."
+}

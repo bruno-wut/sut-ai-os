@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "6aa21bed251f32ef570b3096085c8d9c3331f28d",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "165440b66abd169d578668e6712e4e7f6116b7ff6a1d5a2ee9aa403a55aaf724",
+  "reviewedAt": "2026-08-09T10:31:39.790Z",
+  "stage": "semanticReview",
+  "runId": "20260809103039656-179abd8e",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260809103039656-179abd8e-qa-verification-luna.jsonl",
+  "outputHash": "a9397f8c1cf02e818fcb3ed940b0978362c835d75de4a7e6a278410c8fe8b5c1",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review orchestration and evidence binding are separated into focused validation, cancellation, context, and persistence modules.",
+    "hexagonalArchitecture": "Provider execution remains behind the Codex child-process boundary; review binding and persistence enforce governed adapters without widening authority.",
+    "eventedBoundaries": "Structured redacted progress events cover launch, output, failure, completion, and cancellation with fail-closed terminal ordering."
+  },
+  "exactNextAction": "Persist the semanticReview result and proceed to the independently routed mergeRiskReview stage."
+}

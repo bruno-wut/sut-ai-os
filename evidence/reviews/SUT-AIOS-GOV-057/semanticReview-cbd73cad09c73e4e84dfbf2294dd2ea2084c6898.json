@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "cbd73cad09c73e4e84dfbf2294dd2ea2084c6898",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "810fc8d422bc349090b2a821a0c881fb93661b4d43f8333ab9efa6eccb75b17d",
+  "reviewedAt": "2026-08-13T03:20:01.624Z",
+  "stage": "semanticReview",
+  "runId": "20260813031851333-24cc96c4",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813031851333-24cc96c4-qa-verification-luna.jsonl",
+  "outputHash": "a07dd5c6b3c824d235053e9e605475a7d04570f12089e0a465f1a8ec60dcb4af",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "POSIX cancellation can emit cancelled after root-child close without confirming the isolated process group has exited: completeCancelledReview calls confirmChildClosed before ensureTerminated, while ensureTerminated bypasses escalation and process-group confirmation when childClosed is true. This contradicts the packet's required live-child/process-group termination guarantee and the recorded evidence claim."
+  ],
+  "nonBlockingRisks": [
+    "CLI persistence emits a successful terminal trace before final result publication; a publication failure can leave successful terminal provenance without a persisted review result."
+  ],
+  "missingNegativeTests": [
+    "Add a POSIX cancellation regression where the root child closes while a descendant remains alive, proving no cancelled terminal is emitted until bounded process-group confirmation succeeds or failure is reported."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher contains reasonably cohesive helpers for routing, review parsing, cancellation, validation, and persistence, but the cancellation lifecycle still leaks a process-group invariant across controller boundaries.",
+    "hexagonalArchitecture": "Repository, process, and evidence adapters are separated from review-result validation, though final persistence sequencing remains coupled to terminal-state emission.",
+    "eventedBoundaries": "Structured progress and terminal events are explicit and redacted, but POSIX cancellation terminal ordering does not yet guarantee the underlying process-group event has completed."
+  },
+  "exactNextAction": "Revise only POSIX cancellation completion so root-child close does not bypass bounded process-group confirmation; add the descendant-live negative test, rerun all packet-required checks, and submit a fresh source head for independent review."
+}

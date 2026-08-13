@@ -23,6 +23,14 @@ backlog → ready → active → review → verified → done
 
 Only a `ready` packet with non-empty allowed paths, forbidden paths, allowed commands, acceptance criteria, required checks, and required tests can move to `active`. `verified` requires an evidence reference and `done` requires a further completion-evidence reference. For V2, `verified` additionally requires every configured review-stage artifact for the committed review head to be present, schema-valid, launcher-bound to the task/head/stage/agent/model/effort, and passing. This enforces the repository definition of verified work: implementation plus deterministic checks plus independent review plus recorded evidence.
 
+V2 verification uses three ordered commits because a Git commit cannot contain evidence that names its own SHA:
+
+1. **Source head:** move the task to `review`, commit that lifecycle record, run all deterministic checks, and obtain every configured review against this immutable commit.
+2. **Evidence head:** create `evidence/verification/<task-id>/verification-<source-head>.json`, retain the passing review artifacts and their bound traces, then commit only that exact same-task review and verification evidence. Do not change the task packet or implementation in this commit.
+3. **Lifecycle head:** from the clean evidence head, move the task to `verified` using the final configured review artifact as `--evidence`, the immutable source SHA as `--review-head`, and the fetched canonical `origin/main` SHA as `--review-base`; then commit only the task lifecycle move.
+
+The validator requires `source head -> evidence head -> lifecycle head` ancestry, requires the evidence head to add exactly the source-head verification record plus configured review artifacts and traces, rejects historical evidence rewrites or unrelated paths, and admits only the append-only task transition after the evidence head. The `reviewVerification` record therefore has distinct `headSha` and `evidenceHeadSha` values. If merge-risk review is required, its source-head artifact is the final configured review artifact; otherwise use the semantic-review artifact.
+
 ## Commands
 
 Use npm on every platform:
@@ -32,10 +40,12 @@ npm run task:new -- --task SUT-AIOS-AREA-001 --title "Bounded change"
 npm run task:validate -- --task SUT-AIOS-AREA-001
 npm run task:start -- --task SUT-AIOS-AREA-001 --reason "Scope and checks approved"
 npm run task:review -- --task SUT-AIOS-AREA-001 --reason "Implementation submitted"
-npm run task:review -- --task SUT-AIOS-AREA-001 --verified --evidence evidence/tasks/SUT-AIOS-AREA-001/verification.md --reason "Independent review passed"
+npm run task:review -- --task SUT-AIOS-AREA-001 --verified --evidence evidence/reviews/SUT-AIOS-AREA-001/<final-review-stage>-<source-head>.json --review-head <source-head> --review-base <origin-main-sha> --reason "Independent review and committed evidence passed"
 npm run task:complete -- --task SUT-AIOS-AREA-001 --evidence evidence/tasks/SUT-AIOS-AREA-001/verification.md --reason "Evidence recorded"
 npm run task:list
 ```
+
+Run the V2 `--verified` command only after committing the evidence-only head and confirming a clean worktree. Replace `<final-review-stage>` with `mergeRiskReview` when required by the packet, otherwise `semanticReview`. Replace `<source-head>` with the immutable reviewed commit SHA and `<origin-main-sha>` with the fetched canonical `origin/main` SHA. The later `task:complete` evidence must be one of the packet-declared completion destinations.
 
 The direct cross-platform entry points are `scripts/task/new`, `validate`, `move`, `start`, `block`, `review`, `complete`, `list`, and `status`; invoke them with Node when not using npm. Run `node scripts/task/validate --self-test` for a disposable lifecycle fixture. The test creates and removes only its own exact operating-system temporary directory; it does not alter repository records.
 

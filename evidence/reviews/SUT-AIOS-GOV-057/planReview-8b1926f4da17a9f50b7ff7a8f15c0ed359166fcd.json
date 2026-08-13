@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "8b1926f4da17a9f50b7ff7a8f15c0ed359166fcd",
+  "reviewerAgent": "engineering-planner",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "f4ef038c1c9f58a2e21648dfb4a4a5878070ca63affff1cf3e5ead1c5675f96e",
+  "reviewedAt": "2026-08-12T20:00:53.009Z",
+  "stage": "planReview",
+  "runId": "20260812200024017-fbf60d91",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812200024017-fbf60d91-engineering-planner-sol.jsonl",
+  "outputHash": "74b50476e482c98a7f857e291c8a8cb7b031fb04508e4ce9e8f91b04a669ac4f",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The packet grants workspace-write authority only to the designated Terra implementation stage in its assumptions and approval history, but routingPolicy.implementation currently selects sol/high. This makes the implementation authority internally inconsistent and prevents confirming that the planned execution remains within the approved route boundary."
+  ],
+  "nonBlockingRisks": [
+    "The source-head/evidence-head lifecycle and persistence ordering are complex governance mechanisms; their safety depends on the packet-listed deterministic lifecycle and binding tests continuing to cover both CLI and Codex-app adapters."
+  ],
+  "missingNegativeTests": [
+    "Add a packet-validation fixture demonstrating rejection of an implementation route that conflicts with the route explicitly named by the packet's workspace-write approval, or replace the prose-only approval constraint with a deterministically enforceable field."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The planned repair remains concentrated in the review launcher, task lifecycle validation, review-result validation, and their focused tests; it does not introduce product-runtime or provider responsibilities.",
+    "hexagonalArchitecture": "The plan preserves the Codex CLI as a bounded repository adapter and does not grant it scheduler, policy, deployment, production, or fallback authority.",
+    "eventedBoundaries": "Structured JSONL progress, singular terminal events, cancellation confirmation, and atomic result publication define explicit fail-closed orchestration boundaries without creating product-domain events."
+  },
+  "exactNextAction": "Reconcile the packet before implementation review proceeds: restore routingPolicy.implementation to the explicitly approved Terra/high route, or obtain and record explicit user approval for Sol/high workspace-write implementation and update every stale Terra-only authority statement; then rerun strict packet and routing validation."
+}

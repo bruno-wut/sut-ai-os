@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "b677f10c13a9c60177ec555720b50da803f3d391",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "b1909676362b617500271ced336a894272c9fdd5df8a41d4e998a76633d54e02",
+  "reviewedAt": "2026-08-13T03:24:35.192Z",
+  "stage": "semanticReview",
+  "runId": "20260813032250748-ef5b4d7e",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813032250748-ef5b4d7e-qa-verification-luna.jsonl",
+  "outputHash": "590cb17891dfba85642a905165a458a0c784a1ea600e809fbeae3ca54756f772",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "Direct persistReviewResult validates only trace prefix, bound identity, and finish ordering; it does not enforce an allowlisted trace event schema, reject unknown payload fields, or verify the bound context manifest and review-scope hash against current governed context. A forged canonical task trace could therefore pass while violating data minimisation.",
+    "Direct persistence does not require the current V2 packet to be valid and in review state before publishing evidence, leaving a bypass around the launcher’s lifecycle admission boundary."
+  ],
+  "nonBlockingRisks": [
+    "scripts/codex/launch.mjs remains a broad orchestration module combining routing, process control, context construction, trace validation, and persistence."
+  ],
+  "missingNegativeTests": [
+    "Forged trace events containing prompt/model-output payloads, unknown fields, mismatched context manifests, or mismatched review-scope hashes.",
+    "Direct persistence against an active task, malformed packet, changed stage authority, or non-review lifecycle state."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Partial: bounded helpers exist, but launcher responsibilities remain concentrated in one large module with limited isolation of persistence and trace-admission policy.",
+    "hexagonalArchitecture": "Partial: Codex process control and filesystem persistence are adapter-facing, but direct persistence paths still expose lifecycle and provenance bypass risk.",
+    "eventedBoundaries": "Progress and terminal events are structured and mostly fail-closed, but trace event content and provenance require a shared strict admission boundary."
+  },
+  "exactNextAction": "Revision required: add a shared strict trace validator that enforces event schemas, redaction, context-manifest and scope-hash binding; require valid review-state V2 packet admission in every direct persistence path; add the listed negative tests and rerun the packet-required checks."
+}

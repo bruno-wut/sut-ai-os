@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "b4803cb135a36548d5feedd180e938f0a0e115d3",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "801e20ea221d92045c1a6596e678c2e4dc4f65dda8deffe4124911be5e1719f5",
+  "reviewedAt": "2026-08-09T10:00:08.563Z",
+  "stage": "semanticReview",
+  "runId": "20260809095836352-fd05585a",
+  "tracePath": "artifacts/traces/codex-routing/SUT-AIOS-GOV-057/20260809095836352-fd05585a-qa-verification-luna.jsonl",
+  "outputHash": "0d77b977223021b2feed0db255807211815d734ad936664cdfd649c73d8cc6f1",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "persistCodexAppReviewResult does not revalidate the current HEAD/base or rehash every context-manifest entry at the persistence boundary, so a Codex-app review prepared on one committed context could persist after governed files or the reviewed head changed. This violates fail-closed SHA/context binding and the packet's claimed governed-file rehashing."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Reject Codex-app persistence after HEAD or origin/main changes between preparation and persistence.",
+    "Reject persistence when any non-required context-manifest file changes or its hash is forged.",
+    "Reject context-manifest paths escaping the repository root."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, cancellation, evidence sequencing, and persistence are separated into bounded helpers, but app persistence lacks final context binding.",
+    "hexagonalArchitecture": "CLI and Codex-app paths share launcher-bound review results and evidence gates; provider fallback and production authority remain excluded.",
+    "eventedBoundaries": "Progress and terminal cancellation states are explicit and redacted, with child/tree confirmation; stale app events still require a final persistence gate."
+  },
+  "exactNextAction": "Add a persistence-boundary check that re-reads current HEAD and origin/main, verifies every context-manifest path remains contained and hash-identical, recomputes the manifest hash, and rejects drift before writing any trace or review result; add the listed negative tests and rerun all packet-required checks."
+}

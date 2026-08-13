@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "c8a3bb87f9df393293fa062c0748ce75daa0c6e4",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "503d97e4d61c81583d99c7a08ea6af8a84ebe0cbce38176e16ab012b60ea1ea6",
+  "reviewedAt": "2026-08-12T21:28:30.233Z",
+  "stage": "semanticReview",
+  "runId": "20260812212559860-c4971a72",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812212559860-c4971a72-qa-verification-luna.jsonl",
+  "outputHash": "80681d0c5a972a807f77d73ad895726f1700cd8104e27a306d74a892d4e7a213",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review binding, lifecycle, cancellation, stream handling, and publication are separated into focused helpers.",
+    "hexagonalArchitecture": "Codex child-process execution is isolated from governed task validation and evidence publication boundaries.",
+    "eventedBoundaries": "Structured progress and terminal events cover launch, output, failure, completion, and cancellation with fail-closed handling."
+  },
+  "exactNextAction": "Advance to the required independent merge-risk review; do not merge before canonical reconciliation."
+}

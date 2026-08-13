@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "b228209bf9c2480d39be40e47a3ec2dbc5681813",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-sol",
+  "reasoningEffort": "high",
+  "contextManifestHash": "3a6eeea7b932fc7790513c1579117a0a30e4b54e3b6eeb1a8995ea9a40140fa8",
+  "reviewedAt": "2026-08-13T03:06:07.687Z",
+  "stage": "mergeRiskReview",
+  "runId": "20260813030406451-7a0e7097",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813030406451-7a0e7097-qa-verification-sol.jsonl",
+  "outputHash": "decf48e37c2787df5bed5d6981f92164d88b01e235f661038326f792913abe69",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The exact-head semantic prerequisite trace evidence/reviews/SUT-AIOS-GOV-057/traces/20260813025955311-5269623f-qa-verification-luna.jsonl begins with child-output and contains neither the launcher start event nor child-started progress. validateRequiredReviewArtifacts accepts this prefix-truncated trace because it requires only one review-bound event and a final successful finish. This violates the launch-progress acceptance criterion and permits incomplete or prefix-truncated execution provenance to satisfy the merge gate."
+  ],
+  "nonBlockingRisks": [
+    "POSIX graceful cancellation treats root-child close as sufficient without confirming that every process-group descendant exited; descendants that ignore the initial group signal could remain after a cancelled review, although no review result would be published.",
+    "The launcher now concentrates routing, context assembly, process control, evidence admission, and publication in one large module, increasing regression risk for later maintenance despite the focused helper boundaries and tests."
+  ],
+  "missingNegativeTests": [
+    "Reject a launcher trace with a valid review-bound and successful finish but no initial start event.",
+    "Reject duplicate, reordered, or mismatched start events, including wrong task, agent, route, model, or profile.",
+    "Reject a trace whose prefix was removed before child-output or review-bound while its terminal suffix remains valid.",
+    "Exercise graceful POSIX root-child exit while another process-group member remains live and prove the governed cancellation outcome."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The change introduces focused helpers for context binding, cancellation, terminal provenance, lifecycle admission, and atomic publication, but scripts/codex/launch.mjs remains a broad orchestration module and its trace validator does not yet enforce the complete event lifecycle it emits.",
+    "hexagonalArchitecture": "Provider execution remains behind the Codex child-process adapter, while routing, validation, and evidence publication remain repository-owned; no production, deployment, credential, provider-fallback, or P3-001 authority is introduced.",
+    "eventedBoundaries": "Review-bound and terminal ordering are enforced, but the initial launch boundary is not validated and the supplied semantic trace demonstrates that a prefix-incomplete event stream can still satisfy prerequisite admission."
+  },
+  "exactNextAction": "Revise launcher-trace validation to require exactly one first start event bound to the requested task, agent, route, model, and profile before progress and review-bound events; add prefix-truncation and ordering negatives, produce a new immutable source head, rerun every packet-required deterministic check, and obtain fresh exact-head plan, semantic, and merge-risk reviews."
+}

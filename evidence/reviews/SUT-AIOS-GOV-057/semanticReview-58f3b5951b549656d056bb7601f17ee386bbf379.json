@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "58f3b5951b549656d056bb7601f17ee386bbf379",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "c6693a10786d627ee72ec0a2fe445ddfbe075e6de0dc18a23b5b2acbe1c98bc9",
+  "reviewedAt": "2026-08-12T21:15:04.185Z",
+  "stage": "semanticReview",
+  "runId": "20260812211258157-23f92898",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260812211258157-23f92898-qa-verification-luna.jsonl",
+  "outputHash": "8645f874e6c042c8fb9d548bd8c9411fe76c6d4589d8586a23482624e602c57f",
+  "decision": "pass",
+  "blockingFindings": [],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, context binding, cancellation, lifecycle validation, and persistence are separated into focused launcher helpers.",
+    "hexagonalArchitecture": "CLI and Codex-app adapters remain bounded by packet, routing, schema, and evidence interfaces without production-system authority.",
+    "eventedBoundaries": "Structured JSONL progress and terminal events provide explicit launch, output, cancellation, failure, and successful-review boundaries."
+  },
+  "exactNextAction": "Proceed to independent mergeRiskReview on the same committed head; do not merge until it passes."
+}

@@ -25,6 +25,12 @@
     "architectureAssessment",
     "exactNextAction"
   ],
+  "allOf": [
+    {
+      "if": { "properties": { "decision": { "const": "pass" } }, "required": ["decision"] },
+      "then": { "properties": { "blockingFindings": { "maxItems": 0 } } }
+    }
+  ],
   "properties": {
     "schemaVersion": { "const": "1.0.0" },
     "taskId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$" },
@@ -37,7 +43,7 @@
     "reviewedAt": { "type": "string", "format": "date-time" },
     "stage": { "enum": ["planReview", "semanticReview", "mergeRiskReview"] },
     "runId": { "type": "string", "minLength": 3, "maxLength": 81, "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,80}$" },
-    "tracePath": { "type": "string", "maxLength": 512, "pattern": "^(artifacts/traces/codex-routing/|evidence/reviews/[A-Za-z0-9._-]+/runs/)" },
+    "tracePath": { "type": "string", "maxLength": 512, "pattern": "^(artifacts/traces/codex-routing/|evidence/reviews/[A-Za-z0-9._-]+/(runs|traces)/)" },
     "outputHash": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
     "decision": { "enum": ["pass", "revision-required", "blocked"] },
     "blockingFindings": {
