@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T02:58:20.413Z",
+  "updatedDate": "2026-08-13T03:06:33.768Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -976,6 +976,20 @@
       "at": "2026-08-13T02:58:20.413Z",
       "actor": "chief-orchestrator",
       "reason": "Bounded POSIX process-group confirmation repair and every packet-required deterministic check passed; freeze the exact final source head for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:06:33.622Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on b228209 found launcher-trace admission accepted a prefix-truncated semantic trace without the required start boundary; preserve the finding and enforce complete launch provenance."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:06:33.768Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Require one exact first start event and add prefix-truncation, mismatch, duplication, and ordering negatives only; preserve every other GOV-057 boundary."
     }
   ]
 }
