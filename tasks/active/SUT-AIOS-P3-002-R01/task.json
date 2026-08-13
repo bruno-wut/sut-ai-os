@@ -1,0 +1,151 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-002-R01",
+  "title": "Remediate event-delivery work identity and scheduling authority",
+  "status": "active",
+  "phase": "phase-3",
+  "workstream": "event-delivery-remediation",
+  "workflowId": "remediation-p3-002-authority-and-identity",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Prevent queue-state corruption and caller-controlled scheduling in the bounded Phase 3 event-delivery core before workflow runtime work begins.",
+  "technicalObjective": "Make work IDs unique, derive due-time decisions from the trusted clock port, snapshot validated outbound-port configuration at construction, and carry queue idempotency identity through dispatch without introducing a provider, transaction, or production integration.",
+  "architectureReferences": [
+    "docs/architecture/source/Sri U-Thong Grand Hotel AI OS.md",
+    "docs/architecture/source/Agent Architecture.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/event-delivery/EVENT_DELIVERY_V1.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P3-002"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P3-002-R01/verification.md"
+  ],
+  "assumptions": [
+    "P3-002 is terminal on origin/main and its historical packet and evidence remain immutable.",
+    "The module remains Tier-0/shadow and non-authoritative; no production write, deployment, credential access, or live provider is authorized.",
+    "Dispatch-before-persist is retained as an explicit at-least-once shadow limitation; exactly-once delivery requires a future transactional/outbox adapter task.",
+    "The existing admitted npm validator and verify:task mapping are sufficient; this remediation does not change verifier admission or CI."
+  ],
+  "acceptanceCriteria": [
+    "submit rejects a new request whose workId already exists under a different idempotencyKey with deterministic WORK_ID_CONFLICT, while an exact idempotency replay remains idempotent and cannot create a second record.",
+    "Stored duplicate work IDs are treated as invalid persistence and fail closed; runDue updates only the selected batch records and cannot apply one dispatch result to an out-of-batch or future record.",
+    "runDue obtains its scheduling timestamp only from the trusted clock port; caller-supplied timestamps are rejected or ignored without authority, a far-future caller value cannot dispatch future work, and invalid or unavailable clock output fails closed.",
+    "After construction, mutations or replacement of the caller's limits, clock, storage, or dispatcher properties do not change the validated configuration used by the module; the captured limits and callable ports are frozen/snapshotted.",
+    "Dispatcher input includes the queue idempotencyKey for every work item, and documentation states the current dispatch-before-persist behavior is at-least-once in Tier-0/shadow mode with no exactly-once claim or production adapter authority.",
+    "Focused regression tests cover duplicate work IDs, caller-clock disagreement, post-construction port mutation, idempotency-key propagation, persistence failure after dispatch, malformed inputs, and the existing event-delivery contract without introducing infrastructure imports or production behavior."
+  ],
+  "allowedPaths": [
+    "services/event-delivery/**",
+    "tests/event-delivery/**",
+    "docs/event-delivery/**",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "evidence/tasks/SUT-AIOS-P3-002-R01/**",
+    "evidence/verification/SUT-AIOS-P3-002-R01/**",
+    "tasks/**/SUT-AIOS-P3-002-R01/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    ".github/**",
+    "package.json",
+    "package-lock.json",
+    "scripts/**",
+    "schemas/**",
+    "policies/**",
+    "supabase/**",
+    "**/*sql*",
+    "apps/ibe/src/payments/**",
+    "apps/ibe/src/inventory/**",
+    "apps/ibe/src/pricing/**",
+    "tasks/done/SUT-AIOS-P3-002/**",
+    "tasks/verified/SUT-AIOS-GOV-061/**",
+    "tasks/backlog/SUT-AIOS-P3-003/**"
+  ],
+  "allowedCommands": [
+    "npm run test:event-delivery",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P3-002-R01 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "event-delivery regression validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent Sol verification"
+  ],
+  "requiredTests": [
+    "npm run test:event-delivery",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any change requires a database, queue, workflow, provider, transport, transaction, outbox, credential, deployment, booking, payment, pricing, inventory, authorization, RLS, or production path.",
+    "Any proposed behavior would allow caller input, adapter output, or provider state to become scheduling, execution, approval, or policy authority.",
+    "Any exact-once or cross-process delivery guarantee is requested beyond the bounded idempotency-key propagation and documented shadow limitation."
+  ],
+  "rollbackExpectations": "Revert the remediation branch and generated artifacts while preserving the terminal P3-002 packet, all historical evidence, and any blocked verification records.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/active/SUT-AIOS-P3-002-R01/task.json",
+      "tasks/done/SUT-AIOS-P3-002/task.json",
+      "services/event-delivery/src/event-delivery-v1.mjs",
+      "tests/event-delivery/validate-event-delivery-v1.mjs",
+      "docs/event-delivery/EVENT_DELIVERY_V1.md",
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "docs/project/DEPENDENCY_GRAPH.md",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-13T12:00:00.000Z",
+  "updatedDate": "2026-08-13T12:04:15.680Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-13T12:00:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created as a bounded prerequisite remediation after independent review found duplicate-work identity, caller-clock authority, mutable-port, and dispatch idempotency gaps in terminal P3-002."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T12:04:15.522Z",
+      "actor": "chief-orchestrator",
+      "reason": "Packet is bounded, Sol-routed, dependency on terminal P3-002 is satisfied, exact commands are admitted, and evidence paths are allowlisted."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T12:04:15.680Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin the independent remediation implementation in the isolated worktree; no production or provider behavior."
+    }
+  ]
+}
