@@ -1,0 +1,167 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-059",
+  "title": "Admit P3-001 signal-ingestion validator in shell-free verification",
+  "status": "verified",
+  "phase": "phase-3-governance",
+  "workstream": "verifier-admission",
+  "workflowId": "governance-p3-001-verifier-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Remove the bounded verification admission blocker for the approved P3-001 signal-ingestion validator without expanding command execution authority.",
+  "technicalObjective": "Admit the exact npm run test:signal-ingestion command through a shell-free fixed mapping, add exact and near-miss self-tests, and document the narrow admission.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-GOV-058"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-059/verification.md"
+  ],
+  "assumptions": [
+    "P3-001 supplies the admitted signal-ingestion validator file on its own branch; this governance task does not add or execute that implementation.",
+    "The exact npm script already exists in package.json from GOV-058 and maps only to node tests/signal-ingestion/validate-signal-ingestion-v1.mjs.",
+    "Workflow V1 remains authoritative; Workflow V2 routing, review artifacts, and review-runner changes are out of scope."
+  ],
+  "acceptanceCriteria": [
+    "safeRequiredCommand maps exactly npm run test:signal-ingestion to node tests/signal-ingestion/validate-signal-ingestion-v1.mjs with shell-free fixed arguments.",
+    "The verifier self-test proves the exact mapping and rejects trailing whitespace, extra arguments, shell operators, altered paths, alternate npm syntax, and path-separator near misses.",
+    "The verification policy documents that this is a single P3-001 validator admission and does not enable generic npm, node, shell, or package execution.",
+    "No P3-001 implementation, tests, package-lock, CI workflow, Workflow V2 machinery, production behavior, credentials, or external service is changed.",
+    "The governance task passes deterministic verifier self-test, packet validation, governance validation, fast verification, whitespace checks, and independent verify:task evidence."
+  ],
+  "allowedPaths": [
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/**/SUT-AIOS-GOV-059/**",
+    "evidence/tasks/SUT-AIOS-GOV-059/**",
+    "evidence/verification/SUT-AIOS-GOV-059/**"
+  ],
+  "forbiddenPaths": [
+    "package.json",
+    "package-lock.json",
+    "services/**",
+    "tests/**",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "schemas/**",
+    "scripts/codex/**",
+    "scripts/task/**",
+    "scripts/github/**",
+    "evidence/tasks/SUT-AIOS-P3-001/**",
+    "evidence/verification/SUT-AIOS-P3-001/**",
+    "tasks/**/SUT-AIOS-P3-001/**",
+    "tasks/**/SUT-AIOS-GOV-058/**",
+    "evidence/reviews/**",
+    "supabase/**",
+    "apps/**",
+    "packages/**",
+    "policies/**",
+    "**/*.sql",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-059 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact shell-free command admission and near-miss rejection inspection",
+    "changed-path inspection against the GOV-059 allowlist",
+    "secret and credential boundary scan",
+    "no P3-001 implementation or Workflow V2 scope regression",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any request to broaden shell, npm, node, or generic command execution requires a separate approved governance task.",
+    "Any request to modify P3-001 implementation, CI workflows, Workflow V2 machinery, production behavior, credentials, or external services requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the exact verifier mapping, self-tests, verification-policy text, risk entry, GOV-059 packet, and GOV-059 evidence; preserve P3-001 implementation/history and all prior blocked evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "scripts/verify/verify-cli.mjs",
+      "tasks/verified/SUT-AIOS-GOV-059/task.json",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-13T07:30:02.611Z",
+  "updatedDate": "2026-08-13T07:37:57.029Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-059/verification-20260813073722724.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-13T07:30:02.611Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created as the smallest bounded Workflow V1 governance correction for the P3-001 verifier admission blocker."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T07:30:59.748Z",
+      "actor": "chief-orchestrator",
+      "reason": "V1 packet is bounded, dependency GOV-058 is done, and all listed commands are present or admitted without changing P3 implementation scope."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T07:31:03.766Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin the approved exact verifier admission and documentation correction; do not modify P3 implementation or Workflow V2."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T07:37:51.926Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent qa-verification passed exact mapping, near-miss rejection, changed-path, security, governance, fast, and whitespace checks."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T07:37:57.029Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent qa-verification evidence is complete and all packet acceptance checks pass."
+    }
+  ]
+}
