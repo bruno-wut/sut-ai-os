@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-002",
   "title": "Implement durable scheduling, queue, retry, and dead-letter delivery",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3",
   "workstream": "event-delivery",
   "workflowId": "implementation-p3-002",
@@ -93,7 +93,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P3-002/task.json",
+      "tasks/done/SUT-AIOS-P3-002/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "package.json"
     ]
@@ -101,7 +101,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-13T09:07:22.420Z",
+  "updatedDate": "2026-08-13T11:44:18.270Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P3-002/verification-20260813090440518.json"
   ],
@@ -140,6 +140,13 @@
       "at": "2026-08-13T09:07:22.420Z",
       "actor": "chief-orchestrator",
       "reason": "Fresh independent QA evidence is complete; validator, fast, base-bound verifier, changed-path, security, and whitespace checks pass with productionEligible false."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T11:44:18.270Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #135 is merged on origin/main at 4ef6ceb01cd6b492e1bcf14017ced073f904677e; independent verification remains unchanged and the verified P3-002 event-delivery implementation is reconciled to done."
     }
   ]
 }
