@@ -207,6 +207,53 @@ function verificationWorktreeIsClean(statusText, packet, headSha, evidencePath) 
     return line.startsWith("?? ") && nonEmptyString(evidencePath) && packet.evidence?.includes(normalize(evidencePath)) && file === normalize(evidencePath);
   });
 }
+function validateLauncherTraceEvents(events, { packet, result, stage, root = repositoryRoot }) {
+  const errors = [];
+  const expected = packet.routingPolicy?.[stage];
+  const profile = profileForStage(stage);
+  const allowedProgress = new Set(["child-started", "child-output", "child-stderr-redacted", "output-limit-exceeded", "cancellation-requested", "cancellation-escalated", "cancellation-failed", "preflight-failed", "review-binding-changed", "review-output-invalid", "review-schema-validation-failed", "review-persistence-failed", "completed", "failed", "cancelled"]);
+  const allowedKeys = {
+    start: new Set(["event", "taskId", "agentId", "route", "model", "profile"]),
+    "review-progress": new Set(["event", "runId", "taskId", "profile", "status", "stream", "bytes", "signal"]),
+    "review-bound": new Set(["event", "runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash", "contextManifest", "reviewedTaskScopeHash"]),
+    finish: new Set(["event", "status", "exitCode"]),
+  };
+  for (const event of events) {
+    const keys = allowedKeys[event?.event];
+    if (!keys) { errors.push(`${stage} launcher trace contains an unknown event type`); continue; }
+    const unknown = Object.keys(event).filter((key) => !keys.has(key));
+    if (unknown.length) errors.push(`${stage} launcher trace event contains forbidden fields: ${unknown.join(", ")}`);
+    if (event.event === "review-progress" && !allowedProgress.has(event.status)) errors.push(`${stage} launcher trace has an unknown progress status`);
+  }
+  const starts = events.filter((event) => event?.event === "start");
+  if (starts.length !== 1 || events[0] !== starts[0]) errors.push(`${stage} launcher trace must begin with exactly one start event`);
+  else for (const [key, value] of Object.entries({ taskId: packet.taskId, agentId: result.reviewerAgent, route: expected.route, model: result.model, profile })) if (starts[0][key] !== value) errors.push(`${stage} launcher trace start does not bind ${key}`);
+  const childStarts = events.filter((event) => event?.event === "review-progress" && event.status === "child-started");
+  if (childStarts.length !== 1 || events[1] !== childStarts[0]) errors.push(`${stage} launcher trace must record exactly one child-started event immediately after start`);
+  else for (const [key, value] of Object.entries({ runId: result.runId, taskId: packet.taskId, profile })) if (childStarts[0][key] !== value) errors.push(`${stage} launcher trace child-started does not bind ${key}`);
+  const bounds = events.filter((event) => event?.event === "review-bound");
+  if (bounds.length !== 1) { errors.push(`${stage} launcher trace must contain exactly one review-bound event`); return errors; }
+  const bound = bounds[0];
+  for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) if (bound[key] !== result[key]) errors.push(`${stage} launcher trace ${key} does not bind review result`);
+  const finishes = events.filter((event) => event?.event === "finish");
+  const finishIndex = finishes.length === 1 ? events.indexOf(finishes[0]) : -1;
+  if (finishes.length !== 1 || finishes[0]?.status !== "success" || finishes[0]?.exitCode !== 0 || finishIndex <= events.indexOf(bound) || finishIndex !== events.length - 1) errors.push(`${stage} launcher trace must end with exactly one successful finish after review-bound and exitCode 0`);
+  if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || !/^[0-9a-f]{64}$/i.test(bound.reviewedTaskScopeHash ?? "")) errors.push(`${stage} launcher trace must bind exactly one reviewed task scope hash`);
+  else {
+    const seen = new Set();
+    if (bound.reviewedTaskScopeHash !== computeReviewScopeHash(packet)) errors.push(`${stage} launcher reviewed task scope does not match the current packet`);
+    for (const entry of bound.contextManifest) {
+      if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} launcher trace context entry is invalid`); continue; }
+      seen.add(entry.path);
+      if (entry.path === "generated/merge-risk-context") { if (stage !== "mergeRiskReview" || !/^[0-9a-f]{64}$/i.test(entry.sha256)) errors.push(`${stage} generated merge-risk context binding is invalid`); continue; }
+      if (entry.path === `tasks/review/${packet.taskId}/task.json`) continue;
+      const contextFile = path.resolve(root, entry.path);
+      if (!fs.existsSync(contextFile) || sha256(fs.readFileSync(contextFile)) !== entry.sha256) errors.push(`${stage} governed context file does not match: ${entry.path}`);
+    }
+    if (sha256(bound.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n")) !== result.contextManifestHash) errors.push(`${stage} launcher context manifest hash does not match its bound files`);
+  }
+  return errors;
+}
 function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha = reviewHeadSha(root), baseSha = reviewBaseSha(root), requiredStages = null) {
   const errors = [];
   if (!/^[0-9a-f]{40}$/i.test(headSha ?? "")) return ["cannot determine committed review head SHA"];
@@ -260,50 +307,7 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       let events;
       try { events = fs.readFileSync(path.join(root, result.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
       catch { errors.push(`${stage} launcher trace is missing or invalid`); continue; }
-      const startEvents = events.filter((event) => event?.event === "start");
-      if (startEvents.length !== 1 || events[0] !== startEvents[0]) errors.push(`${stage} launcher trace must begin with exactly one start event`);
-      else {
-        const expectedStart = { taskId: packet.taskId, agentId: result.reviewerAgent, route: expected.route, model: result.model, profile: profileForStage(stage) };
-        for (const [key, value] of Object.entries(expectedStart)) if (startEvents[0][key] !== value) errors.push(`${stage} launcher trace start does not bind ${key}`);
-      }
-      const childStartEvents = events.filter((event) => event?.event === "review-progress" && event.status === "child-started");
-      if (childStartEvents.length !== 1 || events[1] !== childStartEvents[0]) errors.push(`${stage} launcher trace must record exactly one child-started event immediately after start`);
-      else {
-        const expectedChildStart = { runId: result.runId, taskId: packet.taskId, profile: profileForStage(stage) };
-        for (const [key, value] of Object.entries(expectedChildStart)) if (childStartEvents[0][key] !== value) errors.push(`${stage} launcher trace child-started does not bind ${key}`);
-      }
-      const boundEvents = events.filter((event) => event?.event === "review-bound");
-      if (boundEvents.length !== 1) { errors.push(`${stage} launcher trace must contain exactly one review-bound event`); continue; }
-      const bound = boundEvents[0];
-      for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) {
-        if (bound[key] !== result[key]) errors.push(`${stage} launcher trace ${key} does not bind review result`);
-      }
-      const finishEvents = events.filter((event) => event?.event === "finish");
-      const boundIndex = events.indexOf(bound);
-      const finishIndex = finishEvents.length === 1 ? events.indexOf(finishEvents[0]) : -1;
-      if (finishEvents.length !== 1 || finishEvents[0]?.status !== "success" || finishEvents[0]?.exitCode !== 0 || finishIndex <= boundIndex || finishIndex !== events.length - 1) {
-        errors.push(`${stage} launcher trace must end with exactly one successful finish after review-bound and exitCode 0`);
-      }
-      if (!Array.isArray(bound.contextManifest) || bound.contextManifest.filter((entry) => entry?.path === `tasks/review/${packet.taskId}/task.json`).length !== 1 || !/^[0-9a-f]{64}$/i.test(bound.reviewedTaskScopeHash ?? "")) {
-        errors.push(`${stage} launcher trace must bind exactly one reviewed task scope hash`);
-      } else {
-        const seen = new Set();
-        const taskEntry = bound.contextManifest.find((entry) => entry.path === `tasks/review/${packet.taskId}/task.json`);
-        if (!taskEntry?.sha256 || bound.reviewedTaskScopeHash !== computeReviewScopeHash(packet)) errors.push(`${stage} launcher reviewed task scope does not match the current packet`);
-        for (const entry of bound.contextManifest) {
-          if (!entry || typeof entry.path !== "string" || typeof entry.sha256 !== "string" || path.isAbsolute(entry.path) || entry.path.includes("..") || seen.has(entry.path)) { errors.push(`${stage} launcher trace context entry is invalid`); continue; }
-          seen.add(entry.path);
-          if (entry.path === "generated/merge-risk-context") {
-            if (stage !== "mergeRiskReview" || !/^[0-9a-f]{64}$/i.test(entry.sha256)) errors.push(`${stage} generated merge-risk context binding is invalid`);
-            continue;
-          }
-          if (entry.path === `tasks/review/${packet.taskId}/task.json`) continue;
-          const contextFile = path.resolve(root, entry.path);
-          if (!fs.existsSync(contextFile) || sha256(fs.readFileSync(contextFile)) !== entry.sha256) errors.push(`${stage} governed context file does not match: ${entry.path}`);
-        }
-        const manifestHash = sha256(bound.contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
-        if (manifestHash !== result.contextManifestHash) errors.push(`${stage} launcher context manifest hash does not match its bound files`);
-      }
+      errors.push(...validateLauncherTraceEvents(events, { packet, result, stage, root }));
     }
   }
   return errors;
@@ -480,7 +484,7 @@ function main() {
   fail(`Unknown task command: ${command}`);
 }
 
-export { computeReviewScopeHash, findPacket, validateEvidenceCommitChain, validateLifecyclePacketDelta, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
+export { computeReviewScopeHash, findPacket, validateEvidenceCommitChain, validateLauncherTraceEvents, validateLifecyclePacketDelta, validatePacket, validateRequiredReviewArtifacts, verificationWorktreeIsClean, transition, createPacket, isTaskId, readPacketAt, writePacket, taskPath, listPackets, repositoryRoot };
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && (path.resolve(process.argv[1]) === currentFile || ["new", "validate", "move", "start", "block", "review", "complete", "list", "status"].includes(path.basename(process.argv[1])))) {

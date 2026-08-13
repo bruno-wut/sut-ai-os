@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit } from "../../scripts/codex/launch.mjs";
 import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
+import { computeReviewScopeHash } from "../../scripts/task/task-cli.mjs";
 
 let checks = 0;
 const assert = new Proxy(nodeAssert, {
@@ -391,11 +392,11 @@ assert.equal(redactedOutput.text, "", "redacted review stderr is never accumulat
 const persistenceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-persistence-"));
 const persistenceTaskDirectory = path.join(persistenceRoot, "tasks", "review", "SUT-AIOS-GOV-057");
 fs.mkdirSync(persistenceTaskDirectory, { recursive: true });
-fs.writeFileSync(path.join(persistenceTaskDirectory, "task.json"), `${JSON.stringify({
-  schemaVersion: "2.0.0",
-  taskId: "SUT-AIOS-GOV-057",
-  routingPolicy: { semanticReview: { agent: "qa-verification", route: "luna", effort: "high" } },
-})}\n`);
+const persistencePacket = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, "../..", "tasks", "active", "SUT-AIOS-GOV-057", "task.json"), "utf8"));
+persistencePacket.status = "review";
+persistencePacket.updatedDate = "2026-08-09T12:00:00.000Z";
+persistencePacket.stateTransitions.push({ from: "active", to: "review", at: persistencePacket.updatedDate, actor: "test", reason: "direct persistence fixture" });
+fs.writeFileSync(path.join(persistenceTaskDirectory, "task.json"), `${JSON.stringify(persistencePacket, null, 2)}\n`);
 const git = (args) => nodeAssert.equal(spawnSync("git", args, { cwd: persistenceRoot, encoding: "utf8", windowsHide: true }).status, 0);
 git(["init", "-q"]);
 git(["config", "user.email", "test@example.invalid"]);
@@ -405,9 +406,12 @@ git(["commit", "-qm", "fixture"]);
 git(["remote", "add", "origin", persistenceRoot]);
 git(["update-ref", "refs/remotes/origin/main", "HEAD"]);
 const persistenceHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: persistenceRoot, encoding: "utf8", windowsHide: true }).stdout.trim();
+const persistenceTaskRelative = "tasks/review/SUT-AIOS-GOV-057/task.json";
+const persistenceManifest = [{ path: persistenceTaskRelative, sha256: createHash("sha256").update(fs.readFileSync(path.join(persistenceRoot, persistenceTaskRelative))).digest("hex") }];
+const persistenceManifestHash = createHash("sha256").update(persistenceManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n")).digest("hex");
 const preparedReview = buildLauncherBoundReviewResult(assessment, {
   taskId: "SUT-AIOS-GOV-057", baseSha: persistenceHead, headSha: persistenceHead, reviewerAgent: "qa-verification", model: "gpt-5.6-luna", reasoningEffort: "high",
-  contextManifestHash: "3".repeat(64), reviewedAt: "2026-08-09T12:00:00.000Z", stage: "semanticReview",
+  contextManifestHash: persistenceManifestHash, reviewedAt: "2026-08-09T12:00:00.000Z", stage: "semanticReview",
   runId: "crash-recovery-run", tracePath: "evidence/reviews/SUT-AIOS-GOV-057/traces/crash-recovery-run-qa-verification-luna.jsonl",
 });
 const pendingPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot });
@@ -426,13 +430,27 @@ const successfulTraceFile = path.join(persistenceRoot, preparedReview.tracePath)
 fs.mkdirSync(path.dirname(successfulTraceFile), { recursive: true });
 const successfulStartEvent = { event: "start", taskId: preparedReview.taskId, agentId: preparedReview.reviewerAgent, route: "luna", model: preparedReview.model, profile: "semantic-qa" };
 const successfulChildStartEvent = { event: "review-progress", runId: preparedReview.runId, taskId: preparedReview.taskId, profile: "semantic-qa", status: "child-started" };
-const successfulBoundEvent = { event: "review-bound", ...Object.fromEntries(["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"].map((key) => [key, preparedReview[key]])) };
+const successfulBoundEvent = { event: "review-bound", ...Object.fromEntries(["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"].map((key) => [key, preparedReview[key]])), contextManifest: persistenceManifest, reviewedTaskScopeHash: computeReviewScopeHash(persistencePacket) };
 const successfulFinishEvent = { event: "finish", status: "success", exitCode: 0 };
 const writePersistenceTrace = (events) => fs.writeFileSync(successfulTraceFile, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
 writePersistenceTrace([successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
 assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /begin with exactly one start/, "direct persistence rejects a prefix-truncated launcher trace");
 writePersistenceTrace([successfulStartEvent, successfulBoundEvent, successfulFinishEvent]);
 assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /exactly one child-started/, "direct persistence rejects missing child-started progress");
+writePersistenceTrace([successfulStartEvent, successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
+writePersistenceTrace([{ ...successfulStartEvent, prompt: "must never persist" }, successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /forbidden fields: prompt/, "direct persistence rejects prompt-bearing trace events");
+assert.equal(fs.existsSync(preparedDestination), false, "forbidden trace payload publishes no review artifact");
+writePersistenceTrace([successfulStartEvent, successfulChildStartEvent, { ...successfulBoundEvent, reviewedTaskScopeHash: "0".repeat(64) }, successfulFinishEvent]);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /reviewed task scope does not match/, "direct persistence rejects a mismatched review-scope hash");
+writePersistenceTrace([successfulStartEvent, successfulChildStartEvent, { ...successfulBoundEvent, contextManifest: [{ ...persistenceManifest[0], sha256: "f".repeat(64) }] }, successfulFinishEvent]);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /context manifest hash|governed context/, "direct persistence rejects a mismatched context manifest");
+const persistenceTaskFile = path.join(persistenceTaskDirectory, "task.json");
+fs.writeFileSync(persistenceTaskFile, `${JSON.stringify({ ...persistencePacket, status: "active" }, null, 2)}\n`);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /valid V2 task packet in review/, "direct persistence rejects a non-review lifecycle state");
+fs.writeFileSync(persistenceTaskFile, `${JSON.stringify({ ...persistencePacket, routingPolicy: null }, null, 2)}\n`);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /valid V2 task packet in review/, "direct persistence rejects a malformed current packet");
+fs.writeFileSync(persistenceTaskFile, `${JSON.stringify(persistencePacket, null, 2)}\n`);
 writePersistenceTrace([successfulStartEvent, successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
 for (const [field, value] of [["reviewerAgent", "engineering-planner"], ["model", "gpt-5.6-sol"], ["reasoningEffort", "medium"]]) {
   const forged = { ...preparedReview, [field]: value };

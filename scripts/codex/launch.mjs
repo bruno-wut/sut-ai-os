@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeReviewOutputHash, validateReviewResult } from "../review/validate-review-result.mjs";
-import { computeReviewScopeHash, validatePacket, validateRequiredReviewArtifacts } from "../task/task-cli.mjs";
+import { computeReviewScopeHash, validateLauncherTraceEvents, validatePacket, validateRequiredReviewArtifacts } from "../task/task-cli.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..", "..");
@@ -1076,6 +1076,8 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
   if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
   const taskRecord = findTaskPacket(taskId, root);
   if (taskRecord.format !== "json" || taskRecord.data.schemaVersion !== "2.0.0") throw new Error("Direct review-result persistence requires a current V2 task packet");
+  const packetCheck = validatePacket(taskRecord.data, { strict: true, directoryState: taskRecord.state, root });
+  if (!packetCheck.valid || taskRecord.state !== "review") throw new Error(`Direct review-result persistence requires a valid V2 task packet in review: ${packetCheck.errors.join("; ")}`);
   const stageAuthority = taskRecord.data.routingPolicy?.[expectedStage];
   const expectedModel = modelIds[stageAuthority?.route];
   const initialValidation = validateReviewResult(reviewResult, {
@@ -1093,15 +1095,8 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
   let events;
   try { events = fs.readFileSync(path.join(root, reviewResult.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
   catch { throw new Error("Direct review-result persistence requires a valid bound launcher trace"); }
-  assertCompleteLauncherTracePrefix(events, { taskId, agentId: stageAuthority.agent, route: stageAuthority.route, model: expectedModel, profile, runId: reviewResult.runId });
-  const bound = events.filter((event) => event?.event === "review-bound");
-  const finishes = events.filter((event) => event?.event === "finish");
-  if (bound.length !== 1 || finishes.length !== 1 || finishes[0]?.status !== "success" || finishes[0]?.exitCode !== 0 || events.indexOf(finishes[0]) <= events.indexOf(bound[0]) || events.at(-1) !== finishes[0]) {
-    throw new Error("Direct review-result persistence requires one ordered successful bound terminal trace");
-  }
-  for (const key of ["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"]) {
-    if (bound[0][key] !== reviewResult[key]) throw new Error(`Direct review-result persistence trace does not bind ${key}`);
-  }
+  const traceErrors = validateLauncherTraceEvents(events, { packet: taskRecord.data, result: reviewResult, stage: expectedStage, root });
+  if (traceErrors.length) throw new Error(`Direct review-result persistence requires a strict bound launcher trace: ${traceErrors.join("; ")}`);
   return prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root }).finalize();
 }
 
