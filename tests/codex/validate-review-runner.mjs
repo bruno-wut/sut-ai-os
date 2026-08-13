@@ -407,7 +407,11 @@ git(["remote", "add", "origin", persistenceRoot]);
 git(["update-ref", "refs/remotes/origin/main", "HEAD"]);
 const persistenceHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: persistenceRoot, encoding: "utf8", windowsHide: true }).stdout.trim();
 const persistenceTaskRelative = "tasks/review/SUT-AIOS-GOV-057/task.json";
-const persistenceManifest = [{ path: persistenceTaskRelative, sha256: createHash("sha256").update(fs.readFileSync(path.join(persistenceRoot, persistenceTaskRelative))).digest("hex") }];
+const persistenceVerificationRelative = `evidence/verification/SUT-AIOS-GOV-057/verification-${persistenceHead}.json`;
+const persistenceVerificationFile = path.join(persistenceRoot, persistenceVerificationRelative);
+fs.mkdirSync(path.dirname(persistenceVerificationFile), { recursive: true });
+fs.writeFileSync(persistenceVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: "SUT-AIOS-GOV-057", headSha: persistenceHead, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-09T12:00:00.000Z", checks: ["fixture passed"] }, null, 2)}\n`);
+const persistenceManifest = [persistenceTaskRelative, persistenceVerificationRelative].map((relativePath) => ({ path: relativePath, sha256: createHash("sha256").update(fs.readFileSync(path.join(persistenceRoot, relativePath))).digest("hex") }));
 const persistenceManifestHash = createHash("sha256").update(persistenceManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n")).digest("hex");
 const preparedReview = buildLauncherBoundReviewResult(assessment, {
   taskId: "SUT-AIOS-GOV-057", baseSha: persistenceHead, headSha: persistenceHead, reviewerAgent: "qa-verification", model: "gpt-5.6-luna", reasoningEffort: "high",
@@ -452,6 +456,18 @@ fs.writeFileSync(persistenceTaskFile, `${JSON.stringify({ ...persistencePacket, 
 assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot }), /valid V2 task packet in review/, "direct persistence rejects a malformed current packet");
 fs.writeFileSync(persistenceTaskFile, `${JSON.stringify(persistencePacket, null, 2)}\n`);
 writePersistenceTrace([successfulStartEvent, successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
+const originalPersistenceTask = fs.readFileSync(persistenceTaskFile, "utf8");
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot, beforeFinalValidation: () => fs.writeFileSync(persistenceTaskFile, originalPersistenceTask.replace('"status": "review"', '"status": "active"')) }), /valid V2 task packet in review/, "final direct-persistence gate rejects packet lifecycle drift");
+fs.writeFileSync(persistenceTaskFile, originalPersistenceTask);
+const originalVerification = fs.readFileSync(persistenceVerificationFile, "utf8");
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot, beforeFinalValidation: () => fs.appendFileSync(persistenceVerificationFile, " ") }), /governed context file does not match/, "final direct-persistence gate rejects governed-context drift");
+fs.writeFileSync(persistenceVerificationFile, originalVerification);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot, beforeFinalValidation: () => git(["commit", "--allow-empty", "-qm", "stale head"]) }), /headSha/, "final direct-persistence gate rejects HEAD drift");
+const staleHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: persistenceRoot, encoding: "utf8", windowsHide: true }).stdout.trim();
+git(["update-ref", "HEAD", persistenceHead]);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot, beforeFinalValidation: () => git(["update-ref", "refs/remotes/origin/main", staleHead]) }), /baseSha/, "final direct-persistence gate rejects canonical-base drift");
+git(["update-ref", "refs/remotes/origin/main", persistenceHead]);
+assert.equal(fs.existsSync(preparedDestination), false, "stale final-state races publish no review artifact");
 for (const [field, value] of [["reviewerAgent", "engineering-planner"], ["model", "gpt-5.6-sol"], ["reasoningEffort", "medium"]]) {
   const forged = { ...preparedReview, [field]: value };
   forged.outputHash = computeReviewOutputHash(forged);

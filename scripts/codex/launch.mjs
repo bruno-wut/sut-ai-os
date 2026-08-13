@@ -1071,32 +1071,35 @@ function assertCompleteLauncherTracePrefix(events, { taskId, agentId, route, mod
   }
 }
 
-function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
+function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot, beforeFinalValidation = () => {} }) {
   const expectedStage = stageByProfile[profile];
   if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
-  const taskRecord = findTaskPacket(taskId, root);
-  if (taskRecord.format !== "json" || taskRecord.data.schemaVersion !== "2.0.0") throw new Error("Direct review-result persistence requires a current V2 task packet");
-  const packetCheck = validatePacket(taskRecord.data, { strict: true, directoryState: taskRecord.state, root });
-  if (!packetCheck.valid || taskRecord.state !== "review") throw new Error(`Direct review-result persistence requires a valid V2 task packet in review: ${packetCheck.errors.join("; ")}`);
-  const stageAuthority = taskRecord.data.routingPolicy?.[expectedStage];
-  const expectedModel = modelIds[stageAuthority?.route];
-  const initialValidation = validateReviewResult(reviewResult, {
-    taskId,
-    baseSha: comparisonBaseSha(root),
-    headSha: gitSha("HEAD", root),
-    reviewerAgent: stageAuthority?.agent,
-    model: expectedModel,
-    reasoningEffort: stageAuthority?.effort,
-  });
-  if (!initialValidation.valid) throw new Error(`Refusing to persist invalid review result: ${initialValidation.errors.join("; ")}`);
-  if (reviewResult.tracePath.includes("/runs/")) throw new Error("Direct review-result persistence requires the Codex-app atomic envelope adapter");
-  const expectedTracePath = `evidence/reviews/${taskId}/traces/${reviewResult.runId}-${stageAuthority.agent}-${stageAuthority.route}.jsonl`;
-  if (reviewResult.tracePath !== expectedTracePath) throw new Error("Direct review-result persistence requires the canonical task-scoped trace path");
-  let events;
-  try { events = fs.readFileSync(path.join(root, reviewResult.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
-  catch { throw new Error("Direct review-result persistence requires a valid bound launcher trace"); }
-  const traceErrors = validateLauncherTraceEvents(events, { packet: taskRecord.data, result: reviewResult, stage: expectedStage, root });
-  if (traceErrors.length) throw new Error(`Direct review-result persistence requires a strict bound launcher trace: ${traceErrors.join("; ")}`);
+  const validateAuthority = () => {
+    const taskRecord = findTaskPacket(taskId, root);
+    if (taskRecord.format !== "json" || taskRecord.data.schemaVersion !== "2.0.0") throw new Error("Direct review-result persistence requires a current V2 task packet");
+    const packetCheck = validatePacket(taskRecord.data, { strict: true, directoryState: taskRecord.state, root });
+    if (!packetCheck.valid || taskRecord.state !== "review") throw new Error(`Direct review-result persistence requires a valid V2 task packet in review: ${packetCheck.errors.join("; ")}`);
+    const stageAuthority = taskRecord.data.routingPolicy?.[expectedStage];
+    const validation = validateReviewResult(reviewResult, { taskId, baseSha: comparisonBaseSha(root), headSha: gitSha("HEAD", root), reviewerAgent: stageAuthority?.agent, model: modelIds[stageAuthority?.route], reasoningEffort: stageAuthority?.effort });
+    if (!validation.valid) throw new Error(`Refusing to persist invalid review result: ${validation.errors.join("; ")}`);
+    if (reviewResult.tracePath.includes("/runs/")) throw new Error("Direct review-result persistence requires the Codex-app atomic envelope adapter");
+    if (reviewResult.tracePath !== `evidence/reviews/${taskId}/traces/${reviewResult.runId}-${stageAuthority.agent}-${stageAuthority.route}.jsonl`) throw new Error("Direct review-result persistence requires the canonical task-scoped trace path");
+    return taskRecord;
+  };
+  const readAndValidateTrace = (taskRecord) => {
+    let events;
+    try { events = fs.readFileSync(path.join(root, reviewResult.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
+    catch { throw new Error("Direct review-result persistence requires a valid bound launcher trace"); }
+    const traceErrors = validateLauncherTraceEvents(events, { packet: taskRecord.data, result: reviewResult, stage: expectedStage, root });
+    if (traceErrors.length) throw new Error(`Direct review-result persistence requires a strict bound launcher trace: ${traceErrors.join("; ")}`);
+    return events;
+  };
+  readAndValidateTrace(validateAuthority());
+  beforeFinalValidation();
+  const finalTaskRecord = validateAuthority();
+  const finalEvents = readAndValidateTrace(finalTaskRecord);
+  const bound = finalEvents.find((event) => event.event === "review-bound");
+  requireReviewEvidenceSequence({ taskRecord: finalTaskRecord, profile, baseSha: reviewResult.baseSha, headSha: reviewResult.headSha, contextManifest: bound.contextManifest, root });
   return prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root }).finalize();
 }
 
