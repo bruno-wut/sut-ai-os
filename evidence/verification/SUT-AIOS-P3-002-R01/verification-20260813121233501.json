@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-002-R01",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T12:12:33.501Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "npm run test:event-delivery: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: submit rejects a new request whose workId already exists under a different idempotencyKey with deterministic WORK_ID_CONFLICT, while an exact idempotency replay remains idempotent and cannot create a second record.",
+    "confirmed: Stored duplicate work IDs are treated as invalid persistence and fail closed; runDue updates only the selected batch records and cannot apply one dispatch result to an out-of-batch or future record.",
+    "confirmed: runDue obtains its scheduling timestamp only from the trusted clock port; caller-supplied timestamps are rejected or ignored without authority, a far-future caller value cannot dispatch future work, and invalid or unavailable clock output fails closed.",
+    "confirmed: After construction, mutations or replacement of the caller's limits, clock, storage, or dispatcher properties do not change the validated configuration used by the module; the captured limits and callable ports are frozen/snapshotted.",
+    "confirmed: Dispatcher input includes the queue idempotencyKey for every work item, and documentation states the current dispatch-before-persist behavior is at-least-once in Tier-0/shadow mode with no exactly-once claim or production adapter authority.",
+    "confirmed: Focused regression tests cover duplicate work IDs, caller-clock disagreement, post-construction port mutation, idempotency-key propagation, persistence failure after dispatch, malformed inputs, and the existing event-delivery contract without introducing infrastructure imports or production behavior."
+  ],
+  "changedPaths": [
+    "docs/event-delivery/EVENT_DELIVERY_V1.md",
+    "docs/project/DEPENDENCY_GRAPH.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "evidence/tasks/SUT-AIOS-P3-002-R01/verification.md",
+    "services/event-delivery/src/event-delivery-v1.mjs",
+    "tasks/active/SUT-AIOS-P3-002-R01/task.json",
+    "tests/event-delivery/validate-event-delivery-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P3-002-R01/verification-20260813121233501.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
