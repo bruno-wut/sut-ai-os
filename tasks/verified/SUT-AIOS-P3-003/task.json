@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-003",
   "title": "Implement durable workflow state machine",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "workflow-runtime",
   "workflowId": "implementation-p3-003",
@@ -94,7 +94,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P3-003/task.json",
+      "tasks/verified/SUT-AIOS-P3-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "package.json"
     ]
@@ -102,8 +102,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-13T12:25:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T15:43:32.364Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P3-003/verification-20260813154248141.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -111,6 +113,34 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T15:22:26.585Z",
+      "actor": "chief-orchestrator",
+      "reason": "All declared dependencies, including GOV-061 and P3-002-R01, are done on origin/main; V1 packet paths, commands, tests, and evidence destinations are bounded and execution-ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T15:22:26.780Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin the bounded Workflow V1 state-machine implementation in the isolated worktree; no providers, production writes, or Workflow V2."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T15:43:27.388Z",
+      "actor": "orchestrator",
+      "reason": "Independent Sol QA assigned; 451 workflow assertions, verify:fast, exact base-bound verify:task, and git diff --check pass; hostile-input remediation verified; productionEligible false."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T15:43:32.364Z",
+      "actor": "orchestrator",
+      "reason": "Independent Sol QA PASS at e0b5330; 451 assertions, verify:fast, exact base-bound verify:task and diff check pass; all acceptance criteria confirmed, forbidden paths untouched, productionEligible false."
     }
   ]
 }
