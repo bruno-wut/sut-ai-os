@@ -1,5 +1,26 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-13 - P3-002 Workflow V1 execution readiness requires bounded verifier admission
+
+- **Task ID:** `SUT-AIOS-GOV-060`, `SUT-AIOS-P3-002`
+- **Status:** Remediation active
+- **Severity:** High assurance gap
+- **Affected scope:** Future P3-002 event-delivery implementation and independent verification
+- **Finding:** The P3-002 packet named `npm run test:event-delivery`, but `package.json` did not define it, `verify:task` did not admit it, the packet omitted `package.json` from its implementation/context allowlists, and it lacked the exact base-bound independent-verification command.
+- **Resolution:** GOV-060 adds the exact package script and a shell-free fixed verifier mapping to `node tests/event-delivery/validate-event-delivery-v1.mjs`, covers exact and near-miss command forms, and corrects only the P3-002 V1 execution packet. GOV-060 does not add or run the future validator or event-delivery implementation.
+- **Check note:** The executor's pre-commit `npm run verify:fast` reached the routing regression and failed only because that regression requires a clean committed worktree for its synthetic review launch. Packet validation, verifier self-test, governance validation, and whitespace checks pass; the orchestrator must rerun `verify:fast` on the committed head before independent QA.
+- **Next action / owner:** Independent Sol QA must inspect the final diff, run GOV-060 machine verification, and confirm no generic command execution or P3-002 implementation was introduced before the task advances.
+
+### 2026-08-13 - P3-001 transport-adapter constraints carried forward
+
+- **Task ID:** `SUT-AIOS-P3-001`
+- **Status:** Monitoring; core remains done
+- **Severity:** Medium
+- **Affected scope:** Future HTTP/Worker or other transport adapters around `createSignalNormalizer()`
+- **Constraints:** Reject oversized bodies before parsing or invoking the core; bind nonce, idempotency, source, rate, and budget trust facts to the exact request identity they were evaluated against; and commit cross-language golden signature vectors or adopt an approved standard canonicalization scheme before multiple implementations sign requests.
+- **Boundary:** These are transport-integration requirements, not defects in the completed Tier-0 application-core boundary. They do not reopen P3-001 and do not authorize deployment, credentials, production traffic, or provider integration.
+- **Next action / owner:** The planner and independent QA for the future transport-adapter packet must make these constraints explicit acceptance tests before real network exposure.
+
 ### 2026-08-01 - GOV-056 atomic MVP superseded by staged Foundation rollout
 
 - **Task ID:** `SUT-AIOS-GOV-056`

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-060",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T08:18:04.706Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/verify/verify-cli.mjs --self-test: pass",
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: package.json declares exactly test:event-delivery as node tests/event-delivery/validate-event-delivery-v1.mjs.",
+    "confirmed: P3-002 remains a schemaVersion 1.0.0 packet with modelRoute terra, defaultModel gpt-5.6-terra, fallbackModel gpt-5.6-sol, and allowedAgents exactly codex-engineering-executor and qa-verification.",
+    "confirmed: P3-002 allowedPaths includes package.json and its context budget includes package.json; its requiredTests remain the event-delivery validator and verify:fast.",
+    "confirmed: P3-002 allowedCommands explicitly authorize the fixed independent verify:task invocation for qa-verification with gpt-5.6-sol, so changed-path and secret checks are executable without generic command execution.",
+    "confirmed: The verifier admits only the exact npm run test:event-delivery literal through a shell-free fixed mapping to node tests/event-delivery/validate-event-delivery-v1.mjs, with exact and near-miss rejection self-tests.",
+    "confirmed: No event-delivery service or test implementation, Workflow V2 routing, package-lock, scripts outside the exact verifier, schemas, production behavior, credentials, or external operations are changed.",
+    "confirmed: The corrected V1 packet, exact package script, verifier admission, policy text, and evidence pass deterministic packet, governance, fast, and whitespace checks."
+  ],
+  "changedPaths": [
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-060/verification.md",
+    "package.json",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/active/SUT-AIOS-GOV-060/task.json",
+    "tasks/backlog/SUT-AIOS-P3-002/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-060/verification-20260813081804706.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
