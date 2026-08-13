@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { createPersistencePort } from "../../packages/persistence-port/src/persistence-port-v1.mjs";
+import { createPersistencePort, createPersistencePortForTesting } from "../../packages/persistence-port/src/persistence-port-v1.mjs";
 import { composePersistencePort } from "../../services/persistence-composition/persistence-composition-v1.mjs";
 
 let cases = 0;
@@ -40,7 +40,7 @@ function capacityObservation(resourceDimension = "persistence_growth_bytes", ove
     configurationState: "valid",
     meterState: "fresh",
     usedUnits: 100,
-    reservedUnits: 0,
+    reservedUnits: 256,
     hardLimitUnits: 1000,
     observedAt: "2026-08-13T00:00:00Z",
     meterAgeSeconds: 30,
@@ -50,19 +50,33 @@ function capacityObservation(resourceDimension = "persistence_growth_bytes", ove
   }, overrides);
 }
 
+function capacitySource(observationOverrides = {}, bindingOverrides = {}) {
+  return {
+    sourceId: "trusted-test-capacity-v1",
+    mode: "fixture_only",
+    observe(query) {
+      const dimension = { read: "persistence_egress_bytes", write: "persistence_growth_bytes", append: "persistence_growth_bytes", delete_expired: "persistence_size_bytes" }[query.operation];
+      return {
+        binding: Object.assign(clone(query), bindingOverrides),
+        observation: capacityObservation(dimension, { observationId: "trusted-test-capacity-observation", ...observationOverrides, reservedUnits: query.contentBytes })
+      };
+    }
+  };
+}
+
 function request(operation = "write", overrides = {}) {
-  const dimensions = { read: "persistence_egress_bytes", write: "persistence_growth_bytes", append: "persistence_growth_bytes", delete_expired: "persistence_size_bytes" };
   const candidate = governanceCandidate();
   if (operation === "delete_expired") candidate.requestedAction = "scheduled_delete";
-  return Object.assign({
+  const value = Object.assign({
     schemaVersion: "1.0.0",
     requestId: `request-${operation.replaceAll("_", "-")}`,
     operation,
-    record: { recordId: "aggregate-record-1", contentDigest: DIGEST_A, contentBytes: 256 },
+    record: { recordId: "aggregate-record-1", contentDigest: DIGEST_A, contentBytes: 256, expectedRevision: operation === "delete_expired" ? 1 : null },
     governanceCandidate: candidate,
-    capacityObservation: capacityObservation(dimensions[operation] ?? "persistence_growth_bytes"),
     authorityClaims: { callerSuppliesAuthority: false, providerAuthorizes: false, productionWriteGranted: false }
   }, overrides);
+  value.record = { recordId: "aggregate-record-1", contentDigest: DIGEST_A, contentBytes: 256, expectedRevision: operation === "delete_expired" ? 1 : null, ...(overrides.record ?? {}) };
+  return value;
 }
 
 function auditCandidate() {
@@ -116,16 +130,23 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   equal(written.value.adapterId, adapterId, `${adapterId} result identifies selected fixture adapter`);
   equal(written.value.record.revision, 1, `${adapterId} first write revision`);
   equal(written.value.governanceReference, { candidateId: "aggregate-candidate-1", dataCategory: "hourly_analytics_aggregate", artifactClass: "analytics_aggregate", requestedAction: "retain", eligibility: "future_lifecycle_candidate" }, `${adapterId} retains P2-006 reference`);
-  equal(written.value.capacityReference, { observationId: "capacity-persistence_growth_bytes", resourceDimension: "persistence_growth_bytes", budgetState: "below_warning", reasonCode: "WITHIN_BUDGET" }, `${adapterId} retains P2-007 reference`);
+  equal(written.value.capacityReference, { sourceId: "reference-capacity-v1", observationId: "reference-capacity-observation", resourceDimension: "persistence_growth_bytes", budgetState: "below_warning", reasonCode: "WITHIN_BUDGET", boundContentBytes: 256 }, `${adapterId} retains bound trusted P2-007 reference`);
 
   await rejected(port, request("write"), ["RECORD_ALREADY_EXISTS"], `${adapterId} duplicate write`);
   const appendInput = request("append"); appendInput.record.contentDigest = DIGEST_B;
   const appended = await accepted(port, appendInput, "appended", `${adapterId} append`);
   equal(appended.value.record.revision, 2, `${adapterId} append revision`);
+  const repeatedAppendResult = await accepted(port, clone(appendInput), "appended", `${adapterId} exact append replay`);
+  equal(repeatedAppendResult.value.record.revision, 2, `${adapterId} exact append replay returns original revision`);
+  const conflictingReplay = clone(appendInput); conflictingReplay.record.contentDigest = DIGEST_A;
+  await rejected(port, conflictingReplay, ["IDEMPOTENCY_CONFLICT"], `${adapterId} conflicting append idempotency reuse`);
   const readInput = request("read"); readInput.record.contentDigest = DIGEST_B;
   const found = await accepted(port, readInput, "found", `${adapterId} read`);
   equal([found.value.record.contentDigest, found.value.record.revision], [DIGEST_B, 2], `${adapterId} read sees latest revision`);
-  const deleted = await accepted(port, request("delete_expired"), "deleted", `${adapterId} valid ordinary scheduled delete`);
+  await rejected(port, request("delete_expired", { requestId: `stale-delete-${adapterId}`, record: { contentDigest: DIGEST_B, expectedRevision: 1 } }), ["REVISION_CONFLICT"], `${adapterId} stale ordinary delete`);
+  const afterStaleDelete = await accepted(port, readInput, "found", `${adapterId} latest ordinary revision remains after stale delete`);
+  equal(afterStaleDelete.value.record.revision, 2, `${adapterId} stale delete preserves revision two`);
+  const deleted = await accepted(port, request("delete_expired", { requestId: `current-delete-${adapterId}`, record: { contentDigest: DIGEST_B, expectedRevision: 2 } }), "deleted", `${adapterId} current-revision ordinary scheduled delete`);
   equal(deleted.value.record.revision, 2, `${adapterId} valid delete returns removed ordinary revision`);
   await accepted(port, readInput, "not_found", `${adapterId} ordinary history is absent after valid delete`);
 
@@ -150,13 +171,13 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   const auditIntact = await accepted(port, auditRead, "found", `${adapterId} protected record remains after collision`);
   equal([auditIntact.value.record.dataCategory, auditIntact.value.record.artifactClass, auditIntact.value.record.retentionAction, auditIntact.value.record.revision], ["required_audit_evidence", "audit_evidence", "retain", 2], `${adapterId} protected identity and latest revision remain intact`);
 
-  const ordinaryDeleteAgainstAudit = request("delete_expired", { requestId: `ordinary-delete-audit-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 } });
+  const ordinaryDeleteAgainstAudit = request("delete_expired", { requestId: `ordinary-delete-audit-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32, expectedRevision: 2 } });
   await rejected(port, ordinaryDeleteAgainstAudit, ["RECORD_IDENTITY_CONFLICT"], `${adapterId} ordinary scheduled delete cannot erase protected recordId`);
   const auditAfterOrdinaryDelete = await accepted(port, auditRead, "found", `${adapterId} protected record remains after ordinary delete collision`);
   equal([auditAfterOrdinaryDelete.value.record.dataCategory, auditAfterOrdinaryDelete.value.record.artifactClass, auditAfterOrdinaryDelete.value.record.retentionAction, auditAfterOrdinaryDelete.value.record.revision], ["required_audit_evidence", "audit_evidence", "retain", 2], `${adapterId} ordinary delete collision preserves protected identity and revision`);
 
   const auditDeleteCandidate = auditCandidate(); auditDeleteCandidate.requestedAction = "scheduled_delete";
-  await rejected(port, request("delete_expired", { requestId: `audit-delete-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 }, governanceCandidate: auditDeleteCandidate }), ["DATA_GOVERNANCE_REJECTED", "RETENTION_ACTION_NOT_ELIGIBLE", "APPEND_ONLY_AUDIT_CONFLICT"], `${adapterId} protected delete remains rejected`);
+  await rejected(port, request("delete_expired", { requestId: `audit-delete-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32, expectedRevision: 2 }, governanceCandidate: auditDeleteCandidate }), ["DATA_GOVERNANCE_REJECTED", "RETENTION_ACTION_NOT_ELIGIBLE", "APPEND_ONLY_AUDIT_CONFLICT"], `${adapterId} protected delete remains rejected`);
   const auditAfterDelete = await accepted(port, auditRead, "found", `${adapterId} protected record remains after rejected delete`);
   equal(auditAfterDelete.value.record.revision, 2, `${adapterId} rejected delete never removes protected history`);
 
@@ -195,7 +216,7 @@ const permissiveAdapter = {
   mode: "fixture_only",
   execute(operation, record) { adapterCalls += 1; return { ok: true, status: operation === "read" ? "found" : "written", record: { ...record, revision: 1 } }; }
 };
-const guardedPort = createPersistencePort(permissiveAdapter);
+const guardedPort = createPersistencePort(permissiveAdapter, capacitySource());
 
 const raw = governanceCandidate({
   candidateId: "raw-click-candidate",
@@ -223,17 +244,25 @@ for (const [path, value, upstream] of [
   [["workloadControls", "perGuestInteractionUnitOfWork"], true, "PER_INTERACTION_WORK_PROHIBITED"]
 ]) {
   const observation = mutate(capacityObservation(), path, value);
-  await rejected(guardedPort, request("write", { capacityObservation: observation }), ["CAPACITY_GOVERNANCE_REJECTED", upstream], `capacity ${upstream}`);
+  await rejected(createPersistencePortForTesting(permissiveAdapter, capacitySource(observation)), request("write"), ["CAPACITY_GOVERNANCE_REJECTED", upstream], `trusted capacity ${upstream}`);
 }
-await rejected(guardedPort, request("write", { capacityObservation: capacityObservation("persistence_egress_bytes") }), ["CAPACITY_DIMENSION_MISMATCH"], "wrong write capacity dimension");
+await rejected(createPersistencePortForTesting(permissiveAdapter, capacitySource({ resourceDimension: "persistence_egress_bytes" })), request("write"), ["CAPACITY_BINDING_MISMATCH"], "trusted capacity wrong write dimension");
 for (const [usedUnits, expectedReason] of [[900, "WARNING_90_REACHED"], [1000, "HARD_LIMIT_REACHED"], [1100, "HARD_LIMIT_EXCEEDED"]]) {
-  await rejected(guardedPort, request("write", { capacityObservation: capacityObservation("persistence_growth_bytes", { usedUnits }) }), ["CAPACITY_NOT_AVAILABLE", expectedReason], `capacity threshold ${usedUnits}`);
+  const thresholdPort = createPersistencePortForTesting(permissiveAdapter, capacitySource({ usedUnits, hardLimitUnits: 1000 }));
+  await rejected(thresholdPort, request("write", { record: { recordId: `threshold-${usedUnits}`, contentDigest: DIGEST_A, contentBytes: 0 } }), ["CAPACITY_NOT_AVAILABLE", expectedReason], `trusted capacity threshold ${usedUnits}`);
 }
+await rejected(createPersistencePortForTesting(permissiveAdapter), request("write"), ["CAPACITY_SOURCE_UNAVAILABLE"], "missing trusted capacity source");
+await rejected(createPersistencePortForTesting(permissiveAdapter, { sourceId: "offline-capacity-v1", mode: "fixture_only", observe() { throw new Error("offline"); } }), request("write"), ["CAPACITY_SOURCE_UNAVAILABLE"], "unavailable trusted capacity source");
+await rejected(createPersistencePortForTesting(permissiveAdapter, { ...capacitySource(), sourceId: "caller-capacity-v1" }), request("write"), ["CAPACITY_SOURCE_UNAVAILABLE"], "non-canonical test capacity source identity");
+await rejected(createPersistencePortForTesting(permissiveAdapter, capacitySource({}, { recordId: "different-record" })), request("write"), ["CAPACITY_BINDING_MISMATCH"], "trusted capacity binding mismatch");
+const reservedMismatchSource = capacitySource(); reservedMismatchSource.observe = (query) => { const result = capacitySource().observe(query); result.observation.reservedUnits += 1; return result; };
+await rejected(createPersistencePortForTesting(permissiveAdapter, reservedMismatchSource), request("write"), ["CAPACITY_BINDING_MISMATCH"], "trusted capacity size binding mismatch");
 equal(adapterCalls, 0, "rejected governance and capacity inputs never reach adapter");
 
 // 50/75 warnings remain deterministic accepted capacity references; 90 fails closed.
 for (const [usedUnits, budgetState, reasonCode] of [[500, "warning_50", "WARNING_50_REACHED"], [750, "warning_75", "WARNING_75_REACHED"]]) {
-  const result = await accepted(guardedPort, request("write", { requestId: `warning-${usedUnits}`, record: { recordId: `record-${usedUnits}`, contentDigest: DIGEST_A, contentBytes: 1 }, capacityObservation: capacityObservation("persistence_growth_bytes", { usedUnits }) }), "written", `capacity warning ${usedUnits}`);
+  const warningPort = createPersistencePortForTesting(permissiveAdapter, capacitySource({ usedUnits, hardLimitUnits: 1000 }));
+  const result = await accepted(warningPort, request("write", { requestId: `warning-${usedUnits}`, record: { recordId: `record-${usedUnits}`, contentDigest: DIGEST_A, contentBytes: 0 } }), "written", `trusted capacity warning ${usedUnits}`);
   equal([result.value.capacityReference.budgetState, result.value.capacityReference.reasonCode], [budgetState, reasonCode], `capacity warning ${usedUnits} retained`);
 }
 
@@ -241,26 +270,36 @@ for (const [usedUnits, budgetState, reasonCode] of [[500, "warning_50", "WARNING
 for (const [field, reason] of [["callerSuppliesAuthority", "CALLER_AUTHORITY_INJECTION"], ["providerAuthorizes", "PROVIDER_AUTHORITY_CLAIM"], ["productionWriteGranted", "PRODUCTION_WRITE_CLAIM"]]) {
   await rejected(guardedPort, mutate(request(), ["authorityClaims", field], true), [reason], `${field} claim`);
 }
-for (const field of ["schema", "policy", "contract", "validator", "configuration", "thresholds", "retentionConfiguration", "adapter", "dependencies"]) {
+for (const field of ["schema", "policy", "contract", "validator", "configuration", "thresholds", "retentionConfiguration", "adapter", "dependencies", "capacityObservation", "capacitySource", "resourceBudgetPolicy"]) {
   const injected = request(); injected[field] = {};
   await rejected(guardedPort, injected, ["CALLER_AUTHORITY_INJECTION"], `${field} authority injection`);
 }
 const redirected = await guardedPort.execute(request("write", { requestId: "extra-arguments", record: { recordId: "extra-arguments", contentDigest: DIGEST_A, contentBytes: 1 } }), { schema: { allowEverything: true } }, { policy: { hardLimit: Infinity } });
 check(redirected.ok, "extra dependency arguments are ignored for canonical request");
+const callerCapacityReplacement = capacitySource({ usedUnits: 1_000_000, hardLimitUnits: 1 });
+const normalAuthorityPort = createPersistencePort(permissiveAdapter, callerCapacityReplacement);
+const normalAuthorityResult = await accepted(normalAuthorityPort, request("write", { requestId: "normal-capacity-authority", record: { recordId: "normal-capacity-authority", contentDigest: DIGEST_A, contentBytes: 1 } }), "written", "normal constructor ignores caller capacity replacement");
+equal(normalAuthorityResult.value.capacityReference.sourceId, "reference-capacity-v1", "normal constructor always uses committed fixture capacity source");
 
 // Adapter configuration is captured and hostile adapters cannot turn rejection into acceptance.
 let capturedCalls = 0;
 const mutableAdapter = { adapterId: "captured-adapter-v1", mode: "fixture_only", execute(operation, record) { capturedCalls += 1; return { ok: true, status: "written", record: { ...record, revision: 1 } }; } };
-const capturedPort = createPersistencePort(mutableAdapter);
+const mutableCapacity = capacitySource();
+const capturedPort = createPersistencePortForTesting(mutableAdapter, mutableCapacity);
 mutableAdapter.execute = () => { throw new Error("mutated adapter must not replace captured function"); };
+mutableCapacity.observe = () => { throw new Error("mutated source must not replace captured function"); };
 await accepted(capturedPort, request("write", { requestId: "captured", record: { recordId: "captured", contentDigest: DIGEST_A, contentBytes: 1 } }), "written", "captured adapter function");
 equal(capturedCalls, 1, "captured adapter remains stable after mutation");
-await rejected(createPersistencePort(null), request(), ["PERSISTENCE_ADAPTER_UNAVAILABLE"], "missing core adapter");
-await rejected(createPersistencePort({ adapterId: "throwing-v1", mode: "fixture_only", execute() { throw new Error("offline"); } }), request(), ["PERSISTENCE_ADAPTER_UNAVAILABLE"], "throwing adapter");
-await rejected(createPersistencePort({ adapterId: "malformed-v1", mode: "fixture_only", execute() { return { ok: true, status: "written", record: { revision: 1 } }; } }), request(), ["INVALID_ADAPTER_RESULT"], "malformed adapter result");
-await rejected(createPersistencePort({ adapterId: "authorizing-v1", mode: "fixture_only", execute() { return { ok: true, status: "written", record: { schemaVersion: "1.0.0", recordId: "x", dataCategory: "x", artifactClass: "x", retentionAction: "x", contentDigest: DIGEST_A, contentBytes: 1, revision: 1, productionWriteAuthorized: true } }; } }), request(), ["INVALID_ADAPTER_RESULT"], "adapter authority injection result");
-await rejected(createPersistencePort({ adapterId: "mismatched-v1", mode: "fixture_only", execute(operation, record) { return { ok: true, status: "written", record: { ...record, recordId: "different-record", revision: 1 } }; } }), request(), ["INVALID_ADAPTER_RESULT"], "adapter cannot substitute another record");
-await rejected(createPersistencePort({ adapterId: "wrong-status-v1", mode: "fixture_only", execute(operation, record) { return { ok: true, status: "found", record: { ...record, revision: 1 } }; } }), request(), ["INVALID_ADAPTER_RESULT"], "adapter status must match requested operation");
+await rejected(createPersistencePort(null, capacitySource()), request(), ["PERSISTENCE_ADAPTER_UNAVAILABLE"], "missing core adapter");
+await rejected(createPersistencePort({ adapterId: "throwing-v1", mode: "fixture_only", execute() { throw new Error("offline"); } }, capacitySource()), request(), ["PERSISTENCE_ADAPTER_UNAVAILABLE"], "throwing adapter");
+await rejected(createPersistencePort({ adapterId: "malformed-v1", mode: "fixture_only", execute() { return { ok: true, status: "written", record: { revision: 1 } }; } }, capacitySource()), request(), ["INVALID_ADAPTER_RESULT"], "malformed adapter result");
+await rejected(createPersistencePort({ adapterId: "authorizing-v1", mode: "fixture_only", execute() { return { ok: true, status: "written", record: { schemaVersion: "1.0.0", recordId: "x", dataCategory: "x", artifactClass: "x", retentionAction: "x", contentDigest: DIGEST_A, contentBytes: 1, revision: 1, productionWriteAuthorized: true } }; } }, capacitySource()), request(), ["INVALID_ADAPTER_RESULT"], "adapter authority injection result");
+await rejected(createPersistencePort({ adapterId: "mismatched-v1", mode: "fixture_only", execute(operation, record) { return { ok: true, status: "written", record: { ...record, recordId: "different-record", revision: 1 } }; } }, capacitySource()), request(), ["INVALID_ADAPTER_RESULT"], "adapter cannot substitute another record");
+await rejected(createPersistencePort({ adapterId: "wrong-status-v1", mode: "fixture_only", execute(operation, record) { return { ok: true, status: "found", record: { ...record, revision: 1 } }; } }, capacitySource()), request(), ["INVALID_ADAPTER_RESULT"], "adapter status must match requested operation");
+const staleDeleteAdapter = { adapterId: "stale-delete-v1", mode: "fixture_only", execute(operation, record) { return { ok: true, status: "deleted", record: { ...record, retentionAction: "retain", revision: 1 } }; } };
+await rejected(createPersistencePort(staleDeleteAdapter), request("delete_expired", { requestId: "hostile-stale-delete", record: { expectedRevision: 2 } }), ["INVALID_ADAPTER_RESULT"], "deep module rejects stale successful delete result");
+const mismatchedDeleteAdapter = { adapterId: "mismatched-delete-v1", mode: "fixture_only", execute(operation, record, context) { return { ok: true, status: "deleted", record: { ...record, retentionAction: "retain", contentDigest: DIGEST_B, contentBytes: record.contentBytes + 1, revision: context.expectedRevision } }; } };
+await rejected(createPersistencePort(mismatchedDeleteAdapter), request("delete_expired"), ["INVALID_ADAPTER_RESULT"], "deep module rejects delete digest and size mismatch");
 
 // Every malformed or hostile request returns a deterministic denial.
 const malformed = [null, undefined, true, false, 0, 1, "request", [], Symbol("request"), 1n, NaN, Infinity, new Date(), /request/u, () => {}, Object.create({ inherited: true }), { ...request(), payload: { guestId: "guest" } }];
@@ -278,12 +317,15 @@ for (const [path, value, expected] of [
   [["record", "contentDigest"], "sha256:bad", ["INVALID_RECORD_REFERENCE"]],
   [["record", "contentBytes"], 65_537, ["INVALID_RECORD_REFERENCE"]]
 ]) await rejected(guardedPort, mutate(request(), path, value), expected, `invalid ${path.join(".")}`);
+await rejected(guardedPort, request("delete_expired", { record: { expectedRevision: 0 } }), ["INVALID_EXPECTED_REVISION"], "delete requires positive expected revision");
+await rejected(guardedPort, request("delete_expired", { record: { expectedRevision: null } }), ["INVALID_EXPECTED_REVISION"], "delete requires expected revision");
+await rejected(guardedPort, request("append", { record: { expectedRevision: 1 } }), ["INVALID_EXPECTED_REVISION"], "append cannot supply delete revision authority");
 
 const [coreSource, compositionSource] = await Promise.all([
   readFile(new URL("../../packages/persistence-port/src/persistence-port-v1.mjs", import.meta.url), "utf8"),
   readFile(new URL("../../services/persistence-composition/persistence-composition-v1.mjs", import.meta.url), "utf8")
 ]);
-equal([...coreSource.matchAll(/\bexport\s+function\s+([A-Za-z0-9_]+)/gu)].map((match) => match[1]), ["createPersistencePort"], "core exports exactly one constructor");
+equal([...coreSource.matchAll(/\bexport\s+function\s+([A-Za-z0-9_]+)/gu)].map((match) => match[1]), ["createPersistencePort", "createPersistencePortForTesting"], "core exports one normal constructor and one explicit test-only constructor");
 equal([...compositionSource.matchAll(/\bexport\s+function\s+([A-Za-z0-9_]+)/gu)].map((match) => match[1]), ["composePersistencePort"], "composition exports exactly one selector");
 check(!/from\s+["'](?:cloudflare|supabase|github|openai|line|@?aws|pg|postgres|mysql|redis|bullmq|wrangler|better-sqlite3|sqlite)/iu.test(coreSource), "core imports no provider, database, queue, AI, or local-server SDK");
 check(!/services[\\/]persistence-composition|scripts[\\/](?:verify|github|task)|reference[\\/]finalized-platform/iu.test(coreSource), "core depends inward and not on composition, verification, governance scripts, or immutable reference");

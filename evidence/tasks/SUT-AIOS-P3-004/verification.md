@@ -24,6 +24,17 @@
   append retains the stricter category/artifact/retention tuple. This permits a
   valid ordinary `scheduled_delete` transition without weakening the protected
   record guard.
+- Added required delete `expectedRevision` propagation and validation. Both
+  adapters reject stale deletion before mutation, and the deep module checks a
+  successful delete's digest, byte count, and revision independently.
+- Removed capacity observations from the caller request. The normal constructor
+  captures the committed fixture-only capacity source and enforces an exact
+  request/record binding with reserved bytes equal to content bytes before
+  P2-007 classification. Missing, unavailable, unbound, and non-canonical test
+  sources fail closed; normal callers cannot replace used/reserved/hard limits.
+- Propagated `requestId` as append idempotency identity. Exact replay returns the
+  original revision; conflicting reuse returns `IDEMPOTENCY_CONFLICT` without
+  mutation for both adapters.
 - Added bounded architecture and rollback documentation.
 
 ## Changed paths
@@ -41,6 +52,19 @@
 | --- | --- | --- |
 | `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 721 cases after the bounded delete-semantics correction. |
 | `npm run verify:fast` | FAIL on uncommitted delete-semantics tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit the bounded remediation and rerun this exact command before fresh independent QA. |
+| `git diff --check` | PASS | No whitespace errors; Git emitted only line-ending conversion notices for the modified working-copy files. |
+
+### Revision-required integrity remediation
+
+The historical 721-case result above is preserved. The current remediation adds
+stale-delete, capacity-authority binding, deep delete-result validation, and
+append-idempotency coverage. Its final exact command results are recorded below
+without rewriting prior evidence.
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 858 cases. |
+| `npm run verify:fast` | FAIL on uncommitted integrity-remediation tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit and rerun this exact command before fresh QA. |
 | `git diff --check` | PASS | No whitespace errors; Git emitted only line-ending conversion notices for the modified working-copy files. |
 
 ## Safety and authority
@@ -62,8 +86,10 @@ separately govern retention due-state and lifecycle composition.
 
 - The adapters are process-local fixtures, not durable storage or production
   implementations.
-- Capacity observations are prepared trusted facts evaluated by the committed
-  P2-007 authority; live metering and authentication are not implemented.
+- The committed fixture capacity source is deterministic and request-bound;
+  live metering, reservation, authentication, and production capacity are not
+  implemented. A future provider adapter requires an equivalent authenticated
+  binding in a separately approved task.
 - No retention duration, due-state calculation, scheduler, archival, transfer,
   or legal-compliance decision exists.
 - A future provider adapter requires a separate approved packet, production

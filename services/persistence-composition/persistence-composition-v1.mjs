@@ -29,12 +29,27 @@ function isProtectedAuditRecord(record) {
   return record.dataCategory === "required_audit_evidence" || record.artifactClass === "audit_evidence";
 }
 
+function appendFingerprint(record) {
+  return JSON.stringify(record);
+}
+
+function repeatedAppend(ledger, context, record) {
+  const prior = ledger.get(context.idempotencyKey);
+  if (prior === undefined) return null;
+  return prior.fingerprint === appendFingerprint(record) ? clone(prior.result) : { ok: false, reasonCode: "IDEMPOTENCY_CONFLICT" };
+}
+
+function rememberAppend(ledger, context, record, result) {
+  ledger.set(context.idempotencyKey, { fingerprint: appendFingerprint(record), result: clone(result) });
+}
+
 function createMapAdapter() {
   const histories = new Map();
+  const appendLedger = new Map();
   return Object.freeze({
     adapterId: "reference-map-v1",
     mode: "fixture_only",
-    execute(operation, record) {
+    execute(operation, record, context) {
       const history = histories.get(record.recordId) ?? [];
       const current = history.at(-1) ?? null;
       if (operation === "read") return current === null ? { ok: true, status: "not_found", record: null } : { ok: true, status: "found", record: clone(current) };
@@ -45,14 +60,19 @@ function createMapAdapter() {
         return { ok: true, status: "written", record: clone(stored) };
       }
       if (operation === "append") {
+        const repeated = repeatedAppend(appendLedger, context, record);
+        if (repeated !== null) return repeated;
         if (current !== null && !sameHistoryIdentity(current, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
         const stored = { ...clone(record), revision: current === null ? 1 : current.revision + 1 };
         histories.set(stored.recordId, [...history, stored]);
-        return { ok: true, status: "appended", record: clone(stored) };
+        const result = { ok: true, status: "appended", record: clone(stored) };
+        rememberAppend(appendLedger, context, record, result);
+        return result;
       }
       if (current === null) return { ok: true, status: "not_found", record: null };
       if (!sameRecordClassification(current, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
       if (isProtectedAuditRecord(current)) return { ok: false, reasonCode: "PROTECTED_RECORD_DELETE_FORBIDDEN" };
+      if (context.expectedRevision !== current.revision) return { ok: false, reasonCode: "REVISION_CONFLICT" };
       histories.delete(record.recordId);
       return { ok: true, status: "deleted", record: clone(current) };
     }
@@ -61,6 +81,7 @@ function createMapAdapter() {
 
 function createJournalAdapter() {
   const journal = [];
+  const appendLedger = new Map();
   function current(recordId) {
     for (let index = journal.length - 1; index >= 0; index -= 1) {
       const entry = journal[index];
@@ -71,7 +92,7 @@ function createJournalAdapter() {
   return Object.freeze({
     adapterId: "reference-journal-v1",
     mode: "fixture_only",
-    execute(operation, record) {
+    execute(operation, record, context) {
       const existing = current(record.recordId);
       if (operation === "read") return existing === null ? { ok: true, status: "not_found", record: null } : { ok: true, status: "found", record: clone(existing) };
       if (operation === "write") {
@@ -81,14 +102,19 @@ function createJournalAdapter() {
         return { ok: true, status: "written", record: clone(stored) };
       }
       if (operation === "append") {
+        const repeated = repeatedAppend(appendLedger, context, record);
+        if (repeated !== null) return repeated;
         if (existing !== null && !sameHistoryIdentity(existing, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
         const stored = { ...clone(record), revision: existing === null ? 1 : existing.revision + 1 };
         journal.push({ deleted: false, record: stored });
-        return { ok: true, status: "appended", record: clone(stored) };
+        const result = { ok: true, status: "appended", record: clone(stored) };
+        rememberAppend(appendLedger, context, record, result);
+        return result;
       }
       if (existing === null) return { ok: true, status: "not_found", record: null };
       if (!sameRecordClassification(existing, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
       if (isProtectedAuditRecord(existing)) return { ok: false, reasonCode: "PROTECTED_RECORD_DELETE_FORBIDDEN" };
+      if (context.expectedRevision !== existing.revision) return { ok: false, reasonCode: "REVISION_CONFLICT" };
       journal.push({ deleted: true, record: clone(existing) });
       return { ok: true, status: "deleted", record: clone(existing) };
     }
