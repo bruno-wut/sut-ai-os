@@ -9,6 +9,7 @@ import { computeReviewOutputHash, validateReviewResult } from "../../scripts/rev
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle-"));
 const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-external-"));
+const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 const id = "SUT-TEST-V2-REVIEW";
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);
@@ -30,6 +31,13 @@ function assessment(nextAction) {
 }
 
 try {
+  const workflowDocumentation = fs.readFileSync(path.join(repositoryRoot, "docs", "project", "TASK_WORKFLOW.md"), "utf8");
+  assert.match(workflowDocumentation, /Source head:[\s\S]*Evidence head:[\s\S]*Lifecycle head:/, "Workflow V2 documentation preserves the ordered three-head sequence");
+  assert.match(workflowDocumentation, /--evidence evidence\/reviews\/SUT-AIOS-AREA-001\/<final-review-stage>-<source-head>\.json/, "documented V2 verification uses the final exact-head review artifact");
+  assert.match(workflowDocumentation, /--review-head <source-head>/, "documented V2 verification binds the immutable source head");
+  assert.match(workflowDocumentation, /--review-base <origin-main-sha>/, "documented V2 verification binds canonical origin main");
+  assert.match(workflowDocumentation, /distinct `headSha` and `evidenceHeadSha`/, "documentation explains the schema-valid distinct review heads");
+  assert.doesNotMatch(workflowDocumentation, /--verified --evidence evidence\/tasks\/SUT-AIOS-AREA-001\/verification\.md/, "documentation no longer instructs the rejected legacy evidence command for a new V2 packet");
   createPacket({ task: id, title: "V2 review lifecycle fixture" }, root);
   let record = findPacket(id, root);
   Object.assign(record.packet, {
@@ -224,7 +232,6 @@ try {
   }
   fs.writeFileSync(verifiedPacketFile, originalVerifiedPacket);
 
-  const repositoryRoot = path.resolve(import.meta.dirname, "../..");
   const appRoot = path.join(root, "codex-app-fixture");
   fs.mkdirSync(appRoot, { recursive: true });
   const appTaskId = "SUT-AIOS-GOV-056-FND";
@@ -396,7 +403,7 @@ try {
   fs.writeFileSync(path.join(root, v1Evidence), "V1 fixture evidence\n");
   transition(v1TaskId, "done", "Valid V1 completion remains supported.", "qa-verification", root, { evidence: v1Evidence });
   assert.equal(findPacket(v1TaskId, root).state, "done", "valid V1 verified-to-done transition remains supported");
-  process.stdout.write(JSON.stringify({ status: "passed", checks: 94 }) + "\n");
+  process.stdout.write(JSON.stringify({ status: "passed", checks: 100 }) + "\n");
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(externalRoot, { recursive: true, force: true });

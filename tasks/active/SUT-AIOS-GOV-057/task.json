@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "revision-required",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-12T21:39:50.578Z",
+  "updatedDate": "2026-08-13T02:42:28.484Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -920,6 +920,13 @@
       "at": "2026-08-12T21:39:50.578Z",
       "actor": "qa-verification",
       "reason": "Merge-risk review on 74f221d found TASK_WORKFLOW.md contradicts the enforced three-head V2 verification sequence; that permanent documentation path is outside the approved packet allowlist."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T02:42:28.484Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply the user-approved documentation-only parity correction and existing lifecycle regression; preserve every other packet boundary."
     }
   ]
 }
