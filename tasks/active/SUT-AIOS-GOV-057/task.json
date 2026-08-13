@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T02:49:12.305Z",
+  "updatedDate": "2026-08-13T02:55:00.947Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -955,6 +955,20 @@
       "at": "2026-08-13T02:49:12.305Z",
       "actor": "chief-orchestrator",
       "reason": "Freeze the documented Workflow V2 sequence and duplicate-context bound for final exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T02:55:00.794Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk review on 6bd1e93 found POSIX process-group confirmation used an unreferenced polling timer after root-child close, so terminal provenance was not guaranteed."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T02:55:00.947Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Keep only bounded POSIX process-group confirmation polling referenced through terminal resolution and add exact terminal/no-publication coverage."
     }
   ]
 }
