@@ -1,5 +1,16 @@
 # Issues, Blockers, and Risks Register
 
+### 2026-08-13 - P3-004 Workflow V1 execution readiness requires bounded verifier admission
+
+- **Task ID:** `SUT-AIOS-GOV-062`, `SUT-AIOS-P3-004`
+- **Status:** Remediation active
+- **Severity:** High assurance gap
+- **Affected scope:** Future P3-004 persistence-composition implementation and independent verification
+- **Finding:** The P3-004 packet named `npm run test:persistence-composition`, but `package.json` did not define it, `verify:task` did not admit it, the packet omitted `package.json` from its implementation and context allowlists, and it lacked the exact base-bound independent-verification command.
+- **Resolution:** GOV-062 adds the exact package script and a shell-free fixed verifier mapping to `node tests/persistence-composition/validate-persistence-composition-v1.mjs`, covers exact and near-miss command forms, and corrects only the P3-004 V1 execution packet. GOV-062 does not add or run the future validator, persistence port, reference adapter, database, provider, network, or production behavior.
+- **Check note:** The executor's pre-commit `npm run verify:fast` passed packet validation, worktree self-test, and lifecycle self-test, but failed the clean-head-sensitive Codex-routing check while GOV-062 changes were uncommitted. Verifier self-test, focused and repository-wide task validation, governance validation, and whitespace checks pass; the orchestrator must rerun `verify:fast` on the committed head before independent QA.
+- **Next action / owner:** Independent Sol QA must inspect the final diff, run GOV-062 machine verification, and confirm no generic command execution or P3-004 implementation was introduced before P3-004 can become execution-ready.
+
 ### 2026-08-13 - P3-002 Workflow V1 execution readiness requires bounded verifier admission
 
 - **Task ID:** `SUT-AIOS-GOV-060`, `SUT-AIOS-P3-002`
