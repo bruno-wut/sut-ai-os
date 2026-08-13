@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-004",
   "title": "Implement provider-neutral persistence adapter composition",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "persistence-composition",
   "workflowId": "implementation-p3-004",
@@ -94,16 +94,17 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
-      "tasks/active/SUT-AIOS-P3-004/task.json",
+      "tasks/verified/SUT-AIOS-P3-004/task.json",
       "package.json"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.763Z",
-  "updatedDate": "2026-08-13T17:44:38.804Z",
+  "updatedDate": "2026-08-13T17:45:14.805Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json"
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json",
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813174319028.json"
   ],
   "stateTransitions": [
     {
@@ -154,6 +155,20 @@
       "at": "2026-08-13T17:44:38.804Z",
       "actor": "chief-orchestrator",
       "reason": "Bounded delete-semantics remediation is implemented; rerun independent verification before returning to verified."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T17:45:10.075Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA passed corrected delete semantics at 97ab938; all acceptance boundaries and exact checks pass."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T17:45:14.805Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA PASS at 97ab938: ordinary scheduled_delete succeeds for both adapters; append identity remains strict; protected same-ID deletion fails before mutation and preserves revision; aggregate read/write, fail-closed and import boundaries pass; productionEligible false."
     }
   ]
 }
