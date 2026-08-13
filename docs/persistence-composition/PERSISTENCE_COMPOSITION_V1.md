@@ -90,11 +90,12 @@ ordinary and protected histories from being combined.
 
 Delete deliberately compares only immutable `dataCategory` and `artifactClass`
 because the valid `scheduled_delete` action differs from the stored action. The
-protected-audit guard then runs before `expectedRevision` is compared with the
-current record. A stale revision returns `REVISION_CONFLICT` and leaves the
-latest record intact. A successful adapter result must independently match the
-requested digest, byte count, and expected revision at the deep-module boundary.
-Thus a current ordinary record can be deleted, while stale callers and ordinary
+protected-audit guard then runs before `expectedRevision`, digest, and byte count
+are compared with the current record. Any stale version identity returns
+`REVISION_CONFLICT` before deletion or tombstoning and leaves the latest record
+intact. A successful adapter result must independently match the requested
+digest, byte count, and expected revision at the deep-module boundary. Thus a
+current ordinary record can be deleted, while stale callers and ordinary
 requests reusing a protected `recordId` cannot erase current or audit history.
 
 Append propagates `requestId` as the immutable adapter idempotency key. Both
@@ -130,7 +131,8 @@ git diff --check
 ```
 
 The validator covers both adapters, substitution, all four operations,
-aggregate-action write/read, stale/current revision deletion, append replay and
+aggregate-action write/read, stale revision/digest/size deletion,
+read-after-rejection preservation, current-version deletion, append replay and
 conflicting reuse, protected-history collisions, same-ID ordinary deletion
 against protected history, pre-mutation guards, internal capacity authority and
 request/size binding, P2-006 and P2-007 failures, caller-authority injection,

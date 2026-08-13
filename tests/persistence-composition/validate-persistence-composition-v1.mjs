@@ -146,6 +146,12 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   await rejected(port, request("delete_expired", { requestId: `stale-delete-${adapterId}`, record: { contentDigest: DIGEST_B, expectedRevision: 1 } }), ["REVISION_CONFLICT"], `${adapterId} stale ordinary delete`);
   const afterStaleDelete = await accepted(port, readInput, "found", `${adapterId} latest ordinary revision remains after stale delete`);
   equal(afterStaleDelete.value.record.revision, 2, `${adapterId} stale delete preserves revision two`);
+  await rejected(port, request("delete_expired", { requestId: `wrong-digest-delete-${adapterId}`, record: { contentDigest: DIGEST_A, expectedRevision: 2 } }), ["REVISION_CONFLICT"], `${adapterId} current revision with wrong digest cannot delete`);
+  const afterWrongDigest = await accepted(port, readInput, "found", `${adapterId} latest ordinary revision remains after wrong digest delete`);
+  equal([afterWrongDigest.value.record.contentDigest, afterWrongDigest.value.record.revision], [DIGEST_B, 2], `${adapterId} wrong digest delete preserves current content and revision`);
+  await rejected(port, request("delete_expired", { requestId: `wrong-bytes-delete-${adapterId}`, record: { contentDigest: DIGEST_B, contentBytes: 255, expectedRevision: 2 } }), ["REVISION_CONFLICT"], `${adapterId} current revision with wrong bytes cannot delete`);
+  const afterWrongBytes = await accepted(port, readInput, "found", `${adapterId} latest ordinary revision remains after wrong bytes delete`);
+  equal([afterWrongBytes.value.record.contentBytes, afterWrongBytes.value.record.revision], [256, 2], `${adapterId} wrong bytes delete preserves current size and revision`);
   const deleted = await accepted(port, request("delete_expired", { requestId: `current-delete-${adapterId}`, record: { contentDigest: DIGEST_B, expectedRevision: 2 } }), "deleted", `${adapterId} current-revision ordinary scheduled delete`);
   equal(deleted.value.record.revision, 2, `${adapterId} valid delete returns removed ordinary revision`);
   await accepted(port, readInput, "not_found", `${adapterId} ordinary history is absent after valid delete`);
@@ -335,7 +341,9 @@ check(!/\bfetch\s*\(|from\s+["']node:(?:https?|fs|net|tls|child_process)|process
 check(!/\b(?:aiInvocation|modelInvocation|queueMessage|workflowStart)\s*\(/u.test(coreSource + compositionSource), "persistence composition creates no AI invocation, queue message, or workflow per event");
 check(compositionSource.indexOf("if (!sameRecordClassification(current, record))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter validates persisted classification before destructive mutation");
 check(compositionSource.indexOf("if (isProtectedAuditRecord(current))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter protects audit records before destructive mutation");
+check(compositionSource.indexOf("record.contentDigest !== current.contentDigest") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter validates digest and bytes before destructive mutation");
 check(compositionSource.indexOf("if (!sameRecordClassification(existing, record))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter validates persisted classification before tombstone mutation");
 check(compositionSource.indexOf("if (isProtectedAuditRecord(existing))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter protects audit records before tombstone mutation");
+check(compositionSource.indexOf("record.contentDigest !== existing.contentDigest") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter validates digest and bytes before tombstone mutation");
 
 console.log(`P3-004 persistence composition V1 validation passed (${cases} cases).`);

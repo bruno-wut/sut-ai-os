@@ -67,6 +67,22 @@ without rewriting prior evidence.
 | `npm run verify:fast` | FAIL on uncommitted integrity-remediation tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit and rerun this exact command before fresh QA. |
 | `git diff --check` | PASS | No whitespace errors; Git emitted only line-ending conversion notices for the modified working-copy files. |
 
+### Fresh Sol QA destructive-version blocker
+
+Fresh independent Sol QA found that adapters compared classification and
+revision but not current digest and byte count before deletion. Deep-module
+result validation could detect the mismatch only after mutation. Both adapters
+now compare digest and bytes before deleting or tombstoning and return
+`REVISION_CONFLICT` on mismatch. Focused tests prove wrong-digest and wrong-size
+requests with the current revision are rejected and the latest record remains
+readable and unchanged.
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 912 cases. |
+| `npm run verify:fast` | FAIL on uncommitted destructive-version tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit and rerun this exact command before fresh QA. |
+| `git diff --check` | PASS | No whitespace errors; Git emitted only line-ending conversion notices for the modified working-copy files. |
+
 ## Safety and authority
 
 No database, SQL, migration, provider SDK, provider account, network service,

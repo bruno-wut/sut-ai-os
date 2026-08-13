@@ -73,6 +73,7 @@ function createMapAdapter() {
       if (!sameRecordClassification(current, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
       if (isProtectedAuditRecord(current)) return { ok: false, reasonCode: "PROTECTED_RECORD_DELETE_FORBIDDEN" };
       if (context.expectedRevision !== current.revision) return { ok: false, reasonCode: "REVISION_CONFLICT" };
+      if (record.contentDigest !== current.contentDigest || record.contentBytes !== current.contentBytes) return { ok: false, reasonCode: "REVISION_CONFLICT" };
       histories.delete(record.recordId);
       return { ok: true, status: "deleted", record: clone(current) };
     }
@@ -115,6 +116,7 @@ function createJournalAdapter() {
       if (!sameRecordClassification(existing, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
       if (isProtectedAuditRecord(existing)) return { ok: false, reasonCode: "PROTECTED_RECORD_DELETE_FORBIDDEN" };
       if (context.expectedRevision !== existing.revision) return { ok: false, reasonCode: "REVISION_CONFLICT" };
+      if (record.contentDigest !== existing.contentDigest || record.contentBytes !== existing.contentBytes) return { ok: false, reasonCode: "REVISION_CONFLICT" };
       journal.push({ deleted: true, record: clone(existing) });
       return { ok: true, status: "deleted", record: clone(existing) };
     }
