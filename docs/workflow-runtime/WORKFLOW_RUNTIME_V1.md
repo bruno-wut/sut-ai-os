@@ -71,6 +71,15 @@ The trusted clock expires any non-terminal workflow at its committed deadline.
 `cancel()` durably stops any non-terminal workflow. Terminal workflows do not
 advance or recover.
 
+Workflow history is append-only and bounded to 64 entries with
+`revision === history.length - 1`. A transition from 63 entries may append and
+persist the valid 64th entry. Once the record contains 64 entries, any operation
+that would require another history entry returns the deterministic fail-closed
+reason `WORKFLOW_HISTORY_LIMIT_REACHED` without saving, compacting, deleting, or
+rewriting history. A 64-entry record remains valid and loadable; a record with
+65 or more entries remains invalid. This Tier-0 contract deliberately pauses at
+the boundary rather than silently discarding audit history.
+
 ## Provider and quota behavior
 
 The provider state vocabulary is exactly:
