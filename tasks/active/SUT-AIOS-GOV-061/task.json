@@ -1,0 +1,163 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-061",
+  "title": "Repair P3-003 Workflow V1 execution readiness",
+  "status": "active",
+  "phase": "phase-3-governance",
+  "workstream": "task-packet-assurance",
+  "workflowId": "governance-p3-003-v1-readiness",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make P3-003 executable under the existing Workflow V1 packet without implementing workflow behavior.",
+  "technicalObjective": "Register the exact workflow validator script, allow the package script and V1 packet correction, and authorize deterministic base-bound verification while excluding the P3-003 implementation.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P3-002",
+    "SUT-AIOS-P1-006",
+    "SUT-AIOS-P1-007",
+    "SUT-AIOS-P2-004",
+    "SUT-AIOS-P2-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-061/verification.md"
+  ],
+  "assumptions": [
+    "P3-003 supplies the workflow validator file on its own branch; this governance task does not add or execute that implementation.",
+    "The exact npm script will map only to node tests/workflow-runtime/validate-workflow-runtime-v1.mjs.",
+    "Workflow V1 remains authoritative; Workflow V2 routing, review artifacts, and review-runner changes are out of scope."
+  ],
+  "acceptanceCriteria": [
+    "package.json declares exactly test:workflow as node tests/workflow-runtime/validate-workflow-runtime-v1.mjs.",
+    "P3-003 remains a schemaVersion 1.0.0 packet with modelRoute sol, defaultModel gpt-5.6-sol, fallbackModel gpt-5.6-sol, and allowedAgents exactly codex-engineering-executor and qa-verification.",
+    "P3-003 allowedPaths includes package.json and its context budget includes package.json; its requiredTests remain the workflow validator and verify:fast.",
+    "P3-003 allowedCommands explicitly authorize the fixed independent verify:task invocation for qa-verification with gpt-5.6-sol, so changed-path and secret checks are executable without generic command execution.",
+    "The verifier admits only the exact npm run test:workflow literal through a shell-free fixed mapping to node tests/workflow-runtime/validate-workflow-runtime-v1.mjs, with exact and near-miss rejection self-tests.",
+    "No workflow implementation or test, Workflow V2 routing, package-lock, scripts outside the exact verifier, schemas, production behavior, credentials, or external operations are changed.",
+    "The corrected V1 packet, exact package script, verifier admission, policy text, and evidence pass deterministic packet, governance, fast, and whitespace checks."
+  ],
+  "allowedPaths": [
+    "package.json",
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P3-003/task.json",
+    "tasks/**/SUT-AIOS-GOV-061/**",
+    "evidence/tasks/SUT-AIOS-GOV-061/**",
+    "evidence/verification/SUT-AIOS-GOV-061/**"
+  ],
+  "forbiddenPaths": [
+    "package-lock.json",
+    "packages/workflow-contracts/**",
+    "tests/workflow-runtime/**",
+    "docs/workflow-runtime/**",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "schemas/**",
+    "scripts/codex/**",
+    "scripts/task/**",
+    "scripts/github/**",
+    "evidence/tasks/SUT-AIOS-P3-002/**",
+    "evidence/verification/SUT-AIOS-P3-002/**",
+    "tasks/**/SUT-AIOS-P3-002/**",
+    "tasks/**/SUT-AIOS-GOV-060/**",
+    "evidence/reviews/**",
+    "supabase/**",
+    "apps/**",
+    "packages/**",
+    "policies/**",
+    "**/*.sql",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --task SUT-AIOS-P3-003",
+    "node scripts/task/validate --task SUT-AIOS-GOV-061",
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-061 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact package-script, V1 packet, and shell-free command admission inspection",
+    "changed-path inspection against the GOV-061 allowlist",
+    "secret and credential boundary scan",
+    "no P3-003 implementation or Workflow V2 scope regression",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any request to broaden shell, npm, node, or generic command execution requires a separate approved governance task.",
+    "Any request to modify P3-003 implementation, CI workflows, Workflow V2 machinery, production behavior, credentials, or external services requires a separate approved packet."
+  ],
+  "rollbackExpectations": "Revert only the exact verifier mapping and self-tests, package script, verification-policy text, risk entry, P3-003 packet correction, GOV-061 packet, and GOV-061 evidence; preserve P3-003 history and all prior evidence.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "scripts/verify/verify-cli.mjs",
+      "tasks/active/SUT-AIOS-GOV-061/task.json",
+      "tasks/backlog/SUT-AIOS-P3-003/task.json",
+      "package.json",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-13T15:30:00.000Z",
+  "updatedDate": "2026-08-13T11:47:48.465Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-13T15:30:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after P3-003 readiness inspection found an absent package script, missing exact verifier admission, and no fixed base-bound independent verification command."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T11:47:48.301Z",
+      "actor": "chief-orchestrator",
+      "reason": "V1 packet is bounded, all P3-003 dependencies are done, and the smallest readiness correction is fully specified."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T11:47:48.465Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin only the approved P3-003 readiness correction; do not implement workflow behavior or Workflow V2."
+    }
+  ]
+}

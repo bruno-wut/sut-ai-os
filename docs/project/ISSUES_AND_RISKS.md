@@ -995,3 +995,11 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Event-delivery work identity, due-time authority, outbound-port configuration, and dispatch idempotency metadata
 - **Evidence:** Independent review of terminal P3-002 found that duplicate `workId` values could let a `Map`-based result update out-of-batch records, caller-supplied `nowEpochSeconds` could make future work due, validated ports remained mutable after construction, and dispatch-before-persist lacked the queue idempotency key. R01 is limited to deterministic fail-closed corrections and explicit documentation of the current at-least-once shadow boundary; it does not add a provider, transaction, outbox, database, queue, workflow, or production action.
 - **Next action / owner:** Implement and independently verify R01 before GOV-061/P3-003 activation. A future provider adapter must add a separately governed transactional/outbox or equivalent delivery boundary before any real provider is bound.
+### 2026-08-13 — P3-003 Workflow V1 readiness and verifier-admission gap
+
+- **Task ID:** `SUT-AIOS-GOV-061`
+- **Status:** Corrected pending independent verification
+- **Severity:** High assurance gap
+- **Affected scope:** P3-003 Workflow V1 packet execution readiness and exact required-test admission only
+- **Evidence:** P3-003 required `npm run test:workflow`, but `package.json` did not declare that script, the packet did not allow or include `package.json`, its fixed base-bound independent `verify:task` command was absent, and the fail-closed verifier did not admit the required literal. GOV-061 registers the exact script, corrects only those bounded packet fields, and maps the byte-for-byte literal to `node` with the single fixed argument `tests/workflow-runtime/validate-workflow-runtime-v1.mjs` and `shell: false`; self-tests reject whitespace, argument, operator, syntax, path, and separator near misses. The task does not add or execute workflow implementation or tests and creates no generic command authority.
+- **Next action / owner:** Independent `qa-verification` must inspect the final GOV-061 diff and run its packet-authorized machine verification. P3-003 may be reconsidered for activation only after GOV-061 is merged and reconciled; its implementation and validator remain separately governed.

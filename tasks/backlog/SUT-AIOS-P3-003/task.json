@@ -39,6 +39,7 @@
     "Required tests pass and independent verification confirms forbidden paths were untouched."
   ],
   "allowedPaths": [
+    "package.json",
     "packages/workflow-contracts/**",
     "tests/workflow-runtime/**",
     "docs/workflow-runtime/**",
@@ -56,6 +57,7 @@
   "allowedCommands": [
     "npm run test:workflow",
     "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P3-003 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
     "git diff --check"
   ],
   "requiredChecks": [
@@ -92,7 +94,8 @@
     "includedPaths": [
       "AGENTS.md",
       "tasks/backlog/SUT-AIOS-P3-003/task.json",
-      "docs/project/IMPLEMENTATION_BACKLOG.md"
+      "docs/project/IMPLEMENTATION_BACKLOG.md",
+      "package.json"
     ]
   },
   "owner": "codex-engineering-executor",
