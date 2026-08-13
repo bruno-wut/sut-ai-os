@@ -7,6 +7,7 @@
   "reviewer": "qa-verification",
   "verifierModel": "gpt-5.6-sol",
   "status": "blocked",
+  "productionEligible": false,
   "machineChecks": [
     "npm run test:event-delivery: pass (43 assertions)",
     "npm run verify:fast: fail (routing check requires a clean committed tree; prior generated verification evidence was untracked)",
