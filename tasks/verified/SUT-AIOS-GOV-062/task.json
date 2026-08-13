@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-062",
   "title": "Admit the exact P3-004 persistence-composition validator",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "verification-governance",
   "workflowId": "governance-p3-004-validator-admission",
@@ -118,7 +118,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/active/SUT-AIOS-GOV-062/task.json",
+      "tasks/verified/SUT-AIOS-GOV-062/task.json",
       "tasks/backlog/SUT-AIOS-P3-004/task.json",
       "package.json",
       "scripts/verify/verify-cli.mjs",
@@ -129,8 +129,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T16:30:00.000Z",
-  "updatedDate": "2026-08-13T16:29:39.397Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T16:35:47.573Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-062/verification-20260813163516410.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -152,6 +154,20 @@
       "at": "2026-08-13T16:29:39.397Z",
       "actor": "chief-orchestrator",
       "reason": "Begin exact P3-004 validator admission correction in the isolated worktree; no product validator or persistence implementation."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T16:35:47.423Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA assigned; exact P3-004 admission, 267 self-tests, packet/governance/fast checks, exact base-bound verification, and diff check pass; no product implementation or production authority."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T16:35:47.573Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA PASS at 43619c1; all GOV-062 acceptance criteria confirmed, forbidden paths untouched, productionEligible false."
     }
   ]
 }
