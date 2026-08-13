@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:22:17.715Z",
+  "updatedDate": "2026-08-13T03:25:20.586Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1039,6 +1039,20 @@
       "at": "2026-08-13T03:22:17.715Z",
       "actor": "chief-orchestrator",
       "reason": "POSIX cancellation now confirms root and descendant-group exit without post-root signalling, all focused negatives and every packet check pass; freeze for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:25:20.439Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on b677f10 found direct trace admission lacked strict event-field, context/scope, and review-state packet validation; preserve the finding and unify the boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:25:20.586Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Add shared strict launcher-trace event, context, scope, and V2 review-state admission with zero-publication negatives only."
     }
   ]
 }
