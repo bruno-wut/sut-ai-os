@@ -5,7 +5,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, finalizePreparedReviewPublication, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeFailedReviewCancellation, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, finalizePreparedReviewPublication, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit } from "../../scripts/codex/launch.mjs";
 import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
 import { computeReviewScopeHash } from "../../scripts/task/task-cli.mjs";
 
@@ -164,6 +164,13 @@ const persistentDescendantTerminals = [];
 assert.equal(await completeCancelledReview(persistentDescendantCancellation, createReviewTerminalController({ append: () => {} }, (event) => persistentDescendantTerminals.push(event), () => {})), "failed", "live descendant after bounded confirmation fails closed");
 assert.deepEqual(persistentDescendantFailures, [{ status: "failed", reason: "process-group-still-running" }], "persistent descendant failure remains explicit");
 assert.deepEqual(persistentDescendantTerminals, [{ status: "failed" }], "persistent descendant cannot emit cancelled");
+
+let failedCleanupConfirmed = false;
+const failedCleanupCancellation = { confirmChildClosed() {}, ensureTerminated: () => Promise.resolve({ status: "signalled" }), confirmProcessGroupTerminated: () => new Promise((resolve) => { failedCleanupConfirmed = true; resolve({ status: "terminated" }); }), complete() {} };
+const failedCleanupTerminals = [];
+assert.equal(await completeFailedReviewCancellation(failedCleanupCancellation, createReviewTerminalController({ append: () => {} }, (event) => failedCleanupTerminals.push(event), () => {})), "failed", "failed review cleanup completes fail closed");
+assert.equal(failedCleanupConfirmed, true, "failed review cleanup awaits descendant-group confirmation");
+assert.deepEqual(failedCleanupTerminals, [{ status: "failed" }], "failed review cleanup emits one terminal only after confirmation");
 
 let escalationCallback;
 let confirmationCallback;

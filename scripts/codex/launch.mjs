@@ -787,6 +787,15 @@ async function completeCancelledReview(cancellation, terminal) {
   return "cancelled";
 }
 
+async function completeFailedReviewCancellation(cancellation, terminal) {
+  cancellation.confirmChildClosed();
+  const result = await cancellation.ensureTerminated();
+  if (result?.status !== "failed") await cancellation.confirmProcessGroupTerminated();
+  cancellation.complete();
+  terminal.complete("failed", 1);
+  return "failed";
+}
+
 function createReviewTerminalController(trace, emit, setExitCode = (code) => { process.exitCode = code; }) {
   let terminal = null;
   return {
@@ -1461,7 +1470,6 @@ function main() {
     processFailure = { kind, stream, error };
     if (reviewProfile) {
       progress({ status: kind === "stream" ? "child-stream-error" : "spawn-error", ...(stream ? { stream } : {}) });
-      terminal.complete("failed", 1);
       try { cancellation?.request("SIGTERM"); } catch { /* terminal state already failed closed */ }
     } else {
       trace.append({ event: "finish", status: kind === "stream" ? "stream-error" : "spawn-error" });
@@ -1494,9 +1502,7 @@ function main() {
       process.off("SIGTERM", onSigterm);
     }
     if (processFailure || childStreams.failure) {
-      cancellation?.confirmChildClosed();
-      cancellation?.complete();
-      if (reviewProfile) terminal.complete("failed", 1);
+      if (reviewProfile) await completeFailedReviewCancellation(cancellation, terminal);
       return;
     }
     const passed = exitCode === 0;
@@ -1504,10 +1510,7 @@ function main() {
     if (reviewProfile && reviewStderr.bytes > 0) progress({ status: "child-stderr-redacted", bytes: reviewStderr.bytes });
 
     if (reviewProfile && outputOverflow) {
-      cancellation.confirmChildClosed();
-      await cancellation.ensureTerminated();
-      cancellation.complete();
-      terminal.complete("failed", 1);
+      await completeFailedReviewCancellation(cancellation, terminal);
       return;
     }
 
@@ -1627,4 +1630,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertCompleteLauncherTracePrefix, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, finalizePreparedReviewPublication, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertCompleteLauncherTracePrefix, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeFailedReviewCancellation, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, finalizePreparedReviewPublication, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit };
