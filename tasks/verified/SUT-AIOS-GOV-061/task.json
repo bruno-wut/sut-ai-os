@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-061",
   "title": "Repair P3-003 Workflow V1 execution readiness",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3-governance",
   "workstream": "task-packet-assurance",
   "workflowId": "governance-p3-003-v1-readiness",
@@ -128,7 +128,7 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
       "scripts/verify/verify-cli.mjs",
-      "tasks/active/SUT-AIOS-GOV-061/task.json",
+      "tasks/verified/SUT-AIOS-GOV-061/task.json",
       "tasks/backlog/SUT-AIOS-P3-003/task.json",
       "package.json",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -137,9 +137,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T15:30:00.000Z",
-  "updatedDate": "2026-08-13T12:24:36.851Z",
+  "updatedDate": "2026-08-13T12:28:01.436Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-GOV-061/verification-20260813115534633.json"
+    "evidence/verification/SUT-AIOS-GOV-061/verification-20260813115534633.json",
+    "evidence/verification/SUT-AIOS-GOV-061/verification-20260813122725504.json"
   ],
   "stateTransitions": [
     {
@@ -190,6 +191,20 @@
       "at": "2026-08-13T12:24:36.851Z",
       "actor": "chief-orchestrator",
       "reason": "Apply only the bounded dependency and factual risk-record correction; preserve Workflow V1 and all prior evidence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T12:28:01.280Z",
+      "actor": "chief-orchestrator",
+      "reason": "R01-gated implementation is complete; fresh independent Sol QA inspected final diff and passed all acceptance criteria and checks."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T12:28:01.436Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA passed the R01 dependency correction, V1 packet readiness, exact admission, security boundaries, governance, fast, and whitespace checks; productionEligible remains false."
     }
   ]
 }
