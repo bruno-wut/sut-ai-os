@@ -69,9 +69,14 @@ try {
   const governedContextFile = path.join(root, governedContextPath);
   fs.mkdirSync(path.dirname(governedContextFile), { recursive: true });
   fs.writeFileSync(governedContextFile, "governed fixture context\n");
+  const exactVerificationPath = `evidence/verification/${id}/verification-${headSha}.json`;
+  const exactVerificationFile = path.join(root, exactVerificationPath);
+  fs.mkdirSync(path.dirname(exactVerificationFile), { recursive: true });
+  fs.writeFileSync(exactVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: id, headSha, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-08T12:00:00.000Z", checks: ["fixture checks passed"] }, null, 2)}\n`);
   const contextManifest = [
     { path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) },
     { path: governedContextPath, sha256: sha256(fs.readFileSync(governedContextFile)) },
+    { path: exactVerificationPath, sha256: sha256(fs.readFileSync(exactVerificationFile)) },
   ];
   const contextManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
 
@@ -186,7 +191,6 @@ try {
   const nonCanonicalEvidence = `${path.posix.dirname(paths.at(-1))}/../${id}/${path.posix.basename(paths.at(-1))}`;
   const evidenceHeadSha = "c".repeat(40);
   const lifecycleHeadSha = "d".repeat(40);
-  const exactVerificationPath = `evidence/verification/${id}/verification-${headSha}.json`;
   const expectedEvidencePaths = [exactVerificationPath, ...paths, ...paths.map((reviewPath) => JSON.parse(fs.readFileSync(path.join(root, reviewPath), "utf8")).tracePath)];
   const evidenceChainOptions = {
     currentHead: evidenceHeadSha,
