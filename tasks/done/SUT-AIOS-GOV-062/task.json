@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-062",
   "title": "Admit the exact P3-004 persistence-composition validator",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3",
   "workstream": "verification-governance",
   "workflowId": "governance-p3-004-validator-admission",
@@ -118,7 +118,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-GOV-062/task.json",
+      "tasks/done/SUT-AIOS-GOV-062/task.json",
       "tasks/backlog/SUT-AIOS-P3-004/task.json",
       "package.json",
       "scripts/verify/verify-cli.mjs",
@@ -129,7 +129,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T16:30:00.000Z",
-  "updatedDate": "2026-08-13T16:35:47.573Z",
+  "updatedDate": "2026-08-13T18:53:48.447Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-062/verification-20260813163516410.json"
   ],
@@ -168,6 +168,13 @@
       "at": "2026-08-13T16:35:47.573Z",
       "actor": "chief-orchestrator",
       "reason": "Independent Sol QA PASS at 43619c1; all GOV-062 acceptance criteria confirmed, forbidden paths untouched, productionEligible false."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T18:53:48.447Z",
+      "actor": "chief-orchestrator",
+      "reason": "GOV-062 admission delivery is merged on canonical main; exact validator admission, independent verification, governance, and final-head CI are recorded."
     }
   ]
 }
