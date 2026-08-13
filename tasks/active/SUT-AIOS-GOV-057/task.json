@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T02:44:16.217Z",
+  "updatedDate": "2026-08-13T02:47:27.102Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -934,6 +934,20 @@
       "at": "2026-08-13T02:44:16.217Z",
       "actor": "chief-orchestrator",
       "reason": "Freeze the user-approved Workflow V2 documentation-parity correction for fresh exact-head independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T02:47:26.951Z",
+      "actor": "qa-verification",
+      "reason": "Merge-risk preflight on 6a7f410 exceeded the unchanged task cap because the newly authorized full workflow document was duplicated as an inline patch; no merge-risk model execution occurred."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T02:47:27.102Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bound only patches for governed Markdown and task records already included in full context; preserve every implementation patch inline and keep the existing cap."
     }
   ]
 }
