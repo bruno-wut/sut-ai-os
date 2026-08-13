@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:46:32.264Z",
+  "updatedDate": "2026-08-13T03:48:03.830Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1116,6 +1116,13 @@
       "at": "2026-08-13T03:46:32.264Z",
       "actor": "codex-engineering-executor",
       "reason": "Route overflow and child-stream failure cleanup through one bounded failed-cancellation completion path with no persistence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:48:03.830Z",
+      "actor": "chief-orchestrator",
+      "reason": "Overflow and stream failures now await bounded tree/group cleanup before failed terminal emission; all packet checks pass."
     }
   ]
 }
