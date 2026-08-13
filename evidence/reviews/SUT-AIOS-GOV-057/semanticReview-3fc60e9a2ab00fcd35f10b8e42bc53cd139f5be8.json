@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "3fc60e9a2ab00fcd35f10b8e42bc53cd139f5be8",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "056ac3d3b43e21eb9d5e9816bfa9c57d6cdee2da068c8836eaf4e89fa1696b98",
+  "reviewedAt": "2026-08-13T03:41:07.067Z",
+  "stage": "semanticReview",
+  "runId": "20260813033944818-0cc24493",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813033944818-0cc24493-qa-verification-luna.jsonl",
+  "outputHash": "5151ad8a73ce2b555f1e26b27ce52089ec1ebb0a34ff26fc172d01fe12fcd1e4",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "The CLI success path records a terminal success event before final review-result publication. If publication then fails, the trace remains successful while the review result is absent or only partially published, violating fail-closed persistence semantics."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Add a publication-failure regression proving no successful terminal trace is retained without the corresponding review result, or that exact rerun recovery completes the same immutable run safely."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Review parsing, binding, validation, cancellation, and persistence are reasonably separated into focused modules.",
+    "hexagonalArchitecture": "Provider execution is isolated behind the launcher boundary; governed packet and repository state remain the authority.",
+    "eventedBoundaries": "Structured progress and terminal events are explicit, but successful terminal emission currently precedes guaranteed result publication."
+  },
+  "exactNextAction": "Move successful terminal sealing after confirmed result publication, or implement deterministic same-run recovery and failed-terminal handling for publication failure; rerun the required review-runner and lifecycle checks."
+}

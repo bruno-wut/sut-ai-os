@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:39:07.054Z",
+  "updatedDate": "2026-08-13T03:41:37.891Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1081,6 +1081,20 @@
       "at": "2026-08-13T03:39:07.054Z",
       "actor": "chief-orchestrator",
       "reason": "Direct persistence now repeats packet, revision, strict trace, context, and evidence-sequence checks at final staging; all races and every packet check pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:41:37.746Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 3fc60e9 found result-finalization failure could leave an otherwise successful terminal trace without a review artifact; preserve the finding and invalidate that trace explicitly."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:41:37.891Z",
+      "actor": "codex-engineering-executor",
+      "reason": "On result-publication failure, abort pending output, append a failed terminal invalidation, and prove the trace cannot satisfy admission."
     }
   ]
 }
