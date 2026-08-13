@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit } from "../../scripts/codex/launch.mjs";
 import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
 
 let checks = 0;
@@ -123,6 +123,43 @@ assert.deepEqual(posixSignals, ["tree-SIGTERM"], "POSIX escalation never signals
 const posixTerminal = createReviewTerminalController({ append: () => {} }, () => {}, () => {});
 assert.equal(await completeCancelledReview(posixCancellation, posixTerminal), "cancelled", "POSIX root-child close after graceful cancellation completes without unsafe escalation");
 assert.equal(cleared, true, "completion clears pending escalation");
+
+let escalationCallback;
+let confirmationCallback;
+let confirmationTimerUnref = false;
+let processGroupChecks = 0;
+const escalatedChild = { pid: 5353, exitCode: null, signalCode: null };
+const escalatedCancellation = createReviewCancellationController(escalatedChild, () => {}, {
+  platform: "linux",
+  graceMs: 1,
+  setTimeoutFn: (callback) => { escalationCallback = callback; return { unref() {} }; },
+  clearTimeoutFn: () => {},
+  terminateChildTree: (_target, options) => options.signal !== "SIGKILL"
+    ? Promise.resolve({ status: "signalled" })
+    : waitForProcessGroupExit(escalatedChild.pid, {
+      timeoutMs: 1000,
+      processGroupIsRunning: () => ++processGroupChecks === 1,
+      setTimeoutFn: (callback) => {
+        confirmationCallback = callback;
+        return { unref() { confirmationTimerUnref = true; } };
+      },
+    }),
+});
+assert.equal(escalatedCancellation.request("SIGTERM"), true, "POSIX cancellation accepts a live child before escalation");
+escalationCallback();
+escalatedChild.exitCode = 1;
+const escalatedTrace = [];
+const escalatedTerminal = createReviewTerminalController({ append: (event) => escalatedTrace.push(event) }, () => {}, () => {});
+const escalatedCompletion = completeCancelledReview(escalatedCancellation, escalatedTerminal);
+await Promise.resolve();
+assert.deepEqual(escalatedTrace, [], "root-child close cannot publish a terminal event before process-group confirmation");
+assert.equal(confirmationTimerUnref, false, "bounded POSIX process-group confirmation remains referenced");
+confirmationCallback();
+assert.equal(await escalatedCompletion, "cancelled", "confirmed process-group exit completes cancellation");
+assert.deepEqual(escalatedTrace, [{ event: "finish", status: "cancelled", exitCode: 130 }], "POSIX escalation records exactly one terminal cancellation event");
+const escalatedRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-review-posix-cancel-"));
+assert.equal(fs.existsSync(path.join(escalatedRoot, "evidence", "reviews", "SUT-AIOS-GOV-057")), false, "POSIX cancellation publishes no review artifact");
+fs.rmSync(escalatedRoot, { recursive: true, force: true });
 
 const taskkillCalls = [];
 const sibling = { pid: 9999, exitCode: null, signalCode: null };
