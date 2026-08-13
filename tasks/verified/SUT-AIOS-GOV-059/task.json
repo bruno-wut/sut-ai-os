@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-059",
   "title": "Admit P3-001 signal-ingestion validator in shell-free verification",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3-governance",
   "workstream": "verifier-admission",
   "workflowId": "governance-p3-001-verifier-admission",
@@ -116,15 +116,17 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
       "scripts/verify/verify-cli.mjs",
-      "tasks/active/SUT-AIOS-GOV-059/task.json",
+      "tasks/verified/SUT-AIOS-GOV-059/task.json",
       "docs/project/ISSUES_AND_RISKS.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T07:30:02.611Z",
-  "updatedDate": "2026-08-13T07:31:03.766Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T07:37:57.029Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-059/verification-20260813073722724.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -146,6 +148,20 @@
       "at": "2026-08-13T07:31:03.766Z",
       "actor": "chief-orchestrator",
       "reason": "Begin the approved exact verifier admission and documentation correction; do not modify P3 implementation or Workflow V2."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T07:37:51.926Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent qa-verification passed exact mapping, near-miss rejection, changed-path, security, governance, fast, and whitespace checks."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T07:37:57.029Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent qa-verification evidence is complete and all packet acceptance checks pass."
     }
   ]
 }
