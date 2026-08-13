@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-002",
   "title": "Implement durable scheduling, queue, retry, and dead-letter delivery",
-  "status": "backlog",
+  "status": "active",
   "phase": "phase-3",
   "workstream": "event-delivery",
   "workflowId": "implementation-p3-002",
@@ -93,7 +93,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P3-002/task.json",
+      "tasks/active/SUT-AIOS-P3-002/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "package.json"
     ]
@@ -101,7 +101,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-13T08:20:00.000Z",
+  "updatedDate": "2026-08-13T08:55:34.794Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -110,6 +110,20 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T08:55:34.651Z",
+      "actor": "chief-orchestrator",
+      "reason": "GOV-060 is done on origin/main; P3-001, P2-006, and P2-007 are done; corrected V1 packet commands and paths are executable."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T08:55:34.794Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin only the bounded durable event-delivery contract within the V1 allowlist; no production writes or provider integrations."
     }
   ]
 }
