@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-061",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T11:55:34.633Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/verify/verify-cli.mjs --self-test: pass",
+    "node scripts/task/validate --all: pass",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: package.json declares exactly test:workflow as node tests/workflow-runtime/validate-workflow-runtime-v1.mjs.",
+    "confirmed: P3-003 remains a schemaVersion 1.0.0 packet with modelRoute sol, defaultModel gpt-5.6-sol, fallbackModel gpt-5.6-sol, and allowedAgents exactly codex-engineering-executor and qa-verification.",
+    "confirmed: P3-003 allowedPaths includes package.json and its context budget includes package.json; its requiredTests remain the workflow validator and verify:fast.",
+    "confirmed: P3-003 allowedCommands explicitly authorize the fixed independent verify:task invocation for qa-verification with gpt-5.6-sol, so changed-path and secret checks are executable without generic command execution.",
+    "confirmed: The verifier admits only the exact npm run test:workflow literal through a shell-free fixed mapping to node tests/workflow-runtime/validate-workflow-runtime-v1.mjs, with exact and near-miss rejection self-tests.",
+    "confirmed: No workflow implementation or test, Workflow V2 routing, package-lock, scripts outside the exact verifier, schemas, production behavior, credentials, or external operations are changed.",
+    "confirmed: The corrected V1 packet, exact package script, verifier admission, policy text, and evidence pass deterministic packet, governance, fast, and whitespace checks."
+  ],
+  "changedPaths": [
+    "docs/project/ISSUES_AND_RISKS.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "evidence/tasks/SUT-AIOS-GOV-061/verification.md",
+    "package.json",
+    "scripts/verify/verify-cli.mjs",
+    "tasks/active/SUT-AIOS-GOV-061/task.json",
+    "tasks/backlog/SUT-AIOS-P3-003/task.json"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-061/verification-20260813115534633.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
