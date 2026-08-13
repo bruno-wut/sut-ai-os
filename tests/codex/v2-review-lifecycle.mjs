@@ -92,7 +92,8 @@ try {
     const traceFile = path.join(root, review.tracePath);
     fs.mkdirSync(path.dirname(traceFile), { recursive: true });
     const traceSerialized = [
-      JSON.stringify({ event: "start", taskId: id, agentId: agent, route, model }),
+      JSON.stringify({ event: "start", taskId: id, agentId: agent, route, model, profile }),
+      JSON.stringify({ event: "review-progress", runId: review.runId, taskId: id, profile, status: "child-started" }),
       JSON.stringify({ event: "review-bound", runId: review.runId, taskId: id, baseSha, headSha, stage, reviewerAgent: agent, model, reasoningEffort: "high", contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskScopeHash }),
       JSON.stringify({ event: "finish", status: "success", exitCode: 0 })
     ].join("\n") + "\n";
@@ -121,6 +122,20 @@ try {
   fs.writeFileSync(planTraceFile, originalPlanTrace);
   const originalPlanEvents = originalPlanTrace.trim().split(/\r?\n/).map((line) => JSON.parse(line));
   const writePlanEvents = (events) => fs.writeFileSync(planTraceFile, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
+  writePlanEvents(originalPlanEvents.slice(1));
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /begin with exactly one start/, "prefix-truncated launcher trace cannot satisfy a merge gate");
+  writePlanEvents([originalPlanEvents[0], originalPlanEvents[0], ...originalPlanEvents.slice(1)]);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /begin with exactly one start/, "duplicate launcher start is rejected");
+  writePlanEvents([originalPlanEvents[1], originalPlanEvents[0], ...originalPlanEvents.slice(2)]);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /begin with exactly one start/, "reordered launcher start is rejected");
+  for (const [field, value] of [["taskId", "SUT-WRONG"], ["agentId", "wrong-agent"], ["route", "luna"], ["model", "gpt-wrong"], ["profile", "semantic-qa"]]) {
+    writePlanEvents([{ ...originalPlanEvents[0], [field]: value }, ...originalPlanEvents.slice(1)]);
+    assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), new RegExp(`start does not bind ${field}`), `launcher start rejects mismatched ${field}`);
+  }
+  writePlanEvents([originalPlanEvents[0], ...originalPlanEvents.slice(2)]);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /exactly one child-started/, "missing child-started progress is rejected");
+  writePlanEvents([originalPlanEvents[0], { event: "review-progress", runId: "wrong-run", taskId: id, profile: "plan-review", status: "child-started" }, ...originalPlanEvents.slice(2)]);
+  assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /child-started does not bind runId/, "mismatched child-started progress is rejected");
   writePlanEvents([...originalPlanEvents, { event: "finish", status: "failed", exitCode: 1 }]);
   assert.match(validateRequiredReviewArtifacts(record.packet, root, headSha, baseSha, ["planReview"]).join("; "), /exactly one successful finish/, "mixed success and failure terminals fail closed");
   writePlanEvents([originalPlanEvents.at(-1), ...originalPlanEvents.slice(0, -1)]);

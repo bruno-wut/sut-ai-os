@@ -180,6 +180,7 @@ function validateEvidenceCommitChain(packet, root = repositoryRoot, options = {}
   return errors;
 }
 function modelForRoute(route) { return { luna: "gpt-5.6-luna", terra: "gpt-5.6-terra", sol: "gpt-5.6-sol" }[route]; }
+function profileForStage(stage) { return { planReview: "plan-review", semanticReview: "semantic-qa", mergeRiskReview: "merge-risk-review" }[stage]; }
 function sha256(value) { return createHash("sha256").update(value).digest("hex"); }
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -259,6 +260,18 @@ function validateRequiredReviewArtifacts(packet, root = repositoryRoot, headSha 
       let events;
       try { events = fs.readFileSync(path.join(root, result.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
       catch { errors.push(`${stage} launcher trace is missing or invalid`); continue; }
+      const startEvents = events.filter((event) => event?.event === "start");
+      if (startEvents.length !== 1 || events[0] !== startEvents[0]) errors.push(`${stage} launcher trace must begin with exactly one start event`);
+      else {
+        const expectedStart = { taskId: packet.taskId, agentId: result.reviewerAgent, route: expected.route, model: result.model, profile: profileForStage(stage) };
+        for (const [key, value] of Object.entries(expectedStart)) if (startEvents[0][key] !== value) errors.push(`${stage} launcher trace start does not bind ${key}`);
+      }
+      const childStartEvents = events.filter((event) => event?.event === "review-progress" && event.status === "child-started");
+      if (childStartEvents.length !== 1 || events[1] !== childStartEvents[0]) errors.push(`${stage} launcher trace must record exactly one child-started event immediately after start`);
+      else {
+        const expectedChildStart = { runId: result.runId, taskId: packet.taskId, profile: profileForStage(stage) };
+        for (const [key, value] of Object.entries(expectedChildStart)) if (childStartEvents[0][key] !== value) errors.push(`${stage} launcher trace child-started does not bind ${key}`);
+      }
       const boundEvents = events.filter((event) => event?.event === "review-bound");
       if (boundEvents.length !== 1) { errors.push(`${stage} launcher trace must contain exactly one review-bound event`); continue; }
       const bound = boundEvents[0];

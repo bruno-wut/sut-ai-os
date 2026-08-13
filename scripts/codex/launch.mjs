@@ -1051,6 +1051,20 @@ function requireReviewEvidenceSequence({ taskRecord, profile, baseSha, headSha, 
   }
 }
 
+function assertCompleteLauncherTracePrefix(events, { taskId, agentId, route, model, profile, runId }) {
+  const starts = events.filter((event) => event?.event === "start");
+  if (starts.length !== 1 || events[0] !== starts[0]) throw new Error("Launcher trace must begin with exactly one start event");
+  const start = starts[0];
+  for (const [key, expected] of Object.entries({ taskId, agentId, route, model, profile })) {
+    if (start[key] !== expected) throw new Error(`Launcher trace start does not bind ${key}`);
+  }
+  const childStarts = events.filter((event) => event?.event === "review-progress" && event.status === "child-started");
+  if (childStarts.length !== 1 || events[1] !== childStarts[0]) throw new Error("Launcher trace must record exactly one child-started event immediately after start");
+  for (const [key, expected] of Object.entries({ runId, taskId, profile })) {
+    if (childStarts[0][key] !== expected) throw new Error(`Launcher trace child-started does not bind ${key}`);
+  }
+}
+
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
   const expectedStage = stageByProfile[profile];
   if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
@@ -1060,6 +1074,8 @@ function persistReviewResult(reviewResult, { taskId, profile, headSha, root = re
   let events;
   try { events = fs.readFileSync(path.join(root, reviewResult.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
   catch { throw new Error("Direct review-result persistence requires a valid bound launcher trace"); }
+  const route = Object.entries(modelIds).find(([, model]) => model === reviewResult.model)?.[0];
+  assertCompleteLauncherTracePrefix(events, { taskId, agentId: reviewResult.reviewerAgent, route, model: reviewResult.model, profile, runId: reviewResult.runId });
   const bound = events.filter((event) => event?.event === "review-bound");
   const finishes = events.filter((event) => event?.event === "finish");
   if (bound.length !== 1 || finishes.length !== 1 || finishes[0]?.status !== "success" || finishes[0]?.exitCode !== 0 || events.indexOf(finishes[0]) <= events.indexOf(bound[0]) || events.at(-1) !== finishes[0]) {
@@ -1550,6 +1566,8 @@ function main() {
       });
       let preparedPersistence;
       try {
+        const traceEvents = fs.readFileSync(trace.tracePath, "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line));
+        assertCompleteLauncherTracePrefix(traceEvents, { taskId, agentId, route: selectedRoute, model: selectedModel, profile, runId: trace.runId });
         preparedPersistence = prepareReviewResultPersistence(launcherReview, { taskId, profile, headSha: reviewedHeadSha });
       } catch (error) {
         progress({ status: "review-persistence-failed" });
@@ -1587,4 +1605,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertCompleteLauncherTracePrefix, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit };

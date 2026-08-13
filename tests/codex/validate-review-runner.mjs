@@ -365,8 +365,16 @@ assert.throws(() => persistReviewResult(traversalReview, { taskId: traversalRevi
 assert.equal(revalidateCurrentReviewBinding({ headSha: preparedReview.headSha, baseSha: preparedReview.baseSha }, { getHead: () => preparedReview.headSha, getBase: () => preparedReview.baseSha }), true, "successful review binding accepts the exact current head and canonical base object");
 const successfulTraceFile = path.join(persistenceRoot, preparedReview.tracePath);
 fs.mkdirSync(path.dirname(successfulTraceFile), { recursive: true });
+const successfulStartEvent = { event: "start", taskId: preparedReview.taskId, agentId: preparedReview.reviewerAgent, route: "luna", model: preparedReview.model, profile: "semantic-qa" };
+const successfulChildStartEvent = { event: "review-progress", runId: preparedReview.runId, taskId: preparedReview.taskId, profile: "semantic-qa", status: "child-started" };
 const successfulBoundEvent = { event: "review-bound", ...Object.fromEntries(["runId", "taskId", "baseSha", "headSha", "stage", "reviewerAgent", "model", "reasoningEffort", "contextManifestHash", "outputHash"].map((key) => [key, preparedReview[key]])) };
-fs.writeFileSync(successfulTraceFile, `${JSON.stringify(successfulBoundEvent)}\n${JSON.stringify({ event: "finish", status: "success", exitCode: 0 })}\n`);
+const successfulFinishEvent = { event: "finish", status: "success", exitCode: 0 };
+const writePersistenceTrace = (events) => fs.writeFileSync(successfulTraceFile, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
+writePersistenceTrace([successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot }), /begin with exactly one start/, "direct persistence rejects a prefix-truncated launcher trace");
+writePersistenceTrace([successfulStartEvent, successfulBoundEvent, successfulFinishEvent]);
+assert.throws(() => persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot }), /exactly one child-started/, "direct persistence rejects missing child-started progress");
+writePersistenceTrace([successfulStartEvent, successfulChildStartEvent, successfulBoundEvent, successfulFinishEvent]);
 assert.equal(persistReviewResult(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot }), `evidence/reviews/${preparedReview.taskId}/semanticReview-${headSha}.json`, "successful exact-revision review persists after binding validation");
 const finalPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha, root: persistenceRoot });
 assert.equal(finalPersistence.finalize(), `evidence/reviews/${preparedReview.taskId}/semanticReview-${headSha}.json`, "prepared persistence finalizes atomically after terminal provenance");
