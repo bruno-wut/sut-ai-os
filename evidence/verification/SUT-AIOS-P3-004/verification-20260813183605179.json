@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-004",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T18:36:05.179Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "npm run test:persistence-composition: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Domain/application core depends on a small PersistencePort and imports no Cloudflare, Supabase, database, or local-server SDK.",
+    "confirmed: Composition selects a reference adapter outside the core; unsupported/missing adapter configuration fails closed.",
+    "confirmed: Persistence operations enforce P2-006 categories/retention references and P2-007 capacity decisions before acceptance.",
+    "confirmed: Tests prove adapter substitution without domain rewrite, reject provider SDK imports in core, and reject unknown/over-budget writes.",
+    "confirmed: No database, SQL, migration, account, credential, or network service is accessed."
+  ],
+  "changedPaths": [
+    "docs/persistence-composition/PERSISTENCE_COMPOSITION_V1.md",
+    "evidence/tasks/SUT-AIOS-P3-004/verification.md",
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json",
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813174319028.json",
+    "packages/persistence-port/src/persistence-port-v1.mjs",
+    "services/persistence-composition/persistence-composition-v1.mjs",
+    "tasks/active/SUT-AIOS-P3-004/task.json",
+    "tasks/backlog/SUT-AIOS-P3-004/task.json",
+    "tests/persistence-composition/validate-persistence-composition-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813183605179.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
