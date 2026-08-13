@@ -990,11 +990,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 ### 2026-08-13 — P3-002 event-delivery authority remediation prerequisite
 
 - **Task ID:** `SUT-AIOS-P3-002-R01`
-- **Status:** Open / remediation prerequisite before P3-003
+- **Status:** Resolved on canonical main; remediation is done and remains a prerequisite before P3-003
 - **Severity:** High for future workflow activation; bounded Tier-0/shadow core remains non-production
 - **Affected scope:** Event-delivery work identity, due-time authority, outbound-port configuration, and dispatch idempotency metadata
 - **Evidence:** Independent review of terminal P3-002 found that duplicate `workId` values could let a `Map`-based result update out-of-batch records, caller-supplied `nowEpochSeconds` could make future work due, validated ports remained mutable after construction, and dispatch-before-persist lacked the queue idempotency key. R01 is limited to deterministic fail-closed corrections and explicit documentation of the current at-least-once shadow boundary; it does not add a provider, transaction, outbox, database, queue, workflow, or production action.
-- **Next action / owner:** Implement and independently verify R01 before GOV-061/P3-003 activation. A future provider adapter must add a separately governed transactional/outbox or equivalent delivery boundary before any real provider is bound.
+- **Resolution:** Delivery PR #138 and completion-reconciliation PR #139 merged on canonical main; independent verification remains recorded under `evidence/verification/SUT-AIOS-P3-002-R01/`.
+- **Next action / owner:** GOV-061 and P3-003 must declare `SUT-AIOS-P3-002-R01` as a completed dependency before workflow activation. A future provider adapter must add a separately governed transactional/outbox or equivalent delivery boundary before any real provider is bound.
 ### 2026-08-13 — P3-003 Workflow V1 readiness and verifier-admission gap
 
 - **Task ID:** `SUT-AIOS-GOV-061`

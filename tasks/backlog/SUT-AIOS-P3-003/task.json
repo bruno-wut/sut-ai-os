@@ -18,6 +18,7 @@
   ],
   "dependencies": [
     "SUT-AIOS-P3-002",
+    "SUT-AIOS-P3-002-R01",
     "SUT-AIOS-P1-006",
     "SUT-AIOS-P1-007",
     "SUT-AIOS-P2-004",
@@ -101,7 +102,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-29T13:00:00.000Z",
+  "updatedDate": "2026-08-13T12:25:00.000Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
