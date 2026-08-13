@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:13:28.816Z",
+  "updatedDate": "2026-08-13T03:18:15.089Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1011,6 +1011,13 @@
       "at": "2026-08-13T03:13:28.816Z",
       "actor": "codex-engineering-executor",
       "reason": "Bind direct persistence to canonical same-task trace path and current packet stage authority with zero-publication negatives only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:18:15.089Z",
+      "actor": "chief-orchestrator",
+      "reason": "Direct persistence now re-derives current packet authority and canonical revisions, canonical trace-path negatives pass, and every packet check is green; freeze for fresh independent review."
     }
   ]
 }
