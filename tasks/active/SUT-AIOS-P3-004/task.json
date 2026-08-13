@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-004",
   "title": "Implement provider-neutral persistence adapter composition",
-  "status": "verified",
+  "status": "active",
   "phase": "phase-3",
   "workstream": "persistence-composition",
   "workflowId": "implementation-p3-004",
@@ -94,14 +94,14 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
-      "tasks/verified/SUT-AIOS-P3-004/task.json",
+      "tasks/active/SUT-AIOS-P3-004/task.json",
       "package.json"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.763Z",
-  "updatedDate": "2026-08-13T17:03:31.604Z",
+  "updatedDate": "2026-08-13T17:44:38.804Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json"
   ],
@@ -140,6 +140,20 @@
       "at": "2026-08-13T17:03:31.604Z",
       "actor": "chief-orchestrator",
       "reason": "Independent Sol QA PASS at 0ea424a; all acceptance criteria confirmed, forbidden paths untouched, no provider/database/network/production behavior."
+    },
+    {
+      "from": "verified",
+      "to": "revision-required",
+      "at": "2026-08-13T17:44:35.177Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA identified and boundedly remediated ordinary scheduled_delete regression: delete identity must not require stored retentionAction; preserve failed verification history and re-review before delivery."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T17:44:38.804Z",
+      "actor": "chief-orchestrator",
+      "reason": "Bounded delete-semantics remediation is implemented; rerun independent verification before returning to verified."
     }
   ]
 }
