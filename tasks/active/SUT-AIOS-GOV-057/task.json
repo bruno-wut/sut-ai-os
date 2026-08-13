@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:18:15.089Z",
+  "updatedDate": "2026-08-13T03:20:31.877Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1018,6 +1018,20 @@
       "at": "2026-08-13T03:18:15.089Z",
       "actor": "chief-orchestrator",
       "reason": "Direct persistence now re-derives current packet authority and canonical revisions, canonical trace-path negatives pass, and every packet check is green; freeze for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:20:31.728Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on cbd73ca found root-child close could bypass POSIX descendant-group confirmation; preserve the finding and add bounded observation without post-exit signalling."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:20:31.877Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Require bounded referenced POSIX process-group exit confirmation before cancelled, failing closed if descendants remain; do not signal after root exit."
     }
   ]
 }
