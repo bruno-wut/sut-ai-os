@@ -1,0 +1,203 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-004",
+  "title": "Implement provider-neutral persistence adapter composition",
+  "status": "verified",
+  "phase": "phase-3",
+  "workstream": "persistence-composition",
+  "workflowId": "implementation-p3-004",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Permit approved persistence-provider replacement without rewriting governed domain logic.",
+  "technicalObjective": "Implement a deep `PersistencePort` composition boundary and deterministic reference adapters for local fixtures only; no provider account, database, migration, or production write.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P1-003",
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P3-004/verification.md"
+  ],
+  "assumptions": [
+    "The first adapters are deterministic local/reference implementations and prove composition, not service connectivity."
+  ],
+  "acceptanceCriteria": [
+    "Domain/application core depends on a small PersistencePort and imports no Cloudflare, Supabase, database, or local-server SDK.",
+    "Composition selects a reference adapter outside the core; unsupported/missing adapter configuration fails closed.",
+    "Persistence operations enforce P2-006 categories/retention references and P2-007 capacity decisions before acceptance.",
+    "Tests prove adapter substitution without domain rewrite, reject provider SDK imports in core, and reject unknown/over-budget writes.",
+    "No database, SQL, migration, account, credential, or network service is accessed."
+  ],
+  "allowedPaths": [
+    "package.json",
+    "packages/persistence-port/**",
+    "services/persistence-composition/**",
+    "tests/persistence-composition/**",
+    "docs/persistence-composition/**",
+    "evidence/tasks/SUT-AIOS-P3-004/**",
+    "evidence/verification/SUT-AIOS-P3-004/**",
+    "tasks/**/SUT-AIOS-P3-004/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "npm run test:persistence-composition",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P3-004 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact validator admission before independent verification",
+    "hexagonal import-boundary test",
+    "adapter-substitution and fail-closed capacity tests",
+    "independent Sol review"
+  ],
+  "requiredTests": [
+    "npm run test:persistence-composition",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "critical",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any database/provider SDK, schema migration, network call, retention deletion, or production persistence access."
+  ],
+  "rollbackExpectations": "Revert the composition/reference implementation and preserve evidence; no external state exists.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+      "tasks/verified/SUT-AIOS-P3-004/task.json",
+      "package.json"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-07-29T12:21:28.763Z",
+  "updatedDate": "2026-08-13T18:36:34.417Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json",
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813174319028.json",
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813183605179.json"
+  ],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-07-29T12:21:28.763Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created by GOV-043 for reference persistence composition only."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T16:50:24.357Z",
+      "actor": "chief-orchestrator",
+      "reason": "GOV-062 is merged on origin/main at e961f1780099938a007256681344b798fcfa1648; all P3-004 dependencies are done, exact validator script/mapping and base-bound verify:task command are admitted, and packet paths/evidence are execution-ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T16:50:24.508Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin bounded provider-neutral persistence adapter composition in isolated origin/main worktree; local/reference fixtures only, no provider or production persistence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T17:03:31.455Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA assigned and passed: 539 validator cases, verify:fast, exact base-bound verify:task, diff check, deep module/import boundary, adapter substitution, P2-006/P2-007 fail-closed gates; productionEligible false."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T17:03:31.604Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA PASS at 0ea424a; all acceptance criteria confirmed, forbidden paths untouched, no provider/database/network/production behavior."
+    },
+    {
+      "from": "verified",
+      "to": "revision-required",
+      "at": "2026-08-13T17:44:35.177Z",
+      "actor": "qa-verification",
+      "reason": "Independent QA identified and boundedly remediated ordinary scheduled_delete regression: delete identity must not require stored retentionAction; preserve failed verification history and re-review before delivery."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T17:44:38.804Z",
+      "actor": "chief-orchestrator",
+      "reason": "Bounded delete-semantics remediation is implemented; rerun independent verification before returning to verified."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T17:45:10.075Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA passed corrected delete semantics at 97ab938; all acceptance boundaries and exact checks pass."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T17:45:14.805Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA PASS at 97ab938: ordinary scheduled_delete succeeds for both adapters; append identity remains strict; protected same-ID deletion fails before mutation and preserves revision; aggregate read/write, fail-closed and import boundaries pass; productionEligible false."
+    },
+    {
+      "from": "verified",
+      "to": "revision-required",
+      "at": "2026-08-13T18:19:32.448Z",
+      "actor": "qa-verification",
+      "reason": "Revision required: deletion must bind an expected immutable revision; capacity observations must be trusted/bound; append idempotency identity must reach adapters before delivery."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T18:19:32.597Z",
+      "actor": "chief-orchestrator",
+      "reason": "Implement bounded P3-004 remediation for stale-delete protection, trusted capacity binding, and append idempotency."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T18:36:34.261Z",
+      "actor": "qa-verification",
+      "reason": "Fresh independent Sol QA passed integrity remediation at c9a6582; 912 validator cases, exact base-bound verify:task, verify:fast, and diff check passed."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T18:36:34.417Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA PASS at c9a6582: delete validates revision/digest/bytes before mutation; internal capacity authority is request-bound; append idempotency is enforced; protected history and all deep/hexagonal/fail-closed boundaries pass; productionEligible false."
+    }
+  ]
+}
