@@ -12,6 +12,10 @@
   or saturated capacity, booking-boundary overlap, caller authority injection,
   unsupported composition, hostile adapters, malformed inputs, and import
   direction.
+- Bound each append history to its initial category, artifact class, and
+  retention action; collisions fail closed without changing protected or
+  ordinary records. Added aggregate-action write/read and protected-delete
+  preservation regressions for both adapters.
 - Added bounded architecture and rollback documentation.
 
 ## Changed paths
@@ -27,9 +31,9 @@
 
 | Command | Result | Notes |
 | --- | --- | --- |
-| `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 539 cases. |
-| `npm run verify:fast` | FAIL on uncommitted implementation tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit the bounded implementation and rerun this exact command before independent QA. |
-| `git diff --check` | PASS | No whitespace errors. |
+| `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 691 cases after the bounded history-identity and aggregate-read remediation. |
+| `npm run verify:fast` | FAIL on uncommitted remediation tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit the bounded remediation and rerun this exact command before fresh independent QA. |
+| `git diff --check` | PASS | No whitespace errors; Git emitted only line-ending conversion notices for the modified working-copy files. |
 
 ## Safety and authority
 

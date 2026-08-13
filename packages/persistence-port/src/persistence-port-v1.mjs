@@ -8,13 +8,13 @@ const ADAPTER_FIELDS = Object.freeze(["adapterId", "mode", "execute"]);
 const OPERATIONS = new Set(["read", "write", "append", "delete_expired"]);
 const WRITE_ACTIONS = new Set(["aggregate", "archive", "transfer_eligible", "retain"]);
 const APPEND_ACTIONS = new Set(["archive", "transfer_eligible", "retain"]);
-const READ_ACTIONS = new Set(["archive", "transfer_eligible", "retain"]);
+const READ_ACTIONS = new Set(["aggregate", "archive", "transfer_eligible", "retain"]);
 const REQUIRED_DIMENSION = Object.freeze({ read: "persistence_egress_bytes", write: "persistence_growth_bytes", append: "persistence_growth_bytes", delete_expired: "persistence_size_bytes" });
 const ACCEPTABLE_CAPACITY_OUTCOMES = new Set(["continue_candidate", "warn_continue_candidate", "throttle_candidate"]);
 const INJECTED_AUTHORITY_FIELDS = new Set(["schema", "policy", "contract", "validator", "configuration", "thresholds", "retentionConfiguration", "adapter", "dependencies"]);
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const DIGEST = /^sha256:[a-f0-9]{64}$/;
-const ADAPTER_RESULT_REASONS = new Set(["RECORD_ALREADY_EXISTS", "RECORD_NOT_FOUND", "REVISION_CONFLICT", "REFERENCE_CAPACITY_REACHED", "ADAPTER_CONFIGURATION_MISSING", "UNSUPPORTED_ADAPTER_CONFIGURATION"]);
+const ADAPTER_RESULT_REASONS = new Set(["RECORD_ALREADY_EXISTS", "RECORD_IDENTITY_CONFLICT", "RECORD_NOT_FOUND", "REVISION_CONFLICT", "REFERENCE_CAPACITY_REACHED", "ADAPTER_CONFIGURATION_MISSING", "UNSUPPORTED_ADAPTER_CONFIGURATION"]);
 
 function isPlainObject(value) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;

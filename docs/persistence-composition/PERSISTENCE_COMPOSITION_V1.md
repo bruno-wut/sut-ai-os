@@ -31,7 +31,9 @@ side effect or production-write capability.
 The port runs the P2-006 classification and P2-007 evaluation before calling an
 adapter. Raw source-only telemetry, per-interaction persistence, per-interaction
 queues/workflows, and per-event or per-interaction AI work are rejected. The
-operation must match the P2-006 action reference. Capacity must use the exact
+operation must match the P2-006 action reference. A valid hourly aggregate that
+uses the `aggregate` action may subsequently be read under that same reference;
+reads do not require relabelling it as `retain`. Capacity must use the exact
 operation-specific dimension:
 
 | Operation | Required P2-007 dimension |
@@ -66,6 +68,14 @@ Missing, malformed, or unsupported selection yields a port that fails closed.
 The core captures the adapter identity and function at construction, so later
 mutation of the supplied object cannot redirect an established port.
 
+For every existing `recordId`, both adapters bind append history to the original
+`dataCategory`, `artifactClass`, and `retentionAction`. An append that attempts
+to relabel any of those fields returns `RECORD_IDENTITY_CONFLICT` without
+changing the current revision. This prevents an ordinary aggregate from joining
+a protected audit history and prevents a protected record from being appended
+to an ordinary history. Protected histories also remain ineligible for
+`delete_expired`; a rejected delete never reaches either adapter.
+
 Adapter output is treated as untrusted. Its status must match the requested
 operation, its record must match the governed request identity, and extra
 authority fields are rejected. Throws and malformed adapter output become
@@ -94,9 +104,11 @@ git diff --check
 ```
 
 The task validator covers both adapters, substitution, all four finite
-operations, P2-006 category/retention rejection, P2-007 capacity and booking
-isolation, caller-authority injection, hostile adapters, malformed input,
-immutability, closed decisions, and import boundaries.
+operations, aggregate-action write/read, protected-history identity collisions
+in both directions, protected-delete preservation, P2-006 category/retention
+rejection, P2-007 capacity and booking isolation, caller-authority injection,
+hostile adapters, malformed input, immutability, closed decisions, and import
+boundaries.
 
 ## Rollback
 

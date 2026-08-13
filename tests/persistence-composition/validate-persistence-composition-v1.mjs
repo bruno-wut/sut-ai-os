@@ -129,6 +129,13 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   equal(deleted.value.record.revision, 2, `${adapterId} delete returns removed revision`);
   await accepted(port, request("read"), "not_found", `${adapterId} read after delete`);
 
+  const aggregateAction = governanceCandidate({ candidateId: `aggregate-action-${adapterId}`, requestedAction: "aggregate" });
+  const aggregateWrite = request("write", { requestId: `aggregate-write-${adapterId}`, record: { recordId: `aggregate-action-record-${adapterId}`, contentDigest: DIGEST_A, contentBytes: 64 }, governanceCandidate: aggregateAction });
+  await accepted(port, aggregateWrite, "written", `${adapterId} aggregate-action write`);
+  const aggregateRead = request("read", { requestId: `aggregate-read-${adapterId}`, record: clone(aggregateWrite.record), governanceCandidate: clone(aggregateAction) });
+  const aggregateFound = await accepted(port, aggregateRead, "found", `${adapterId} aggregate-action read`);
+  equal([aggregateFound.value.record.recordId, aggregateFound.value.record.revision], [aggregateWrite.record.recordId, 1], `${adapterId} aggregate-action read returns latest revision`);
+
   const auditAppend = request("append", { requestId: `audit-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_A, contentBytes: 32 }, governanceCandidate: auditCandidate() });
   const auditFirst = await accepted(port, auditAppend, "appended", `${adapterId} initial protected append`);
   equal(auditFirst.value.record.revision, 1, `${adapterId} protected history starts at revision one`);
@@ -136,6 +143,31 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   const auditSecond = await accepted(port, auditNext, "appended", `${adapterId} second protected append`);
   equal(auditSecond.value.record.revision, 2, `${adapterId} protected history appends a revision`);
   await rejected(port, request("write", { requestId: `audit-write-${adapterId}`, record: { recordId: "audit-write-1", contentDigest: DIGEST_A, contentBytes: 32 }, governanceCandidate: auditCandidate() }), ["RETENTION_REFERENCE_MISMATCH"], `${adapterId} protected history rejects write operation`);
+
+  const ordinaryCollision = request("append", { requestId: `ordinary-collision-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_A, contentBytes: 32 } });
+  await rejected(port, ordinaryCollision, ["RECORD_IDENTITY_CONFLICT"], `${adapterId} protected-to-ordinary identity collision`);
+  const auditRead = request("read", { requestId: `audit-read-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 }, governanceCandidate: auditCandidate() });
+  const auditIntact = await accepted(port, auditRead, "found", `${adapterId} protected record remains after collision`);
+  equal([auditIntact.value.record.dataCategory, auditIntact.value.record.artifactClass, auditIntact.value.record.retentionAction, auditIntact.value.record.revision], ["required_audit_evidence", "audit_evidence", "retain", 2], `${adapterId} protected identity and latest revision remain intact`);
+
+  const auditDeleteCandidate = auditCandidate(); auditDeleteCandidate.requestedAction = "scheduled_delete";
+  await rejected(port, request("delete_expired", { requestId: `audit-delete-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 }, governanceCandidate: auditDeleteCandidate }), ["DATA_GOVERNANCE_REJECTED", "RETENTION_ACTION_NOT_ELIGIBLE", "APPEND_ONLY_AUDIT_CONFLICT"], `${adapterId} protected delete remains rejected`);
+  const auditAfterDelete = await accepted(port, auditRead, "found", `${adapterId} protected record remains after rejected delete`);
+  equal(auditAfterDelete.value.record.revision, 2, `${adapterId} rejected delete never removes protected history`);
+
+  const ordinaryFirst = request("append", { requestId: `ordinary-first-${adapterId}`, record: { recordId: `ordinary-protected-${adapterId}`, contentDigest: DIGEST_A, contentBytes: 16 } });
+  await accepted(port, ordinaryFirst, "appended", `${adapterId} ordinary history starts`);
+  const retentionCollisionCandidate = governanceCandidate({ candidateId: `retention-collision-${adapterId}`, requestedAction: "archive" });
+  await rejected(port, request("append", { requestId: `retention-collision-${adapterId}`, record: { ...clone(ordinaryFirst.record), contentDigest: DIGEST_B }, governanceCandidate: retentionCollisionCandidate }), ["RECORD_IDENTITY_CONFLICT"], `${adapterId} retention-action identity collision`);
+  const artifactCollisionCandidate = governanceCandidate({ candidateId: `artifact-collision-${adapterId}`, artifactClass: "temporary_ingestion_record" });
+  await rejected(port, request("append", { requestId: `artifact-collision-${adapterId}`, record: { ...clone(ordinaryFirst.record), contentDigest: DIGEST_B }, governanceCandidate: artifactCollisionCandidate }), ["RECORD_IDENTITY_CONFLICT"], `${adapterId} artifact-class identity collision`);
+  const categoryCollisionCandidate = governanceCandidate({ candidateId: `category-collision-${adapterId}`, dataCategory: "daily_analytics_aggregate", aggregationInterval: "daily" });
+  await rejected(port, request("append", { requestId: `category-collision-${adapterId}`, record: { ...clone(ordinaryFirst.record), contentDigest: DIGEST_B }, governanceCandidate: categoryCollisionCandidate }), ["RECORD_IDENTITY_CONFLICT"], `${adapterId} data-category identity collision`);
+  const protectedCollision = request("append", { requestId: `protected-collision-${adapterId}`, record: { recordId: ordinaryFirst.record.recordId, contentDigest: DIGEST_B, contentBytes: 16 }, governanceCandidate: auditCandidate() });
+  await rejected(port, protectedCollision, ["RECORD_IDENTITY_CONFLICT"], `${adapterId} ordinary-to-protected identity collision`);
+  const ordinaryRead = request("read", { requestId: `ordinary-read-${adapterId}`, record: clone(ordinaryFirst.record) });
+  const ordinaryIntact = await accepted(port, ordinaryRead, "found", `${adapterId} ordinary record remains after protected collision`);
+  equal([ordinaryIntact.value.record.dataCategory, ordinaryIntact.value.record.artifactClass, ordinaryIntact.value.record.revision], ["hourly_analytics_aggregate", "analytics_aggregate", 1], `${adapterId} ordinary identity remains intact`);
 }
 
 // Missing and unsupported composition configuration produce a closed port.

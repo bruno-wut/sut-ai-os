@@ -17,6 +17,10 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function sameHistoryIdentity(existing, candidate) {
+  return existing.dataCategory === candidate.dataCategory && existing.artifactClass === candidate.artifactClass && existing.retentionAction === candidate.retentionAction;
+}
+
 function createMapAdapter() {
   const histories = new Map();
   return Object.freeze({
@@ -33,6 +37,7 @@ function createMapAdapter() {
         return { ok: true, status: "written", record: clone(stored) };
       }
       if (operation === "append") {
+        if (current !== null && !sameHistoryIdentity(current, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
         const stored = { ...clone(record), revision: current === null ? 1 : current.revision + 1 };
         histories.set(stored.recordId, [...history, stored]);
         return { ok: true, status: "appended", record: clone(stored) };
@@ -66,6 +71,7 @@ function createJournalAdapter() {
         return { ok: true, status: "written", record: clone(stored) };
       }
       if (operation === "append") {
+        if (existing !== null && !sameHistoryIdentity(existing, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
         const stored = { ...clone(record), revision: existing === null ? 1 : existing.revision + 1 };
         journal.push({ deleted: false, record: stored });
         return { ok: true, status: "appended", record: clone(stored) };
