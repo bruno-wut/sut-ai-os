@@ -125,9 +125,9 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   const readInput = request("read"); readInput.record.contentDigest = DIGEST_B;
   const found = await accepted(port, readInput, "found", `${adapterId} read`);
   equal([found.value.record.contentDigest, found.value.record.revision], [DIGEST_B, 2], `${adapterId} read sees latest revision`);
-  const deleted = await accepted(port, request("delete_expired"), "deleted", `${adapterId} fixture delete`);
-  equal(deleted.value.record.revision, 2, `${adapterId} delete returns removed revision`);
-  await accepted(port, request("read"), "not_found", `${adapterId} read after delete`);
+  await rejected(port, request("delete_expired"), ["RECORD_IDENTITY_CONFLICT"], `${adapterId} retention-action drift cannot delete ordinary history`);
+  const afterRejectedDelete = await accepted(port, readInput, "found", `${adapterId} ordinary history remains after rejected delete`);
+  equal(afterRejectedDelete.value.record.revision, 2, `${adapterId} rejected delete preserves latest ordinary revision`);
 
   const aggregateAction = governanceCandidate({ candidateId: `aggregate-action-${adapterId}`, requestedAction: "aggregate" });
   const aggregateWrite = request("write", { requestId: `aggregate-write-${adapterId}`, record: { recordId: `aggregate-action-record-${adapterId}`, contentDigest: DIGEST_A, contentBytes: 64 }, governanceCandidate: aggregateAction });
@@ -149,6 +149,11 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   const auditRead = request("read", { requestId: `audit-read-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 }, governanceCandidate: auditCandidate() });
   const auditIntact = await accepted(port, auditRead, "found", `${adapterId} protected record remains after collision`);
   equal([auditIntact.value.record.dataCategory, auditIntact.value.record.artifactClass, auditIntact.value.record.retentionAction, auditIntact.value.record.revision], ["required_audit_evidence", "audit_evidence", "retain", 2], `${adapterId} protected identity and latest revision remain intact`);
+
+  const ordinaryDeleteAgainstAudit = request("delete_expired", { requestId: `ordinary-delete-audit-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 } });
+  await rejected(port, ordinaryDeleteAgainstAudit, ["RECORD_IDENTITY_CONFLICT"], `${adapterId} ordinary scheduled delete cannot erase protected recordId`);
+  const auditAfterOrdinaryDelete = await accepted(port, auditRead, "found", `${adapterId} protected record remains after ordinary delete collision`);
+  equal([auditAfterOrdinaryDelete.value.record.dataCategory, auditAfterOrdinaryDelete.value.record.artifactClass, auditAfterOrdinaryDelete.value.record.retentionAction, auditAfterOrdinaryDelete.value.record.revision], ["required_audit_evidence", "audit_evidence", "retain", 2], `${adapterId} ordinary delete collision preserves protected identity and revision`);
 
   const auditDeleteCandidate = auditCandidate(); auditDeleteCandidate.requestedAction = "scheduled_delete";
   await rejected(port, request("delete_expired", { requestId: `audit-delete-${adapterId}`, record: { recordId: "audit-record-1", contentDigest: DIGEST_B, contentBytes: 32 }, governanceCandidate: auditDeleteCandidate }), ["DATA_GOVERNANCE_REJECTED", "RETENTION_ACTION_NOT_ELIGIBLE", "APPEND_ONLY_AUDIT_CONFLICT"], `${adapterId} protected delete remains rejected`);
@@ -286,5 +291,9 @@ check(!/\bfetch\s*\(|from\s+["']node:(?:https?|fs|net|tls|child_process|os)|proc
 check(!/from\s+["'](?:cloudflare|supabase|github|openai|line|@?aws|pg|postgres|mysql|redis|bullmq|wrangler|better-sqlite3|sqlite)/iu.test(compositionSource), "reference composition imports no provider or database SDK");
 check(!/\bfetch\s*\(|from\s+["']node:(?:https?|fs|net|tls|child_process)|process\.env/iu.test(compositionSource), "reference composition has no network, filesystem, credential, or process access");
 check(!/\b(?:aiInvocation|modelInvocation|queueMessage|workflowStart)\s*\(/u.test(coreSource + compositionSource), "persistence composition creates no AI invocation, queue message, or workflow per event");
+check(compositionSource.lastIndexOf("if (!sameHistoryIdentity(current, record))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter validates delete identity before destructive mutation");
+check(compositionSource.indexOf("if (isProtectedAuditRecord(current))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter protects audit records before destructive mutation");
+check(compositionSource.lastIndexOf("if (!sameHistoryIdentity(existing, record))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter validates delete identity before tombstone mutation");
+check(compositionSource.indexOf("if (isProtectedAuditRecord(existing))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter protects audit records before tombstone mutation");
 
 console.log(`P3-004 persistence composition V1 validation passed (${cases} cases).`);

@@ -14,7 +14,7 @@ const ACCEPTABLE_CAPACITY_OUTCOMES = new Set(["continue_candidate", "warn_contin
 const INJECTED_AUTHORITY_FIELDS = new Set(["schema", "policy", "contract", "validator", "configuration", "thresholds", "retentionConfiguration", "adapter", "dependencies"]);
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const DIGEST = /^sha256:[a-f0-9]{64}$/;
-const ADAPTER_RESULT_REASONS = new Set(["RECORD_ALREADY_EXISTS", "RECORD_IDENTITY_CONFLICT", "RECORD_NOT_FOUND", "REVISION_CONFLICT", "REFERENCE_CAPACITY_REACHED", "ADAPTER_CONFIGURATION_MISSING", "UNSUPPORTED_ADAPTER_CONFIGURATION"]);
+const ADAPTER_RESULT_REASONS = new Set(["RECORD_ALREADY_EXISTS", "RECORD_IDENTITY_CONFLICT", "PROTECTED_RECORD_DELETE_FORBIDDEN", "RECORD_NOT_FOUND", "REVISION_CONFLICT", "REFERENCE_CAPACITY_REACHED", "ADAPTER_CONFIGURATION_MISSING", "UNSUPPORTED_ADAPTER_CONFIGURATION"]);
 
 function isPlainObject(value) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
