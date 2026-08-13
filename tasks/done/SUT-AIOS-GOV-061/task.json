@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-061",
   "title": "Repair P3-003 Workflow V1 execution readiness",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3-governance",
   "workstream": "task-packet-assurance",
   "workflowId": "governance-p3-003-v1-readiness",
@@ -128,7 +128,7 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
       "scripts/verify/verify-cli.mjs",
-      "tasks/verified/SUT-AIOS-GOV-061/task.json",
+      "tasks/done/SUT-AIOS-GOV-061/task.json",
       "tasks/backlog/SUT-AIOS-P3-003/task.json",
       "package.json",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -137,7 +137,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T15:30:00.000Z",
-  "updatedDate": "2026-08-13T12:28:01.436Z",
+  "updatedDate": "2026-08-13T15:16:08.838Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-061/verification-20260813115534633.json",
     "evidence/verification/SUT-AIOS-GOV-061/verification-20260813122725504.json"
@@ -205,6 +205,13 @@
       "at": "2026-08-13T12:28:01.436Z",
       "actor": "chief-orchestrator",
       "reason": "Independent Sol QA passed the R01 dependency correction, V1 packet readiness, exact admission, security boundaries, governance, fast, and whitespace checks; productionEligible remains false."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T15:16:08.838Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #137 merged on origin/main at 79fa4e34d020e6e1639bca2e778104979f7a9d70; independent verification and R01-gated readiness evidence remain unchanged, so GOV-061 is reconciled to done."
     }
   ]
 }
