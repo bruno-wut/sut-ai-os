@@ -92,9 +92,17 @@ try {
   for (const [profile, agent, model, route, nextAction] of profiles) {
     const stage = { "plan-review": "planReview", "semantic-qa": "semanticReview", "merge-risk-review": "mergeRiskReview" }[profile];
     assert.doesNotThrow(() => assertProfileAuthorization(profile, { format: "json", state: "review", data: record.packet }, access, agent), `${profile} is authorized by its stage agent`);
+    const stageContextManifest = [...contextManifest];
+    if (stage === "mergeRiskReview") {
+      for (const reviewPath of paths) {
+        const prerequisite = JSON.parse(fs.readFileSync(path.join(root, reviewPath), "utf8"));
+        for (const relativePath of [reviewPath, prerequisite.tracePath]) stageContextManifest.push({ path: relativePath, sha256: sha256(fs.readFileSync(path.join(root, relativePath))) });
+      }
+    }
+    const stageContextManifestHash = sha256(stageContextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
     const review = buildLauncherBoundReviewResult(assessment(nextAction), {
       taskId: id, baseSha, headSha, reviewerAgent: agent, model, reasoningEffort: "high",
-      contextManifestHash, reviewedAt: "2026-08-08T12:00:00.000Z", stage,
+      contextManifestHash: stageContextManifestHash, reviewedAt: "2026-08-08T12:00:00.000Z", stage,
       runId: `fixture-${route}-${agent}`, tracePath: `evidence/reviews/${id}/traces/fixture-${route}-${agent}-${agent}-${route}.jsonl`
     });
     assert.equal(validateReviewResult(review).valid, true, `${profile} result is SHA-bound and valid`);
@@ -107,7 +115,7 @@ try {
     const traceSerialized = [
       JSON.stringify({ event: "start", taskId: id, agentId: agent, route, model, profile }),
       JSON.stringify({ event: "review-progress", runId: review.runId, taskId: id, profile, status: "child-started" }),
-      JSON.stringify({ event: "review-bound", runId: review.runId, taskId: id, baseSha, headSha, stage, reviewerAgent: agent, model, reasoningEffort: "high", contextManifestHash, outputHash: review.outputHash, contextManifest, reviewedTaskScopeHash }),
+      JSON.stringify({ event: "review-bound", runId: review.runId, taskId: id, baseSha, headSha, stage, reviewerAgent: agent, model, reasoningEffort: "high", contextManifestHash: stageContextManifestHash, outputHash: review.outputHash, contextManifest: stageContextManifest, reviewedTaskScopeHash }),
       JSON.stringify({ event: "finish", status: "success", exitCode: 0 })
     ].join("\n") + "\n";
     fs.writeFileSync(traceFile, traceSerialized);
