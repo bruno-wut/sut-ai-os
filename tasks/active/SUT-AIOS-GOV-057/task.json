@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:43:09.913Z",
+  "updatedDate": "2026-08-13T03:46:32.264Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1102,6 +1102,20 @@
       "at": "2026-08-13T03:43:09.913Z",
       "actor": "chief-orchestrator",
       "reason": "Failed result publication now aborts pending output and invalidates sealed success with a failed terminal; all packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:46:32.113Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on e51a51f found overflow and stream-error close paths emitted failure without complete tree/group confirmation; preserve the finding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:46:32.264Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Route overflow and child-stream failure cleanup through one bounded failed-cancellation completion path with no persistence."
     }
   ]
 }
