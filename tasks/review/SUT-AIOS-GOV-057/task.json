@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:41:37.891Z",
+  "updatedDate": "2026-08-13T03:43:09.913Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1095,6 +1095,13 @@
       "at": "2026-08-13T03:41:37.891Z",
       "actor": "codex-engineering-executor",
       "reason": "On result-publication failure, abort pending output, append a failed terminal invalidation, and prove the trace cannot satisfy admission."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:43:09.913Z",
+      "actor": "chief-orchestrator",
+      "reason": "Failed result publication now aborts pending output and invalidates sealed success with a failed terminal; all packet checks pass."
     }
   ]
 }
