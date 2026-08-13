@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-002",
   "title": "Implement durable scheduling, queue, retry, and dead-letter delivery",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "event-delivery",
   "workflowId": "implementation-p3-002",
@@ -93,7 +93,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/active/SUT-AIOS-P3-002/task.json",
+      "tasks/verified/SUT-AIOS-P3-002/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "package.json"
     ]
@@ -101,8 +101,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-13T08:55:34.794Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T09:07:22.420Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P3-002/verification-20260813090440518.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -124,6 +126,20 @@
       "at": "2026-08-13T08:55:34.794Z",
       "actor": "chief-orchestrator",
       "reason": "Begin only the bounded durable event-delivery contract within the V1 allowlist; no production writes or provider integrations."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T09:07:22.265Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA re-review passed the bounded remediation: hostile dispatcher results fail closed, failure reasons are preserved through exhaustion, retry attempts remain within record bounds, and all V1 checks pass."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T09:07:22.420Z",
+      "actor": "chief-orchestrator",
+      "reason": "Fresh independent QA evidence is complete; validator, fast, base-bound verifier, changed-path, security, and whitespace checks pass with productionEligible false."
     }
   ]
 }
