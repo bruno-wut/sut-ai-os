@@ -1,0 +1,157 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-062",
+  "title": "Admit the exact P3-004 persistence-composition validator",
+  "status": "active",
+  "phase": "phase-3",
+  "workstream": "verification-governance",
+  "workflowId": "governance-p3-004-validator-admission",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make P3-004 independently verifiable before any provider-neutral persistence composition implementation begins.",
+  "technicalObjective": "Add the exact persistence-composition package script and shell-free verifier mapping, update the P3-004 V1 packet with the admitted command and evidence-ready paths, and record the missing-command correction without implementing the product validator or persistence adapter.",
+  "architectureReferences": [
+    "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
+    "docs/project/VERIFICATION_POLICY.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md",
+    "tasks/backlog/SUT-AIOS-P3-004/task.json"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-062/verification.md"
+  ],
+  "assumptions": [
+    "P3-004 remains backlog until this exact command is present, safely admitted, and independently verified.",
+    "The admitted literal is only a fixed shell-free validator mapping; it does not authorize a generic npm, Node.js, shell, package, persistence, database, provider, network, or production runner.",
+    "This governance task does not create or execute the P3-004 validator, persistence port, reference adapter, database, SQL, migration, network, credential, or production behavior."
+  ],
+  "acceptanceCriteria": [
+    "package.json declares exactly `test:persistence-composition` as `node tests/persistence-composition/validate-persistence-composition-v1.mjs`.",
+    "The exact literal `npm run test:persistence-composition` is admitted by scripts/verify/verify-cli.mjs as a shell-free fixed node invocation with the single validator path; exact and near-miss rejection self-tests cover extra arguments, whitespace variants, alternate npm syntax, altered paths, path separators, traversal, and shell operators.",
+    "docs/verification/VERIFICATION_POLICY.md documents the narrowly scoped admission and states that it creates no generic command runner or product authority.",
+    "P3-004 remains a schemaVersion 1.0.0 Sol-routed packet with exactly codex-engineering-executor and qa-verification, adds package.json and the fixed verify:task command to its allowlist/context as required, and retains task-specific verification evidence paths.",
+    "The missing P3-004 command is recorded as corrected in the risk/evidence record without claiming product implementation, validator execution, persistence access, or production eligibility.",
+    "The governance packet, P3-004 packet, exact verifier self-tests, task validation, governance validation, fast verification, and whitespace checks pass; no product implementation or protected path changes."
+  ],
+  "allowedPaths": [
+    "package.json",
+    "scripts/verify/verify-cli.mjs",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P3-004/task.json",
+    "tasks/**/SUT-AIOS-GOV-062/**",
+    "evidence/tasks/SUT-AIOS-GOV-062/**",
+    "evidence/verification/SUT-AIOS-GOV-062/**"
+  ],
+  "forbiddenPaths": [
+    "package-lock.json",
+    "packages/persistence-port/**",
+    "services/persistence-composition/**",
+    "tests/persistence-composition/**",
+    "docs/persistence-composition/**",
+    "evidence/tasks/SUT-AIOS-P3-004/**",
+    "evidence/verification/SUT-AIOS-P3-004/**",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    ".github/**",
+    "schemas/**",
+    "policies/**",
+    "scripts/codex/**",
+    "scripts/task/**",
+    "scripts/github/**",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --task SUT-AIOS-P3-004",
+    "node scripts/task/validate --task SUT-AIOS-GOV-062",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-062 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact shell-free validator mapping and near-miss rejection self-tests",
+    "P3-004 packet command/path readiness validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent Sol verification"
+  ],
+  "requiredTests": [
+    "node scripts/verify/verify-cli.mjs --self-test",
+    "node scripts/task/validate --all",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any product validator, persistence adapter, database/provider SDK, SQL/migration, network, credential, deployment, package-lock, CI, or production behavior is requested.",
+    "Any generic command execution or verifier broadening is proposed."
+  ],
+  "rollbackExpectations": "Revert only the exact P3-004 admission, packet correction, policy text, risk record, task state, and governance evidence; preserve historical records and do not touch P3-004 implementation because none exists.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/active/SUT-AIOS-GOV-062/task.json",
+      "tasks/backlog/SUT-AIOS-P3-004/task.json",
+      "package.json",
+      "scripts/verify/verify-cli.mjs",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-13T16:30:00.000Z",
+  "updatedDate": "2026-08-13T16:29:39.397Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-13T16:30:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after P3-004 readiness inspection found its required test:persistence-composition command missing and its packet unable to authorize the exact verifier admission without a bounded governance correction."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T16:29:39.241Z",
+      "actor": "chief-orchestrator",
+      "reason": "P3-004 readiness inspection found the required npm run test:persistence-composition command missing. GOV-062 is the smallest bounded Sol-routed correction with exact package-script, shell-free verifier admission, P3-004 packet allowlist, and evidence paths; dependencies P2-005/006/007 are done."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T16:29:39.397Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin exact P3-004 validator admission correction in the isolated worktree; no product validator or persistence implementation."
+    }
+  ]
+}
