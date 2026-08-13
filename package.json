@@ -28,6 +28,7 @@
     "worktree:doctor": "node scripts/worktree/doctor",
     "verify:fast": "node scripts/verify/fast",
     "test:signal-ingestion": "node tests/signal-ingestion/validate-signal-ingestion-v1.mjs",
+    "test:event-delivery": "node tests/event-delivery/validate-event-delivery-v1.mjs",
     "test:briefing": "node tests/executive-reporting/validate-executive-briefing-v1.mjs",
     "verify:changed": "node scripts/verify/changed",
     "verify:task": "node scripts/verify/task",
