@@ -34,12 +34,11 @@ function assessment(nextAction) {
 try {
   const git = (args) => assert.equal(spawnSync("git", args, { cwd: root, encoding: "utf8", windowsHide: true }).status, 0);
   git(["init", "-q"]);
-  git(["config", "user.email", "test@example.invalid"]);
-  git(["config", "user.name", "V2 lifecycle test"]);
-  git(["commit", "--allow-empty", "-qm", "fixture base"]);
-  git(["update-ref", "refs/remotes/origin/main", "HEAD"]);
+  git(["fetch", "-q", repositoryRoot, "HEAD"]);
+  git(["checkout", "-q", "--detach", "FETCH_HEAD"]);
+  git(["fetch", "-q", repositoryRoot, "refs/remotes/origin/main:refs/remotes/origin/main"]);
   headSha = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout.trim();
-  baseSha = headSha;
+  baseSha = spawnSync("git", ["rev-parse", "origin/main"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout.trim();
   const workflowDocumentation = fs.readFileSync(path.join(repositoryRoot, "docs", "project", "TASK_WORKFLOW.md"), "utf8");
   assert.match(workflowDocumentation, /Source head:[\s\S]*Evidence head:[\s\S]*Lifecycle head:/, "Workflow V2 documentation preserves the ordered three-head sequence");
   assert.match(workflowDocumentation, /--evidence evidence\/reviews\/SUT-AIOS-AREA-001\/<final-review-stage>-<source-head>\.json/, "documented V2 verification uses the final exact-head review artifact");
