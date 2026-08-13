@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-003-R01",
   "title": "Prevent Workflow V1 history-cap state corruption",
-  "status": "backlog",
+  "status": "active",
   "phase": "phase-3",
   "workstream": "workflow-runtime-remediation",
   "workflowId": "remediation-p3-003-history-cap",
@@ -99,7 +99,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P3-003-R01/task.json",
+      "tasks/active/SUT-AIOS-P3-003-R01/task.json",
       "tasks/verified/SUT-AIOS-P3-003/task.json",
       "packages/workflow-contracts/src/workflow-runtime-v1.mjs",
       "tests/workflow-runtime/validate-workflow-runtime-v1.mjs",
@@ -109,7 +109,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T16:10:00.000Z",
-  "updatedDate": "2026-08-13T16:10:00.000Z",
+  "updatedDate": "2026-08-13T16:02:09.569Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -118,6 +118,20 @@
       "at": "2026-08-13T16:10:00.000Z",
       "actor": "chief-orchestrator",
       "reason": "Created as a bounded remediation after independent review found that repeated provider or quota waits can append a 65th history entry and make the runtime reject its own durable record."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T16:02:09.399Z",
+      "actor": "chief-orchestrator",
+      "reason": "P3-003 history-cap remediation packet is bounded, Sol-routed, execution-ready, depends on the merged P3-003 implementation, and has exact admitted commands and task-specific evidence paths."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T16:02:09.569Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin bounded history-cap remediation in isolated origin/main worktree; preserve P3-003 packet and all historical evidence."
     }
   ]
 }
