@@ -696,6 +696,7 @@ function createReviewCancellationController(child, emit, options = {}) {
   const schedule = options.setTimeoutFn ?? setTimeout;
   const cancelSchedule = options.clearTimeoutFn ?? clearTimeout;
   const terminate = options.terminateChildTree ?? terminateChildTree;
+  const confirmProcessGroupExit = options.waitForProcessGroupExit ?? ((pid) => waitForProcessGroupExit(pid, options));
   const onTerminationFailure = options.onTerminationFailure ?? (() => {});
   let requested = false;
   let timer = null;
@@ -760,6 +761,10 @@ function createReviewCancellationController(child, emit, options = {}) {
     ensureTerminated(signal = "SIGTERM") {
       return platform === "win32" || childClosed || !childIsRunning(child) ? (termination ?? Promise.resolve({ status: "already-exited" })) : escalate(signal);
     },
+    confirmProcessGroupTerminated(signal = "SIGTERM") {
+      if (platform === "win32") return termination ?? Promise.resolve({ status: "already-exited" });
+      return observeTermination(confirmProcessGroupExit(child.pid), signal, false);
+    },
     complete() {
       if (timer) cancelSchedule(timer);
       if (settleTimer) cancelSchedule(settleTimer);
@@ -772,8 +777,9 @@ function createReviewCancellationController(child, emit, options = {}) {
 async function completeCancelledReview(cancellation, terminal) {
   cancellation.confirmChildClosed();
   const result = await cancellation.ensureTerminated();
+  const groupResult = result?.status === "failed" ? result : await cancellation.confirmProcessGroupTerminated();
   cancellation.complete();
-  if (result?.status === "failed" || !cancellation.childClosed) {
+  if (groupResult?.status === "failed" || !cancellation.childClosed) {
     terminal.complete("failed", 1);
     return "failed";
   }

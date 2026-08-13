@@ -125,6 +125,45 @@ const posixTerminal = createReviewTerminalController({ append: () => {} }, () =>
 assert.equal(await completeCancelledReview(posixCancellation, posixTerminal), "cancelled", "POSIX root-child close after graceful cancellation completes without unsafe escalation");
 assert.equal(cleared, true, "completion clears pending escalation");
 
+let descendantPoll;
+let descendantChecks = 0;
+const descendantProgress = [];
+const descendantChild = { pid: 5303, exitCode: null, signalCode: null };
+const descendantCancellation = createReviewCancellationController(descendantChild, (event) => descendantProgress.push(event), {
+  platform: "linux",
+  setTimeoutFn: () => ({ unref() {} }),
+  clearTimeoutFn: () => {},
+  terminateChildTree: () => Promise.resolve({ status: "signalled" }),
+  waitForProcessGroupExit: () => new Promise((resolve) => { descendantPoll = () => resolve(++descendantChecks > 0 ? { status: "terminated" } : { status: "failed" }); }),
+});
+assert.equal(descendantCancellation.request("SIGTERM"), true, "POSIX descendant fixture requests graceful group cancellation");
+descendantChild.exitCode = 0;
+const descendantTerminalEvents = [];
+const descendantTerminal = createReviewTerminalController({ append: () => {} }, (event) => descendantTerminalEvents.push(event), () => {});
+const descendantCompletion = completeCancelledReview(descendantCancellation, descendantTerminal);
+for (let index = 0; index < 4 && !descendantPoll; index += 1) await Promise.resolve();
+assert.deepEqual(descendantTerminalEvents, [], "root-child close cannot emit cancelled while descendant-group confirmation is pending");
+descendantPoll();
+assert.equal(await descendantCompletion, "cancelled", "POSIX cancellation completes only after descendant group exit is confirmed");
+assert.deepEqual(descendantTerminalEvents, [{ status: "cancelled" }], "confirmed descendant-group exit emits one cancelled terminal state");
+
+const persistentDescendantChild = { pid: 5313, exitCode: null, signalCode: null };
+const persistentDescendantFailures = [];
+const persistentDescendantCancellation = createReviewCancellationController(persistentDescendantChild, () => {}, {
+  platform: "linux",
+  setTimeoutFn: () => ({ unref() {} }),
+  clearTimeoutFn: () => {},
+  terminateChildTree: () => Promise.resolve({ status: "signalled" }),
+  waitForProcessGroupExit: () => Promise.resolve({ status: "failed", reason: "process-group-still-running" }),
+  onTerminationFailure: (result) => persistentDescendantFailures.push(result),
+});
+persistentDescendantCancellation.request("SIGTERM");
+persistentDescendantChild.exitCode = 0;
+const persistentDescendantTerminals = [];
+assert.equal(await completeCancelledReview(persistentDescendantCancellation, createReviewTerminalController({ append: () => {} }, (event) => persistentDescendantTerminals.push(event), () => {})), "failed", "live descendant after bounded confirmation fails closed");
+assert.deepEqual(persistentDescendantFailures, [{ status: "failed", reason: "process-group-still-running" }], "persistent descendant failure remains explicit");
+assert.deepEqual(persistentDescendantTerminals, [{ status: "failed" }], "persistent descendant cannot emit cancelled");
+
 let escalationCallback;
 let confirmationCallback;
 let confirmationTimerUnref = false;
