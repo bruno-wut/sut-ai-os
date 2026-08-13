@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-004",
   "title": "Implement provider-neutral persistence adapter composition",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "persistence-composition",
   "workflowId": "implementation-p3-004",
@@ -94,15 +94,17 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
-      "tasks/active/SUT-AIOS-P3-004/task.json",
+      "tasks/verified/SUT-AIOS-P3-004/task.json",
       "package.json"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.763Z",
-  "updatedDate": "2026-08-13T16:50:24.508Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T17:03:31.604Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -124,6 +126,20 @@
       "at": "2026-08-13T16:50:24.508Z",
       "actor": "chief-orchestrator",
       "reason": "Begin bounded provider-neutral persistence adapter composition in isolated origin/main worktree; local/reference fixtures only, no provider or production persistence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T17:03:31.455Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA assigned and passed: 539 validator cases, verify:fast, exact base-bound verify:task, diff check, deep module/import boundary, adapter substitution, P2-006/P2-007 fail-closed gates; productionEligible false."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T17:03:31.604Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA PASS at 0ea424a; all acceptance criteria confirmed, forbidden paths untouched, no provider/database/network/production behavior."
     }
   ]
 }
