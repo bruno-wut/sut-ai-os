@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-003-R01",
   "title": "Prevent Workflow V1 history-cap state corruption",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3",
   "workstream": "workflow-runtime-remediation",
   "workflowId": "remediation-p3-003-history-cap",
@@ -99,7 +99,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P3-003-R01/task.json",
+      "tasks/done/SUT-AIOS-P3-003-R01/task.json",
       "tasks/verified/SUT-AIOS-P3-003/task.json",
       "packages/workflow-contracts/src/workflow-runtime-v1.mjs",
       "tests/workflow-runtime/validate-workflow-runtime-v1.mjs",
@@ -109,7 +109,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T16:10:00.000Z",
-  "updatedDate": "2026-08-13T16:10:27.810Z",
+  "updatedDate": "2026-08-13T16:22:49.509Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P3-003-R01/verification-20260813160958802.json"
   ],
@@ -148,6 +148,13 @@
       "at": "2026-08-13T16:10:27.810Z",
       "actor": "chief-orchestrator",
       "reason": "Independent Sol QA PASS at a3b72a9; all acceptance criteria confirmed, history invariant preserved, no forbidden paths or production authority."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T16:22:49.509Z",
+      "actor": "chief-orchestrator",
+      "reason": "Completion reconciliation after delivery PR #142 merged on origin/main at a1f2c73003544593870cdb19c4169b9b3445b115. Final-head Governance CI passed; independent Sol QA and exact base-bound verification remain recorded; lifecycle-only verified to done, with no substantive packet or evidence changes."
     }
   ]
 }
