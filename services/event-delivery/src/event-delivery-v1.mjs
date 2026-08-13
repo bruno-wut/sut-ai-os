@@ -128,10 +128,11 @@ export function createEventDelivery(ports) {
     const batch = due.slice(0, capacity);
     if (batch.length === 0) return success({ outcome: "idle", dispatched: 0, queued: records.filter((record) => ["queued", "requeued"].includes(record.status)).length, limitedBy: capacity });
     let outcomes;
-    try { outcomes = ports.dispatcher.deliver(batch.map(deliveryInput)); } catch { outcomes = null; }
-    if (!Array.isArray(outcomes) || outcomes.length !== batch.length || !outcomes.every((outcome, index) => plain(outcome) && own(outcome, ["workId", "state", "failureReason"]) && outcome.workId === batch[index].workId && ["delivered", "retryable_failure", "permanent_failure", "provider_unavailable"].includes(outcome.state) && (outcome.failureReason === null || text(outcome.failureReason)))) {
-      return deny(["DISPATCH_RESULT_INVALID"]);
-    }
+    try {
+      const candidate = ports.dispatcher.deliver(batch.map(deliveryInput));
+      if (!Array.isArray(candidate) || candidate.length !== batch.length || !candidate.every((outcome, index) => plain(outcome) && own(outcome, ["workId", "state", "failureReason"]) && outcome.workId === batch[index].workId && ["delivered", "retryable_failure", "permanent_failure", "provider_unavailable"].includes(outcome.state) && (outcome.failureReason === null || text(outcome.failureReason)))) return deny(["DISPATCH_RESULT_INVALID"]);
+      outcomes = candidate.map((outcome) => ({ workId: outcome.workId, state: outcome.state, failureReason: outcome.failureReason }));
+    } catch { return deny(["DISPATCH_RESULT_INVALID"]); }
     const byId = new Map(outcomes.map((outcome) => [outcome.workId, outcome]));
     const updated = records.map((record) => {
       const outcome = byId.get(record.workId); if (!outcome) return record;
@@ -139,7 +140,7 @@ export function createEventDelivery(ports) {
       const reason = outcome.failureReason ?? (outcome.state === "provider_unavailable" ? "PROVIDER_UNAVAILABLE" : "DISPATCH_FAILURE");
       if (outcome.state === "permanent_failure") return appendReason(record, reason, "dead_letter", request.nowEpochSeconds);
       const attempt = record.attempt + 1;
-      if (attempt > ports.limits.retryLimit) return appendReason(record, "RETRY_EXHAUSTED", "dead_letter", request.nowEpochSeconds, attempt);
+      if (attempt > ports.limits.retryLimit) return { ...appendReason(record, reason, "dead_letter", request.nowEpochSeconds, ports.limits.retryLimit), failureReasons: [...record.failureReasons, reason, "RETRY_EXHAUSTED"] };
       if (outcome.state === "provider_unavailable" && !ports.limits.safeRequeue) return appendReason(record, reason, "paused", request.nowEpochSeconds, attempt);
       return appendReason(record, reason, "requeued", request.nowEpochSeconds, attempt);
     });

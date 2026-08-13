@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-002",
+  "status": "fail",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T09:02:32.349Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "npm run test:event-delivery: pass",
+    "npm run verify:fast: fail"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Scheduled checks and normalized events produce durable, deduplicated queue work without relying on Codex or a model as scheduler.",
+    "confirmed: Retry, safe requeue, exhaustion, and dead-letter transitions are bounded, deterministic, observable, and preserve task and failure reason.",
+    "confirmed: Batching, deduplication, idempotency, backpressure, rate/concurrency/retry limits, priority queues, and scheduled summaries enforce the quota contract before capacity exhaustion.",
+    "confirmed: Unavailable providers cannot drop work, bypass policy, or cause production execution.",
+    "confirmed: Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "changedPaths": [
+    "docs/event-delivery/EVENT_DELIVERY_V1.md",
+    "evidence/tasks/SUT-AIOS-P3-002/verification.md",
+    "evidence/verification/SUT-AIOS-P3-002/verification-20260813090031112.json",
+    "services/event-delivery/src/event-delivery-v1.mjs",
+    "tasks/active/SUT-AIOS-P3-002/task.json",
+    "tests/event-delivery/validate-event-delivery-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P3-002/verification-20260813090232349.json"
+  ],
+  "risks": [],
+  "recommendation": "revision_required"
+}

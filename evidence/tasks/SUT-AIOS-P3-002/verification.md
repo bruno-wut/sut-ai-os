@@ -19,6 +19,16 @@ Independent QA remains required and is the sole authority to record verification
 evidence under `evidence/verification/` and to determine whether the unrelated
 fast-verification failure blocks delivery.
 
+## QA remediation scope
+
+Bounded remediation addresses hostile accessor/proxy dispatch outcomes,
+failure-reason preservation when retry is exhausted, and the maximum retry-limit
+attempt bound. It does not alter ports, task state, shared verification, CI, or
+any provider, transport, persistence, or production integration. Fresh command
+results: `npm run test:event-delivery` passed (`50` assertions) and `git diff
+--check` passed. `npm run verify:fast` remains for the orchestrator to rerun on
+the clean committed head.
+
 ## Rollback
 
 Revert this task branch's event-delivery files and preserve all task and

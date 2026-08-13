@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-002",
+  "reviewType": "independent-semantic-qa",
+  "reviewedHead": "63a1a59ac976e3fe6cd446e92951242bbf46eeac",
+  "base": "origin/main",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "status": "blocked",
+  "machineChecks": [
+    "npm run test:event-delivery: pass (43 assertions)",
+    "npm run verify:fast: fail (routing check requires a clean committed tree; prior generated verification evidence was untracked)",
+    "npm run verify:task -- --task SUT-AIOS-P3-002 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed: fail; revision_required evidence preserved at verification-20260813090232349.json",
+    "git diff --check: pass",
+    "changed-path inspection: pass",
+    "security-boundary scan: pass"
+  ],
+  "confirmedBoundaries": [
+    "createEventDelivery is the only module export and returns only submit and runDue",
+    "the core imports no provider, database, network, queue, workflow, AI, credential, or production adapter",
+    "the committed documentation preserves P3-001 pre-parse and exact-request trust-fact constraints without exposing HTTP"
+  ],
+  "blockingFindings": [
+    {
+      "severity": "high",
+      "location": "services/event-delivery/src/event-delivery-v1.mjs:132",
+      "finding": "Dispatcher-result validation executes outside the dispatcher try/catch. A malformed adapter result with a throwing accessor, proxy trap, or altered array method can throw instead of returning DISPATCH_RESULT_INVALID.",
+      "requiredCorrection": "Guard cloning and validation of all dispatcher output and add a focused hostile-output never-throw regression that proves queued work remains unchanged."
+    },
+    {
+      "severity": "high",
+      "location": "services/event-delivery/src/event-delivery-v1.mjs:142",
+      "finding": "Retry exhaustion appends only RETRY_EXHAUSTED and drops the current adapter-provided failure reason. With retryLimit zero, no actual dispatch failure reason survives into the dead-letter record.",
+      "requiredCorrection": "Preserve the current bounded failure reason together with RETRY_EXHAUSTED and add retryLimit-zero coverage."
+    },
+    {
+      "severity": "medium",
+      "location": "services/event-delivery/src/event-delivery-v1.mjs:67,142",
+      "finding": "At retryLimit 20, exhaustion persists attempt 21 while validRecord permits at most 20, so the module rejects its own newly persisted dead-letter record on the next storage read.",
+      "requiredCorrection": "Keep the persisted exhausted attempt within the committed record invariant, or update the invariant consistently, and test the maximum configured retry limit through a subsequent read."
+    }
+  ],
+  "recommendation": "revision_required"
+}
