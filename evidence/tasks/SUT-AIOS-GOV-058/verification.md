@@ -22,6 +22,10 @@ This bounded Workflow V1 governance correction registers the exact P3-001 signal
 
 This correction makes the declared P3-001 commands addressable but does not establish that P3-001 implementation exists or passes. The signal-ingestion validator is expected to be authored later by the P3-001 executor within that task's authorized paths. Final GOV-058 verification remains blocked until `npm run verify:fast` is rerun from the committed clean correction head and independent QA records its result.
 
+## Independent verification remediation
+
+The blocked independent result `evidence/verification/SUT-AIOS-GOV-058/verification-20260813064618203.json` is retained. It identified two verifier-boundary mismatches: per-task validation literals were not admitted as `requiredTests`, and the fixed `verify:task` commands omitted the comparison base. GOV-058 now uses the admitted `node scripts/task/validate --all` required test while retaining both exact per-task validations in `allowedCommands`, and both fixed independent-verification commands explicitly bind `--base origin/main`.
+
 ## Rollback
 
 Revert only the GOV-058 packet and evidence, this risk entry, the exact package script, and the bounded P3-001 packet additions. Preserve completed task history and all external systems.

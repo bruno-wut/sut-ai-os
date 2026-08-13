@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-058",
+  "status": "blocked",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T06:46:18.203Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "node scripts/task/validate --task SUT-AIOS-P3-001: fail",
+    "node scripts/task/validate --task SUT-AIOS-GOV-058: fail",
+    "node scripts/github/validate-governance.mjs: pass",
+    "npm run verify:fast: pass",
+    "git diff --check: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: package.json declares exactly test:signal-ingestion as node tests/signal-ingestion/validate-signal-ingestion-v1.mjs.",
+    "confirmed: P3-001 remains a schemaVersion 1.0.0 packet with modelRoute sol, defaultModel gpt-5.6-sol, fallbackModel gpt-5.6-sol, and allowedAgents exactly codex-engineering-executor and qa-verification.",
+    "confirmed: P3-001 allowedPaths includes package.json and its context budget includes package.json; its requiredTests remain the signal-ingestion validator and verify:fast.",
+    "confirmed: P3-001 allowedCommands explicitly authorize the fixed independent verify:task invocation for qa-verification with gpt-5.6-sol, so changed-path and secret checks are executable without generic command execution.",
+    "confirmed: No signal-ingestion service or test implementation, Workflow V2 routing, package-lock, scripts, schemas, production behavior, credentials, or external operations are changed.",
+    "confirmed: The corrected V1 packet and exact package script pass deterministic packet, governance, fast, and whitespace checks."
+  ],
+  "changedPaths": [],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-GOV-058/verification-20260813064618203.json"
+  ],
+  "risks": [],
+  "recommendation": "blocked"
+}

@@ -78,7 +78,7 @@
     "node scripts/task/validate --task SUT-AIOS-GOV-058",
     "node scripts/github/validate-governance.mjs",
     "npm run verify:fast",
-    "npm run verify:task -- --task SUT-AIOS-GOV-058 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "npm run verify:task -- --task SUT-AIOS-GOV-058 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
     "git diff --check"
   ],
   "requiredChecks": [
@@ -89,8 +89,7 @@
     "independent verification"
   ],
   "requiredTests": [
-    "node scripts/task/validate --task SUT-AIOS-P3-001",
-    "node scripts/task/validate --task SUT-AIOS-GOV-058",
+    "node scripts/task/validate --all",
     "node scripts/github/validate-governance.mjs",
     "npm run verify:fast",
     "git diff --check"
