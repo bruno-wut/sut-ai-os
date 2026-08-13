@@ -5,7 +5,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit } from "../../scripts/codex/launch.mjs";
+import { appendBoundedReviewOutput, assertReviewRevisionUnchanged, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, collectBoundedReviewOutput, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, finalizePreparedReviewPublication, parseReviewAssessment, persistReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, terminateChildTree, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit } from "../../scripts/codex/launch.mjs";
 import { computeReviewOutputHash } from "../../scripts/review/validate-review-result.mjs";
 import { computeReviewScopeHash } from "../../scripts/task/task-cli.mjs";
 
@@ -478,6 +478,14 @@ assert.equal(persistReviewResult(preparedReview, { taskId: preparedReview.taskId
 const finalPersistence = prepareReviewResultPersistence(preparedReview, { taskId: preparedReview.taskId, profile: "semantic-qa", headSha: persistenceHead, root: persistenceRoot });
 assert.equal(finalPersistence.finalize(), `evidence/reviews/${preparedReview.taskId}/semanticReview-${persistenceHead}.json`, "prepared persistence finalizes atomically after terminal provenance");
 assert.equal(fs.existsSync(preparedDestination), true, "finalized review persistence is durable");
+const publicationFailureTrace = [];
+const publicationFailureProgress = [];
+const publicationFailureTerminal = createReviewTerminalController({ append: (event) => publicationFailureTrace.push(event) }, (event) => publicationFailureProgress.push(event), () => {});
+let publicationAbort = false;
+assert.equal(finalizePreparedReviewPublication({ finalize() { throw new Error("simulated publication failure"); }, abort() { publicationAbort = true; } }, { terminal: publicationFailureTerminal, trace: { append: (event) => publicationFailureTrace.push(event) }, progress: (event) => publicationFailureProgress.push(event), writeError: () => {}, setExitCode: () => {} }), null, "publication failure returns no review artifact");
+assert.equal(publicationAbort, true, "publication failure aborts pending review output");
+assert.deepEqual(publicationFailureTrace, [{ event: "finish", status: "success", exitCode: 0 }, { event: "finish", status: "failed", exitCode: 1 }], "publication failure invalidates prior success with a failed terminal");
+assert.equal(publicationFailureProgress.at(-1).status, "review-persistence-failed", "publication failure remains observable");
 fs.rmSync(persistenceRoot, { recursive: true, force: true });
 
 process.stdout.write(JSON.stringify({ status: "passed", checks }) + "\n");

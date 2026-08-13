@@ -1129,6 +1129,20 @@ function prepareAtomicPublication(serialized, destination, pending, conflictMess
   };
 }
 
+function finalizePreparedReviewPublication(preparedPersistence, { terminal, trace, progress = () => {}, writeError = () => {}, setExitCode = (code) => { process.exitCode = code; } }) {
+  terminal.complete("completed", 0);
+  try {
+    return preparedPersistence.finalize();
+  } catch (error) {
+    preparedPersistence.abort();
+    progress({ status: "review-persistence-failed" });
+    trace.append({ event: "finish", status: "failed", exitCode: 1 });
+    writeError(`Review persistence failed: ${error.message}\n`);
+    setExitCode(1);
+    return null;
+  }
+}
+
 function prepareReviewResultPersistence(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
   const expectedStage = stageByProfile[profile];
   if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
@@ -1591,16 +1605,8 @@ function main() {
         terminal.complete("failed", 1);
         return;
       }
-      terminal.complete("completed", 0);
-      let reviewPath;
-      try {
-        reviewPath = preparedPersistence.finalize();
-      } catch (error) {
-        preparedPersistence.abort();
-        process.stderr.write(`Review persistence failed: ${error.message}\n`);
-        process.exitCode = 1;
-        return;
-      }
+      const reviewPath = finalizePreparedReviewPublication(preparedPersistence, { terminal, trace, progress, writeError: (message) => process.stderr.write(message) });
+      if (!reviewPath) return;
       process.stdout.write(`${JSON.stringify({ status: "review-persisted", taskId, stage: launcherReview.stage, decision: launcherReview.decision, reviewPath })}\n`);
     }
 
@@ -1621,4 +1627,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
   });
 }
 
-export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertCompleteLauncherTracePrefix, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit };
+export { allowedEfforts, appendBoundedReviewOutput, assertActiveAgent, assertAgentRouteEffort, assertCompleteLauncherTracePrefix, assertExecutableTaskState, assertNonTerminalTask, assertProfileAuthorization, assertReviewRevisionUnchanged, assertTaskId, assertWorkspaceWriteAuthority, attachChildProcessStreams, buildLauncherBoundReviewResult, buildMergeRiskContext, buildReviewAssessmentPrompt, childIsRunning, collectBoundedReviewOutput, comparisonBaseSha, completeCancelledReview, completeReviewPreflightFailure, createReviewCancellationController, createReviewTerminalController, discoverAgents, exactHeadVerificationPath, finalizePreparedReviewPublication, gitSha, hasSensitiveMaterial, packetAccess, parseReviewAssessment, persistCodexAppReviewResult, persistReviewResult, prepareCodexAppReviewResult, prepareReviewResultPersistence, requireReviewEvidenceSequence, revalidateCurrentReviewBinding, reviewArtifactPath, reviewWorktreeIsClean, selectRoute, terminalStates, terminateChildTree, validateCodexAppFinalBinding, validateContextMaterial, validateCurrentContextManifest, validateExactHeadVerification, waitForProcessGroupExit };
