@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-004",
   "title": "Implement provider-neutral persistence adapter composition",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3",
   "workstream": "persistence-composition",
   "workflowId": "implementation-p3-004",
@@ -94,14 +94,14 @@
     "includedPaths": [
       "AGENTS.md",
       "docs/decisions/ADR-0002-INFRASTRUCTURE-PORTABILITY-AND-RESOURCE-GOVERNANCE.md",
-      "tasks/verified/SUT-AIOS-P3-004/task.json",
+      "tasks/done/SUT-AIOS-P3-004/task.json",
       "package.json"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-29T12:21:28.763Z",
-  "updatedDate": "2026-08-13T18:36:34.417Z",
+  "updatedDate": "2026-08-13T18:50:43.947Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P3-004/verification-20260813170246328.json",
     "evidence/verification/SUT-AIOS-P3-004/verification-20260813174319028.json",
@@ -198,6 +198,13 @@
       "at": "2026-08-13T18:36:34.417Z",
       "actor": "qa-verification",
       "reason": "Independent Sol QA PASS at c9a6582: delete validates revision/digest/bytes before mutation; internal capacity authority is request-bound; append idempotency is enforced; protected history and all deep/hexagonal/fail-closed boundaries pass; productionEligible false."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T18:50:43.947Z",
+      "actor": "chief-orchestrator",
+      "reason": "P3-004 delivery merged in PR #146 at 7b1f764; final integrity remediation evidence, independent Sol QA, exact verification, and final-head CI are recorded."
     }
   ]
 }
