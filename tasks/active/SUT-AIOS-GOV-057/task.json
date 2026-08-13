@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:10:12.232Z",
+  "updatedDate": "2026-08-13T03:13:28.816Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -997,6 +997,20 @@
       "at": "2026-08-13T03:10:12.232Z",
       "actor": "chief-orchestrator",
       "reason": "Complete launcher-provenance admission and every packet-required deterministic check passed; freeze the exact final source head for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:13:28.669Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on c5b748e found direct persistence trusted caller-supplied trace path and review identity instead of canonical same-task packet authority; preserve the finding and close that boundary."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:13:28.816Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bind direct persistence to canonical same-task trace path and current packet stage authority with zero-publication negatives only."
     }
   ]
 }

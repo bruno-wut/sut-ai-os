@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "c5b748e6502c096cf3d3086df9864fa0bc196369",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "fe9af3830cc01cff2f8ba95bf2e54c9f67a58d312367ca7547d004e4ccf639c5",
+  "reviewedAt": "2026-08-13T03:13:07.709Z",
+  "stage": "semanticReview",
+  "runId": "20260813031102794-a6b13696",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813031102794-a6b13696-qa-verification-luna.jsonl",
+  "outputHash": "745d751cab3ac069ce43a82ccad05130dafd9bb90b142738211656be8f8582d0",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "persistReviewResult validates only taskId/headSha, then trusts reviewResult.tracePath and trace metadata. The schema permits another task's trace directory and traversal suffixes, while the trace validator compares events only against the caller-supplied fields. This allows cross-task or forged reviewer/model/effort evidence to be persisted, violating task-bound launcher provenance and packet routing authority."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Reject direct persistence with a tracePath belonging to another task.",
+    "Reject traversal-shaped tracePath values before filesystem access.",
+    "Reject forged reviewerAgent, model, or reasoningEffort values that do not match the current packet stage."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher contains useful bounded helpers, but direct persistence still exposes an authority-boundary leak around trace and identity validation.",
+    "hexagonalArchitecture": "Adapter-specific validation is inconsistent: Codex-app persistence re-derives current packet authority, while direct launcher-result persistence accepts caller-supplied provenance.",
+    "eventedBoundaries": "Progress and terminal events are structured and bounded, but event validation must bind the trace path and launcher identity to the current task and stage."
+  },
+  "exactNextAction": "Make direct review-result persistence enforce a canonical task-scoped trace path, reject traversal before filesystem access, and re-derive reviewer, model, effort, stage, base, head, and context bindings from the current packet; add zero-publication regression tests."
+}
