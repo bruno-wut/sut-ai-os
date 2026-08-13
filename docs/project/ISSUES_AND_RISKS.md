@@ -986,3 +986,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** Workflow V1 `verify:task` execution of the exact P3-001 required test only
 - **Evidence:** The independent P3-001 run at `evidence/verification/SUT-AIOS-P3-001/verification-20260813072555420.json` was correctly blocked because `safeRequiredCommand` did not admit `npm run test:signal-ingestion`. GOV-059 adds one byte-for-byte mapping to `node` with the single fixed argument `tests/signal-ingestion/validate-signal-ingestion-v1.mjs` and `shell: false`; self-tests reject whitespace, argument, operator, syntax, path, and separator near misses. The governance task does not add or run the P3-001 validator, change its implementation, or create generic command authority.
 - **Next action / owner:** The executor's first `npm run verify:fast` reached a known clean-head-sensitive Codex-routing self-test failure while GOV-059 was uncommitted; the orchestrator must commit the bounded head and rerun it. Independent `qa-verification` must then verify GOV-059. After GOV-059 is merged, P3-001 requires a fresh independent run; preserve the initial blocked evidence as history.
+
+### 2026-08-13 — P3-002 event-delivery authority remediation prerequisite
+
+- **Task ID:** `SUT-AIOS-P3-002-R01`
+- **Status:** Open / remediation prerequisite before P3-003
+- **Severity:** High for future workflow activation; bounded Tier-0/shadow core remains non-production
+- **Affected scope:** Event-delivery work identity, due-time authority, outbound-port configuration, and dispatch idempotency metadata
+- **Evidence:** Independent review of terminal P3-002 found that duplicate `workId` values could let a `Map`-based result update out-of-batch records, caller-supplied `nowEpochSeconds` could make future work due, validated ports remained mutable after construction, and dispatch-before-persist lacked the queue idempotency key. R01 is limited to deterministic fail-closed corrections and explicit documentation of the current at-least-once shadow boundary; it does not add a provider, transaction, outbox, database, queue, workflow, or production action.
+- **Next action / owner:** Implement and independently verify R01 before GOV-061/P3-003 activation. A future provider adapter must add a separately governed transactional/outbox or equivalent delivery boundary before any real provider is bound.

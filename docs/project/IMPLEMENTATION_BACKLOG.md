@@ -52,8 +52,9 @@ This is the exhaustive canonical product-task inventory for Phases 0–8. All pr
 | Task | Status / outcome | Depends on |
 | --- | --- | --- |
 | `P3-001` | Retained, revised — authenticated rate-limited aggregate-only signal ingestion. | P1-001, P1-003, P1-005, P2-005, P2-006, P2-007 |
-| `P3-002` | Retained, revised — durable scheduling, queue consumption, bounded retry/requeue, DLQ, batching, dedupe, idempotency, backpressure, and priorities. | P3-001, P2-006, P2-007 |
-| `P3-003` | Retained, revised — durable provider/approval workflow state machine. | P3-002, P1-006, P1-007, P2-004, P2-007 |
+| `P3-002` | Done — durable scheduling, queue consumption, bounded retry/requeue, DLQ, batching, dedupe, idempotency, backpressure, and priorities; terminal implementation history is preserved. | P3-001, P2-006, P2-007 |
+| `P3-002-R01` | New remediation prerequisite — enforce unique work identity, trusted-clock scheduling, immutable port snapshots, and dispatch idempotency-key propagation in the bounded event-delivery core. | P3-002 |
+| `P3-003` | Retained, revised — durable provider/approval workflow state machine; activation waits for P3-002-R01 and its independent evidence. | P3-002, P3-002-R01, P1-006, P1-007, P2-004, P2-007 |
 | `P3-004` | New — provider-neutral persistence composition and reference adapters. | P1-003, P2-005, P2-006, P2-007 |
 | `P3-005` | New — fixture-only retention lifecycle composition. | P2-006, P2-007, P3-004 |
 

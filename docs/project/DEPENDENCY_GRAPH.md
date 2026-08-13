@@ -18,7 +18,7 @@ flowchart LR
   P --> RL["P3-005 retention lifecycle fixtures"]
   DM --> RL
   QB --> RL
-  Q --> W["P3-003 workflow"]
+  Q --> R01["P3-002-R01 event-delivery authority remediation"] --> W["P3-003 workflow"]
   C --> W
   QB --> W
   W --> G["P4-004 intelligence gateway"]
@@ -67,6 +67,12 @@ flowchart LR
   provider SDKs/configuration. Provider replacement must not rewrite core.
 - Ingestion is aggregate-oriented, bounded, deduplicated, idempotent, and
   backpressured. Non-available capacity fails closed to pause/requeue/DLQ.
+- P3-002-R01 is a bounded prerequisite for workflow runtime: work identity is
+  unique, due-time authority comes from the trusted clock port, validated
+  outbound configuration is snapshotted at construction, and dispatch carries
+  queue idempotency identity. It does not add a provider, transaction, outbox,
+  production write, or exactly-once guarantee; those remain future adapter
+  concerns.
 - Staff/AI exposure is authenticated; cross-account traffic uses audience-bound
   short-lived HTTPS credentials, recipient expiry/audience checks,
   timestamp/nonce replay rejection, idempotency, bounded bodies/timeouts, and

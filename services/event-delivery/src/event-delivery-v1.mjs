@@ -12,7 +12,7 @@ const own = (value, keys) => plain(value) && Object.keys(value).every((key) => k
 const text = (value, limit = MAX_TEXT) => typeof value === "string" && value.length > 0 && value.length <= limit && /^[a-zA-Z0-9._:/-]+$/.test(value);
 const integer = (value, min = 0, max = Number.MAX_SAFE_INTEGER) => Number.isSafeInteger(value) && value >= min && value <= max;
 const freeze = (value) => {
-  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+  if (value && ["object", "function"].includes(typeof value) && !Object.isFrozen(value)) {
     Object.values(value).forEach(freeze); Object.freeze(value);
   }
   return value;
@@ -59,6 +59,19 @@ function validPorts(ports) {
     && integer(ports.limits.retryLimit, 0, 20) && typeof ports.limits.safeRequeue === "boolean";
 }
 
+function snapshotPorts(ports) {
+  try {
+    if (!validPorts(ports)) return null;
+    return freeze({
+      nowEpochSeconds: ports.clock.nowEpochSeconds.bind(ports.clock),
+      list: ports.storage.list.bind(ports.storage),
+      save: ports.storage.save.bind(ports.storage),
+      deliver: ports.dispatcher.deliver.bind(ports.dispatcher),
+      limits: freeze(clone(ports.limits))
+    });
+  } catch { return null; }
+}
+
 function validRecord(record) {
   return plain(record) && own(record, ["workId", "fingerprint", "kind", "idempotencyKey", "priority", "scheduledForEpochSeconds", "payload", "status", "attempt", "failureReasons", "updatedAtEpochSeconds"])
     && text(record.workId) && typeof record.fingerprint === "string" && KINDS.has(record.kind)
@@ -67,21 +80,24 @@ function validRecord(record) {
     && integer(record.attempt, 0, 20) && Array.isArray(record.failureReasons) && record.failureReasons.every((reason) => text(reason));
 }
 
-function safeList(storage) {
+function safeList(list) {
   try {
-    const records = storage.list();
-    return Array.isArray(records) && records.every(validRecord) ? records.map(clone) : null;
-  } catch { return null; }
+    const records = list();
+    if (!Array.isArray(records) || !records.every(validRecord)) return { ok: false, reason: "PERSISTENCE_UNAVAILABLE" };
+    const copied = records.map(clone);
+    if (new Set(copied.map((record) => record.workId)).size !== copied.length) return { ok: false, reason: "PERSISTENCE_STATE_INVALID" };
+    return { ok: true, records: copied };
+  } catch { return { ok: false, reason: "PERSISTENCE_UNAVAILABLE" }; }
 }
-function safeSave(storage, records) {
-  try { storage.save(records.map(clone)); return true; } catch { return false; }
+function safeSave(save, records) {
+  try { save(records.map(clone)); return true; } catch { return false; }
 }
 function canonicalRecord(request, now) {
   const fingerprint = stable({ kind: request.kind, priority: request.priority, scheduledForEpochSeconds: request.scheduledForEpochSeconds, payload: request.payload });
   return { workId: request.workId, fingerprint, kind: request.kind, idempotencyKey: request.idempotencyKey, priority: request.priority, scheduledForEpochSeconds: request.scheduledForEpochSeconds, payload: clone(request.payload), status: "queued", attempt: 0, failureReasons: [], updatedAtEpochSeconds: now };
 }
 function deliveryInput(record) {
-  return freeze({ workId: record.workId, kind: record.kind, priority: record.priority, attempt: record.attempt, payload: clone(record.payload), executionAuthority: "none", productionWritePermission: false });
+  return freeze({ workId: record.workId, idempotencyKey: record.idempotencyKey, kind: record.kind, priority: record.priority, attempt: record.attempt, payload: clone(record.payload), executionAuthority: "none", productionWritePermission: false });
 }
 function appendReason(record, reason, status, now, attempt = record.attempt) {
   return { ...record, status, attempt, failureReasons: [...record.failureReasons, reason], updatedAtEpochSeconds: now };
@@ -93,60 +109,66 @@ function appendReason(record, reason, status, now, attempt = record.attempt) {
  * neither imports nor selects a provider, transport, database, queue, or AI.
  */
 export function createEventDelivery(ports) {
-  const usable = validPorts(ports);
+  const trusted = snapshotPorts(ports);
   const unavailable = () => deny(["DELIVERY_AUTHORITY_UNAVAILABLE"]);
   const now = () => {
-    try { const value = ports.clock.nowEpochSeconds(); return integer(value) ? value : null; } catch { return null; }
+    try { const value = trusted.nowEpochSeconds(); return integer(value) ? value : null; } catch { return null; }
   };
   const submit = (input) => {
-    if (!usable) return unavailable();
+    if (!trusted) return unavailable();
     let request;
     try { request = clone(input); } catch { return deny(["MALFORMED_WORK_REQUEST"]); }
     if (!validRequest(request)) return deny(["MALFORMED_WORK_REQUEST"]);
     const timestamp = now(); if (timestamp === null) return deny(["CLOCK_UNAVAILABLE"]);
-    const records = safeList(ports.storage); if (!records) return deny(["PERSISTENCE_UNAVAILABLE"]);
+    const loaded = safeList(trusted.list); if (!loaded.ok) return deny([loaded.reason]);
+    const records = loaded.records;
     const existing = records.find((record) => record.idempotencyKey === request.idempotencyKey);
     const candidate = canonicalRecord(request, timestamp);
     if (existing) {
-      if (existing.fingerprint === candidate.fingerprint) return success({ outcome: "idempotent", workId: existing.workId, queueStatus: existing.status, batchEligible: !TERMINAL.has(existing.status) });
+      if (existing.workId === candidate.workId && existing.fingerprint === candidate.fingerprint) return success({ outcome: "idempotent", workId: existing.workId, queueStatus: existing.status, batchEligible: !TERMINAL.has(existing.status) });
       return deny(["IDEMPOTENCY_CONFLICT"]);
     }
+    if (records.some((record) => record.workId === candidate.workId)) return deny(["WORK_ID_CONFLICT"]);
     const queued = records.filter((record) => ["queued", "requeued", "paused"].includes(record.status)).length;
-    if (queued >= ports.limits.maxQueued) return deny(["BACKPRESSURE_LIMIT_REACHED"]);
-    if (!safeSave(ports.storage, [...records, candidate])) return deny(["PERSISTENCE_UNAVAILABLE"]);
+    if (queued >= trusted.limits.maxQueued) return deny(["BACKPRESSURE_LIMIT_REACHED"]);
+    if (!safeSave(trusted.save, [...records, candidate])) return deny(["PERSISTENCE_UNAVAILABLE"]);
     return success({ outcome: "queued", workId: candidate.workId, queueStatus: candidate.status, batchEligible: candidate.scheduledForEpochSeconds <= timestamp });
   };
   const runDue = (input = {}) => {
-    if (!usable) return unavailable();
+    if (!trusted) return unavailable();
     let request;
     try { request = clone(input); } catch { return deny(["MALFORMED_RUN_REQUEST"]); }
-    if (!own(request, ["nowEpochSeconds"]) || !integer(request.nowEpochSeconds)) return deny(["MALFORMED_RUN_REQUEST"]);
-    const records = safeList(ports.storage); if (!records) return deny(["PERSISTENCE_UNAVAILABLE"]);
-    const due = records.filter((record) => ["queued", "requeued"].includes(record.status) && record.scheduledForEpochSeconds <= request.nowEpochSeconds)
-      .sort((a, b) => PRIORITY[a.priority] - PRIORITY[b.priority] || a.scheduledForEpochSeconds - b.scheduledForEpochSeconds || a.workId.localeCompare(b.workId));
-    const capacity = Math.min(ports.limits.batchSize, ports.limits.rateLimitPerRun, ports.limits.concurrencyLimit);
+    if (!own(request, [])) return deny(["MALFORMED_RUN_REQUEST"]);
+    const timestamp = now(); if (timestamp === null) return deny(["CLOCK_UNAVAILABLE"]);
+    const loaded = safeList(trusted.list); if (!loaded.ok) return deny([loaded.reason]);
+    const records = loaded.records;
+    const due = records.map((record, index) => ({ record, index }))
+      .filter(({ record }) => ["queued", "requeued"].includes(record.status) && record.scheduledForEpochSeconds <= timestamp)
+      .sort((a, b) => PRIORITY[a.record.priority] - PRIORITY[b.record.priority] || a.record.scheduledForEpochSeconds - b.record.scheduledForEpochSeconds || a.record.workId.localeCompare(b.record.workId));
+    const capacity = Math.min(trusted.limits.batchSize, trusted.limits.rateLimitPerRun, trusted.limits.concurrencyLimit);
     const batch = due.slice(0, capacity);
     if (batch.length === 0) return success({ outcome: "idle", dispatched: 0, queued: records.filter((record) => ["queued", "requeued"].includes(record.status)).length, limitedBy: capacity });
     let outcomes;
     try {
-      const candidate = ports.dispatcher.deliver(batch.map(deliveryInput));
-      if (!Array.isArray(candidate) || candidate.length !== batch.length || !candidate.every((outcome, index) => plain(outcome) && own(outcome, ["workId", "state", "failureReason"]) && outcome.workId === batch[index].workId && ["delivered", "retryable_failure", "permanent_failure", "provider_unavailable"].includes(outcome.state) && (outcome.failureReason === null || text(outcome.failureReason)))) return deny(["DISPATCH_RESULT_INVALID"]);
+      const candidate = trusted.deliver(batch.map(({ record }) => deliveryInput(record)));
+      if (!Array.isArray(candidate) || candidate.length !== batch.length || !candidate.every((outcome, index) => plain(outcome) && own(outcome, ["workId", "state", "failureReason"]) && outcome.workId === batch[index].record.workId && ["delivered", "retryable_failure", "permanent_failure", "provider_unavailable"].includes(outcome.state) && (outcome.failureReason === null || text(outcome.failureReason)))) return deny(["DISPATCH_RESULT_INVALID"]);
       outcomes = candidate.map((outcome) => ({ workId: outcome.workId, state: outcome.state, failureReason: outcome.failureReason }));
     } catch { return deny(["DISPATCH_RESULT_INVALID"]); }
-    const byId = new Map(outcomes.map((outcome) => [outcome.workId, outcome]));
-    const updated = records.map((record) => {
-      const outcome = byId.get(record.workId); if (!outcome) return record;
-      if (outcome.state === "delivered") return { ...record, status: "delivered", updatedAtEpochSeconds: request.nowEpochSeconds };
+    const updated = records.slice();
+    batch.forEach(({ record, index }, outcomeIndex) => {
+      const outcome = outcomes[outcomeIndex];
+      if (outcome.state === "delivered") { updated[index] = { ...record, status: "delivered", updatedAtEpochSeconds: timestamp }; return; }
       const reason = outcome.failureReason ?? (outcome.state === "provider_unavailable" ? "PROVIDER_UNAVAILABLE" : "DISPATCH_FAILURE");
-      if (outcome.state === "permanent_failure") return appendReason(record, reason, "dead_letter", request.nowEpochSeconds);
+      if (outcome.state === "permanent_failure") { updated[index] = appendReason(record, reason, "dead_letter", timestamp); return; }
       const attempt = record.attempt + 1;
-      if (attempt > ports.limits.retryLimit) return { ...appendReason(record, reason, "dead_letter", request.nowEpochSeconds, ports.limits.retryLimit), failureReasons: [...record.failureReasons, reason, "RETRY_EXHAUSTED"] };
-      if (outcome.state === "provider_unavailable" && !ports.limits.safeRequeue) return appendReason(record, reason, "paused", request.nowEpochSeconds, attempt);
-      return appendReason(record, reason, "requeued", request.nowEpochSeconds, attempt);
+      if (attempt > trusted.limits.retryLimit) { updated[index] = { ...appendReason(record, reason, "dead_letter", timestamp, trusted.limits.retryLimit), failureReasons: [...record.failureReasons, reason, "RETRY_EXHAUSTED"] }; return; }
+      if (outcome.state === "provider_unavailable" && !trusted.limits.safeRequeue) { updated[index] = appendReason(record, reason, "paused", timestamp, attempt); return; }
+      updated[index] = appendReason(record, reason, "requeued", timestamp, attempt);
     });
-    if (!safeSave(ports.storage, updated)) return deny(["PERSISTENCE_UNAVAILABLE"]);
+    if (!safeSave(trusted.save, updated)) return deny(["PERSISTENCE_UNAVAILABLE"]);
     const states = outcomes.map((outcome) => outcome.state);
-    return success({ outcome: "processed", dispatched: batch.length, delivered: states.filter((state) => state === "delivered").length, requeued: updated.filter((record) => batch.some((item) => item.workId === record.workId) && record.status === "requeued").length, paused: updated.filter((record) => batch.some((item) => item.workId === record.workId) && record.status === "paused").length, deadLettered: updated.filter((record) => batch.some((item) => item.workId === record.workId) && record.status === "dead_letter").length, limitedBy: capacity });
+    const processed = batch.map(({ index }) => updated[index]);
+    return success({ outcome: "processed", dispatched: batch.length, delivered: states.filter((state) => state === "delivered").length, requeued: processed.filter((record) => record.status === "requeued").length, paused: processed.filter((record) => record.status === "paused").length, deadLettered: processed.filter((record) => record.status === "dead_letter").length, limitedBy: capacity });
   };
   return freeze({ submit, runDue });
 }
