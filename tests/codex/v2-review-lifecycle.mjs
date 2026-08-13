@@ -70,13 +70,13 @@ try {
   fs.mkdirSync(path.dirname(governedContextFile), { recursive: true });
   fs.writeFileSync(governedContextFile, "governed fixture context\n");
   const exactVerificationPath = `evidence/verification/${id}/verification-${headSha}.json`;
-  const exactVerificationFile = path.join(root, exactVerificationPath);
-  fs.mkdirSync(path.dirname(exactVerificationFile), { recursive: true });
-  fs.writeFileSync(exactVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: id, headSha, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-08T12:00:00.000Z", checks: ["fixture checks passed"] }, null, 2)}\n`);
+  const directVerificationFile = path.join(root, exactVerificationPath);
+  fs.mkdirSync(path.dirname(directVerificationFile), { recursive: true });
+  fs.writeFileSync(directVerificationFile, `${JSON.stringify({ schemaVersion: "1.0.0", taskId: id, headSha, status: "pass", reviewer: "qa-verification", productionEligible: false, reviewedAt: "2026-08-08T12:00:00.000Z", checks: ["fixture checks passed"] }, null, 2)}\n`);
   const contextManifest = [
     { path: `tasks/review/${id}/task.json`, sha256: sha256(reviewedTaskPacketText) },
     { path: governedContextPath, sha256: sha256(fs.readFileSync(governedContextFile)) },
-    { path: exactVerificationPath, sha256: sha256(fs.readFileSync(exactVerificationFile)) },
+    { path: exactVerificationPath, sha256: sha256(fs.readFileSync(directVerificationFile)) },
   ];
   const contextManifestHash = sha256(contextManifest.map((entry) => `${entry.path}:${entry.sha256}`).join("\n"));
 
