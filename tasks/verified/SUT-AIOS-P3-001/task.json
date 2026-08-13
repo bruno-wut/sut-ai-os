@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-001",
   "title": "Implement signed signal normalization endpoint",
-  "status": "backlog",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "signal-ingestion",
   "workflowId": "implementation-p3-001",
@@ -93,15 +93,17 @@
     "includedPaths": [
       "AGENTS.md",
       "package.json",
-      "tasks/backlog/SUT-AIOS-P3-001/task.json",
+      "tasks/verified/SUT-AIOS-P3-001/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md"
     ]
   },
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-07-29T13:00:00.000Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T07:54:14.938Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P3-001/verification-20260813075103939.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -109,6 +111,34 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T07:13:00.611Z",
+      "actor": "chief-orchestrator",
+      "reason": "All declared dependencies are done; GOV-058 corrected the exact validator script, package allowlist, and base-bound independent verification command; V1 packet validates strictly."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T07:13:00.760Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin only the signed signal-normalization endpoint and its tests within the V1 allowlist; reject raw clickstream/control-plane input and fail closed."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T07:54:14.800Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol qa-verification passed the full V1 implementation review and fresh base-bound machine verification; all acceptance criteria, changed-path, security, and production-ineligibility checks pass."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T07:54:14.938Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent QA evidence is complete; fresh validator and verify:fast pass on the rebased clean head, with no risks and productionEligible false."
     }
   ]
 }

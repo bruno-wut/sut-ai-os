@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-001",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T07:51:03.939Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "npm run test:signal-ingestion: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Authenticated, rate-limited signal normalization accepts only approved aggregate/essential-event categories and does not expose Staff or AI control paths publicly.",
+    "confirmed: Unknown sources, unauthenticated calls, raw clickstream, and over-budget input fail closed without a permanent work item or AI invocation.",
+    "confirmed: Machine-readable contracts and deterministic failure behavior are documented.",
+    "confirmed: Required tests pass and independent verification confirms forbidden paths were untouched."
+  ],
+  "changedPaths": [
+    "docs/signal-ingestion/SIGNED_SIGNAL_NORMALIZATION_V1.md",
+    "evidence/tasks/SUT-AIOS-P3-001/verification.md",
+    "evidence/verification/SUT-AIOS-P3-001/verification-20260813072555420.json",
+    "services/signal-ingestion/signal-normalizer-v1.mjs",
+    "tasks/active/SUT-AIOS-P3-001/task.json",
+    "tests/signal-ingestion/validate-signal-ingestion-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P3-001/verification-20260813075103939.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
