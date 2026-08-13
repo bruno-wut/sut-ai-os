@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "a70b4c133651613e6ce9aa44a53f950f9ff9af92",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "55d8ce3e4749fba56ed1d60e23dc71db3d5930e1eff1056f9bc398ccddfc91c9",
+  "reviewedAt": "2026-08-13T03:51:27.985Z",
+  "stage": "semanticReview",
+  "runId": "20260813034848521-8cb40d94",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813034848521-8cb40d94-qa-verification-luna.jsonl",
+  "outputHash": "f0fab17c56b10a2d0cc3ef3655a81cd220b1da4793add0e0cdf47d42b694529d",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "POSIX cancellation failures can emit the failed terminal before bounded process-group cleanup is confirmed: termination failure invokes onTerminationFailure immediately, while completeFailedReviewCancellation skips group confirmation when termination already failed. This can leave descendants unconfirmed and permits post-close child signalling."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Inject a POSIX signal-error cancellation and verify cleanup observation precedes the single failed terminal, no post-close signalling occurs, and no review result is published."
+  ],
+  "architectureAssessment": {
+    "deepModules": "The launcher has clear routing, validation, process-control, and publication helpers, but cancellation failure needs one authoritative cleanup state machine.",
+    "hexagonalArchitecture": "Repository, Git, child-process, and publication boundaries are separated; the cancellation failure adapter boundary is incomplete.",
+    "eventedBoundaries": "Redacted progress and terminal events are explicit, but failure can be emitted before cleanup confirmation."
+  },
+  "exactNextAction": "Repair only POSIX failed-cancellation cleanup ordering, add the focused negative, rerun required checks, and submit a fresh semantic review."
+}

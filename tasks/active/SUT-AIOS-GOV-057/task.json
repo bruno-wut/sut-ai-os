@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:48:03.830Z",
+  "updatedDate": "2026-08-13T03:51:50.683Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1123,6 +1123,20 @@
       "at": "2026-08-13T03:48:03.830Z",
       "actor": "chief-orchestrator",
       "reason": "Overflow and stream failures now await bounded tree/group cleanup before failed terminal emission; all packet checks pass."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:51:50.530Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on a70b4c1 found POSIX termination failure could emit failed before bounded group observation; preserve the finding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:51:50.683Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Remove premature failure terminal and always finish bounded group observation before the single failed terminal."
     }
   ]
 }
