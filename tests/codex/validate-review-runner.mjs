@@ -243,6 +243,13 @@ const boundedTaskPacketContext = buildMergeRiskContext(baseSha, headSha, { runGi
 assert.match(boundedTaskPacketContext, new RegExp(createHash("sha256").update(taskPacketPayload).digest("hex")), "task packet patch remains bound by its exact digest");
 assert.match(boundedTaskPacketContext, /full current task packet is included separately/, "task packet digest explains the full governed source");
 assert.doesNotMatch(boundedTaskPacketContext, /task-lifecycle-history/, "duplicated task lifecycle patch does not consume merge context");
+const governedDocumentPayload = "workflow-document-patch".repeat(1000);
+const boundedDocumentContext = buildMergeRiskContext(baseSha, headSha, { fullContextPaths: ["docs/project/TASK_WORKFLOW.md"], runGit: (args) => args.includes("--name-only") ? "docs/project/TASK_WORKFLOW.md\0" : governedDocumentPayload });
+assert.match(boundedDocumentContext, new RegExp(createHash("sha256").update(governedDocumentPayload).digest("hex")), "separately included governed documentation patch remains bound by its exact digest");
+assert.match(boundedDocumentContext, /full current document is included separately/, "governed documentation digest identifies its complete current source");
+assert.doesNotMatch(boundedDocumentContext, /workflow-document-patch/, "duplicated governed documentation patch does not consume merge context");
+const inlineImplementationContext = buildMergeRiskContext(baseSha, headSha, { fullContextPaths: ["scripts/codex/launch.mjs"], runGit: (args) => args.includes("--name-only") ? "scripts/codex/launch.mjs\0" : "implementation-patch-body" });
+assert.match(inlineImplementationContext, /implementation-patch-body/, "implementation patches remain inline even when the current file is separately governed");
 assert.throws(() => buildMergeRiskContext("bad", headSha, { runGit: () => "" }), /invalid commit SHAs/, "invalid review bindings fail closed");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: () => { throw new Error("git failed"); } }), /git failed/, "Git failures fail context construction");
 assert.throws(() => buildMergeRiskContext(baseSha, headSha, { runGit: (args) => args.includes("--name-only") ? "missing.md\0" : "" }), /missing changed path/, "changed-path inventory without a corresponding patch fails closed");

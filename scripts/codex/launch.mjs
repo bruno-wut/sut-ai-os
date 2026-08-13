@@ -367,6 +367,7 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     if (result.error || result.status !== 0) throw new Error("Cannot build canonical merge-risk review context");
     return result.stdout ?? "";
   });
+  const fullContextPaths = new Set(options.fullContextPaths ?? []);
   const changedPathOutput = run(["diff", "--no-renames", "--name-only", "-z", baseSha, headSha, "--"]);
   const changedPaths = changedPathOutput.split("\0").filter(Boolean);
   for (const changedPath of changedPaths) {
@@ -377,12 +378,15 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     if (!patch) throw new Error(`Canonical merge-risk diff is missing changed path: ${changedPath}`);
     const historicalEvidence = /^evidence\/(?:reviews|verification)\//.test(changedPath);
     const taskPacket = /^tasks\/[^/]+\/[^/]+\/task\.json$/.test(changedPath);
-    if (historicalEvidence || taskPacket) {
+    const separatelyIncludedDocument = fullContextPaths.has(changedPath) && /^(?:docs\/|evidence\/tasks\/).+\.md$/i.test(changedPath);
+    if (historicalEvidence || taskPacket || separatelyIncludedDocument) {
       return [
         `Changed path: ${JSON.stringify(changedPath)}`,
         historicalEvidence
           ? "Historical machine-generated evidence patch: bounded digest (current exact verification and prerequisite reviews are included separately in full)."
-          : "Task lifecycle packet patch: bounded digest (the full current task packet is included separately in governed context).",
+          : taskPacket
+            ? "Task lifecycle packet patch: bounded digest (the full current task packet is included separately in governed context)."
+            : "Governed documentation patch: bounded digest (the full current document is included separately in governed context).",
         `Patch bytes: ${Buffer.byteLength(patch)}`,
         `Patch SHA-256: ${sha256(patch)}`,
       ].join("\n");
@@ -395,7 +399,7 @@ function buildMergeRiskContext(baseSha, headSha, options = {}) {
     `Reviewed head SHA: ${headSha}`,
     "Changed paths:",
     changedPaths.length ? changedPaths.map((changedPath) => JSON.stringify(changedPath)).join("\n") : "(none)",
-    "Canonical base-to-head path material (inline patches for implementation; bounded digests for historical machine-generated evidence and the separately included current task packet):",
+    "Canonical base-to-head path material (inline patches for implementation; bounded digests only for historical machine-generated evidence, the separately included current task packet, and separately included governed documentation):",
     patches.length ? patches.join("\n\n") : "(no textual diff)",
   ].join("\n");
 }
@@ -451,7 +455,7 @@ function buildContextProfile(agent, taskPacket, selectedRoute, selectedModel, ef
 
   const records = baseFiles.map((p) => readText(p, root));
   const unique = [...new Map(records.map((r) => [r.relativePath, r])).values()];
-  const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(boundBaseSha, boundHeadSha) : "";
+  const mergeRiskContext = profile === "merge-risk-review" ? buildMergeRiskContext(boundBaseSha, boundHeadSha, { fullContextPaths: unique.map((record) => record.relativePath) }) : "";
   const maxBytes = taskPacket.data?.contextBudget?.maxBytes ?? contextLimitBytes;
   let totalBytes;
   try {

@@ -12,7 +12,7 @@ before the SHA-bound review stages. The review artifacts are the authoritative
 head binding; this evidence intentionally avoids embedding its own commit SHA,
 which would create an impossible self-reference.
 
-- `node tests/codex/validate-review-runner.mjs` — passed (118 checks).
+- `node tests/codex/validate-review-runner.mjs` — passed (122 checks).
 - `node tests/codex/v2-review-lifecycle.mjs` — passed (100 checks).
 - `node tests/review/validate-review-binding.mjs` — passed (9 checks).
 - `node scripts/codex/validate-routing.mjs` — passed, including V2 route override and downgrade rejection.
@@ -121,6 +121,7 @@ Before this implementation was committed, clean-head-only lifecycle and routing 
 - Semantic QA on `4215e5f1eb07b30254500c22303a14f9d0bc5c37` identified unhandled child stdin/stdout/stderr error boundaries. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/semanticReview-4215e5f1eb07b30254500c22303a14f9d0bc5c37.json`; synchronous stdin failure and emitted errors from all three streams now converge on one idempotent failed-terminal path, trigger bounded cancellation, and cannot proceed to review parsing or result persistence. Deterministic tests cover first-error authority, duplicate stream errors, and exactly one failed finish event.
 - Merge-risk review on `c8a3bb87f9df393293fa062c0748ce75daa0c6e4` identified tiny-chunk amplification in durable child-output progress. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-c8a3bb87f9df393293fa062c0748ce75daa0c6e4.json`; output progress now records cumulative milestones at deterministic byte intervals instead of one event per raw chunk. Thousands of one-byte chunks produce four bounded progress events in the focused fixture, overflow reaches exactly one failed terminal, and no review artifact is published.
 - Merge-risk review on `74f221d70e10dc2e5388534d01451a4971fcaba0` identified that canonical operator documentation still used the rejected pre-three-head verification command. The finding is retained at `evidence/reviews/SUT-AIOS-GOV-057/mergeRiskReview-74f221d70e10dc2e5388534d01451a4971fcaba0.json`. The user approved the smallest documentation-only packet amendment. `TASK_WORKFLOW.md` now documents the immutable source head, evidence-only head, and lifecycle head; uses the final exact-head review artifact plus explicit source/base bindings; and the existing lifecycle suite rejects drift back to the legacy command.
+- Plan and semantic review passed on `6a7f41039e24184bc9ec286f9719ff2a5dc26b54`, but merge-risk preflight safely stopped before model execution because the newly authorized full workflow document was duplicated as an inline base-to-head patch. The existing context cap remains unchanged. Patches for governed Markdown already included in full are now represented by exact byte count and SHA-256; deterministic coverage proves the full current document stays governed, its duplicate patch body is absent, and implementation patches remain inline even when their current files are separately included.
 
 ## Rollback
 
