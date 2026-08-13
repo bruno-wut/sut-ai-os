@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-060",
   "title": "Repair P3-002 Workflow V1 execution readiness",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3-governance",
   "workstream": "task-packet-assurance",
   "workflowId": "governance-p3-002-v1-readiness",
@@ -125,7 +125,7 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
       "scripts/verify/verify-cli.mjs",
-      "tasks/verified/SUT-AIOS-GOV-060/task.json",
+      "tasks/done/SUT-AIOS-GOV-060/task.json",
       "tasks/backlog/SUT-AIOS-P3-002/task.json",
       "package.json",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -134,7 +134,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T15:11:23.000Z",
-  "updatedDate": "2026-08-13T08:18:33.084Z",
+  "updatedDate": "2026-08-13T08:48:01.417Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-GOV-060/verification-20260813081804706.json"
   ],
@@ -173,6 +173,13 @@
       "at": "2026-08-13T08:18:33.084Z",
       "actor": "chief-orchestrator",
       "reason": "Independent QA evidence is complete and all bounded readiness correction acceptance criteria pass."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T08:48:01.417Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #133 is merged on origin/main at 09633647478bcb71a0eb05919803598473baedab; independent verification remains unchanged and the verified GOV-060 readiness correction is reconciled to done."
     }
   ]
 }
