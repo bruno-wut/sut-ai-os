@@ -30,7 +30,8 @@
     "The user approved workspace-write authority solely for the designated Terra implementation stage within this packet's existing exact path allowlist; it does not grant production, provider, deployment, fallback, or cross-task authority.",
     "The user authorized resolving the Workflow V2 review loop; the context cap is increased only from 262144 to 458752 bytes so the complete exact GOV-057 diff, durable same-task review history, exact-head verification, and routed prerequisite traces fit below the repository-wide 524288-byte ceiling. Included paths, routes, effort, permissions, commands, and product scope are unchanged.",
     "Clean-clone inspection proved launcher review traces under artifacts/traces were gitignored and therefore non-durable. The user-authorized Terra/high implementation is independently reviewed by the packet's Sol plan and merge-risk stages while admitting only task-bound evidence/reviews/<task>/traces/*.jsonl in the existing review-result schema and validator; no other schema, authority, or product surface is changed.",
-    "Merge-risk review proved exact-head evidence cannot be committed into the same Git object it names. V2 verification therefore binds an immutable reviewed source head to a later evidence-only commit and rejects every post-review implementation path; this remains one task branch and one PR."
+    "Merge-risk review proved exact-head evidence cannot be committed into the same Git object it names. V2 verification therefore binds an immutable reviewed source head to a later evidence-only commit and rejects every post-review implementation path; this remains one task branch and one PR.",
+    "The user approved only the documentation-parity correction to docs/project/TASK_WORKFLOW.md and the existing lifecycle test; no route, context cap, command, dependency, production behavior, fallback, or P3-001 authority changes."
   ],
   "acceptanceCriteria": [
     "Each review profile has an explicit assessment prompt that limits the model to reviewing the governed context and emitting exactly one JSON assessment object with the review-result assessment fields.",
@@ -43,7 +44,8 @@
     "Shell and Codex-app review outputs use validated staging and atomic final-path publication; rerunning the same immutable run recovers an exact partial Codex-app publication without overwriting conflicting evidence.",
     "Merge-risk context includes every changed path and every implementation patch inline; historical machine-generated review and verification patches use deterministic SHA-256 and byte-length bindings while current prerequisite evidence remains fully included.",
     "SIGINT and SIGTERM request graceful child cancellation, escalate only to terminate the local child when needed, emit one cancelled terminal progress event, and fail closed without review persistence.",
-    "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced."
+    "No model/provider fallback, routing-policy change, package/dependency change, production behavior, or P3-001 modification is introduced.",
+    "Canonical Workflow V2 documentation matches the enforced source-head, evidence-head, and lifecycle-head verification sequence."
   ],
   "allowedPaths": [
     "scripts/codex/launch.mjs",
@@ -55,6 +57,7 @@
     "tests/codex/v2-review-lifecycle.mjs",
     "tests/review/validate-review-binding.mjs",
     "docs/model-routing/MODEL_ROUTING_POLICY.md",
+    "docs/project/TASK_WORKFLOW.md",
     "docs/project/ISSUES_AND_RISKS.md",
     "evidence/tasks/SUT-AIOS-GOV-057/**",
     "evidence/verification/SUT-AIOS-GOV-057/**",
@@ -98,7 +101,8 @@
     "singular ordered successful terminal trace and bounded-output rejection",
     "graceful cancellation without review persistence",
     "no-fallback and P3-001 scope regression inspection",
-    "independent V2 plan, semantic, and merge-risk review"
+    "independent V2 plan, semantic, and merge-risk review",
+    "Workflow documentation and task-CLI parity"
   ],
   "requiredTests": [
     "node tests/codex/validate-review-runner.mjs",
