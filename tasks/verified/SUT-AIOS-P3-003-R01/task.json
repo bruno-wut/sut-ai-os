@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-003-R01",
   "title": "Prevent Workflow V1 history-cap state corruption",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3",
   "workstream": "workflow-runtime-remediation",
   "workflowId": "remediation-p3-003-history-cap",
@@ -99,7 +99,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/active/SUT-AIOS-P3-003-R01/task.json",
+      "tasks/verified/SUT-AIOS-P3-003-R01/task.json",
       "tasks/verified/SUT-AIOS-P3-003/task.json",
       "packages/workflow-contracts/src/workflow-runtime-v1.mjs",
       "tests/workflow-runtime/validate-workflow-runtime-v1.mjs",
@@ -109,8 +109,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T16:10:00.000Z",
-  "updatedDate": "2026-08-13T16:02:09.569Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T16:10:27.810Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-P3-003-R01/verification-20260813160958802.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -132,6 +134,20 @@
       "at": "2026-08-13T16:02:09.569Z",
       "actor": "chief-orchestrator",
       "reason": "Begin bounded history-cap remediation in isolated origin/main worktree; preserve P3-003 packet and all historical evidence."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T16:10:27.651Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA assigned and passed the history-cap remediation: 562 assertions, verify:fast, exact base-bound verify:task, diff check, changed-path/security checks; five two-entry stages reserve history slots; productionEligible false."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T16:10:27.810Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol QA PASS at a3b72a9; all acceptance criteria confirmed, history invariant preserved, no forbidden paths or production authority."
     }
   ]
 }
