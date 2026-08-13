@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-003",
   "title": "Implement durable workflow state machine",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3",
   "workstream": "workflow-runtime",
   "workflowId": "implementation-p3-003",
@@ -94,7 +94,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P3-003/task.json",
+      "tasks/done/SUT-AIOS-P3-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "package.json"
     ]
@@ -102,7 +102,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-13T15:43:32.364Z",
+  "updatedDate": "2026-08-13T16:25:09.260Z",
   "completionEvidence": [
     "evidence/verification/SUT-AIOS-P3-003/verification-20260813154248141.json"
   ],
@@ -141,6 +141,13 @@
       "at": "2026-08-13T15:43:32.364Z",
       "actor": "orchestrator",
       "reason": "Independent Sol QA PASS at e0b5330; 451 assertions, verify:fast, exact base-bound verify:task and diff check pass; all acceptance criteria confirmed, forbidden paths untouched, productionEligible false."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T16:25:09.260Z",
+      "actor": "chief-orchestrator",
+      "reason": "Completion reconciliation after delivery PR #141 merged at 22bb1ea8680db344f9f20bd284562e03d1d2b3e1 and required history-cap remediation PR #142 merged at a1f2c73003544593870cdb19c4169b9b3445b115; remediation reconciliation PR #143 merged at d992bc2a7ecc6817d83a7b1cf9a0f343abee5d0c. Final-head Governance CI passed for delivery and remediation; independent Sol evidence remains historical and unchanged. Lifecycle-only verified to done."
     }
   ]
 }
