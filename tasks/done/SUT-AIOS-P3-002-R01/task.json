@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-002-R01",
   "title": "Remediate event-delivery work identity and scheduling authority",
-  "status": "verified",
+  "status": "done",
   "phase": "phase-3",
   "workstream": "event-delivery-remediation",
   "workflowId": "remediation-p3-002-authority-and-identity",
@@ -110,7 +110,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/verified/SUT-AIOS-P3-002-R01/task.json",
+      "tasks/done/SUT-AIOS-P3-002-R01/task.json",
       "tasks/done/SUT-AIOS-P3-002/task.json",
       "services/event-delivery/src/event-delivery-v1.mjs",
       "tests/event-delivery/validate-event-delivery-v1.mjs",
@@ -123,9 +123,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T12:00:00.000Z",
-  "updatedDate": "2026-08-13T12:14:09.867Z",
+  "updatedDate": "2026-08-13T12:18:11.800Z",
   "completionEvidence": [
-    "evidence/verification/SUT-AIOS-P3-002-R01/verification-20260813121233501.json"
+    "evidence/verification/SUT-AIOS-P3-002-R01/verification-20260813121233501.json",
+    "evidence/verification/SUT-AIOS-P3-002-R01/verification-20260813121439518.json"
   ],
   "stateTransitions": [
     {
@@ -162,6 +163,13 @@
       "at": "2026-08-13T12:14:09.867Z",
       "actor": "chief-orchestrator",
       "reason": "Independent Sol QA passed all acceptance criteria and packet-authorized checks; productionEligible remains false."
+    },
+    {
+      "from": "verified",
+      "to": "done",
+      "at": "2026-08-13T12:18:11.800Z",
+      "actor": "chief-orchestrator",
+      "reason": "Delivery PR #138 merged on origin/main at 22379a13aa0d2e2049953749886fbce9902f5445; independent verification and evidence remain unchanged, so the verified remediation is reconciled to done."
     }
   ]
 }
