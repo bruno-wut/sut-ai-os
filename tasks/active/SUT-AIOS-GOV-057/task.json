@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "review",
+  "status": "active",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:30:00.419Z",
+  "updatedDate": "2026-08-13T03:34:27.347Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1060,6 +1060,20 @@
       "at": "2026-08-13T03:30:00.419Z",
       "actor": "chief-orchestrator",
       "reason": "Strict shared launcher-trace and V2 review-state admission pass all focused negatives and every packet check; freeze for fresh independent review."
+    },
+    {
+      "from": "review",
+      "to": "revision-required",
+      "at": "2026-08-13T03:34:27.201Z",
+      "actor": "qa-verification",
+      "reason": "Semantic QA on 06b1e3d found direct persistence lacked a repeated final packet, revision, context, and evidence-sequence gate immediately before staging; preserve the finding."
+    },
+    {
+      "from": "revision-required",
+      "to": "active",
+      "at": "2026-08-13T03:34:27.347Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Apply the shared final authority and evidence-sequence gate to direct persistence with stale-state zero-publication races only."
     }
   ]
 }

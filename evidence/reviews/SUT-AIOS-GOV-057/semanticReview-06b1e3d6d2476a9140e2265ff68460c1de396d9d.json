@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-057",
+  "baseSha": "76f42c6b0d7a292fb1bb251c088c6e3e9db0f6ce",
+  "headSha": "06b1e3d6d2476a9140e2265ff68460c1de396d9d",
+  "reviewerAgent": "qa-verification",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "high",
+  "contextManifestHash": "ecf9c966c0feb2f7d523155147a822c15baaad621667f23c0cc5422b615f14be",
+  "reviewedAt": "2026-08-13T03:33:54.609Z",
+  "stage": "semanticReview",
+  "runId": "20260813033039268-2c2368cd",
+  "tracePath": "evidence/reviews/SUT-AIOS-GOV-057/traces/20260813033039268-2c2368cd-qa-verification-luna.jsonl",
+  "outputHash": "817fedecfd4063ba4919bcfacbc01c50098ab1c6ecf59aa457e846eb2b72f1ed",
+  "decision": "revision-required",
+  "blockingFindings": [
+    "persistReviewResult validates the packet, revisions, and trace only before calling prepareReviewResultPersistence; it does not revalidate current HEAD/base, packet authority, context hashes, or evidence sequencing at the final staging boundary, allowing stale review evidence to be published after governed state changes."
+  ],
+  "nonBlockingRisks": [],
+  "missingNegativeTests": [
+    "Mutation of HEAD, canonical base, packet authority, or governed context between initial direct-persistence validation and staging must produce zero publication."
+  ],
+  "architectureAssessment": {
+    "deepModules": "Launcher concerns are reasonably separated into routing, context, child lifecycle, validation, tracing, and persistence helpers.",
+    "hexagonalArchitecture": "Repository and process adapters are isolated behind explicit launcher and persistence boundaries, with authority derived from the task packet.",
+    "eventedBoundaries": "Progress and terminal events are structured and redacted, with bounded child-output reporting and cancellation states."
+  },
+  "exactNextAction": "Apply the shared final authority and evidence-sequence gate to persistReviewResult, add the stale-state zero-publication regression, rerun the required checks, and request fresh semantic review."
+}
