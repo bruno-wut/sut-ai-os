@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:34:27.347Z",
+  "updatedDate": "2026-08-13T03:39:07.054Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1074,6 +1074,13 @@
       "at": "2026-08-13T03:34:27.347Z",
       "actor": "codex-engineering-executor",
       "reason": "Apply the shared final authority and evidence-sequence gate to direct persistence with stale-state zero-publication races only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:39:07.054Z",
+      "actor": "chief-orchestrator",
+      "reason": "Direct persistence now repeats packet, revision, strict trace, context, and evidence-sequence checks at final staging; all races and every packet check pass."
     }
   ]
 }
