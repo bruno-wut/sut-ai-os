@@ -171,6 +171,13 @@ const failedCleanupTerminals = [];
 assert.equal(await completeFailedReviewCancellation(failedCleanupCancellation, createReviewTerminalController({ append: () => {} }, (event) => failedCleanupTerminals.push(event), () => {})), "failed", "failed review cleanup completes fail closed");
 assert.equal(failedCleanupConfirmed, true, "failed review cleanup awaits descendant-group confirmation");
 assert.deepEqual(failedCleanupTerminals, [{ status: "failed" }], "failed review cleanup emits one terminal only after confirmation");
+let failedSignalCleanupConfirmed = false;
+const failedSignalTerminals = [];
+const failedSignalCompletion = completeFailedReviewCancellation({ confirmChildClosed() {}, ensureTerminated: () => Promise.resolve({ status: "failed", reason: "signal-error" }), confirmProcessGroupTerminated: () => new Promise((resolve) => { failedSignalCleanupConfirmed = true; resolve({ status: "failed", reason: "process-group-still-running" }); }), complete() {} }, createReviewTerminalController({ append: () => {} }, (event) => failedSignalTerminals.push(event), () => {}));
+assert.deepEqual(failedSignalTerminals, [], "POSIX signal failure emits no terminal before cleanup observation");
+assert.equal(await failedSignalCompletion, "failed", "POSIX signal failure completes fail closed after observation");
+assert.equal(failedSignalCleanupConfirmed, true, "POSIX signal failure still performs bounded group observation");
+assert.deepEqual(failedSignalTerminals, [{ status: "failed" }], "POSIX signal failure emits one failed terminal after observation");
 
 let escalationCallback;
 let confirmationCallback;

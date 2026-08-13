@@ -789,8 +789,8 @@ async function completeCancelledReview(cancellation, terminal) {
 
 async function completeFailedReviewCancellation(cancellation, terminal) {
   cancellation.confirmChildClosed();
-  const result = await cancellation.ensureTerminated();
-  if (result?.status !== "failed") await cancellation.confirmProcessGroupTerminated();
+  await cancellation.ensureTerminated();
+  await cancellation.confirmProcessGroupTerminated();
   cancellation.complete();
   terminal.complete("failed", 1);
   return "failed";
@@ -1441,7 +1441,6 @@ function main() {
   const cancellation = reviewProfile ? createReviewCancellationController(child, progress, {
     onTerminationFailure: (result) => {
       process.stderr.write(`Review cancellation failed closed: ${result.reason ?? "unknown"}\n`);
-      terminal.complete("failed", 1);
       for (const stream of [child.stdin, child.stdout, child.stderr]) {
         try { stream.destroy(); } catch { /* fail-closed cleanup is best effort */ }
       }
