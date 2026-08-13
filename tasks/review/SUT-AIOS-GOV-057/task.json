@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T03:25:20.586Z",
+  "updatedDate": "2026-08-13T03:30:00.419Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -1053,6 +1053,13 @@
       "at": "2026-08-13T03:25:20.586Z",
       "actor": "codex-engineering-executor",
       "reason": "Add shared strict launcher-trace event, context, scope, and V2 review-state admission with zero-publication negatives only."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T03:30:00.419Z",
+      "actor": "chief-orchestrator",
+      "reason": "Strict shared launcher-trace and V2 review-state admission pass all focused negatives and every packet check; freeze for fresh independent review."
     }
   ]
 }
