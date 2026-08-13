@@ -3,7 +3,7 @@
   "schemaVersion": "2.0.0",
   "taskId": "SUT-AIOS-GOV-057",
   "title": "Bounded Workflow V2 review-runner repair",
-  "status": "active",
+  "status": "review",
   "phase": "phase-2-governance",
   "workstream": "workflow-v2-review-runner",
   "workflowId": "workflow-v2-review-runner-repair",
@@ -169,7 +169,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-09T07:51:04.269Z",
-  "updatedDate": "2026-08-13T02:47:27.102Z",
+  "updatedDate": "2026-08-13T02:49:12.305Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -948,6 +948,13 @@
       "at": "2026-08-13T02:47:27.102Z",
       "actor": "codex-engineering-executor",
       "reason": "Bound only patches for governed Markdown and task records already included in full context; preserve every implementation patch inline and keep the existing cap."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T02:49:12.305Z",
+      "actor": "chief-orchestrator",
+      "reason": "Freeze the documented Workflow V2 sequence and duplicate-context bound for final exact-head independent review."
     }
   ]
 }
