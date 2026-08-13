@@ -53,9 +53,10 @@ P2-006 describes retention eligibility rather than retention authorization.
 it does not schedule deletion, establish due state, satisfy legal compliance,
 or authorize a production lifecycle action. P3-005 must supply separately
 governed fixture lifecycle controls. Protected audit and failed-attempt history
-cannot use a destructive retention reference. The reference adapters also
-validate the persisted identity before any delete mutation and independently
-refuse deletion of a protected audit record.
+cannot use a destructive retention reference. Before any fixture deletion, the
+reference adapter requires the requested category and artifact class to match
+the persisted record, then independently refuses deletion of a protected audit
+record.
 
 ## Reference composition
 
@@ -70,16 +71,20 @@ Missing, malformed, or unsupported selection yields a port that fails closed.
 The core captures the adapter identity and function at construction, so later
 mutation of the supplied object cannot redirect an established port.
 
-For every existing `recordId`, both adapters bind history to the original
+For every existing `recordId`, both adapters bind append history to the original
 `dataCategory`, `artifactClass`, and `retentionAction`. An append that attempts
 to relabel any of those fields returns `RECORD_IDENTITY_CONFLICT` without
 changing the current revision. This prevents an ordinary aggregate from joining
 a protected audit history and prevents a protected record from being appended
-to an ordinary history. The same identity check runs before either adapter's
-delete mutation. Consequently, an ordinary `scheduled_delete` request cannot
-erase a protected record merely by reusing its `recordId`. Protected histories
-remain ineligible for `delete_expired` at the core and are also guarded inside
-each adapter as defense in depth.
+to an ordinary history.
+
+Delete has a deliberately different comparison. A valid `scheduled_delete`
+action is expected to differ from the action stored when an ordinary record was
+written or appended, so deletion matches only the immutable `dataCategory` and
+`artifactClass`. Classification drift still returns `RECORD_IDENTITY_CONFLICT`
+before mutation. The protected-audit guard then runs before deletion. Thus a
+valid ordinary record can be deleted, while an ordinary deletion request cannot
+erase protected audit history by reusing its `recordId`.
 
 Adapter output is treated as untrusted. Its status must match the requested
 operation, its record must match the governed request identity, and extra
@@ -109,12 +114,12 @@ git diff --check
 ```
 
 The task validator covers both adapters, substitution, all four finite
-operations, aggregate-action write/read, protected-history identity collisions
-in both directions, same-ID ordinary deletion against protected history,
-pre-mutation delete guards, protected-delete preservation, P2-006
-category/retention rejection, P2-007 capacity and booking isolation,
-caller-authority injection, hostile adapters, malformed input, immutability,
-closed decisions, and import boundaries.
+operations, aggregate-action write/read, positive ordinary scheduled deletion,
+protected-history identity collisions in both directions, same-ID ordinary
+deletion against protected history, pre-mutation delete guards,
+protected-delete preservation, P2-006 category/retention rejection, P2-007
+capacity and booking isolation, caller-authority injection, hostile adapters,
+malformed input, immutability, closed decisions, and import boundaries.
 
 ## Rollback
 

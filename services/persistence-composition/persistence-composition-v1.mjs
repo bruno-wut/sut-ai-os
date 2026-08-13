@@ -21,6 +21,10 @@ function sameHistoryIdentity(existing, candidate) {
   return existing.dataCategory === candidate.dataCategory && existing.artifactClass === candidate.artifactClass && existing.retentionAction === candidate.retentionAction;
 }
 
+function sameRecordClassification(existing, candidate) {
+  return existing.dataCategory === candidate.dataCategory && existing.artifactClass === candidate.artifactClass;
+}
+
 function isProtectedAuditRecord(record) {
   return record.dataCategory === "required_audit_evidence" || record.artifactClass === "audit_evidence";
 }
@@ -47,7 +51,7 @@ function createMapAdapter() {
         return { ok: true, status: "appended", record: clone(stored) };
       }
       if (current === null) return { ok: true, status: "not_found", record: null };
-      if (!sameHistoryIdentity(current, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
+      if (!sameRecordClassification(current, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
       if (isProtectedAuditRecord(current)) return { ok: false, reasonCode: "PROTECTED_RECORD_DELETE_FORBIDDEN" };
       histories.delete(record.recordId);
       return { ok: true, status: "deleted", record: clone(current) };
@@ -83,7 +87,7 @@ function createJournalAdapter() {
         return { ok: true, status: "appended", record: clone(stored) };
       }
       if (existing === null) return { ok: true, status: "not_found", record: null };
-      if (!sameHistoryIdentity(existing, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
+      if (!sameRecordClassification(existing, record)) return { ok: false, reasonCode: "RECORD_IDENTITY_CONFLICT" };
       if (isProtectedAuditRecord(existing)) return { ok: false, reasonCode: "PROTECTED_RECORD_DELETE_FORBIDDEN" };
       journal.push({ deleted: true, record: clone(existing) });
       return { ok: true, status: "deleted", record: clone(existing) };

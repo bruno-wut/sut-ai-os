@@ -125,9 +125,9 @@ for (const adapterId of ["reference-map-v1", "reference-journal-v1"]) {
   const readInput = request("read"); readInput.record.contentDigest = DIGEST_B;
   const found = await accepted(port, readInput, "found", `${adapterId} read`);
   equal([found.value.record.contentDigest, found.value.record.revision], [DIGEST_B, 2], `${adapterId} read sees latest revision`);
-  await rejected(port, request("delete_expired"), ["RECORD_IDENTITY_CONFLICT"], `${adapterId} retention-action drift cannot delete ordinary history`);
-  const afterRejectedDelete = await accepted(port, readInput, "found", `${adapterId} ordinary history remains after rejected delete`);
-  equal(afterRejectedDelete.value.record.revision, 2, `${adapterId} rejected delete preserves latest ordinary revision`);
+  const deleted = await accepted(port, request("delete_expired"), "deleted", `${adapterId} valid ordinary scheduled delete`);
+  equal(deleted.value.record.revision, 2, `${adapterId} valid delete returns removed ordinary revision`);
+  await accepted(port, readInput, "not_found", `${adapterId} ordinary history is absent after valid delete`);
 
   const aggregateAction = governanceCandidate({ candidateId: `aggregate-action-${adapterId}`, requestedAction: "aggregate" });
   const aggregateWrite = request("write", { requestId: `aggregate-write-${adapterId}`, record: { recordId: `aggregate-action-record-${adapterId}`, contentDigest: DIGEST_A, contentBytes: 64 }, governanceCandidate: aggregateAction });
@@ -291,9 +291,9 @@ check(!/\bfetch\s*\(|from\s+["']node:(?:https?|fs|net|tls|child_process|os)|proc
 check(!/from\s+["'](?:cloudflare|supabase|github|openai|line|@?aws|pg|postgres|mysql|redis|bullmq|wrangler|better-sqlite3|sqlite)/iu.test(compositionSource), "reference composition imports no provider or database SDK");
 check(!/\bfetch\s*\(|from\s+["']node:(?:https?|fs|net|tls|child_process)|process\.env/iu.test(compositionSource), "reference composition has no network, filesystem, credential, or process access");
 check(!/\b(?:aiInvocation|modelInvocation|queueMessage|workflowStart)\s*\(/u.test(coreSource + compositionSource), "persistence composition creates no AI invocation, queue message, or workflow per event");
-check(compositionSource.lastIndexOf("if (!sameHistoryIdentity(current, record))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter validates delete identity before destructive mutation");
+check(compositionSource.indexOf("if (!sameRecordClassification(current, record))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter validates persisted classification before destructive mutation");
 check(compositionSource.indexOf("if (isProtectedAuditRecord(current))") < compositionSource.indexOf("histories.delete(record.recordId)"), "map adapter protects audit records before destructive mutation");
-check(compositionSource.lastIndexOf("if (!sameHistoryIdentity(existing, record))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter validates delete identity before tombstone mutation");
+check(compositionSource.indexOf("if (!sameRecordClassification(existing, record))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter validates persisted classification before tombstone mutation");
 check(compositionSource.indexOf("if (isProtectedAuditRecord(existing))") < compositionSource.indexOf("journal.push({ deleted: true"), "journal adapter protects audit records before tombstone mutation");
 
 console.log(`P3-004 persistence composition V1 validation passed (${cases} cases).`);

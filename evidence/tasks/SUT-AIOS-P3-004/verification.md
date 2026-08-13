@@ -20,6 +20,10 @@
   A valid ordinary `scheduled_delete` request that reuses a protected audit
   `recordId` now returns `RECORD_IDENTITY_CONFLICT`, and the protected identity
   and latest revision remain unchanged.
+- Delete identity compares the persisted category and artifact class, while
+  append retains the stricter category/artifact/retention tuple. This permits a
+  valid ordinary `scheduled_delete` transition without weakening the protected
+  record guard.
 - Added bounded architecture and rollback documentation.
 
 ## Changed paths
@@ -35,8 +39,8 @@
 
 | Command | Result | Notes |
 | --- | --- | --- |
-| `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 721 cases after the bounded pre-mutation delete guard. |
-| `npm run verify:fast` | FAIL on uncommitted delete-guard tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit the bounded remediation and rerun this exact command before fresh independent QA. |
+| `npm run test:persistence-composition` | PASS | Exact GOV-062-admitted validator passed 721 cases after the bounded delete-semantics correction. |
+| `npm run verify:fast` | FAIL on uncommitted delete-semantics tree | Task validation, worktree self-test, and task self-test passed; `scripts/codex/validate-routing.mjs` requires a clean committed review tree. The orchestrator must commit the bounded remediation and rerun this exact command before fresh independent QA. |
 | `git diff --check` | PASS | No whitespace errors; Git emitted only line-ending conversion notices for the modified working-copy files. |
 
 ## Safety and authority
