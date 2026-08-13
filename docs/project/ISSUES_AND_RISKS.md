@@ -956,3 +956,12 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** P3-001 packet execution readiness only
 - **Evidence:** P3-001 required `npm run test:signal-ingestion`, but the package script was absent and its packet did not authorize `package.json` or the fixed independent `verify:task` command. GOV-058 registers the exact script and adds only those bounded V1 permissions; P3 implementation and Workflow V2 remain unchanged.
 - **Next action / owner:** Independent `qa-verification` must validate GOV-058 before P3-001 can be reconsidered for activation.
+
+### 2026-08-13 — P3-001 validator initially blocked by fail-closed command admission
+
+- **Task ID:** `SUT-AIOS-P3-001`, remediated by `SUT-AIOS-GOV-059`
+- **Status:** Corrected pending independent verification; blocked P3-001 evidence retained
+- **Severity:** High assurance gap
+- **Affected scope:** Workflow V1 `verify:task` execution of the exact P3-001 required test only
+- **Evidence:** The independent P3-001 run at `evidence/verification/SUT-AIOS-P3-001/verification-20260813072555420.json` was correctly blocked because `safeRequiredCommand` did not admit `npm run test:signal-ingestion`. GOV-059 adds one byte-for-byte mapping to `node` with the single fixed argument `tests/signal-ingestion/validate-signal-ingestion-v1.mjs` and `shell: false`; self-tests reject whitespace, argument, operator, syntax, path, and separator near misses. The governance task does not add or run the P3-001 validator, change its implementation, or create generic command authority.
+- **Next action / owner:** The executor's first `npm run verify:fast` reached a known clean-head-sensitive Codex-routing self-test failure while GOV-059 was uncommitted; the orchestrator must commit the bounded head and rerun it. Independent `qa-verification` must then verify GOV-059. After GOV-059 is merged, P3-001 requires a fresh independent run; preserve the initial blocked evidence as history.
