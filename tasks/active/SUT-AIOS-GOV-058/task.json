@@ -1,0 +1,157 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-GOV-058",
+  "title": "Repair P3-001 Workflow V1 execution readiness",
+  "status": "active",
+  "phase": "phase-3-governance",
+  "workstream": "task-packet-assurance",
+  "workflowId": "governance-p3-001-v1-readiness",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Make P3-001 executable under the existing Workflow V1 packet without changing signal-ingestion implementation scope.",
+  "technicalObjective": "Register the exact signal-ingestion validator command, allow the package script and V1 packet correction, and authorize deterministic boundary verification while excluding Workflow V2.",
+  "architectureReferences": [
+    "docs/project/TASK_WORKFLOW.md",
+    "docs/verification/VERIFICATION_POLICY.md",
+    "docs/project/ISSUES_AND_RISKS.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P2-005",
+    "SUT-AIOS-P2-006",
+    "SUT-AIOS-P2-007"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-GOV-058/verification.md"
+  ],
+  "assumptions": [
+    "Only the V1 P3-001 packet and exact package script are corrected; no P3 implementation is included.",
+    "The declared P2 dependencies are done on canonical origin/main.",
+    "Ajv and other locked npm dependencies are provisioned locally or in CI before packet commands; no dependency or lockfile change is authorized.",
+    "Workflow V2 packets, routingPolicy, review artifacts, and review-runner changes are out of scope."
+  ],
+  "acceptanceCriteria": [
+    "package.json declares exactly test:signal-ingestion as node tests/signal-ingestion/validate-signal-ingestion-v1.mjs.",
+    "P3-001 remains a schemaVersion 1.0.0 packet with modelRoute sol, defaultModel gpt-5.6-sol, fallbackModel gpt-5.6-sol, and allowedAgents exactly codex-engineering-executor and qa-verification.",
+    "P3-001 allowedPaths includes package.json and its context budget includes package.json; its requiredTests remain the signal-ingestion validator and verify:fast.",
+    "P3-001 allowedCommands explicitly authorize the fixed independent verify:task invocation for qa-verification with gpt-5.6-sol, so changed-path and secret checks are executable without generic command execution.",
+    "No signal-ingestion service or test implementation, Workflow V2 routing, package-lock, scripts, schemas, production behavior, credentials, or external operations are changed.",
+    "The corrected V1 packet and exact package script pass deterministic packet, governance, fast, and whitespace checks."
+  ],
+  "allowedPaths": [
+    "package.json",
+    "docs/project/ISSUES_AND_RISKS.md",
+    "tasks/backlog/SUT-AIOS-P3-001/task.json",
+    "tasks/**/SUT-AIOS-GOV-058/**",
+    "evidence/tasks/SUT-AIOS-GOV-058/**",
+    "evidence/verification/SUT-AIOS-GOV-058/**"
+  ],
+  "forbiddenPaths": [
+    "package-lock.json",
+    "services/**",
+    "tests/**",
+    "docs/signal-ingestion/**",
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "scripts/**",
+    "schemas/**",
+    ".github/**",
+    "evidence/tasks/SUT-AIOS-P3-001/**",
+    "evidence/verification/SUT-AIOS-P3-001/**",
+    "evidence/reviews/**",
+    "tasks/review/SUT-AIOS-P3-001/**",
+    "tasks/active/SUT-AIOS-P3-001/**",
+    "tasks/verified/SUT-AIOS-P3-001/**",
+    "tasks/done/SUT-AIOS-P3-001/**",
+    "tasks/**/SUT-AIOS-GOV-057/**",
+    "supabase/**",
+    "apps/**",
+    "packages/**",
+    "policies/**",
+    "**/*.sql",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*"
+  ],
+  "allowedCommands": [
+    "node scripts/task/validate --task SUT-AIOS-P3-001",
+    "node scripts/task/validate --task SUT-AIOS-GOV-058",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-GOV-058 --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "exact package-script and V1 packet-authority inspection",
+    "changed-path inspection against the GOV-058 allowlist",
+    "secret and credential boundary scan",
+    "no Workflow V2 or P3 implementation scope regression",
+    "independent verification"
+  ],
+  "requiredTests": [
+    "node scripts/task/validate --task SUT-AIOS-P3-001",
+    "node scripts/task/validate --task SUT-AIOS-GOV-058",
+    "node scripts/github/validate-governance.mjs",
+    "npm run verify:fast",
+    "git diff --check"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any request to change P3 implementation files, package-lock, V2 routing or review machinery, production behavior, credentials, or external services requires a separate approved packet.",
+    "Any change to the P3-001 authority model, authentication contract, rate-limit semantics, or protected data boundary requires Sol escalation and a revised packet."
+  ],
+  "rollbackExpectations": "Revert only the GOV-058 packet, risk entry, exact package script, P3-001 V1 packet correction, and GOV-058 evidence; preserve all P3 implementation history, V2 history, completed tasks, and external systems.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "docs/project/TASK_WORKFLOW.md",
+      "docs/verification/VERIFICATION_POLICY.md",
+      "tasks/active/SUT-AIOS-GOV-058/task.json",
+      "tasks/backlog/SUT-AIOS-P3-001/task.json",
+      "package.json",
+      "docs/project/ISSUES_AND_RISKS.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-13T06:39:28.482Z",
+  "updatedDate": "2026-08-13T06:41:22.092Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-13T06:39:28.482Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created after P3-001 V1 readiness inspection found a missing validator script registration and incomplete verification command allowlist."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T06:41:10.774Z",
+      "actor": "chief-orchestrator",
+      "reason": "V1 packet is complete, dependencies are done, exact paths and commands are bounded, and P3-001 readiness blockers are confirmed."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T06:41:22.092Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin only the approved V1 readiness correction; do not implement P3-001 or Workflow V2 changes."
+    }
+  ]
+}

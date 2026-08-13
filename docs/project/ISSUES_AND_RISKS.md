@@ -948,3 +948,11 @@ This is the durable repository-wide register for issues, blockers, risks, failed
 - **Affected scope:** `verify:task` safe required-command parsing and CI evidence for production-dependency audits
 - **Evidence:** Two independent P0-002 verifier runs, `verification-20260726152717886.json` and `verification-20260726152741451.json` on branch `task/SUT-AIOS-P0-002-plan-dependency-and-security-remediation`, recorded `blocked` even though a direct packet-authorized `npm audit --omit=dev` passed with exit `0`. The parser rejected the required command before execution. GOV-012's first bare-`npm` Windows mapping failed in `verification-20260726155555816.json`; its `npm.cmd` revision also failed shell-free execution in `verification-20260726160006575.json`, while direct packet-authorized audits passed. The final bounded revision uses `process.execPath` to execute the existing bundled npm CLI JavaScript path on Windows, checks that path before launch, retains `shell: false`, and fixes the remaining arguments to `audit`, `--omit=dev`. Deterministic self-tests cover platform mappings, missing-CLI blocking, unchanged rejection forms, and actual child success, nonzero, and execution-error outcomes. Independent verification in `evidence/verification/SUT-AIOS-GOV-012/verification-20260726160516462.json` passed the real audit, self-test, packet validation, fast governance, changed-path, and secret-boundary checks.
 - **Next action / owner:** Retain the historical blocked/failed evidence and the final independent pass. Any future expansion beyond the exact literal `npm audit --omit=dev` requires a separate approved governance task and independent review.
+### 2026-08-13 — P3-001 Workflow V1 readiness command gap
+
+- **Task ID:** `SUT-AIOS-GOV-058`
+- **Status:** Corrected pending independent verification
+- **Severity:** High
+- **Affected scope:** P3-001 packet execution readiness only
+- **Evidence:** P3-001 required `npm run test:signal-ingestion`, but the package script was absent and its packet did not authorize `package.json` or the fixed independent `verify:task` command. GOV-058 registers the exact script and adds only those bounded V1 permissions; P3 implementation and Workflow V2 remain unchanged.
+- **Next action / owner:** Independent `qa-verification` must validate GOV-058 before P3-001 can be reconsidered for activation.
