@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -11,8 +12,8 @@ const root = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-lifecycle
 const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sut-aios-v2-review-external-"));
 const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 const id = "SUT-TEST-V2-REVIEW";
-const baseSha = "a".repeat(40);
-const headSha = "b".repeat(40);
+let baseSha;
+let headSha;
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 function assessment(nextAction) {
@@ -31,6 +32,14 @@ function assessment(nextAction) {
 }
 
 try {
+  const git = (args) => assert.equal(spawnSync("git", args, { cwd: root, encoding: "utf8", windowsHide: true }).status, 0);
+  git(["init", "-q"]);
+  git(["config", "user.email", "test@example.invalid"]);
+  git(["config", "user.name", "V2 lifecycle test"]);
+  git(["commit", "--allow-empty", "-qm", "fixture base"]);
+  git(["update-ref", "refs/remotes/origin/main", "HEAD"]);
+  headSha = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8", windowsHide: true }).stdout.trim();
+  baseSha = headSha;
   const workflowDocumentation = fs.readFileSync(path.join(repositoryRoot, "docs", "project", "TASK_WORKFLOW.md"), "utf8");
   assert.match(workflowDocumentation, /Source head:[\s\S]*Evidence head:[\s\S]*Lifecycle head:/, "Workflow V2 documentation preserves the ordered three-head sequence");
   assert.match(workflowDocumentation, /--evidence evidence\/reviews\/SUT-AIOS-AREA-001\/<final-review-stage>-<source-head>\.json/, "documented V2 verification uses the final exact-head review artifact");
