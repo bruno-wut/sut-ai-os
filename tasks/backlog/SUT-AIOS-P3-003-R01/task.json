@@ -1,0 +1,123 @@
+{
+  "$schema": "../../../schemas/task-packet.schema.json",
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-003-R01",
+  "title": "Prevent Workflow V1 history-cap state corruption",
+  "status": "backlog",
+  "phase": "phase-3",
+  "workstream": "workflow-runtime-remediation",
+  "workflowId": "remediation-p3-003-history-cap",
+  "playbookId": null,
+  "playbookMode": "shadow",
+  "businessObjective": "Keep the bounded Workflow V1 runtime durable and self-consistent during prolonged provider or quota outages.",
+  "technicalObjective": "Prevent any normal transition from persisting more than the 64-entry history contract or producing a record that its own validator rejects; preserve deterministic fail-closed behavior at the history boundary without adding infrastructure or production authority.",
+  "architectureReferences": [
+    "docs/workflow-runtime/WORKFLOW_RUNTIME_V1.md",
+    "docs/project/ENGINEERING_PRINCIPLES.md",
+    "docs/project/IMPLEMENTATION_BACKLOG.md"
+  ],
+  "dependencies": [
+    "SUT-AIOS-P3-003"
+  ],
+  "evidence": [
+    "evidence/tasks/SUT-AIOS-P3-003-R01/verification.md"
+  ],
+  "assumptions": [
+    "The merged P3-003 implementation remains Tier-0/shadow and non-authoritative; no production write, deployment, credential access, provider integration, or external state is authorized.",
+    "The existing 64-entry history and revision invariant remains the contract; this remediation adds bounded behavior at the limit rather than weakening the validator or silently deleting audit history.",
+    "The original verified P3-003 packet and all historical evidence remain immutable records and are not edited by this remediation."
+  ],
+  "acceptanceCriteria": [
+    "Repeated provider_wait or quota_wait transitions at the 64-entry history boundary never append a 65th entry, never persist an invalid record, and return a deterministic fail-closed WORKFLOW_HISTORY_LIMIT_REACHED decision.",
+    "Every normal transition path either persists a record satisfying the existing history-length and revision invariants or returns a deterministic fail-closed decision without mutating durable state.",
+    "Records with 63 entries can make one valid transition to 64 entries, while records already at 64 entries remain loadable and cannot self-corrupt under continued provider or quota unavailability.",
+    "Focused regression tests cover provider and quota outage repetition, the 63/64 boundary, persisted round trips, malformed and hostile values, and preservation of ordinary pre-boundary transitions.",
+    "No provider SDK, database, queue, scheduler, network, credential, deployment, production write, booking, payment, inventory, pricing, finalized-platform, or architecture-source behavior is introduced."
+  ],
+  "allowedPaths": [
+    "packages/workflow-contracts/**",
+    "tests/workflow-runtime/**",
+    "docs/workflow-runtime/**",
+    "evidence/tasks/SUT-AIOS-P3-003-R01/**",
+    "evidence/verification/SUT-AIOS-P3-003-R01/**",
+    "tasks/**/SUT-AIOS-P3-003-R01/**"
+  ],
+  "forbiddenPaths": [
+    "reference/finalized-platform/**",
+    "docs/architecture/source/**",
+    "tasks/verified/SUT-AIOS-P3-003/**",
+    "tasks/done/SUT-AIOS-P3-003/**",
+    ".github/**",
+    "scripts/**",
+    "schemas/**",
+    "policies/**",
+    "package.json",
+    "package-lock.json",
+    ".env*",
+    "**/*secret*",
+    "**/*credential*",
+    "supabase/**",
+    "**/*.sql",
+    "**/*migration*"
+  ],
+  "allowedCommands": [
+    "npm run test:workflow",
+    "npm run verify:fast",
+    "npm run verify:task -- --task SUT-AIOS-P3-003-R01 --base origin/main --verifier-agent qa-verification --verifier-model gpt-5.6-sol --acceptance-confirmed",
+    "git diff --check"
+  ],
+  "requiredChecks": [
+    "history-cap boundary and outage regression validation",
+    "changed-path inspection",
+    "secret scan",
+    "independent Sol verification"
+  ],
+  "requiredTests": [
+    "npm run test:workflow",
+    "npm run verify:fast"
+  ],
+  "productionWritePermission": false,
+  "pullRequestRequirement": true,
+  "riskLevel": "high",
+  "autonomyTier": "tier-0",
+  "defaultAgent": "codex-engineering-executor",
+  "allowedAgents": [
+    "codex-engineering-executor",
+    "qa-verification"
+  ],
+  "modelRoute": "sol",
+  "defaultModel": "gpt-5.6-sol",
+  "fallbackModel": "gpt-5.6-sol",
+  "workspaceWrite": true,
+  "solEscalationTriggers": [
+    "Any change crosses the declared workflow-runtime, test, documentation, evidence, or remediation-packet paths.",
+    "Any request for infrastructure, provider, persistence, queue, scheduler, transaction, outbox, credential, deployment, booking, payment, pricing, inventory, authorization, RLS, or production behavior."
+  ],
+  "rollbackExpectations": "Revert the remediation branch and generated artifacts while preserving the merged P3-003 packet, historical evidence, and any blocked verification records.",
+  "outputSchema": "schemas/agent-result.schema.json",
+  "contextBudget": {
+    "maxBytes": 262144,
+    "includedPaths": [
+      "AGENTS.md",
+      "tasks/backlog/SUT-AIOS-P3-003-R01/task.json",
+      "tasks/verified/SUT-AIOS-P3-003/task.json",
+      "packages/workflow-contracts/src/workflow-runtime-v1.mjs",
+      "tests/workflow-runtime/validate-workflow-runtime-v1.mjs",
+      "docs/workflow-runtime/WORKFLOW_RUNTIME_V1.md"
+    ]
+  },
+  "owner": "codex-engineering-executor",
+  "reviewer": "qa-verification",
+  "createdDate": "2026-08-13T16:10:00.000Z",
+  "updatedDate": "2026-08-13T16:10:00.000Z",
+  "completionEvidence": [],
+  "stateTransitions": [
+    {
+      "from": null,
+      "to": "backlog",
+      "at": "2026-08-13T16:10:00.000Z",
+      "actor": "chief-orchestrator",
+      "reason": "Created as a bounded remediation after independent review found that repeated provider or quota waits can append a 65th history entry and make the runtime reject its own durable record."
+    }
+  ]
+}
