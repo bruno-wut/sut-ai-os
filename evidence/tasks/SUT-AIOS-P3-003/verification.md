@@ -16,8 +16,8 @@ The executor ran the packet-authorized commands from the isolated task worktree:
 
 | Command | Result |
 | --- | --- |
-| `npm run test:workflow` | Pass — 393 assertions. |
-| `npm run verify:fast` | Blocked by a pre-existing governance self-test fixture: `scripts/codex/validate-routing.mjs` expects the V2 foundation review worktree to be clean while this authorized V1 task has uncommitted implementation changes. Task validation, worktree self-test, and lifecycle self-test pass. Rerun on the clean committed head by independent QA. |
+| `npm run test:workflow` | Pass — 451 assertions after bounded hostile Proxy/accessor remediation. |
+| `npm run verify:fast` | Blocked on the uncommitted remediation worktree by `scripts/codex/validate-routing.mjs`, whose V2 foundation plan-review fixture requires a clean worktree. Task validation, worktree self-test, and lifecycle self-test pass. Independent QA must rerun on the clean committed remediation head. |
 | `git diff --check` | Pass. |
 
 Independent `verify:task` evidence is recorded separately by `qa-verification`
@@ -32,8 +32,9 @@ wait/requeue and quota resume, policy denial, approval pending/approved/denied/
 expired, provider authority injection, executor/verification/outcome hostile
 results, authoritative deadlines, cancellation, bounded recovery, terminal
 outcomes, captured-port immutability, malformed public input, hostile persisted
-state, thrown adapter errors, storage conflicts, and closed non-authoritative
-decisions.
+state, thrown adapter errors, storage conflicts, hostile Proxy `ownKeys` traps,
+throwing property accessors across request/storage/adapter-result boundaries,
+and closed non-authoritative decisions.
 
 ## Limitations
 

@@ -32,6 +32,9 @@ The factory validates and captures the exact callables once. Replacing caller
 properties afterward does not redefine the trusted composition. Port calls and
 outputs are guarded; thrown errors, missing functions, malformed results,
 storage conflicts, and unavailable authority fail closed.
+Validation snapshots accepted input and adapter-result fields inside exception
+boundaries. Hostile proxy traps or property accessors therefore produce
+deterministic fail-closed decisions instead of escaping a public use case.
 
 `storage.save` is an optimistic concurrency boundary. It must atomically save
 only when the existing revision equals `expectedRevision`, returning exactly

@@ -153,6 +153,20 @@ async function progressTo(runtime, id, target) {
   throw new Error(`did not reach ${target}`);
 }
 
+function hostileProxy(trap = "get") {
+  return new Proxy({}, {
+    get() { if (trap === "get") throw new Error("hostile getter"); return undefined; },
+    ownKeys() { if (trap === "ownKeys") throw new Error("hostile ownKeys"); return []; },
+    getOwnPropertyDescriptor() { return { enumerable: true, configurable: true }; }
+  });
+}
+
+function hostileAccessor(key) {
+  const value = {};
+  Object.defineProperty(value, key, { enumerable: true, get() { throw new Error("hostile accessor"); } });
+  return value;
+}
+
 // Exported finite authorities and closed public surface.
 equal(PROVIDER_STATES, ["available", "busy", "rate_limited", "capacity_exhausted", "authentication_required", "temporarily_unavailable", "disabled"], "provider states are exact");
 equal(new Set(WORKFLOW_STATES).size, WORKFLOW_STATES.length, "workflow states are unique");
@@ -399,6 +413,49 @@ for (const input of malformedStarts) {
   const result = await neverThrows(() => harness.runtime.start(input), "malformed start never throws");
   check(validDecision(result), "malformed start returns valid decision");
   equal([result.state, result.action, result.failClosed], ["failed", "deny", true], "malformed start denies fail closed");
+}
+
+// Hostile Proxy and accessor traps at every untrusted boundary are contained.
+for (const hostile of [hostileProxy("ownKeys"), hostileProxy("get"), hostileAccessor("workflowId")]) {
+  const harness = makeHarness();
+  const result = await neverThrows(() => harness.runtime.start(hostile), "hostile start object never throws");
+  equal([result.state, result.action, result.reasonCode, result.failClosed],
+    ["failed", "deny", "MALFORMED_START_REQUEST", true], "hostile start object deterministically fails closed");
+}
+for (const hostile of [hostileProxy("get"), hostileAccessor("contractVersion")]) {
+  const harness = makeHarness({ loadResult: hostile });
+  const result = await neverThrows(() => harness.runtime.advance("hostile-record"), "hostile stored record never throws");
+  equal([result.action, result.reasonCode, result.failClosed], ["deny", "INTERNAL_STATE_INVALID", true], "hostile stored record deterministically fails closed");
+}
+{
+  const harness = makeHarness({ saveResult: hostileProxy("ownKeys") });
+  const result = await neverThrows(() => harness.runtime.start(request("hostile-save")), "hostile save response never throws");
+  equal([result.action, result.reasonCode, result.failClosed], ["deny", "INTERNAL_STATE_UNAVAILABLE", true], "hostile save response deterministically fails closed");
+}
+for (const [name, overrides, expectedState, reason] of [
+  ["quota", { quotaResult: hostileProxy("get") }, "quota_wait", "QUOTA_AUTHORITY_UNAVAILABLE"],
+  ["provider-status", { statusResult: hostileAccessor("state") }, "provider_wait", "PROVIDER_STATE_INVALID"]
+]) {
+  const harness = makeHarness(overrides);
+  const id = `hostile-boundary-${name}`;
+  await harness.runtime.start(request(id)); await harness.runtime.advance(id);
+  const result = await neverThrows(() => harness.runtime.advance(id), `${name} hostile result never throws`);
+  equal([result.state, result.reasonCode, result.failClosed], [expectedState, reason, true], `${name} hostile result deterministically fails closed`);
+}
+for (const [name, overrides, target, reason] of [
+  ["analysis-proxy", { analyzeResult: hostileProxy("ownKeys") }, "analysis_pending", "MALFORMED_PROVIDER_RESULT"],
+  ["proposal-accessor", { proposeResult: hostileAccessor("proposalRef") }, "proposal_pending", "MALFORMED_PROVIDER_RESULT"],
+  ["policy-proxy", { policyResult: hostileProxy("ownKeys") }, "policy_pending", "MALFORMED_POLICY_DECISION"],
+  ["approval-accessor", { approvalResult: hostileAccessor("decision") }, "awaiting_approval", "MALFORMED_APPROVAL_DECISION"],
+  ["executor-proxy", { executeResult: hostileProxy("ownKeys") }, "ready_to_execute", "MALFORMED_EXECUTOR_RESULT"],
+  ["verification-accessor", { verifyResult: hostileAccessor("status") }, "verification_pending", "MALFORMED_VERIFICATION_RESULT"],
+  ["outcome-proxy", { outcomeResult: hostileProxy("ownKeys") }, "outcome_pending", "MALFORMED_OUTCOME_RESULT"]
+]) {
+  const harness = makeHarness(overrides);
+  const id = `hostile-boundary-${name}`;
+  await harness.runtime.start(request(id)); await progressTo(harness.runtime, id, target);
+  const result = await neverThrows(() => harness.runtime.advance(id), `${name} never throws`);
+  equal([result.state, result.reasonCode, result.failClosed], ["failed", reason, true], `${name} deterministically fails closed`);
 }
 for (const input of [null, undefined, "", "UPPER", {}, [], "a".repeat(65)]) {
   const harness = makeHarness();

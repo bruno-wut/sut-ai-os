@@ -58,6 +58,21 @@ function exactKeys(value, keys) {
   return actual.length === keys.length && keys.slice().sort().every((key, index) => key === actual[index]);
 }
 
+function parsed(call) {
+  try {
+    return call();
+  } catch {
+    return null;
+  }
+}
+
+function exactResult(value, keys) {
+  return parsed(() => {
+    if (!exactKeys(value, keys)) return null;
+    return Object.fromEntries(keys.map((key) => [key, value[key]]));
+  });
+}
+
 function integer(value, minimum = 0) {
   return Number.isSafeInteger(value) && value >= minimum;
 }
@@ -125,6 +140,18 @@ function validRequest(value) {
     && integer(value.maxRecoveries, 0) && value.maxRecoveries <= 3;
 }
 
+function parseRequest(value) {
+  return parsed(() => {
+    if (!validRequest(value)) return null;
+    return Object.freeze({
+      workflowId: value.workflowId,
+      triggerRef: value.triggerRef,
+      deadlineEpochSeconds: value.deadlineEpochSeconds,
+      maxRecoveries: value.maxRecoveries
+    });
+  });
+}
+
 function validRecord(value) {
   if (!object(value) || value.contractVersion !== CONTRACT_VERSION || typeof value.workflowId !== "string" || !ID.test(value.workflowId)
     || !WORKFLOW_STATES.includes(value.state) || !reference(value.triggerRef)
@@ -165,6 +192,39 @@ function validRecord(value) {
   return true;
 }
 
+function parseRecord(value) {
+  return parsed(() => {
+    if (!object(value)) return null;
+    const fields = [
+      "contractVersion", "workflowId", "triggerRef", "approvalRequired", "deadlineEpochSeconds",
+      "maxRecoveries", "recoveryCount", "state", "revision", "createdAtEpochSeconds",
+      "updatedAtEpochSeconds", "resumeState", "waitReasonCode", "providerState", "analysisRef",
+      "proposalRef", "policyDecision", "approvalDecision", "executionRef", "verificationRef", "outcomeRef"
+    ];
+    const copy = Object.fromEntries(fields.map((key) => [key, value[key]]));
+    copy.history = Array.isArray(value.history)
+      ? value.history.map((entry) => ({
+        state: entry.state,
+        atEpochSeconds: entry.atEpochSeconds,
+        reasonCode: entry.reasonCode
+      }))
+      : value.history;
+    return validRecord(copy) ? copy : null;
+  });
+}
+
+function parseQuota(value) {
+  return parsed(() => object(value) ? {
+    zone: value.zone,
+    bookingIsolated: value.bookingIsolated,
+    state: value.state
+  } : null);
+}
+
+function parseProviderState(value) {
+  return parsed(() => object(value) && typeof value.state === "string" ? value.state : null);
+}
+
 function nextRecord(record, now, state, reasonCode, fields = {}) {
   return {
     ...record,
@@ -199,7 +259,7 @@ function quotaReason(value) {
  * supplied through captured outbound ports. The returned use cases never throw.
  */
 export function createWorkflowRuntime(ports) {
-  const trusted = snapshotPorts(ports);
+  const trusted = parsed(() => snapshotPorts(ports));
 
   async function now() {
     if (!trusted) return null;
@@ -211,15 +271,16 @@ export function createWorkflowRuntime(ports) {
     const result = await guarded(() => trusted.storage.load(workflowId));
     if (!result.ok) return { ok: false, record: null };
     if (result.value === null) return { ok: true, record: null };
-    return validRecord(result.value) ? { ok: true, record: result.value } : { ok: false, record: null };
+    const record = parseRecord(result.value);
+    return record ? { ok: true, record } : { ok: false, record: null };
   }
 
   async function save(record) {
     const expectedRevision = record.revision === 0 ? null : record.revision - 1;
     const result = await guarded(() => trusted.storage.save(record, expectedRevision));
-    return result.ok && exactKeys(result.value, ["saved", "revision", "previousRevision"])
-      && result.value.saved === true && result.value.revision === record.revision
-      && result.value.previousRevision === expectedRevision;
+    const saved = result.ok ? exactResult(result.value, ["saved", "revision", "previousRevision"]) : null;
+    return saved !== null && saved.saved === true && saved.revision === record.revision
+      && saved.previousRevision === expectedRevision;
   }
 
   async function persist(record, action, reasonCode, failClosed = false) {
@@ -253,9 +314,10 @@ export function createWorkflowRuntime(ports) {
       zone: "ai_workload",
       bookingCapacityAllowed: false
     })));
-    if (observed.ok && object(observed.value) && observed.value.zone === "ai_workload"
-      && observed.value.bookingIsolated === true && QUOTA_ALLOWED.has(observed.value.state)) return null;
-    const reasonCode = observed.ok ? quotaReason(observed.value) : "QUOTA_AUTHORITY_UNAVAILABLE";
+    const quota = observed.ok ? parseQuota(observed.value) : null;
+    if (quota && quota.zone === "ai_workload"
+      && quota.bookingIsolated === true && QUOTA_ALLOWED.has(quota.state)) return null;
+    const reasonCode = observed.ok ? quotaReason(quota) : "QUOTA_AUTHORITY_UNAVAILABLE";
     const waiting = nextRecord(record, currentTime, "quota_wait", reasonCode, { resumeState, waitReasonCode: reasonCode });
     return persist(waiting, "pause", reasonCode, true);
   }
@@ -265,7 +327,7 @@ export function createWorkflowRuntime(ports) {
       workflowId: record.workflowId,
       stage: resumeState
     })));
-    const state = observed.ok && object(observed.value) ? observed.value.state : null;
+    const state = observed.ok ? parseProviderState(observed.value) : null;
     if (state === "available") return null;
     const known = PROVIDER_STATES.includes(state);
     const reasonCode = known ? providerReason(state) : "PROVIDER_STATE_INVALID";
@@ -279,20 +341,21 @@ export function createWorkflowRuntime(ports) {
 
   async function start(request) {
     if (!trusted) return invalid("INTERNAL_AUTHORITY_UNAVAILABLE");
-    if (!validRequest(request)) return invalid("MALFORMED_START_REQUEST", object(request) ? request.workflowId : null);
+    const accepted = parseRequest(request);
+    if (!accepted) return invalid("MALFORMED_START_REQUEST");
     const currentTime = await now();
-    if (currentTime === null) return invalid("CLOCK_UNAVAILABLE", request.workflowId);
-    if (request.deadlineEpochSeconds <= currentTime) return invalid("INVALID_DEADLINE", request.workflowId);
-    const existing = await load(request.workflowId);
-    if (!existing.ok) return invalid("INTERNAL_STATE_INVALID", request.workflowId);
-    if (existing.record !== null) return decision(request.workflowId, existing.record.state, "none", "WORKFLOW_ALREADY_EXISTS", true);
+    if (currentTime === null) return invalid("CLOCK_UNAVAILABLE", accepted.workflowId);
+    if (accepted.deadlineEpochSeconds <= currentTime) return invalid("INVALID_DEADLINE", accepted.workflowId);
+    const existing = await load(accepted.workflowId);
+    if (!existing.ok) return invalid("INTERNAL_STATE_INVALID", accepted.workflowId);
+    if (existing.record !== null) return decision(accepted.workflowId, existing.record.state, "none", "WORKFLOW_ALREADY_EXISTS", true);
     const record = {
       contractVersion: CONTRACT_VERSION,
-      workflowId: request.workflowId,
-      triggerRef: request.triggerRef,
+      workflowId: accepted.workflowId,
+      triggerRef: accepted.triggerRef,
       approvalRequired: null,
-      deadlineEpochSeconds: request.deadlineEpochSeconds,
-      maxRecoveries: request.maxRecoveries,
+      deadlineEpochSeconds: accepted.deadlineEpochSeconds,
+      maxRecoveries: accepted.maxRecoveries,
       recoveryCount: 0,
       state: "detected",
       revision: 0,
@@ -352,11 +415,12 @@ export function createWorkflowRuntime(ports) {
           triggerRef: record.triggerRef,
           productionWritePermission: false
         })));
-        if (!output.ok || !exactKeys(output.value, ["analysisRef"]) || !reference(output.value.analysisRef)) {
+        const result = output.ok ? exactResult(output.value, ["analysisRef"]) : null;
+        if (!result || !reference(result.analysisRef)) {
           const failed = nextRecord(record, currentTime, "failed", "MALFORMED_PROVIDER_RESULT");
           return persist(failed, "stop", "MALFORMED_PROVIDER_RESULT", true);
         }
-        const next = nextRecord(record, currentTime, "proposal_pending", "ANALYSIS_RECORDED", { analysisRef: output.value.analysisRef });
+        const next = nextRecord(record, currentTime, "proposal_pending", "ANALYSIS_RECORDED", { analysisRef: result.analysisRef });
         return persist(next, "continue", "ANALYSIS_RECORDED");
       }
 
@@ -367,11 +431,12 @@ export function createWorkflowRuntime(ports) {
         analysisRef: record.analysisRef,
         productionWritePermission: false
       })));
-      if (!output.ok || !exactKeys(output.value, ["proposalRef"]) || !reference(output.value.proposalRef)) {
+      const result = output.ok ? exactResult(output.value, ["proposalRef"]) : null;
+      if (!result || !reference(result.proposalRef)) {
         const failed = nextRecord(record, currentTime, "failed", "MALFORMED_PROVIDER_RESULT");
         return persist(failed, "stop", "MALFORMED_PROVIDER_RESULT", true);
       }
-      const next = nextRecord(record, currentTime, "policy_pending", "PROPOSAL_RECORDED", { proposalRef: output.value.proposalRef });
+      const next = nextRecord(record, currentTime, "policy_pending", "PROPOSAL_RECORDED", { proposalRef: result.proposalRef });
       return persist(next, "policy_check", "PROPOSAL_RECORDED");
     }
 
@@ -381,39 +446,39 @@ export function createWorkflowRuntime(ports) {
         proposalRef: record.proposalRef,
         productionWritePermission: false
       })));
-      if (!output.ok || !exactKeys(output.value, ["decision", "reasonCode", "approvalRequired"])
-        || !["allow", "deny"].includes(output.value.decision) || !REASON.test(output.value.reasonCode)
-        || typeof output.value.approvalRequired !== "boolean") {
+      const result = output.ok ? exactResult(output.value, ["decision", "reasonCode", "approvalRequired"]) : null;
+      if (!result || !["allow", "deny"].includes(result.decision) || typeof result.reasonCode !== "string"
+        || !REASON.test(result.reasonCode) || typeof result.approvalRequired !== "boolean") {
         const failed = nextRecord(record, currentTime, "failed", "MALFORMED_POLICY_DECISION");
         return persist(failed, "stop", "MALFORMED_POLICY_DECISION", true);
       }
-      if (output.value.decision === "deny") {
-        const rejected = nextRecord(record, currentTime, "rejected", output.value.reasonCode,
-          { policyDecision: "deny", approvalRequired: output.value.approvalRequired });
-        return persist(rejected, "stop", output.value.reasonCode, true);
+      if (result.decision === "deny") {
+        const rejected = nextRecord(record, currentTime, "rejected", result.reasonCode,
+          { policyDecision: "deny", approvalRequired: result.approvalRequired });
+        return persist(rejected, "stop", result.reasonCode, true);
       }
-      const state = output.value.approvalRequired ? "awaiting_approval" : "ready_to_execute";
-      const next = nextRecord(record, currentTime, state, output.value.reasonCode,
-        { policyDecision: "allow", approvalRequired: output.value.approvalRequired });
-      return persist(next, output.value.approvalRequired ? "await_approval" : "continue", output.value.reasonCode);
+      const state = result.approvalRequired ? "awaiting_approval" : "ready_to_execute";
+      const next = nextRecord(record, currentTime, state, result.reasonCode,
+        { policyDecision: "allow", approvalRequired: result.approvalRequired });
+      return persist(next, result.approvalRequired ? "await_approval" : "continue", result.reasonCode);
     }
 
     if (record.state === "awaiting_approval") {
       const output = await guarded(() => trusted.approval.read(Object.freeze({ workflowId, proposalRef: record.proposalRef })));
-      if (!output.ok || !exactKeys(output.value, ["decision", "reasonCode"])
-        || !["pending", "approved", "denied", "expired"].includes(output.value.decision)
-        || !REASON.test(output.value.reasonCode)) {
+      const result = output.ok ? exactResult(output.value, ["decision", "reasonCode"]) : null;
+      if (!result || !["pending", "approved", "denied", "expired"].includes(result.decision)
+        || typeof result.reasonCode !== "string" || !REASON.test(result.reasonCode)) {
         const failed = nextRecord(record, currentTime, "failed", "MALFORMED_APPROVAL_DECISION");
         return persist(failed, "stop", "MALFORMED_APPROVAL_DECISION", true);
       }
-      if (output.value.decision === "pending") return decision(workflowId, record.state, "pause", output.value.reasonCode, true);
-      if (output.value.decision === "approved") {
-        const next = nextRecord(record, currentTime, "ready_to_execute", output.value.reasonCode, { approvalDecision: "approved" });
-        return persist(next, "continue", output.value.reasonCode);
+      if (result.decision === "pending") return decision(workflowId, record.state, "pause", result.reasonCode, true);
+      if (result.decision === "approved") {
+        const next = nextRecord(record, currentTime, "ready_to_execute", result.reasonCode, { approvalDecision: "approved" });
+        return persist(next, "continue", result.reasonCode);
       }
-      const state = output.value.decision === "expired" ? "expired" : "rejected";
-      const next = nextRecord(record, currentTime, state, output.value.reasonCode, { approvalDecision: output.value.decision });
-      return persist(next, "stop", output.value.reasonCode, true);
+      const state = result.decision === "expired" ? "expired" : "rejected";
+      const next = nextRecord(record, currentTime, state, result.reasonCode, { approvalDecision: result.decision });
+      return persist(next, "stop", result.reasonCode, true);
     }
 
     if (record.state === "ready_to_execute") {
@@ -428,21 +493,21 @@ export function createWorkflowRuntime(ports) {
         mode: "shadow",
         productionWritePermission: false
       })));
-      if (!output.ok || !exactKeys(output.value, ["status", "reasonCode", "executionRef"])
-        || !["succeeded", "failed", "timed_out"].includes(output.value.status)
-        || !REASON.test(output.value.reasonCode)
-        || (output.value.status === "succeeded" && !reference(output.value.executionRef))
-        || (output.value.status !== "succeeded" && output.value.executionRef !== null)) {
+      const result = output.ok ? exactResult(output.value, ["status", "reasonCode", "executionRef"]) : null;
+      if (!result || !["succeeded", "failed", "timed_out"].includes(result.status)
+        || typeof result.reasonCode !== "string" || !REASON.test(result.reasonCode)
+        || (result.status === "succeeded" && !reference(result.executionRef))
+        || (result.status !== "succeeded" && result.executionRef !== null)) {
         const failed = nextRecord(record, currentTime, "failed", "MALFORMED_EXECUTOR_RESULT");
         return persist(failed, "stop", "MALFORMED_EXECUTOR_RESULT", true);
       }
-      if (output.value.status !== "succeeded") {
-        const state = output.value.status === "timed_out" ? "expired" : "failed";
-        const next = nextRecord(record, currentTime, state, output.value.reasonCode);
-        return persist(next, "stop", output.value.reasonCode, true);
+      if (result.status !== "succeeded") {
+        const state = result.status === "timed_out" ? "expired" : "failed";
+        const next = nextRecord(record, currentTime, state, result.reasonCode);
+        return persist(next, "stop", result.reasonCode, true);
       }
-      const next = nextRecord(record, currentTime, "verification_pending", output.value.reasonCode, { executionRef: output.value.executionRef });
-      return persist(next, "verify", output.value.reasonCode);
+      const next = nextRecord(record, currentTime, "verification_pending", result.reasonCode, { executionRef: result.executionRef });
+      return persist(next, "verify", result.reasonCode);
     }
 
     if (record.state === "verification_pending") {
@@ -454,21 +519,21 @@ export function createWorkflowRuntime(ports) {
         independentRequired: true,
         productionWritePermission: false
       })));
-      if (!output.ok || !exactKeys(output.value, ["status", "reasonCode", "verificationRef"])
-        || !["passed", "failed", "inconclusive"].includes(output.value.status)
-        || !REASON.test(output.value.reasonCode)
-        || (output.value.status === "passed" && !reference(output.value.verificationRef))
-        || (output.value.status !== "passed" && output.value.verificationRef !== null)) {
+      const result = output.ok ? exactResult(output.value, ["status", "reasonCode", "verificationRef"]) : null;
+      if (!result || !["passed", "failed", "inconclusive"].includes(result.status)
+        || typeof result.reasonCode !== "string" || !REASON.test(result.reasonCode)
+        || (result.status === "passed" && !reference(result.verificationRef))
+        || (result.status !== "passed" && result.verificationRef !== null)) {
         const failed = nextRecord(record, currentTime, "failed", "MALFORMED_VERIFICATION_RESULT");
         return persist(failed, "stop", "MALFORMED_VERIFICATION_RESULT", true);
       }
-      if (output.value.status !== "passed") {
-        const state = output.value.status === "inconclusive" ? "inconclusive" : "failed";
-        const next = nextRecord(record, currentTime, state, output.value.reasonCode);
-        return persist(next, "stop", output.value.reasonCode, true);
+      if (result.status !== "passed") {
+        const state = result.status === "inconclusive" ? "inconclusive" : "failed";
+        const next = nextRecord(record, currentTime, state, result.reasonCode);
+        return persist(next, "stop", result.reasonCode, true);
       }
-      const next = nextRecord(record, currentTime, "outcome_pending", output.value.reasonCode, { verificationRef: output.value.verificationRef });
-      return persist(next, "monitor", output.value.reasonCode);
+      const next = nextRecord(record, currentTime, "outcome_pending", result.reasonCode, { verificationRef: result.verificationRef });
+      return persist(next, "monitor", result.reasonCode);
     }
 
     if (record.state === "outcome_pending") {
@@ -479,17 +544,17 @@ export function createWorkflowRuntime(ports) {
         verificationRef: record.verificationRef,
         productionWritePermission: false
       })));
-      if (!output.ok || !exactKeys(output.value, ["status", "reasonCode", "outcomeRef"])
-        || !["completed", "failed", "inconclusive"].includes(output.value.status)
-        || !REASON.test(output.value.reasonCode)
-        || (output.value.status === "completed" && !reference(output.value.outcomeRef))
-        || (output.value.status !== "completed" && output.value.outcomeRef !== null)) {
+      const result = output.ok ? exactResult(output.value, ["status", "reasonCode", "outcomeRef"]) : null;
+      if (!result || !["completed", "failed", "inconclusive"].includes(result.status)
+        || typeof result.reasonCode !== "string" || !REASON.test(result.reasonCode)
+        || (result.status === "completed" && !reference(result.outcomeRef))
+        || (result.status !== "completed" && result.outcomeRef !== null)) {
         const failed = nextRecord(record, currentTime, "failed", "MALFORMED_OUTCOME_RESULT");
         return persist(failed, "stop", "MALFORMED_OUTCOME_RESULT", true);
       }
-      const next = nextRecord(record, currentTime, output.value.status, output.value.reasonCode,
-        output.value.status === "completed" ? { outcomeRef: output.value.outcomeRef } : {});
-      return persist(next, "stop", output.value.reasonCode, output.value.status !== "completed");
+      const next = nextRecord(record, currentTime, result.status, result.reasonCode,
+        result.status === "completed" ? { outcomeRef: result.outcomeRef } : {});
+      return persist(next, "stop", result.reasonCode, result.status !== "completed");
     }
 
     return invalid("INTERNAL_STATE_INVALID", workflowId);
