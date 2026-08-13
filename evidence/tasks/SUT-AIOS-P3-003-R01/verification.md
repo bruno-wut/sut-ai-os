@@ -3,10 +3,11 @@
 ## Scope
 
 Remediated the Workflow V1 history boundary without weakening its existing
-64-entry and revision invariants. A transition at 64 entries now returns
-`WORKFLOW_HISTORY_LIMIT_REACHED` fail closed before persistence; it does not
-append, compact, delete, or rewrite durable audit history. Candidate records are
-validated before any storage save. No infrastructure, provider adapter, queue,
+64-entry and revision invariants. A one-entry transition at 64, or a two-entry
+capability stage at 63, now returns `WORKFLOW_HISTORY_LIMIT_REACHED` fail closed
+before persistence or capability invocation. It does not append, compact,
+delete, or rewrite durable audit history. Candidate records are validated
+before any storage save. No infrastructure, provider adapter, queue,
 scheduler, network, credential, deployment, production write, or protected
 system behavior was added.
 
@@ -16,8 +17,8 @@ The executor ran only packet-authorized commands in the isolated worktree:
 
 | Command | Result |
 | --- | --- |
-| `npm run test:workflow` | Pass — 475 assertions. |
-| `npm run verify:fast` | The task validator, worktree self-test, and task-lifecycle self-test pass. The routing check fails on the uncommitted worktree because its V2 plan-review fixture requires a clean committed tree; independent QA must rerun the exact command on the clean remediation head. |
+| `npm run test:workflow` | Pass — 562 assertions after two-slot reservation remediation. |
+| `npm run verify:fast` | Task validation, worktree self-test, and task-lifecycle self-test pass. The routing check fails on the dirty worktree because its V2 plan-review fixture requires a clean committed tree; independent QA must rerun the exact command on the committed follow-up head. |
 | `git diff --check` | Pass. |
 
 Independent Sol verification and machine evidence under
@@ -32,7 +33,9 @@ record; unchanged revision, history, and save counts after the limit; blocking
 before downstream provider calls; cancellation and recovery at the limit;
 ordinary pre-boundary transitions; rejection of 65-entry state; and hostile
 history accessors. The original malformed-input and hostile-adapter suite is
-retained.
+retained. Each two-entry stage is tested at 63 to prove no save, quota/provider,
+or stage capability call occurs, and at 62 to prove both valid entries persist
+through the successful result.
 
 ## Limitations and rollback
 

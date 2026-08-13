@@ -345,6 +345,43 @@ for (const quotaState of ["below_warning", "warning_50", "warning_75"]) {
     ["analysis_pending", "WORKFLOW_HISTORY_LIMIT_REACHED", true], "cancellation at 64 preserves immutable audit history");
   equal(harness.calls.save, saveCount, "history-bound cancellation does not persist invalid state");
 }
+
+// Two-entry stages reserve both durable slots before their first save or capability call.
+for (const [stage, nextState, capability] of [
+  ["analysis_pending", "proposal_pending", "analyze"],
+  ["proposal_pending", "policy_pending", "propose"],
+  ["ready_to_execute", "verification_pending", "execute"],
+  ["verification_pending", "outcome_pending", "verify"],
+  ["outcome_pending", "completed", "outcome"]
+]) {
+  const harness = makeHarness();
+  const id = `two-slot-block-${stage.replaceAll("_", "-")}`;
+  await harness.runtime.start(request(id));
+  await progressTo(harness.runtime, id, stage);
+  padHistory(harness, id, 63);
+  const callsBefore = structuredClone(harness.calls);
+  const recordBefore = structuredClone(harness.records.get(id));
+  const blocked = await neverThrows(() => harness.runtime.advance(id), `${stage} at 63 never throws`);
+  equal([blocked.state, blocked.action, blocked.reasonCode, blocked.failClosed],
+    [stage, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true], `${stage} at 63 reserves two history slots fail closed`);
+  equal(harness.calls, callsBefore, `${stage} at 63 invokes no quota, provider, save, or capability port`);
+  equal(harness.records.get(id), recordBefore, `${stage} at 63 leaves durable state byte-for-byte equivalent`);
+  equal(harness.calls[capability], callsBefore[capability], `${stage} at 63 does not invoke ${capability}`);
+
+  const successHarness = makeHarness();
+  const successId = `two-slot-success-${stage.replaceAll("_", "-")}`;
+  await successHarness.runtime.start(request(successId));
+  await progressTo(successHarness.runtime, successId, stage);
+  padHistory(successHarness, successId, 62);
+  const saveCount = successHarness.calls.save;
+  const capabilityCount = successHarness.calls[capability];
+  const succeeded = await successHarness.runtime.advance(successId);
+  equal([succeeded.state, succeeded.failClosed], [nextState, false], `${stage} succeeds from 62 through its two-entry transition`);
+  equal([successHarness.records.get(successId).history.length, successHarness.records.get(successId).revision],
+    [64, 63], `${stage} 62-to-64 result satisfies the history/revision contract`);
+  equal(successHarness.calls.save, saveCount + 2, `${stage} 62-to-64 transition persists running and result states`);
+  equal(successHarness.calls[capability], capabilityCount + 1, `${stage} 62-to-64 transition invokes ${capability} once`);
+}
 {
   const harness = makeHarness();
   const id = "recovery-history-boundary";

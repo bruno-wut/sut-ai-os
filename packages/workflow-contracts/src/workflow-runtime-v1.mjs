@@ -43,6 +43,13 @@ const INTERRUPTED = new Map([
   ["outcome_monitoring", "outcome_pending"]
 ]);
 const PROVIDER_STAGES = new Set(["analysis_pending", "proposal_pending"]);
+const TWO_ENTRY_STAGES = new Set([
+  "analysis_pending",
+  "proposal_pending",
+  "ready_to_execute",
+  "verification_pending",
+  "outcome_pending"
+]);
 const QUOTA_ALLOWED = new Set(["below_warning", "warning_50", "warning_75"]);
 const ID = /^[a-z][a-z0-9-]{0,63}$/;
 const REF = /^[a-z][a-z0-9:._/-]{0,127}$/;
@@ -395,6 +402,9 @@ export function createWorkflowRuntime(ports) {
       return decision(workflowId, record.state, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true);
     }
     if (INTERRUPTED.has(record.state)) return decision(workflowId, record.state, "recover", "RECOVERY_REQUIRED", true);
+    if (TWO_ENTRY_STAGES.has(record.state) && record.history.length > MAX_HISTORY_ENTRIES - 2) {
+      return decision(workflowId, record.state, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true);
+    }
 
     if (record.state === "detected") {
       record = nextRecord(record, currentTime, "analysis_pending", "ANALYSIS_REQUESTED");
