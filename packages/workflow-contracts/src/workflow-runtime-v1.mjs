@@ -43,10 +43,19 @@ const INTERRUPTED = new Map([
   ["outcome_monitoring", "outcome_pending"]
 ]);
 const PROVIDER_STAGES = new Set(["analysis_pending", "proposal_pending"]);
+const TWO_ENTRY_STAGES = new Set([
+  "analysis_pending",
+  "proposal_pending",
+  "ready_to_execute",
+  "verification_pending",
+  "outcome_pending"
+]);
 const QUOTA_ALLOWED = new Set(["below_warning", "warning_50", "warning_75"]);
 const ID = /^[a-z][a-z0-9-]{0,63}$/;
 const REF = /^[a-z][a-z0-9:._/-]{0,127}$/;
 const REASON = /^[A-Z][A-Z0-9_]{0,63}$/;
+const MAX_HISTORY_ENTRIES = 64;
+const HISTORY_LIMIT = Symbol("workflow-history-limit");
 
 function object(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -159,7 +168,7 @@ function validRecord(value) {
     || !integer(value.maxRecoveries) || value.maxRecoveries > 3 || !integer(value.recoveryCount)
     || value.recoveryCount > value.maxRecoveries || !integer(value.revision)
     || !integer(value.createdAtEpochSeconds, 1) || !integer(value.updatedAtEpochSeconds, 1)
-    || !Array.isArray(value.history) || value.history.length < 1 || value.history.length > 64
+    || !Array.isArray(value.history) || value.history.length < 1 || value.history.length > MAX_HISTORY_ENTRIES
     || value.revision !== value.history.length - 1) return false;
   if (!value.history.every((entry) => object(entry) && WORKFLOW_STATES.includes(entry.state)
     && integer(entry.atEpochSeconds, 1) && typeof entry.reasonCode === "string" && REASON.test(entry.reasonCode))
@@ -226,6 +235,13 @@ function parseProviderState(value) {
 }
 
 function nextRecord(record, now, state, reasonCode, fields = {}) {
+  if (record.history.length >= MAX_HISTORY_ENTRIES) {
+    return Object.freeze({
+      [HISTORY_LIMIT]: true,
+      workflowId: record.workflowId,
+      state: record.state
+    });
+  }
   return {
     ...record,
     ...fields,
@@ -234,6 +250,10 @@ function nextRecord(record, now, state, reasonCode, fields = {}) {
     updatedAtEpochSeconds: now,
     history: [...record.history, { state, atEpochSeconds: now, reasonCode }]
   };
+}
+
+function historyLimited(record) {
+  return object(record) && record[HISTORY_LIMIT] === true;
 }
 
 function publicActionForProvider(state) {
@@ -276,6 +296,7 @@ export function createWorkflowRuntime(ports) {
   }
 
   async function save(record) {
+    if (historyLimited(record) || !validRecord(record)) return false;
     const expectedRevision = record.revision === 0 ? null : record.revision - 1;
     const result = await guarded(() => trusted.storage.save(record, expectedRevision));
     const saved = result.ok ? exactResult(result.value, ["saved", "revision", "previousRevision"]) : null;
@@ -284,6 +305,9 @@ export function createWorkflowRuntime(ports) {
   }
 
   async function persist(record, action, reasonCode, failClosed = false) {
+    if (historyLimited(record)) {
+      return decision(record.workflowId, record.state, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true);
+    }
     if (!await save(record)) return invalid("INTERNAL_STATE_UNAVAILABLE", record.workflowId);
     return decision(record.workflowId, record.state, action, reasonCode, failClosed);
   }
@@ -374,7 +398,13 @@ export function createWorkflowRuntime(ports) {
     if (TERMINAL.has(record.state)) return decision(workflowId, record.state, "none", "WORKFLOW_TERMINAL", true);
     const expired = await expireIfDue(record, currentTime);
     if (expired) return expired;
+    if (record.history.length >= MAX_HISTORY_ENTRIES) {
+      return decision(workflowId, record.state, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true);
+    }
     if (INTERRUPTED.has(record.state)) return decision(workflowId, record.state, "recover", "RECOVERY_REQUIRED", true);
+    if (TWO_ENTRY_STAGES.has(record.state) && record.history.length > MAX_HISTORY_ENTRIES - 2) {
+      return decision(workflowId, record.state, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true);
+    }
 
     if (record.state === "detected") {
       record = nextRecord(record, currentTime, "analysis_pending", "ANALYSIS_REQUESTED");
@@ -409,6 +439,7 @@ export function createWorkflowRuntime(ports) {
 
       if (record.state === "analysis_pending") {
         record = nextRecord(record, currentTime, "analysis_running", "ANALYSIS_STARTED");
+        if (historyLimited(record)) return persist(record);
         if (!await save(record)) return invalid("INTERNAL_STATE_UNAVAILABLE", workflowId);
         const output = await guarded(() => trusted.provider.analyze(Object.freeze({
           workflowId,
@@ -425,6 +456,7 @@ export function createWorkflowRuntime(ports) {
       }
 
       record = nextRecord(record, currentTime, "proposal_running", "PROPOSAL_STARTED");
+      if (historyLimited(record)) return persist(record);
       if (!await save(record)) return invalid("INTERNAL_STATE_UNAVAILABLE", workflowId);
       const output = await guarded(() => trusted.provider.propose(Object.freeze({
         workflowId,
@@ -485,6 +517,7 @@ export function createWorkflowRuntime(ports) {
       const quotaBlocked = await quotaGate(record, currentTime, record.state);
       if (quotaBlocked) return quotaBlocked;
       record = nextRecord(record, currentTime, "executing", "SHADOW_EXECUTION_STARTED");
+      if (historyLimited(record)) return persist(record);
       if (!await save(record)) return invalid("INTERNAL_STATE_UNAVAILABLE", workflowId);
       const output = await guarded(() => trusted.executor.execute(Object.freeze({
         workflowId,
@@ -512,6 +545,7 @@ export function createWorkflowRuntime(ports) {
 
     if (record.state === "verification_pending") {
       record = nextRecord(record, currentTime, "verification_running", "VERIFICATION_STARTED");
+      if (historyLimited(record)) return persist(record);
       if (!await save(record)) return invalid("INTERNAL_STATE_UNAVAILABLE", workflowId);
       const output = await guarded(() => trusted.verification.verify(Object.freeze({
         workflowId,
@@ -538,6 +572,7 @@ export function createWorkflowRuntime(ports) {
 
     if (record.state === "outcome_pending") {
       record = nextRecord(record, currentTime, "outcome_monitoring", "OUTCOME_MONITORING_STARTED");
+      if (historyLimited(record)) return persist(record);
       if (!await save(record)) return invalid("INTERNAL_STATE_UNAVAILABLE", workflowId);
       const output = await guarded(() => trusted.verification.observeOutcome(Object.freeze({
         workflowId,

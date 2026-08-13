@@ -167,6 +167,20 @@ function hostileAccessor(key) {
   return value;
 }
 
+function padHistory(harness, id, targetLength) {
+  const record = structuredClone(harness.records.get(id));
+  while (record.history.length < targetLength) {
+    record.history.push({
+      state: record.state,
+      atEpochSeconds: record.updatedAtEpochSeconds,
+      reasonCode: "BOUNDARY_FIXTURE"
+    });
+  }
+  record.revision = record.history.length - 1;
+  harness.records.set(id, record);
+  return record;
+}
+
 // Exported finite authorities and closed public surface.
 equal(PROVIDER_STATES, ["available", "busy", "rate_limited", "capacity_exhausted", "authentication_required", "temporarily_unavailable", "disabled"], "provider states are exact");
 equal(new Set(WORKFLOW_STATES).size, WORKFLOW_STATES.length, "workflow states are unique");
@@ -270,6 +284,129 @@ for (const quotaState of ["below_warning", "warning_50", "warning_75"]) {
   harness.setQuotaState("below_warning");
   const resumed = await harness.runtime.advance(id);
   equal([resumed.state, resumed.action], ["analysis_pending", "resume"], "quota wait safely resumes original stage");
+}
+
+// The durable 64-entry history contract fails closed without deleting or compacting audit history.
+{
+  const harness = makeHarness({ providerState: "busy" });
+  const id = "provider-history-boundary";
+  await harness.runtime.start(request(id));
+  await harness.runtime.advance(id);
+  await harness.runtime.advance(id);
+  padHistory(harness, id, 63);
+  const saveCount = harness.calls.save;
+  const sixtyFourth = await harness.runtime.advance(id);
+  equal([sixtyFourth.state, sixtyFourth.reasonCode], ["provider_wait", "PROVIDER_BUSY"], "provider wait transitions from 63 to 64 entries");
+  equal([harness.records.get(id).history.length, harness.records.get(id).revision], [64, 63], "provider wait persists a valid 64-entry record");
+  equal(harness.calls.save, saveCount + 1, "63 to 64 provider wait persists exactly once");
+  const roundTrip = await neverThrows(() => harness.runtime.advance(id), "64-entry provider record round-trips without self-invalidating");
+  equal([roundTrip.state, roundTrip.action, roundTrip.reasonCode, roundTrip.failClosed],
+    ["provider_wait", "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true], "provider outage at 64 fails closed deterministically");
+  equal([harness.records.get(id).history.length, harness.records.get(id).revision, harness.calls.save],
+    [64, 63, saveCount + 1], "provider outage at 64 neither appends nor persists");
+  const repeated = await harness.runtime.advance(id);
+  equal([repeated.reasonCode, harness.records.get(id).history.length, harness.calls.save],
+    ["WORKFLOW_HISTORY_LIMIT_REACHED", 64, saveCount + 1], "repeated provider outage preserves the exact boundary");
+}
+{
+  const harness = makeHarness({ quotaState: "warning_90" });
+  const id = "quota-history-boundary";
+  await harness.runtime.start(request(id));
+  await harness.runtime.advance(id);
+  await harness.runtime.advance(id);
+  padHistory(harness, id, 63);
+  const saveCount = harness.calls.save;
+  const sixtyFourth = await harness.runtime.advance(id);
+  equal([sixtyFourth.state, sixtyFourth.reasonCode], ["quota_wait", "QUOTA_WARNING_90"], "quota wait transitions from 63 to 64 entries");
+  equal([harness.records.get(id).history.length, harness.records.get(id).revision], [64, 63], "quota wait persists a valid 64-entry record");
+  equal(harness.calls.save, saveCount + 1, "63 to 64 quota wait persists exactly once");
+  const roundTrip = await neverThrows(() => harness.runtime.advance(id), "64-entry quota record round-trips without self-invalidating");
+  equal([roundTrip.state, roundTrip.action, roundTrip.reasonCode, roundTrip.failClosed],
+    ["quota_wait", "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true], "quota outage at 64 fails closed deterministically");
+  equal([harness.records.get(id).history.length, harness.records.get(id).revision, harness.calls.save],
+    [64, 63, saveCount + 1], "quota outage at 64 neither appends nor persists");
+}
+{
+  const harness = makeHarness();
+  const id = "ordinary-history-boundary";
+  await harness.runtime.start(request(id));
+  padHistory(harness, id, 63);
+  const transitioned = await harness.runtime.advance(id);
+  equal([transitioned.state, harness.records.get(id).history.length, harness.records.get(id).revision],
+    ["analysis_pending", 64, 63], "ordinary pre-boundary transition persists valid 64-entry state");
+  const saveCount = harness.calls.save;
+  const blocked = await harness.runtime.advance(id);
+  equal([blocked.state, blocked.reasonCode, blocked.failClosed],
+    ["analysis_pending", "WORKFLOW_HISTORY_LIMIT_REACHED", true], "ordinary transition at 64 fails closed");
+  equal([harness.calls.quota, harness.calls.status, harness.calls.analyze, harness.calls.save],
+    [0, 0, 0, saveCount], "history boundary blocks before downstream ports and persistence");
+  const cancelled = await harness.runtime.cancel(id, "OPERATOR_CANCELLED");
+  equal([cancelled.state, cancelled.reasonCode, cancelled.failClosed],
+    ["analysis_pending", "WORKFLOW_HISTORY_LIMIT_REACHED", true], "cancellation at 64 preserves immutable audit history");
+  equal(harness.calls.save, saveCount, "history-bound cancellation does not persist invalid state");
+}
+
+// Two-entry stages reserve both durable slots before their first save or capability call.
+for (const [stage, nextState, capability] of [
+  ["analysis_pending", "proposal_pending", "analyze"],
+  ["proposal_pending", "policy_pending", "propose"],
+  ["ready_to_execute", "verification_pending", "execute"],
+  ["verification_pending", "outcome_pending", "verify"],
+  ["outcome_pending", "completed", "outcome"]
+]) {
+  const harness = makeHarness();
+  const id = `two-slot-block-${stage.replaceAll("_", "-")}`;
+  await harness.runtime.start(request(id));
+  await progressTo(harness.runtime, id, stage);
+  padHistory(harness, id, 63);
+  const callsBefore = structuredClone(harness.calls);
+  const recordBefore = structuredClone(harness.records.get(id));
+  const blocked = await neverThrows(() => harness.runtime.advance(id), `${stage} at 63 never throws`);
+  equal([blocked.state, blocked.action, blocked.reasonCode, blocked.failClosed],
+    [stage, "pause", "WORKFLOW_HISTORY_LIMIT_REACHED", true], `${stage} at 63 reserves two history slots fail closed`);
+  equal(harness.calls, callsBefore, `${stage} at 63 invokes no quota, provider, save, or capability port`);
+  equal(harness.records.get(id), recordBefore, `${stage} at 63 leaves durable state byte-for-byte equivalent`);
+  equal(harness.calls[capability], callsBefore[capability], `${stage} at 63 does not invoke ${capability}`);
+
+  const successHarness = makeHarness();
+  const successId = `two-slot-success-${stage.replaceAll("_", "-")}`;
+  await successHarness.runtime.start(request(successId));
+  await progressTo(successHarness.runtime, successId, stage);
+  padHistory(successHarness, successId, 62);
+  const saveCount = successHarness.calls.save;
+  const capabilityCount = successHarness.calls[capability];
+  const succeeded = await successHarness.runtime.advance(successId);
+  equal([succeeded.state, succeeded.failClosed], [nextState, false], `${stage} succeeds from 62 through its two-entry transition`);
+  equal([successHarness.records.get(successId).history.length, successHarness.records.get(successId).revision],
+    [64, 63], `${stage} 62-to-64 result satisfies the history/revision contract`);
+  equal(successHarness.calls.save, saveCount + 2, `${stage} 62-to-64 transition persists running and result states`);
+  equal(successHarness.calls[capability], capabilityCount + 1, `${stage} 62-to-64 transition invokes ${capability} once`);
+}
+{
+  const harness = makeHarness();
+  const id = "recovery-history-boundary";
+  await harness.runtime.start(request(id, 2));
+  const record = padHistory(harness, id, 64);
+  record.state = "analysis_running";
+  record.history.at(-1).state = "analysis_running";
+  harness.records.set(id, record);
+  const recovered = await harness.runtime.recover(id);
+  equal([recovered.state, recovered.reasonCode, recovered.failClosed],
+    ["analysis_running", "WORKFLOW_HISTORY_LIMIT_REACHED", true], "recovery at 64 fails closed without corrupting history");
+  equal([harness.records.get(id).history.length, harness.records.get(id).revision], [64, 63], "recovery retains the valid 64-entry record");
+}
+{
+  const overLimitHarness = makeHarness();
+  const id = "over-limit-history";
+  await overLimitHarness.runtime.start(request(id));
+  padHistory(overLimitHarness, id, 65);
+  const invalid = await neverThrows(() => overLimitHarness.runtime.advance(id), "65-entry persisted history never throws");
+  equal([invalid.action, invalid.reasonCode, invalid.failClosed], ["deny", "INTERNAL_STATE_INVALID", true], "65-entry persisted history remains invalid");
+
+  const hostileHistory = hostileAccessor("history");
+  const hostileHarness = makeHarness({ loadResult: hostileHistory });
+  const hostile = await neverThrows(() => hostileHarness.runtime.advance("hostile-history"), "hostile history accessor never throws");
+  equal([hostile.action, hostile.reasonCode, hostile.failClosed], ["deny", "INTERNAL_STATE_INVALID", true], "hostile history accessor fails closed");
 }
 
 // The provider can return references only; attempts to inject policy or approval authority fail closed.

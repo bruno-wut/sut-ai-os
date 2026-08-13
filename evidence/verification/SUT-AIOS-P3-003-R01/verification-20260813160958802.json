@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "taskId": "SUT-AIOS-P3-003-R01",
+  "status": "pass",
+  "reviewer": "qa-verification",
+  "verifierModel": "gpt-5.6-sol",
+  "implementerAgent": "codex-engineering-executor",
+  "reviewedAt": "2026-08-13T16:09:58.802Z",
+  "checks": [
+    "changed-path-inspection: pass",
+    "security-boundaries: pass"
+  ],
+  "tests": [
+    "npm run test:workflow: pass",
+    "npm run verify:fast: pass"
+  ],
+  "acceptanceCriteria": [
+    "confirmed: Repeated provider_wait or quota_wait transitions at the 64-entry history boundary never append a 65th entry, never persist an invalid record, and return a deterministic fail-closed WORKFLOW_HISTORY_LIMIT_REACHED decision.",
+    "confirmed: Every normal transition path either persists a record satisfying the existing history-length and revision invariants or returns a deterministic fail-closed decision without mutating durable state.",
+    "confirmed: Records with 63 entries can make one valid transition to 64 entries, while records already at 64 entries remain loadable and cannot self-corrupt under continued provider or quota unavailability.",
+    "confirmed: Focused regression tests cover provider and quota outage repetition, the 63/64 boundary, persisted round trips, malformed and hostile values, and preservation of ordinary pre-boundary transitions.",
+    "confirmed: No provider SDK, database, queue, scheduler, network, credential, deployment, production write, booking, payment, inventory, pricing, finalized-platform, or architecture-source behavior is introduced."
+  ],
+  "changedPaths": [
+    "docs/workflow-runtime/WORKFLOW_RUNTIME_V1.md",
+    "evidence/tasks/SUT-AIOS-P3-003-R01/verification.md",
+    "packages/workflow-contracts/src/workflow-runtime-v1.mjs",
+    "tasks/active/SUT-AIOS-P3-003-R01/task.json",
+    "tests/workflow-runtime/validate-workflow-runtime-v1.mjs"
+  ],
+  "forbiddenPathsUntouched": true,
+  "productionEligible": false,
+  "evidenceReferences": [
+    "evidence/verification/SUT-AIOS-P3-003-R01/verification-20260813160958802.json"
+  ],
+  "risks": [],
+  "recommendation": "verified"
+}
