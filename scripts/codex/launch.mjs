@@ -61,13 +61,13 @@ function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
 }
 
-function gitSha(base = "HEAD") {
+function gitSha(base = "HEAD", root = repositoryRoot) {
   try {
-    const r = spawnSync("git", ["rev-parse", base], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
+    const r = spawnSync("git", ["rev-parse", base], { cwd: root, encoding: "utf8", windowsHide: true });
     if (r.error || r.status !== 0) return null;
     const value = r.stdout?.trim();
     if (!/^[0-9a-f]{40}$/i.test(value ?? "")) return null;
-    const object = spawnSync("git", ["cat-file", "-e", `${value}^{commit}`], { cwd: repositoryRoot, encoding: "utf8", windowsHide: true });
+    const object = spawnSync("git", ["cat-file", "-e", `${value}^{commit}`], { cwd: root, encoding: "utf8", windowsHide: true });
     if (object.error || object.status !== 0) return null;
     return value;
   } catch {
@@ -75,11 +75,11 @@ function gitSha(base = "HEAD") {
   }
 }
 
-function comparisonBaseSha() {
+function comparisonBaseSha(root = repositoryRoot) {
   const configured = process.env.GOVERNED_BASE_SHA;
   const configuredRef = process.env.GOVERNED_BASE_REF;
   if (configuredRef && configuredRef !== "origin/main") throw new Error("GOVERNED_BASE_REF must be the canonical origin/main ref");
-  const canonical = gitSha("origin/main");
+  const canonical = gitSha("origin/main", root);
   if (!/^[0-9a-f]{40}$/i.test(canonical ?? "")) throw new Error("Cannot determine the canonical review comparison base SHA");
   if (configured && configured !== canonical) throw new Error("GOVERNED_BASE_SHA does not match fetched origin/main");
   return canonical;
@@ -1068,14 +1068,26 @@ function assertCompleteLauncherTracePrefix(events, { taskId, agentId, route, mod
 function persistReviewResult(reviewResult, { taskId, profile, headSha, root = repositoryRoot }) {
   const expectedStage = stageByProfile[profile];
   if (reviewResult.stage !== expectedStage) throw new Error(`Review result stage '${reviewResult.stage}' does not match requested ${expectedStage}`);
-  const initialValidation = validateReviewResult(reviewResult, { taskId, headSha });
+  const taskRecord = findTaskPacket(taskId, root);
+  if (taskRecord.format !== "json" || taskRecord.data.schemaVersion !== "2.0.0") throw new Error("Direct review-result persistence requires a current V2 task packet");
+  const stageAuthority = taskRecord.data.routingPolicy?.[expectedStage];
+  const expectedModel = modelIds[stageAuthority?.route];
+  const initialValidation = validateReviewResult(reviewResult, {
+    taskId,
+    baseSha: comparisonBaseSha(root),
+    headSha: gitSha("HEAD", root),
+    reviewerAgent: stageAuthority?.agent,
+    model: expectedModel,
+    reasoningEffort: stageAuthority?.effort,
+  });
   if (!initialValidation.valid) throw new Error(`Refusing to persist invalid review result: ${initialValidation.errors.join("; ")}`);
   if (reviewResult.tracePath.includes("/runs/")) throw new Error("Direct review-result persistence requires the Codex-app atomic envelope adapter");
+  const expectedTracePath = `evidence/reviews/${taskId}/traces/${reviewResult.runId}-${stageAuthority.agent}-${stageAuthority.route}.jsonl`;
+  if (reviewResult.tracePath !== expectedTracePath) throw new Error("Direct review-result persistence requires the canonical task-scoped trace path");
   let events;
   try { events = fs.readFileSync(path.join(root, reviewResult.tracePath), "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); }
   catch { throw new Error("Direct review-result persistence requires a valid bound launcher trace"); }
-  const route = Object.entries(modelIds).find(([, model]) => model === reviewResult.model)?.[0];
-  assertCompleteLauncherTracePrefix(events, { taskId, agentId: reviewResult.reviewerAgent, route, model: reviewResult.model, profile, runId: reviewResult.runId });
+  assertCompleteLauncherTracePrefix(events, { taskId, agentId: stageAuthority.agent, route: stageAuthority.route, model: expectedModel, profile, runId: reviewResult.runId });
   const bound = events.filter((event) => event?.event === "review-bound");
   const finishes = events.filter((event) => event?.event === "finish");
   if (bound.length !== 1 || finishes.length !== 1 || finishes[0]?.status !== "success" || finishes[0]?.exitCode !== 0 || events.indexOf(finishes[0]) <= events.indexOf(bound[0]) || events.at(-1) !== finishes[0]) {
