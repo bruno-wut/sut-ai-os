@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-P3-003",
   "title": "Implement durable workflow state machine",
-  "status": "backlog",
+  "status": "active",
   "phase": "phase-3",
   "workstream": "workflow-runtime",
   "workflowId": "implementation-p3-003",
@@ -94,7 +94,7 @@
     "maxBytes": 262144,
     "includedPaths": [
       "AGENTS.md",
-      "tasks/backlog/SUT-AIOS-P3-003/task.json",
+      "tasks/active/SUT-AIOS-P3-003/task.json",
       "docs/project/IMPLEMENTATION_BACKLOG.md",
       "package.json"
     ]
@@ -102,7 +102,7 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-07-26T13:10:00.000Z",
-  "updatedDate": "2026-08-13T12:25:00.000Z",
+  "updatedDate": "2026-08-13T15:22:26.780Z",
   "completionEvidence": [],
   "stateTransitions": [
     {
@@ -111,6 +111,20 @@
       "at": "2026-07-26T13:10:00.000Z",
       "actor": "engineering-planner",
       "reason": "Generated from canonical phased implementation backlog."
+    },
+    {
+      "from": "backlog",
+      "to": "ready",
+      "at": "2026-08-13T15:22:26.585Z",
+      "actor": "chief-orchestrator",
+      "reason": "All declared dependencies, including GOV-061 and P3-002-R01, are done on origin/main; V1 packet paths, commands, tests, and evidence destinations are bounded and execution-ready."
+    },
+    {
+      "from": "ready",
+      "to": "active",
+      "at": "2026-08-13T15:22:26.780Z",
+      "actor": "chief-orchestrator",
+      "reason": "Begin the bounded Workflow V1 state-machine implementation in the isolated worktree; no providers, production writes, or Workflow V2."
     }
   ]
 }
