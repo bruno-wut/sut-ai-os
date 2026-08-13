@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-058",
   "title": "Repair P3-001 Workflow V1 execution readiness",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3-governance",
   "workstream": "task-packet-assurance",
   "workflowId": "governance-p3-001-v1-readiness",
@@ -119,7 +119,7 @@
       "AGENTS.md",
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
-      "tasks/active/SUT-AIOS-GOV-058/task.json",
+      "tasks/verified/SUT-AIOS-GOV-058/task.json",
       "tasks/backlog/SUT-AIOS-P3-001/task.json",
       "package.json",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -128,8 +128,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T06:39:28.482Z",
-  "updatedDate": "2026-08-13T06:41:22.092Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T06:52:14.877Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-058/verification-20260813065115754.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -151,6 +153,20 @@
       "at": "2026-08-13T06:41:22.092Z",
       "actor": "chief-orchestrator",
       "reason": "Begin only the approved V1 readiness correction; do not implement P3-001 or Workflow V2 changes."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T06:52:10.197Z",
+      "actor": "codex-engineering-executor",
+      "reason": "Bounded V1 readiness correction implemented; deterministic checks passed and fresh independent Sol QA requested."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T06:52:14.877Z",
+      "actor": "qa-verification",
+      "reason": "Independent Sol QA passed the exact remediation head; verifier evidence is base-bound to origin/main, recommends verified, and confirms forbidden paths untouched."
     }
   ]
 }
