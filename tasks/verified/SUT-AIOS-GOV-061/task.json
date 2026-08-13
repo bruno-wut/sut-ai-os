@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "taskId": "SUT-AIOS-GOV-061",
   "title": "Repair P3-003 Workflow V1 execution readiness",
-  "status": "active",
+  "status": "verified",
   "phase": "phase-3-governance",
   "workstream": "task-packet-assurance",
   "workflowId": "governance-p3-003-v1-readiness",
@@ -126,7 +126,7 @@
       "docs/project/TASK_WORKFLOW.md",
       "docs/verification/VERIFICATION_POLICY.md",
       "scripts/verify/verify-cli.mjs",
-      "tasks/active/SUT-AIOS-GOV-061/task.json",
+      "tasks/verified/SUT-AIOS-GOV-061/task.json",
       "tasks/backlog/SUT-AIOS-P3-003/task.json",
       "package.json",
       "docs/project/ISSUES_AND_RISKS.md"
@@ -135,8 +135,10 @@
   "owner": "codex-engineering-executor",
   "reviewer": "qa-verification",
   "createdDate": "2026-08-13T15:30:00.000Z",
-  "updatedDate": "2026-08-13T11:47:48.465Z",
-  "completionEvidence": [],
+  "updatedDate": "2026-08-13T11:56:02.302Z",
+  "completionEvidence": [
+    "evidence/verification/SUT-AIOS-GOV-061/verification-20260813115534633.json"
+  ],
   "stateTransitions": [
     {
       "from": null,
@@ -158,6 +160,20 @@
       "at": "2026-08-13T11:47:48.465Z",
       "actor": "chief-orchestrator",
       "reason": "Begin only the approved P3-003 readiness correction; do not implement workflow behavior or Workflow V2."
+    },
+    {
+      "from": "active",
+      "to": "review",
+      "at": "2026-08-13T11:56:02.154Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent Sol qa-verification passed exact package, packet, shell-free mapping, near-miss, changed-path, security, governance, fast, and whitespace checks."
+    },
+    {
+      "from": "review",
+      "to": "verified",
+      "at": "2026-08-13T11:56:02.302Z",
+      "actor": "chief-orchestrator",
+      "reason": "Independent QA evidence is complete and all bounded readiness correction acceptance criteria pass."
     }
   ]
 }
